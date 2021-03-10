@@ -1,0 +1,322 @@
+ROUTINE %ZAPM.bs.BSkevFT
+%BSFT  ; Compiled July 28, 2005 12:58:04
+	; Cache` File Transfer Server
+	; develop starts @ 27/07/2005
+	quit
+start
+	;quit:($get(^%ZAPM.bs.BSFTconf("PID"), "") '= "")
+	set ^%ZAPM.bs.BSFTconf("stopsig") = 0
+	set ^%ZAPM.bs.BSFTconf("log") = 1
+	kill ^%ZAPM.bs.BSFTlog
+	job DaemonMainLoop
+	write "FTS daemon has been rised " _ $ztime($piece($horolog, ",", 2), 1)
+	quit
+	;
+stop
+	quit:($get(^%ZAPM.bs.BSFTconf("stopsig"), 1))
+	set ^%ZAPM.bs.BSFTconf("stopsig") = 1
+	write "FTS daemon has been killed " _ $ztime($piece($horolog, ",", 2), 1)
+	quit
+	;
+restart
+	do stop
+	do start
+	quit
+	;
+setport(p)
+	set ^%ZAPM.bs.BSFTconf("port") = +p
+	write "FTS daemon's port is set to " _ p _ "."
+	quit
+	;
+settimeout(t)
+	set ^%ZAPM.bs.BSFTconf("timeout") = +t
+	write "FTS daemon's timeout is set to " _ t _ "."
+	quit
+	;
+ErrHandler
+	set $ztrap = ""
+	if ($data(device)) close device
+	do PutLog("Daemon error: $ZE = " _ $ze _ "; $ZC = " _ $zc)
+	quit
+	;
+TErrHandler
+	set $ztrap = ""
+	do PutLog("Thread error: $ZE = " _ $ze _ "; $ZC = " _ $zc)
+	lock
+	if ($ze '= "") goto PopCmd
+	close $principal
+	quit
+	;
+DaemonMainLoop
+	new port, device, timeout, ip, buf
+	set $ztrap = "ErrHandler"
+	set port = $get(^%ZAPM.bs.BSFTconf("port"), 1961)
+	set timeout = $get(^%ZAPM.bs.BSFTconf("timeout"), 30)
+	set device = "|TCP|" _ port
+	; You can include the “A” mode parameter in the OPEN command
+	; to make the initial READ complete as soon as the server accepts the connection.
+	open device:(:port:"A"):timeout
+	if ('$test) {
+		do PutLog("Can't open device " _ device _ ".")
+		quit
+	}
+	set ^%ZAPM.bs.BSFTconf("PID") = $job
+	do PutLog("Daemon rised @ " _ device _ port)
+	while ('$get(^%ZAPM.bs.BSFTconf("stopsig"), 0)) {
+		use device
+		read buf:1
+		if ($test) {
+			set ip = $A($ZU(111,0),1)_"."_$A($ZU(111,0),2)_"."_$A($ZU(111,0),3)_"."_$A($ZU(111,0),4)_":"_($A($ZU(111,0),5)*256+$A($ZU(111,0),6))
+			do PutLog("New connection detected from " _ ip)
+			job NewThread:(:5:device:device)
+			if ($zchild = 0) do PutLog("Daemon can't create new thread!")
+		}
+	}
+	close device
+	set ^%ZAPM.bs.BSFTconf("PID") = ""
+	do PutLog("Daemon killed.")
+	quit
+	;
+NewThread
+	new s, cmd, pn, logoutsig
+	set logoutsig = 0
+	do PutLog("Client thread has been started." _ $principal)
+PopCmd
+	set $ztrap = "TErrHandler"
+	while (1) {
+		if ($$WaitSinhro(10)) {
+			write !
+			if ($$SocGet(.s, 2)) {
+				set cmd = $ascii(s, 1), pn = $ascii(s, 2)
+				do PutLog("Client -> cmd = " _ cmd _ "; par_num = " _ pn)
+				do $case(cmd, 64:cmdTEST, 1:cmdGETFILE, 2:cmdPUTFILE, 3:cmdGETLIST, 4:cmdLOGOUT, 5:cmdDELFILE, 7:cmdLOGIN, 8:cmdFILESIZE, :cmdUNKNOWN)
+			} else {
+				quit
+			}
+			quit:(logoutsig || $get(^%ZAPM.bs.BSFTconf("stopsig"), 0))
+		}
+	}
+	if (logoutsig) {
+		do PutLog("Client logged out. Thread closes.")
+	}
+	close $principal
+	quit
+	;
+cmdUNKNOWN
+	do PutLog("Unknown command has been detected. <" _ cmd _ ">")
+	do SocPut(1, "Unknown command ID:" _ cmd)
+	quit
+	;
+cmdTEST
+	do PutLog("Client -> CMD_TEST")
+	do SocPut(8, "I'm here!")
+	quit
+	;
+cmdLOGOUT
+	do PutLog("Client -> CMD_LOGOUT")
+	do SocPut(0, "Session logged out")
+	set logoutsig = 1
+	quit
+	;
+cmdDELFILE
+	new FName
+	do PutLog("Client -> CMD_DELFILE")
+	do GetStrParam(.FName)
+	do PutLog("Client -> CMD_DELFILE -> filename = " _ FName)
+	if ('##class(%File).Exists(FName)) {
+		do SocPut(13, "File didn't exists.")
+		quit
+	}
+	if ('##class(%File).Delete(FName)) {
+		do SocPut(13, "Can't delete file.")
+		quit
+	}
+	do SocPut(0, "File was deleted.")
+	quit
+	;
+cmdGETFILE
+  new FName, FLen, DataBuf, BlockLen
+  do PutLog("Client -> CMD_GETFILE")
+  do GetStrParam(.FName)
+  do PutLog("Client -> CMD_GETFILE -> filename = " _ FName)
+  do GetIntParam(.BlockLen)
+  do PutLog("Client -> CMD_GETFILE -> blocksize = " _ BlockLen)
+  set SrcFile = ##class(%File).%New(FName)
+  set ok = SrcFile.Open("RU")
+  if 'ok do SocPut(13, "Can't open specified file.") quit
+  set FLen = SrcFile.SizeGet
+  if (FLen > 0) {
+    do SocPut(6, "Ready to send.")
+    write $zlc(FLen)
+  } Else {
+		do SrcFile.Close()
+		do SocPut(13, "Zero-length file. Nothing to send.")
+    quit
+  }
+  while (FLen > 0) {
+    if (FLen < BlockLen) set BlockLen = FLen
+    set DataBuf = SrcFile.Read(BlockLen)
+    write DataBuf
+    set FLen = FLen - $length(DataBuf)
+  }
+  do SrcFile.Close()
+  do SocPut(0, "Transfer successed: "_FName_", length: "_SrcFile.SizeGet)
+  ;do SocFlush()
+	quit
+	;
+cmdPUTFILE
+  new FName, FLen, DataBuf, BlockLen
+  do PutLog("Client -> CMD_PUTFILE")
+  do GetStrParam(.FName)
+  do PutLog("Client -> CMD_PUTFILE -> filename = " _ FName)
+  do GetIntParam(.FLen)
+  do PutLog("Client -> CMD_PUTFILE -> filesize = " _ FLen)
+  Do GetIntParam(.BlockLen)
+  do PutLog("Client -> CMD_PUTFILE -> blocklen = " _ BlockLen)
+  set DestFile = ##class(%File).%New(FName)
+  set ok = DestFile.Open("WSN")
+  if ('ok) do SocPut(13, "Can't open specified file.") quit
+  do SocPut(6, "Ready to receive.")
+  while (FLen > 0) {
+    if (FLen < BlockLen) set BlockLen = FLen
+  	read DataBuf#BlockLen:15
+  	do DestFile.Write(DataBuf)
+  	set FLen = FLen - BlockLen
+  }
+  do DestFile.Close()
+  do SocPut(0, "Transfer succeed. "_FName_" length: "_(DestFile.SizeGet - FLen))
+  ;do SocFlush()
+	quit
+	;
+cmdGETLIST
+	new mode, path, wc, rset, ResultBuf
+	do PutLog("Client -> CMD_GETLIST")
+	do GetStrParam(.path)
+	do PutLog("Client -> CMD_GETLIST -> path = " _ path)
+	do GetStrParam(.wc)
+	do PutLog("Client -> CMD_GETLIST -> wildcard = " _ wc)
+	do GetIntParam(.mode)
+	do PutLog("Client -> CMD_GETLIST -> mode = " _ mode)
+  if ('##class(%File).DirectoryExists(path)) {
+    do SocPut(13, "Specified path didn't exists.")
+    quit
+  }
+  set rset = ##class(%ResultSet).%New("%Library.File:FileSet")
+  do rset.Execute(path, wc, "ItemName", 1)
+  set ResultBuf = ""
+  while (rset.Next(.fEnt)) {
+    if ($SYSTEM.Status.IsOK(fEnt)) {
+		  if (mode = "1") {
+		  	set ResultBuf = ResultBuf _ rset.Data("ItemName") _ ":" _ rset.Data("Type")
+		  	if (rset.Data("Type") = "F") {
+		  		set ResultBuf = ResultBuf _ ":" _ rset.Data("Size")
+		  	} else {
+			  	set ResultBuf = ResultBuf _ ":<DIR>"
+			  }
+		  	set ResultBuf = ResultBuf _ ";"
+	  	} elseif (mode = "0") {
+				if (rset.Data("Type") = "F") {
+	      	set ResultBuf = ResultBuf _ rset.Data("ItemName") _ ":" _	rset.Data("Size") _ ";"
+				}
+		  } elseif (mode = "2") {
+	  	  if (rset.Data("Type") = "D") {
+	    	  set ResultBuf = ResultBuf _ rset.Data("ItemName") _ ";"
+		    }
+		  }
+    }
+  }
+  if ($SYSTEM.Status.IsError(fEnt)) {
+    do SocPut(13, "Query error.")
+    quit
+  } else {
+	  do SocPut(6, "Ready to send. Block length:" _ $zlc($length(ResultBuf)))
+	  write $zlc($length(ResultBuf))
+  }
+  do rset.Close()
+  if ($length(ResultBuf) > 0) {
+  	;do SocPut(6, "Ready to send. Folder content.")
+  	write ResultBuf
+  }
+  do SocPut(0, "All done.")
+  ;do SocFlush()
+	quit
+	;
+cmdFILESIZE
+	new FileName, FileSize
+	do PutLog("Client -> CMD_FILESIZE")
+	do GetStrParam(.FileName)
+	do PutLog("Client -> CMD_FILESIZE -> path = " _ FileName)
+	if ('##class(%File).Exists(FileName)) {
+		do SocPut(13, "Specified file didn't exists.")
+		quit
+	}
+	set FileSize = ##class(%File).GetFileSize(FileName)
+	do PutLog("Client -> CMD_FILESIZE -> size = " _ FileSize)
+	do SocPut(6, "Ready to send. File size.")
+	write $zlc(FileSize)
+	do SocPut(0, "All done.")
+	quit
+	;
+cmdLOGIN
+	new user, pass, root, rights
+	do PutLog("Client -> CMD_LOGIN")
+	do GetStrParam(.user)
+	do PutLog("Client -> CMD_LOGIN -> user = " _ user)
+	do GetStrParam(.pass)
+	do PutLog("Client -> CMD_LOGIN -> pass = " _ pass)
+	do GetStrParam(.root)
+	do PutLog("Client -> CMD_LOGIN -> root = " _ root)
+	do GetStrParam(.rights)
+	do PutLog("Client -> CMD_LOGIN -> rights = " _ rights)
+	; проверка параметров и установка loguotsig в 1 или возврат
+	do SocPut(7, "Ident OK")
+	quit
+	;
+GetIntParam(num, tout)
+	new result
+	set result = $$SocGet(.num, 4, 5)
+	set num = $zla(num)
+	quit result
+	;
+GetStrParam(str, tout)
+	new result, len
+	set result = $$SocGet(.len, 4, 5)
+	set result = $$SocGet(.str, $zla(len), 5)
+	quit result
+	;
+SocFlush()
+	read *a:1 quit:((a = -1) || '$test)
+	quit 1
+	;
+SocGet(str, len, tout)
+	set len = $get(len, 0), tout = $get(tout, 5)
+	if (len = 0) quit 0
+	read str#len:tout
+	quit ($test && ($length(str) = len))
+	;
+SocPut(code, msg)
+	new pack
+	do SocFlush()
+	set pack = $zlchar(+$get(code)) _ $zlchar($length($get(msg))) _ $get(msg)
+	write pack, !
+	quit
+	;
+WaitSinhro(tout)
+  new i, a, t1, za 
+  set i=0, tout = $get(tout, 5), t1 = $zh
+  while (1) {
+		quit:((i = 4) || $get(^%ZAPM.bs.BSFTconf("stopsig"), 0) || ((tout > 0) && ($zh-t1 > tout)))
+		read *a:1 
+		set za = $za, zh = $zh
+		if (a > 0) set i = $select(a=254:i+1, 1:0)
+		;do PutLog("SYNHRO -> a = "_a_"; i = "_i)
+  }
+  quit (i = 4)
+  ;
+PutLog(text)
+	quit:('$get(^%ZAPM.bs.BSFTconf("log"), 1))
+	new i set i = $get(^%ZAPM.bs.BSFTlog, 0)
+	set ^%ZAPM.bs.BSFTlog(i) = text
+	set ^%ZAPM.bs.BSFTlog = i + 1
+	quit
+	;

@@ -1,0 +1,53 @@
+ROUTINE %ZAPM.bs.BSF13
+%BSF13 ; пpогpамма ДОПОЛНИТЕЛЬНЫХ ФУНКЦИЙ КОМПЛЕКСА ; 13:49   15.04.2003
+ Q
+%PopTAB(BSr,BSt,KY,ke,v,LX) ;СОЗДАТЬ ТЕСТОВУЮ ТАБЛИЦУ
+ N se,i,l,TmpTime
+ ;ke-КОЛ-ВО КОЛОНОК
+ ;v- ВЫСОТА ТЕКУЩЕЙ СТРОКИ
+ D %Pop
+ F i=1:1:KY D
+ .S se=se+1 F j=1:1:ke S @BSr@(BSt,se,j)="@@"_$G(v,1)_"@"_LX_"@@@@@1@@@@@@ Line="_i_", Colomn="_j
+ S @BSr@(BSt)="ТЕСТОВАЯ ТАБЛИЦА ("_KY_"x"_ke_")@@@@@@@1@1@22@80@1@@1@1@@1@@@1@"
+ S BSR=BSr,BST=BSt
+ S:$D(Fk) $P(@$ZR,"@",15)=Fk S:$D(PrEd) $P(@$ZR,"@",41)=PrEd
+ D RESZER^%ZAPM.bs.BSF2,TABm^%ZAPM.bs.BSF1
+ D %PopE
+ Q
+%PopE S TmpTime=$P($H,",",2)-TmpTime,$P(@BSr@(BSt),"@")=$P(@BSr@(BSt),"@")_" Создавалась "_(TmpTime/60)_" Мин."
+ Q
+%Pop S:$D(@BSr)["0" $P(@BSr,"@")="BaSe MsW @ТЕСТОВЫЙ РАЗДЕЛ"
+ S se=0 K @BSr@(BSt) S TmpTime=$P($H,",",2) ;НАЧАЛО
+ Q
+%PopTXT(BSr,BSt,KY,LX) ;СОЗДАТЬ ТЕКСТ
+ N i
+ D %Pop
+ S @BSr@(BSt)="ТЕСТОВЫЙ ТЕКСТ ("_KY_"x"_LX_")@@@@@@@1@1@22@80@1@@1@1@@1@@@1@"
+ F i=1:1:KY S @BSr@(BSt,i)="Строка="_i_$J(" Line="_i,LX-8-$L(i))
+ S $P(@BSr@(BSt),"@",17)=5,$P(@$ZR,"@",28)=KY,$P(@$ZR,"@",29)=""
+ D %PopE
+ Q
+DoLINK ;ВХОД В ТИП ТАБЛИЦЫ LINK
+ N P1,T1,S1
+ I $P(@BSR@(BST,3,2),"@",15)="" D Yes^%ZAPM.bs.BSXfun("ЗАГРУЖАЕМ ТАБЛИЦУ ?",1) I YES<1 G GOO^%ZAPM.bs.BST
+ S P1=$P(@BSR@(BST,1,2),"@",15),T1=$P(@BSR@(BST,2,2),"@",15) G GOO^%ZAPM.bs.BST:P1=""!(T1="")
+ S S1=$NA(@P1@(T1)) I $$Data^%ZAPM.bs.BSF12(S1),$P(@S1,"@",17)'=6 S BSR=P1,BST=T1 G ^%ZAPM.bs.BST
+ G GOO^%ZAPM.bs.BST
+TNAME(BSR,BST) ;ТРАНСЛИРОВАТЬ ИМЯ ОТЧЕТА
+ N A I $ZV["Cach"||($ZV["IRIS") D  Q A
+ .S A=$TR($$BSR^%ZAPM.bs.BSA(BSR),",^""",":")_"!1!"_BST
+ .I A[":""""]" S A=$$TR^%ZAPM.bs.BSsFUNM(A,":""""]",":""MSW""]")
+ Q $TR($$BSR^%ZAPM.bs.BSA(BSR),",",":")_"!1!"_BST
+SetTBD(N) ;ПЕРЕКЛЮЧИТЬ
+ N NB
+ S NB=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSS("TRIGGER"))) I $$Data^%ZAPM.bs.BSF12(NB),$D(@NB@(N)) S %BS("TRIGGER")=N Q 1
+ Q 0
+ClearTBD ;ОЧИСТИТЬ ПЕРЕКЛЮЧАТЕЛЬ БАЗ ДАННЫХ
+ K %BS("TRIGGER")
+ Q
+ShowTBD() Q $G(%BS("TRIGGER"),"UNDEFINED")
+USERSBAS ;ПРОГА ЧИСТКИ КОМЕНТАРИЕВ И ПАРОЛЕЙ В БАЗЕ ДАННЫХ ПОЛЬЗОВАТЕЛЕЙ ^%ZAPM.bs.BSS("USER")
+ I R1=999 D  Q
+ .N I,II,III
+ .S I="" F  S I=$O(@BSD@(I)) Q:I=""  Q:I'[".@"  S II="" F  S II=$O(@BSD@(I,II)) Q:II=""  I '$D(@BSD@(II)) K @BSD@(I,II)
+ Q

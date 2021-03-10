@@ -1,0 +1,30 @@
+ROUTINE %ZAPM.bs.BSpgWEBIA
+TKWPIA	;PG&A,TK-WEB,1.1,ADD A DIRECTORY;15OCT97  08:04 [ 10/15/97   8:12 AM ]
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;Copyright (C) 1984, Patterson, Gray & Associates, Inc.
+INIT	S:'$D(DIR) DIR="" S %R=3,%C=1 W @TKP,TK("HI"),TK("CS")
+	S %R=1,%C=21,Y=$S('$D(TK(9)):"DIRECTORY DESCRIPTION\Designator\Description\Password\Created\Default Macro File",1:@TK(9)@(5)) W @TKP,$J("",40) S %C=80-$L($P(Y,"\"))\2 W @TKP,TK("HI"),$P(Y,"\")
+	S %R=4 W TK("LO") F I=2:1:6 S %R=%R+2,%C=38-$L($P(Y,"\",I)) W @TKP,$P(Y,"\",I),":"
+	S %R=6,%C=41 W @TKP,TK("HI"),DIR
+	;
+DIR S X=DIR,%R=6,%C=41,CHR="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",LNG=2,FNC="EX,HL,DK" X ^%ZAPM.bs.BSpgREAD G:FNC="HL" HELP
+ G EXIT:X="" S DIR=X,X=$S($D(^%ZAPM.bs.BSpgWP(DIR))#2:^(DIR),1:""),DES=$P(X,"\",1),DAT=$P(X,"\",2),PWD=$P(X,"\",3),MF=$P(X,"\",5)
+	I DAT="" D DATE S DAT=DT
+	S %C=41,%R=8 W TK("HI"),@TKP,DES
+PWD	G DISP:PWD="" S %R=10,%C=41,X="" W @TKP,TK("HI"),TK("CL") X TK("ECHO-OFF") R X#20
+	X TK("ECHO-ON") S:X="" DIR="" G EXIT:X="" I X'=PWD W *7 G PWD
+DISP	S %R=10 W @TKP,PWD S %R=12 W:DAT]"" @TKP,DAT S %R=14 W:MF]"" @TKP,MF
+	;
+DES S %R=8,%C=41,LNG=30,PAT="X'[""\""",X=DES,FNC="EX,HL,UK,DK,TB" X ^%ZAPM.bs.BSpgREAD G:FNC="HL" HELP G:X="" DIR S DES=X
+	;
+PASSWRD S %R=10,%C=41,X=PWD,LNG=15,CHR="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -/;,",FNC="EX,HL,UK,DK,TB" X ^%ZAPM.bs.BSpgREAD G:FNC="HL" HELP S PWD=X
+	;
+MF S %R=14,%C=41,LNG=5,PAT="X'[""\""",X=MF,FNC="EX,HL,UK,DK,TB" X ^%ZAPM.bs.BSpgREAD G:FNC="HL" HELP S MF=X
+UPDATE S ^%ZAPM.bs.BSpgWP(DIR)=DES_"\"_DAT_"\"_PWD_"\\"_MF,^%ZAPM.bs.BSpgWP(98,DIR)=^%ZAPM.bs.BSpgWP(DIR) S:PWD="" $P(^%ZAPM.bs.BSpgWP(dI),",",1)=DIR I PWD'="",$D(^%ZAPM.bs.BSpgWP(dI)),$P(^(dI),",",1)=DIR S $P(^(dI),",",1)=""
+	;
+EXIT	K DES,PWD,MF,DAT Q
+HELP S HP=17 D HELP^%ZAPM.bs.BSpgWPV9 G INIT
+	;
+CHANGE S:'$D(DIR) DIR="" S DIR=$S(DIR'="":DIR,$D(^%ZAPM.bs.BSpgWP(dI)):$P(^(dI),","),1:"") D INIT Q
+	;
+DATE	S K=$H>21608+305+$H,Y=4*K+3\1461,D=K*4+3-(1461*Y)+4\4,M=5*D-3\153,D=5*D-3-(153*M)+5\5,M=M+2,Y=M\12+Y+140,M=M#12+1,K="/" S:TK("d") K=M,M=D,D=K,K="." S Y=Y*100+M*100+D,DT=$E(Y,4,5)_K_$E(Y,6,7)_K_$E(Y,2,3) K K,Y,M,D Q

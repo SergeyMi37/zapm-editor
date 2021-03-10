@@ -1,0 +1,186 @@
+ROUTINE %ZAPM.bs.BSkod
+%BSkod ; пpогpамма  (А.Тимофеев) ; 10:28   14.03.99
+ 
+ N %FN S ls=" Будем загружать кодификатор из файла ? " D YES^%ZAPM.bs.BSF I YES'=1 Q
+ I YES=0 Q
+ 
+EXPORT ;СЧИТЫВАНИЕ DOS-ФАЙЛА
+ S B=1 K %BS("Tmp","DosFiles") N %zT,FR,%IN,%IN1,%IN2,INF,ops,s,s1,PREK,OBR,EF,%DEV,XN
+REST S %FN="" D DosRead^%ZAPM.bs.BSS1(51,%FN) I '$D(%FN) S STOP=1 Q
+ I $D(%BS("Tmp","DosFiles")) S XN="" F  S XN=$O(%BS("Tmp","DosFiles",XN)) G:XN="" XNE D XNOPN I $D(%FN) D XN
+XN U 0 S %I=$I,%zT=$ZT,$ZT="ER^%ZAPM.bs.BSkod" S FR=%DEV U %DEV R %IN   ;G:$ZC'=0 CLO^%ZAPM.bs.BSBL1
+RES ;
+ K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u")
+ ;U 0 D ErrMsg^%ZAPM.bs.BSXfun("У ФАЙЛА "_%FN_" Не тот ФОРМАТ !!!") D CLO^%ZAPM.bs.BSBL1 Q
+I U 0 S ls="ВВОД ИНФОРМАЦИИ..." D WAITS^%ZAPM.bs.BSF2 S STOP="",s=1,s1=0
+ D  Q:STOP=1  F s=2:1 U %DEV R %IN D  Q:STOP=1  Q:$ZC'=0
+ .S INF=$E(%IN,1)  ;I INF="" S STOP=1 Q
+ .S s1=s1+1 S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u",s1)=$E(%IN,1,80) Q
+QQ S $ZT=$G(%zT) U 0 D OkMsg^%ZAPM.bs.BSXfun("ФАЙЛ "_%FN_" СЧИТАН",2) D CLO^%ZAPM.bs.BSBL1 G ZAP
+ 
+ER U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G ERE
+ I $ZE["<ENDOFFILE" G QQ
+ I $ZE["<MXSTR" S ls=" Слишком длинная строка считана " G ERE
+ S ls=$ZE
+ERE S $ZT=$G(%zT) D O^%ZAPM.bs.BSF7,CLO K:$E($G(BST),1)="@" @(BSR_"(BST)") G END^%ZAPM.bs.BSF
+ 
+ 
+XNOPN N DOS K %DEV,%FN S DOS=$$OpenDOS^%ZAPM.bs.BSXdos() Q:DOS<0
+ Q:$$Open^%ZAPM.bs.BSXdos(XN,"R")<0  S %DEV=DOS,%FN=XN Q
+XNE K %BS("Tmp","DosFiles") Q
+ 
+ZAP ;ПРОВЕРКА И ЗАПИСЬ В БПО
+ N %IN,Stop,DOP,s,sh,EF,NF,NF1,OP,INF,s1,t,t1,IND,Nf,%zT
+ S B=1,%I=$I,%IN="",%zT=$ZT,$ZT="ERR^%ZAPM.bs.BSDDR2"
+ S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u")="БУФЕР @@@@@@@1@1@22@80@@@@1@@5@@@1@@@@@@@@@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ S $P(^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u"),"@",17)=5
+TXT S ls=" Пpовеpить и откоppектиpовать ? " D YES^%ZAPM.bs.BSF I YES=1 S STOP="" D  Q:STOP=1
+ .D ^%ZAPM.bs.BSX("EDIT","^%ZAPM.bs.BSbufB","PO"_$G(%BS(3),$P)_$J_"u")
+ .S ls=" Заносим ?  " D YES^%ZAPM.bs.BSF I YES=1 Q
+ .S STOP=1 Q
+ S Buf="^%ZAPM.bs.BSbufB",Ind="PO"_$G(%BS(3),$P)_$J_"u"
+ 
+SAVE Q:STOP=1
+ S Edit=""
+ N MAS,i,Uci,mas,mas1,Str,str,Tab,tab,sim,l1,l2,l3,s1,s2,s3,s4,s5,v1,v2,v3,v4,v5,Del
+ S Del="",ls=" Удаляем существующие массивы ? " D YES^%ZAPM.bs.BSF I YES=1 S Del=1
+1 S %I=$I S %zT=$ZT,$ZT="STOP"
+ S ls="Создание кодификатора..." D WAITS^%ZAPM.bs.BSF2
+ D 333^%ZAPM.bs.BSF
+ I '$D(@(BSD_"(k1)")) Q
+ ; Выборка атрибутов описания кодификатора
+ S Uci=$G(@BSD@(k1,"uci")),mas=$G(@BSD@(k1,"mas")),Str=$G(@BSD@(k1,"str"))
+ S mas="^["""_$P(Uci,",")_""","""_$P(Uci,",",2)_"""]"_$P(mas,"^",2)
+ S l1=$G(@BSD@(k1,"l1")),l2=$G(@BSD@(k1,"l2")),l3=$G(@BSD@(k1,"l3")),sim=$G(@BSD@(k1,"sim"))
+ I l1=""!(l2="") Q
+ I Str'="" D
+ .S tab=$G(@BSD@(k1,"tab")),mas1=$G(@BSD@(k1,"mas1")),mas1="^["""_$P(Uci,",")_""","""_$P(Uci,",",2)_"""]"_$P(mas1,"^",2)
+ .S (s1,s2,s3,s4,s5,v1,v2,v3,v4,v5)=""
+ .S s1=$G(@BSD@(k1,"s1")),v1=$G(@BSD@(k1,"v1")) I s1="" Q
+ .S s2=$G(@BSD@(k1,"s2")),v2=$G(@BSD@(k1,"v2")) I s2="" Q
+ .S s3=$G(@BSD@(k1,"s3")),v3=$G(@BSD@(k1,"v3")) I s3="" Q
+ .S s4=$G(@BSD@(k1,"s4")),v4=$G(@BSD@(k1,"v4")) I s4="" Q
+ .S s5=$G(@BSD@(k1,"s5")),v5=$G(@BSD@(k1,"v5"))
+ I Edit=1 Q
+ ;                  ;Создание кодификатора
+ D L^%ZAPM.bs.BS3(mas) I Del=1 K @(mas),@(mas1)
+ S @(mas)="%BS-invert-^"_tab_"@@@@@"_$$h^%ZAPM.bs.BS3()_"@@1"
+ S i="" F  S i=$O(@Buf@(Ind,i)) Q:i=""  D  X $G(WA)
+ .S str=$G(@Buf@(Ind,i))
+ .I str=""!(str=" ") Q
+ .X "S kod=$E(str,"_l1_")" S kod=$$KUT(kod)
+ .X "S zn1=$E(str,"_l2_")" S zn1=$$KUT(zn1)
+ .I l3'="" X "S zn2=$E(str,"_l3_")" S zn2=$$KUT(zn2)
+ .I kod=""!(kod'=+kod) Q
+ .S ved=$S($L(kod)=s1&(v1'=1):1,$L(kod)=s2&(v2'=1):1,$L(kod)=s3&(v3'=1):1,$L(kod)=s4&(v4'=1):1,$L(kod)=s5&(v5'=1):1,1:"")
+ .I ved="" S @mas@(1,kod)=zn1_$S($G(zn2)'="":$G(sim),1:"")_$G(zn2)
+ .I Str'="" D       ;Создание узла структурного кодификатора
+ ..I s1=""  Q
+ ..I s5'="" S @mas1@($E(kod,1,s1),$E(kod,1,s2),$E(kod,1,s3),$E(kod,1,s4),$E(kod,1,s5),kod,"kod")=kod,^("ved")=$S(ved="":1,1:""),^("str")=zn1  Q
+ ..I s4'="" S @mas1@($E(kod,1,s1),$E(kod,1,s2),$E(kod,1,s3),$E(kod,1,s4),kod,"kod")=kod,^("ved")=$S(ved="":1,1:""),^("str")=zn1  Q
+ ..I s3'="" S @mas1@($E(kod,1,s1),$E(kod,1,s2),$E(kod,1,s3),kod,"kod")=kod,^("ved")=$S(ved="":1,1:""),^("str")=zn1  Q
+ ..I s2'="" S @mas1@($E(kod,1,s1),$E(kod,1,s2),kod,"kod")=kod,^("ved")=$S(ved="":1,1:""),^("str")=zn1  Q
+ ..S @mas1@($E(kod,1,s1),kod,"kod")=kod,^("ved")=$S(ved="":1,1:""),^("str")=zn1  Q
+ I Str'="" D        ;Корекция описания таблицы с БД структурного
+ .N KIP,SYS,TAB,PART,Tab
+ .S Tab="^["""_$P(Uci,",")_""","""_$P(Uci,",",2)_"""]"_$P(tab,",")_"("""_$P(tab,",",2)_""")"
+ .S MAS=$P(Tab,"(")
+ .I '$D(@MAS) S @MAS="BaSe MsW @@@"
+ .D Copy^%ZAPM.bs.BSF8("^%ZAPM.bs.BSDDR(""KOD2"")",Tab,"",1)
+ .S @Tab@("KEY")=mas1
+ .S KIP=$P(Uci,","),SYS=$P(Uci,",",2),TAB=$P(tab,",",2),PART=$P(tab,",")
+ .S @mas1="BSD - MSW@^[""GLAVK""]"_PART_"@"_TAB
+ .I s5'="" D  Q
+ ..S @Tab@("KEY",1,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",2,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",3,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",4,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",5,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$E($G(d0),1,"_s4_"),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",6,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$E($G(d0),1,"_s4_"),$E($G(d0),1,"_s5_"),$G(d0))"
+ ..S @Tab@("KEY",1,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",2,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",3,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",4,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",5,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$E($G(d0),1,"_s4_"),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",6,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$E($G(d0),1,"_s4_"),$E($G(d0),1,"_s5_"),$G(d0)}"
+ .I s4'="" D  Q
+ ..K @Tab@("KEY",6)
+ ..S @Tab@("KEY",1,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",2,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",3,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",4,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",5,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$E($G(d0),1,"_s4_"),$G(d0))"
+ ..S @Tab@("KEY",1,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",2,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",3,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",4,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",5,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$E($G(d0),1,"_s4_"),$G(d0)}"
+ .I s3'="" D  Q
+ ..K @Tab@("KEY",5),@Tab@("KEY",6)
+ ..S @Tab@("KEY",1,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",2,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",3,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",4,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$G(d0))"
+ ..S @Tab@("KEY",1,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",2,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",3,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",4,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$E($G(d0),1,"_s3_"),$G(d0)}"
+ .I s2'="" D  Q
+ ..K @Tab@("KEY",4),@Tab@("KEY",5),@Tab@("KEY",6)
+ ..S @Tab@("KEY",1,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",2,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0))"
+ ..S @Tab@("KEY",3,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E$G(d0),1,"_s2_"),$G(d0))"
+ ..S @Tab@("KEY",1,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",2,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",3,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$E($G(d0),1,"_s2_"),$G(d0)}"
+ .I s1'="" D  Q
+ ..K @Tab@("KEY",3),@Tab@("KEY",4),@Tab@("KEY",5),@Tab@("KEY",6)
+ ..S @Tab@("KEY",1,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0))"
+ ..S @Tab@("KEY",2,3)="S d1=$G(d0)_"" ""_$$A^%ZAPM.bs.BSA(2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0))"
+ ..S @Tab@("KEY",1,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$G(d0),$G(d0)}"
+ ..S @Tab@("KEY",2,4)="$G(d0)_"" ""_{2,1,"""_TAB_""","""_PART_""","""_KIP_""","""_SYS_""","""",$E($G(d0),1,"_s1_"),$G(d0)}"
+ 
+GLO ;Характеристики глобалов
+ S ls=" Хаpатеpистики ! " D WAITS^%ZAPM.bs.BSF2 N nGLB
+ F %GLB=mas,mas1,MAS D  X $G(WA)
+ .D CP^%ZAPM.bs.BSGCH(%GLB,4444)
+ D U^%ZAPM.bs.BS3(mas)
+ S $ZT=%zT D OkMsg^%ZAPM.bs.BSXfun(" Кодификатор готов !! ",4)
+ Q
+ 
+KUT(%1) ;Обрезка пробелов в названии
+ I %1="" S %0="" Q %0
+ N t,t1 S t1=""
+ F t=1:1:$L(%1) D  Q:t1'=""
+ .I $E(%1,t)'=" " S t1=t Q
+ I t1'=0 S %1=$E(%1,t1,$L(%1))
+ S t1="" F t=$L(%1):-1:1 D  Q:t1'=""
+ .I $E(%1,t)'=" " S t1=t Q
+ I t1'=$L(%1) S %1=$E(%1,1,t1)
+ S %0=%1 Q %0
+ 
+TEXT ;Загрузка из текста
+ D RIT^%ZAPM.bs.BSF3 I 'YES Q
+ S Buf=BSr,Ind=BSt,STOP="" G SAVE
+ 
+KOR ;Обновление кодификатора
+ N MAS,i,Uci,mas,mas1,Str,str,Tab,tab,sim,l1,l2,l3,s1,s2,s3,s4,s5,v1,v2,v3,v4,v5
+ S Edit=1 D 1 N i,i1,i2,i3,i4,i5,i6,ved
+ D L^%ZAPM.bs.BS3(mas) S ls="Обновление кодификатора..." D WAITS^%ZAPM.bs.BSF2
+ S i="" F  S i=$O(@mas@(i)) Q:i=""  K @mas@(i)
+ S i="" F  S i=$O(@mas1@(i)) Q:i=""  D  X $G(WA)
+ .S i1="" F  S i1=$O(@mas1@(i,i1)) Q:i1=""  D
+ ..I s2="" S i6=$G(@mas1@(i,i1,"str")),ved=$G(^("ved")) S:ved'="" @mas@(1,i1)=i6 Q
+ ..S i2="" F  S i2=$O(@mas1@(i,i1,i2)) Q:i2=""  D
+ ...I s3="" S i6=$G(@mas1@(i,i1,i2,"str")),ved=$G(^("ved")) S:ved'="" @mas@(1,i2)=i6 Q
+ ...S i3="" F  S i3=$O(@mas1@(i,i1,i2,i3)) Q:i3=""  D
+ ....I s4="" S i6=$G(@mas1@(i,i1,i2,i3,"str")),ved=$G(^("ved")) S:ved'="" @mas@(1,i3)=i6 Q
+ ....S i4="" F  S i4=$O(@mas1@(i,i1,i2,i3,i4)) Q:i4=""  D
+ .....I s5="" S i6=$G(@mas1@(i,i1,i2,i3,i4,"str")),ved=$G(^("ved")) S:ved'="" @mas@(1,i4)=i6 Q
+ .....S i5="" F  S i5=$O(@mas1@(i,i1,i2,i3,i4,i5)) Q:i5=""  D
+ ......S i6=$G(@mas1@(i,i1,i2,i3,i4,i5,"str")),ved=$G(^("ved")) S:ved'="" @mas@(1,i5)=i6 Q
+ S $ZT=%zT D OkMsg^%ZAPM.bs.BSXfun(" Кодификатор готов !! ",4)
+ D U^%ZAPM.bs.BS3(mas) Q
+ 
+STOP S $ZT=%zT I $ZE["<PROT" D ErrMsg^%ZAPM.bs.BSXfun("Нельзя сделать запись в этом кипе!!!") D U^%ZAPM.bs.BS3(mas) Q
+ W $ZE R *R D U^%ZAPM.bs.BS3(mas) D ErrMsg^%ZAPM.bs.BSXfun("Выполнение прервано !!") Q

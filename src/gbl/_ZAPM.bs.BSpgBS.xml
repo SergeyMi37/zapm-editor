@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+<Global>
+<Node><Sub>^%ZAPM.bs.BSpgBS</Sub>
+<Node><Sub>CONNECT</Sub>
+<Data>186</Data>
+</Node>
+<Node><Sub>Config change</Sub>
+<Data>02/24 16:13:50;</Data>
+</Node>
+<Node><Sub>Control</Sub>
+<Data>ON,5,ON,6,,9,1963</Data>
+</Node>
+<Node><Sub>MAXSTRING</Sub>
+<Data>32000</Data>
+</Node>
+<Node><Sub>TimeOut</Sub>
+<Data>180</Data>
+</Node>
+<Node><Sub>TimeZone</Sub>
+<Data>+3</Data>
+</Node>
+</Node>
+</Global>
+</Export>

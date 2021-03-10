@@ -1,0 +1,166 @@
+ROUTINE %ZAPM.bs.BSF8
+%BSF8 ;ЭКРАН В ДОС,ПАНЕЛЬ,msmHistory,Copy-Merge...; 17:08  6-MAR-95 ; 14:19   14.09.99
+Shift(R2) D SA^%ZAPM.bs.BSsBUF
+ I $$Data^%ZAPM.bs.BSF12($$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSS(""CMD"")")),$D(@$ZR@("ShiftF"_(R2-83))),$D(@$ZR@("c")) X @$ZR G ShE
+ I $D(^%ZAPM.bs.BScmd("ShiftF"_(R2-83))),$D(@$ZR@("c")) X @$ZR
+ShE D RE^%ZAPM.bs.BSsBUF Q
+AltKey I R3=-1 D
+ .I R2=139,$E(%BS(1),4),'$E($G(%BS(14)),4) D WiL Q
+ .I R2=140,$E(%BS(1),5),'$E($G(%BS(14)),4) D Trap Q
+ .I R2=84 S IYI="^%ZAPM.bs.BSS(ShiftF1" D NE^%ZAPM.bs.BSN Q
+ .I R2=88,$D(BSR),$D(BST) D BUFCOPY^%ZAPM.bs.BSF12 Q
+ Q
+TPr(BT) ;УСТАНОВКА ТИТУЛА ПО ТИТУЛУ ПЕЧАТИ
+ N yt,xt S yt=+$P($P(@BT,"@",50),","),xt=+$P($P(@BT,"@",50),",",2) I yt,($P($G(@BT@(yt,xt)),"@")+$P($G(@BT@(yt,xt)),"@",3))'>20 S $P(@BT,"@",19)=yt_","_xt
+ Q
+Trap N R1,R2,R3,YES,li,lop,ls D x^%ZAPM.bs.BS3("Alt-F12") Q
+WiL N Wi,i,ii,iii,%,%FN,%DEV,%DEVTYPE,%GO,%JB,Ox,Oy,R1,R2,R3,YES,li,lop,ls
+ S %FN="%BSPRN.SCR"
+ D SaveLock^%ZAPM.bs.BSsBUF("Wi",1,1,25,80)
+ D SA^%ZAPM.bs.BSsBUF
+ D DosOpn^%ZAPM.bs.BSBL1(54,%FN) Q:'$D(%FN)  U %DEV W "---------- Экран ... ",$TR($J("",58)," ","-"),"-",!
+ F i=1:1 Q:'$D(Wi(i))  U %DEV W "|",$E($$Wi(Wi(i)),1,78),"|",!
+ U %DEV W "-",$TR($J("",78)," ","-"),"-",!
+ D CLO^%ZAPM.bs.BSS1,RE^%ZAPM.bs.BSsBUF Q
+Wi(Wi) N iii,ii S iii="" F ii=1:2 Q:$E(Wi,ii)=""  S iii=iii_$E(Wi,ii)
+ Q iii
+ ;
+MSMHIST ; ДОБАВЛЕНИЕ В HISTORY СТРОКУ ИЗ ТЕКСТА ДЛЯ MSM
+ I $ZV["Cach"||($ZV["IRIS") D HIST^%ZAPM.bs.BSCp Q
+ N uci,i,lHisT S lHisT=$E($G(LocS,@Bstr),Col,$$LNG^%ZAPM.bs.BSF12),uci=$$ZU^%ZAPM.bs.BS3(0) D MGR^%ZAPM.bs.BS
+ S i=$O(^MSMSHIST($J,""),-1)+1,^MSMSHIST($J,i)=lHisT D %GU^%ZAPM.bs.BSF4 W $$bel^%ZAPM.bs.BS3
+ D Say^%ZAPM.bs.BSXfun("В History MSM положена строка '"_lHisT_"'") Q
+ ;
+COPYCMD ;КОПИРОВАНИЕ ТАБ В БЛОК
+ S l4=14
+COPY S li=$P(@(BSR_"(BST,ny,nx)"),"@",l4),do="S $P(^(j),""@"",l4)=li" D BLOK^%ZAPM.bs.BSF1 K l4,li Q
+ ;
+TXTLOG ;ТЕКСТ ОБ ОШИБКЕ
+ I ('$D(@BSR@(BST,"COL",ny,nx))!$P(@BSR@(BST,ny,nx),"@",13)="") D ErrMsg^%ZAPM.bs.BSXfun("СНАЧАЛО ВВЕДИТЕ ФОРМУЛУ ЛОГ.КОНТРОЛЯ") Q
+ S li=$G(@BSR@(BST,"COL",ny,nx,2)),ll="{}",ls="Редактируйте Текст об ошибке в Формуле Логического Контроля" D LE^%ZAPM.bs.BSTT I 'YES Q
+ I li="" K @BSR@(BST,"COL",ny,nx,2) D OkMsg^%ZAPM.bs.BSXfun("ТЕКСТ УДАЛЕН",1) Q
+ S @BSR@(BST,"COL",ny,nx,2)=li Q
+ ;
+ErrSay(ZE) ;ВОЗВРАТ ТЕКСТА ОШИБКИ ПО КОДУ
+ N S S S=$ZR I $ZV["Cach"||($ZV["IRIS") Q:$P(ZE,">")="" "" Q $G(^%ZAPM.bs.BSCGER($P(ZE,">")))_". $ZR="_S
+ Q $G(^%ZAPM.bs.BSGER(+$P(ZE,":",4)))_". "_$G(^%ZAPM.bs.BSGER(+$P(ZE,":",4),+$P(ZE,":",5)))_". $ZR="_S
+ ;
+ButtPan ;СОЗДАНИЕ ПАНЕЛИ С КНОПКАМИ
+ N i,j,M,P1,P2,GGG S ny=1,nx=1
+ F i=ny:1 Q:$$DataCell(BSR,BST,i,nx)=""  S M(0,i)=$$DataCell(BSR,BST,i,nx) I $$ColrCell(BSR,BST,i,nx)'="" S M(0,i,1)=$$ColrCell(BSR,BST,i,nx)
+ S j=0 F i=ny:1 Q:$$DataCell(BSR,BST,i,nx+1)=""  S j=j+1,M(1,i)=$$DataCell(BSR,BST,i,nx+1) D
+ .I j=1,$$ColrCell(BSR,BST,i,nx+1)'="" S P1=$$ColrCell(BSR,BST,i,nx+1)
+ .I j=2,$$ColrCell(BSR,BST,i,nx+1)'="" S P2=$$ColrCell(BSR,BST,i,nx+1)
+ .I $$DataCell(BSR,BST,i,nx+2)'="" S M(4,j)=$$DataCell(BSR,BST,i,nx+2) ;DATA
+ .I $$EntrCell(BSR,BST,i,nx+1)'="" S M(3,j)=$$EntrCell(BSR,BST,i,nx+1) ;DO
+ .I $$LogCell(BSR,BST,i,nx+1)'="" S M(2)=j                             ;PRED
+ .I $$DataCell(BSR,BST,i,nx+3)="GO" S M(5,j)=1                         ;GO
+ S M(1)=$G(P1)_"/"_$G(P2),M=$P(@BSR@(BST),"@",1)_"/"_$P(@BSR@(BST),"@",31)
+ S M(6,1)=$S($P(@BSR@(BST),"@",8)=1:0,1:$P(@BSR@(BST),"@",8)),M(6,2)=$S($P(@BSR@(BST),"@",9)=1:0,1:$P(@BSR@(BST),"@",9))
+ S M(0)=$P(@BSR@(BST),"@",31) I $D(@BSR@(BST,"BUT")) S GGG=$ZR,ls="Заменяем старую панель ?" D YES^%ZAPM.bs.BSF I 'YES Q
+ I '$D(GGG) S GGG=$ZR
+ D Copy("M",GGG) S $P(@BSR@(BST),"@",17)=8
+ Q
+DoButt ;ВХОД В ТАБЛИЦУ-ПАНЕЛЬ С КНОПКАМИ
+ I '$D(@BSR@(BST,"BUT"))
+ D EnterP($ZR) I d<0 W $$bel^%ZAPM.bs.BS3 G GO^%ZAPM.bs.BST
+ Q
+Go W $$bel^%ZAPM.bs.BS3 S R1=27 Q
+EnterP(GGG) N Bu,But
+ I '$D(@GGG) S d=-5 G Go
+ ;```I $G(%BS(14)) G TrmPanel
+ s Bu=$G(@GGG@(2),1) ;ПРЕДУСТАНОВКА
+EnteP S Mouse(1)=$G(Mouse),Mouse=2,d=$$TxtPanel^%ZAPM.bs.BSXfun1(GGG,$G(@GGG@(6,1),0),$G(@GGG@(6,2),0),Bu) S Mouse=$G(Mouse(1))
+ I d=-4 G Go
+ I d<0 G Go
+ I YES=0 S R1=27 Q
+ I $D(@GGG@(3,d)) S IYI=@$ZR D NEB^%ZAPM.bs.BSN I d'="",'$D(@GGG@(5,d)) S Bu=d G EnteP
+ S R1=13,d=$G(@GGG@(4,$S(d="":0,1:d)),d)
+ Q
+TrmPanel ;ЭМУЛЯЦИЯ ПАНЕЛИ С КНОПКАМИ ДЛЯ ТЕРМИНАЛОВ
+ N A,AA,T,TT,X,XXx,P,%B,ls,li,IYI
+ S AA="" F A=1:1 Q:'$D(@GGG@(0,A))  S AA=AA_$$Cut^%ZAPM.bs.BSF10($$Cut^%ZAPM.bs.BSF10(@GGG@(0,A),0),1)_" "
+ S TT=" " F T=1:1 Q:'$D(@GGG@(1,T))  S TT=TT_$TR($G(@GGG@(1,T))," ","_")_" "
+ S P=$G(@GGG@(2)),AA=" "_AA_" "
+TrmPa D MENU^%ZAPM.bs.BSF5(TT,$E(AA,1,79),P) I R1=0,R2=33 S d=-7 Q
+ I YES<1 S R1=27 Q
+ I '%B G Go
+ S XXx=%B I $D(@GGG@(3,XXx)) S IYI=@$ZR D NEB^%ZAPM.bs.BSN I XXx'="",'$D(@GGG@(5,XXx)) S P=XXx G TrmPa
+ S R1=13,d=$G(@GGG@(4,XXx),0)
+ Q
+DataCell(BSR,BST,i,j) Q $P($G(@BSR@(BST,i,j)),"@",15)
+ColrCell(BSR,BST,i,j) Q $P($G(@BSR@(BST,i,j)),"@",10)
+EntrCell(BSR,BST,i,j) Q $P($G(@BSR@(BST,i,j)),"@",14)
+LogCell(BSR,BST,i,j) Q $P($G(@BSR@(BST,i,j)),"@",13)
+ ;
+Copy(TRe1,TRe2,NOKILLER,S)  ;Копирование Узла в ...  S=1 - Выводить счет узлов
+ N j,jj,WA,WAI,R,r,Sec,TRe3,v ;NOKILLER=1   Неудалять Целевой узел
+                            ;NOKILLER=""  УДАЛЯТЬ
+                            ;!!!ЕСЛИ TRe1=Код СИМВОЛА ,КАКИМ ПЕРЕЗАПИСЫВАТЬ
+                            ;      УДАЛЯЕМЫЕ ДАННЫЕ В УЗЛЕ TRe2
+                            ;TRe2=Номер Устройства ВЫВОДА УЗЛОВ TRe1
+ S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSF8"
+ S R="]",r=2 ;4.;I $P($ZV,"Version ",2)'<4 S R="|",r=3
+ I TRe2?.N S TRe2=+TRe2
+ I TRe2'?.N,TRe1'?.N,$G(NOKILLER)="" K @TRe2
+ I $P($ZV,"Version ",2)'<4,TRe2'?.N,"1"'[$G(NOKILLER) M @TRe2=@TRe1 Q
+ I TRe2'?.N D
+ .I TRe1?.N S:$D(@TRe2)'["0" @TRe2=$TR($J("",$L(@TRe2))," ",$C(+TRe1)) Q
+ .S:$D(@TRe1)'["0" @TRe2=@TRe1
+ I TRe2?.N U TRe2 W:$D(@TRe1)'["0" TRe1,!,@TRe1,! Q:$ZC
+ I $G(S)'="" U 0 D Wait^%ZAPM.bs.BSXfun($S(S=1:"Копируем "_TRe1_" в "_TRe2_"...",1:S))
+ I TRe1?.N,TRe2'?.N S Sec=+TRe1,TRe1=TRe2
+ S (j,TRe3)=TRe1 I $E(TRe1,$L(TRe1))=")" S TRe1=$E(TRe1,1,$L(TRe1)-1)
+ S jj=$S(TRe1[R:$P(TRe1,R,r,99),1:$P(TRe1,"^",2,99))_$S(TRe1["(":",",1:"(")
+ I TRe2?.N D  Q
+ .F v=1:1 S j=$ZO(@j) Q:$S(j[R:$P(j,R,r,99),1:j)'[jj  U TRe2 W j,!,@j,! Q:$ZC  I '(v#50),$G(S)'="" U 0 X WA
+ I $E(TRe2,$L(TRe2))=")" S TRe2=$E(TRe2,1,$L(TRe2)-1)
+ I $G(Sec)'="" D  K:$G(NOKILLER)="" @TRe3 Q
+ .F  S j=$ZO(@j) Q:$S(j[R:$P(j,R,r,99),1:j)'[jj  S @j=$TR($J("",$L(@j))," ",$C(Sec)) I $G(S)'="" U 0 X WA
+ F  S j=$ZO(@j) Q:$S(j[R:$P(j,R,r,99),1:j)'[jj  S @(TRe2_$S(TRe2["(":",",1:"(")_$P(j,jj,2,9))=@j I $G(S)'="" U 0 X WA
+ Q
+ERFILE D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) Q
+VLY0 D R^%ZAPM.bs.BSF4(48,+$E($P(@(BSR_"(BST)"),"@",48),1)_"0") Q
+VLY1 D R^%ZAPM.bs.BSF4(48,+$E($P(@(BSR_"(BST)"),"@",48),1)_"1") Q
+VL1 D R^%ZAPM.bs.BSF4(48,"1"_+$E($P(@(BSR_"(BST)"),"@",48),2)) Q
+VL0 D R^%ZAPM.bs.BSF4(48,"0"_+$E($P(@(BSR_"(BST)"),"@",48),2)) Q
+UK0 D R^%ZAPM.bs.BSF4(43,"") Q
+UK1 D R^%ZAPM.bs.BSF4(43,1) Q
+KM0 D R^%ZAPM.bs.BSF4(49,"") Q
+KM1 D R^%ZAPM.bs.BSF4(49,1) Q
+TitPrO N li
+TitPr S li=$P(@BSR@(BST),"@",50)
+ S li=$$LineEdit^%ZAPM.bs.BSXfun(li,"ВВЕДИТЕ ТИТУЛ ДЛЯ ПЕЧАТИ (В ФОРМАТЕ:Y,X)") Q:YES<1  I li'="",li'?1N.N1","1N.N D ErrMsg^%ZAPM.bs.BSXfun("ОШИБКА ФОРМАТА") G TitPr
+ D R^%ZAPM.bs.BSF4(50,li) Q
+PK0 D R^%ZAPM.bs.BSF4(45,1) Q
+PK1 D R^%ZAPM.bs.BSF4(45,"") Q
+AF0 D R^%ZAPM.bs.BSF4(47,"") Q
+AF1 S li=$$LineEdit^%ZAPM.bs.BSXfun(2,"Проверять формат: 1= где ВЫЧ, 2= для СводокИсписков, 3=БД, 12= и то и то")
+ D R^%ZAPM.bs.BSF4(47,li) Q
+ ;
+UKA ;ДВИЖЕНИЕ УКАЗАТЕЛЯ
+Right I R3=67 S MR=0,M1=MX D WO^%ZAPM.bs.BSTM S MR=1 D  S MX=M1 Q
+ .F  S M1=$O(BX(M1)) Q:M1=""  I $P($G(@BSR@(BST,BY(MY),BX(M1))),"@",5)="" Q
+ .I M1="" F  S M1=$O(BX(M1)) Q:M1=MX  I $P($G(@BSR@(BST,BY(MY),BX(M1))),"@",5)="" Q
+Lift I R3=68 S MR=0,M1=MX D WO^%ZAPM.bs.BSTM S MR=1 D  S MX=M1 Q
+ .F  S M1=$O(BX(M1),-1) Q:M1=""  I $P($G(@BSR@(BST,BY(MY),BX(M1))),"@",5)="" Q
+ .I M1="" F  S M1=$O(BX(M1),-1) Q:M1=MX  I $P($G(@BSR@(BST,BY(MY),BX(M1))),"@",5)="" Q
+Down I R3=66 S MR=0,M1=MY D WO^%ZAPM.bs.BSTM S MR=1 D  S MY=M1 Q
+ .F  S M1=$O(BY(M1)) Q:M1=""  I $P($G(@BSR@(BST,BY(M1),BX(MX))),"@",5)="" Q
+ .I M1="" F  S M1=$O(BY(M1)) Q:M1=MY  I $P($G(@BSR@(BST,BY(M1),BX(MX))),"@",5)="" Q
+Up I R3=65 S M1=MY,MR=0 D WO^%ZAPM.bs.BSTM S MR=1 D  S MY=M1 Q
+ .F  S M1=$O(BY(M1),-1) Q:M1=""  I $P($G(@BSR@(BST,BY(M1),BX(MX))),"@",5)="" Q
+ .I M1="" F  S M1=$O(BY(M1),-1) Q:M1=MY  I $P($G(@BSR@(BST,BY(M1),BX(MX))),"@",5)="" Q
+ Q
+TA K MxS,MyS,MsS S mx=MX,my=MY D  I $D(MsS) S MX=mx,MY=my K MxS,MyS,MsS,mx,my,Na Q
+ .F  S MX=$O(BX(MX),Na) D:MX=""  Q:$D(MsS)  I $P($G(@(BSR_"(BST,"_BY(MY)_","_BX(MX)_")")),"@",5)="" S MyS=1 Q
+ ..S MX=$O(BX(""),Na),MY=$O(BY(MY),Na) D:MY=""  Q:$D(MsS)
+ ...I $D(MxS) S MsS=1 Q
+ ...S MxS=1,MY=$O(BY(""),Na)
+ I $D(MyS) K MxS,MyS,MsS,mx,my,Na Q
+ Q
+HO S MR=0,Na=1 D WO^%ZAPM.bs.BSTM,SET S MR=1 I $P($G(@BSR@(BST,BY(MY),BX(MX))),"@",5)="" Q
+ G TA
+EN S MR=0,Na=-1 D WO^%ZAPM.bs.BSTM,SET S MR=1 I $P($G(@BSR@(BST,BY(MY),BX(MX))),"@",5)="" Q
+ G TA
+SET S MX=$O(BX(""),Na),MY=$O(BY(""),Na) Q

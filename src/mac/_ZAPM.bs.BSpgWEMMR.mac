@@ -1,0 +1,104 @@
+ROUTINE %ZAPM.bs.BSpgWEMMR
+TKWEMMR	;PG&A,TK-IMAIL,1.1,SMTP RELAY;20AUG97  16:21 [ 12/18/97  10:29 AM ];14AUG2003  15:36;;12APR2000  15:28
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	;
+ENTRY S:'$D(TEST) $ZT="ERROR^%ZAPM.bs.BSpgWEMMR"
+ S TKWEM="^%ZAPM.bs.BSpgWEMM" I $G(^%ZAPM.bs.BSpgWEMM("DATABASE"))]"" X ^("DATABASE")
+	D INIT S HOST=$G(@TKWEM@("HOST")) Q:HOST=""
+ S A=$$GMT^%ZAPM.bs.BSpgWEBH($H,0),DTMA=$P(A,"GMT")_" "_$E($G(^%ZAPM.bs.BSpgWEBC("TimeZone"))*100+10000,2,4) S H1=-$H,H2=$P($H,",",2)
+	S HS="",RC="dns",TCP=""
+	F  S RCC=" ",HS=$O(@TKWEM@("RELAY",HS)) Q:HS=""  S H=HS D SERVER I H'="" D
+	. S RC="open" D OPEN I ST S RC="" F  S RC=$O(@TKWEM@("RELAY",HS,RC)) D:RC="" SENDE Q:RC=""  S RCC="" F  S RCC=$O(@TKWEM@("RELAY",HS,RC,RCC)) Q:RCC=""  D SEND
+	. I TCP]"" C TCP S TCP=""
+	H 2 I $O(@TKWEM@("RELAY",""))'="" D UNDEL
+	L  Q
+SERVER	L @TKWEM@("RELAY",HS):0 I '$T Q   
+	K MX I H?1.3N1"."1.3N1"."1.3N1"."1.3N S MX(1)=H Q
+ S A=$$NAME^%ZAPM.bs.BSpgWEMN(H,15) I $D(MX)>2 S H=1 Q
+ S A=$$NAME^%ZAPM.bs.BSpgWEMN(H,1) I A'="" S MX(1)=A,H=1 Q
+	S ER="NO HOST DNS",H="" G ERR
+OPEN	K @TKWEM@("MX"),AA M @TKWEM@("MX")=MX
+	S ST="" F IT=0:1:5 H:IT 5 F  S ST=$O(MX(ST)) Q:ST=""  S H=MX(ST) S:H[" " H=$P(H," ",2,9) I H?1.3N1"."1.3N1"."1.3N1"."1.3N D OPENP I  G OPENE
+	G ERR2
+OPENE	K AA S AA="HELO "_HOST D READ I +RS'=250 G ERR2 ; READ 2
+	; F  U TCP R RS:10 Q:RS=""
+	Q
+SEND	S A=$TR($G(@TKWEM@("RELAY",HS,RC,RCC)),UP,LC),AA="MAIL FROM:"_A D READ I +RS'=250 G ERR3 ; READ 3
+	I $G(@TKWEM@("RELAY",HS,RC,RCC,"recall"))["^" S recall=^("recall")
+	S AA="RCPT TO:<"_$TR(RC_"@"_HS,UP,LC)_">" D READ I +RS'=250 G ERR4
+	S AA="DATA" D READ I +RS'=354 G ERR3
+	S A="" F  S A=$O(@TKWEM@("RELAY",HS,RC,RCC,"DATA",A)) Q:A=""  U TCP W:^(A)="." "." W ^(A),CR
+	W !
+	; I lzc G ERR1
+	S AA="." D READ I +RS'=250 G ERR3
+	I $G(recall)]"" S ERR="" X recall
+	S @TKWEM@("RELAY OK",H1,H2,HS,RC_"-"_RCC)=H_";"_RS K @TKWEM@("RELAY",HS,RC,RCC) H 1
+	Q
+SENDE	W "QUIT",CR
+	C TCP Q
+	;
+ERR1	S ER="OPEN SOCKET ERROR - "_H_";"_lzc G ERR
+ERR2	S ER="CONNECTION ERROR - NO LOGIN - "_$G(H)_" : "_$G(RS) S ST="" G ERR
+ERR3	S ER="COMMAND ERROR - "_RS G ERR
+ERR4	S ER="UNIDENTIFIED RECIPIENT - "_RS G ERR
+	;
+OPENP S sport=$G(^%ZAPM.bs.BScSMTP(HS,"SMTP"),"25") //`````ЕСЛИ НОМЕР ПОЧТОВЫХ СЕРВЕРОВ НЕ СТАНДАРТНАЯ?
+ I $ZV["MSM" D
+	. S nt=($ZB($V(0,-4,2),#F,1)=10) O 56:(:$S(nt:8,1:0)+0):"TCP" U 56 S %dns=$KEY,TCP=56
+	. U 56:(%dns) W /SOCKET(H,sport) S %xddb=$KEY,lza=$ZA,lzb=$ZB,lzc=$ZC
+	I $ZV["M3" S TCP="TCP" D
+	. O "TCP":(H_"/"_sport) U "TCP" S lzc=$ZC
+	I $ZV["Cach"||($ZV["IRIS") D
+	.S TCP="|TCP|"_sport
+	.Open TCP:(H:sport):5 I  U TCP 
+	.S lzc=$ZC 
+	I 'lzc S RN=0 S AA="" D READ I +RS=220 Q  ; READ 1
+	Q
+READ	S TM=$S($G(IT)<3:30,1:300) U TCP S RN=RN+1 W:AA]"" AA,CR,! S RS=AA D RREAD
+READ1	R RS:TM D RREAD I $ZC=1 R RSA:TM S RS=RS_RSA D RREAD I $ZC S RS="$ZC ERROR"_$ZC Q
+	I RS'[$C(10) R RSA:60 S RS=RS_RSA D RREAD
+READ2	I RS?3N1"-".E,RS'[$C(10) S RN=RN+.1 G READ1
+	I RS?3N1"-".E S RS=$P(RS,$C(10),2,99) G READ2
+	Q
+RREAD	I $L(HS)&$L(RC)&$L(RCC) S:$D(@TKWEM@("RELAY",HS,RC,RCC)) Rd=$G(^(RCC,"READ"))+1,^("READ")=Rd,^("READ",Rd)="JOB: "_$J_" "_RS
+	Q
+	;
+INIT	S LC="abcdefghijklmnopqrstuvwxyz",UP="ABCDEFGHIJKLMNOPQRSTUVWXYZ",CR=$C(13,10) Q
+	;
+ERROR	S @TKWEM@("RELAY ERR",H1,H2)=$ZE
+	I $D(^(H2,1))'=3 F J="HS","RC","H" S ^(J)=$G(@J)
+	Q
+ERR	I $G(RC)]"" D
+	. M @TKWEM@("UNDELIV",H1,H2,HS,RC,RCC)=@TKWEM@("RELAY",HS,RC,RCC) K:1 @TKWEM@("RELAY",HS,RC,RCC) S @TKWEM@("UNDELIV",H1,H2,HS,RC,RCC,"ERROR")=ER_" read #"_$G(RN)
+	. I $g(recall)]"" S ERR=ER X recall
+	Q
+	;
+	; Received: from GHI.ARPA by JKL.ARPA ; 27 Oct 81 15:27:39 PST
+	;
+UNDEL	S (RETR,D,E,F)=""
+	F  S D=$O(@TKWEM@("RELAY",D)) Q:D=""  F  S E=$O(@TKWEM@("RELAY",D,E)) Q:E=""  F  S F=$O(@TKWEM@("RELAY",D,E,F)) Q:F=""  S B=^(F),SZ=^(F,"DATA"),^("RETRY")=$G(^("RETRY"))+1,RETR=RETR+1 I ^("RETRY")>3 S RETR=RETR-1 D UNDEL1
+ I RETR L +RETRY:0 I  L -RETRY J RETRY^%ZAPM.bs.BSpgWEMMR
+	Q
+UNDEL1	Q
+	I $G(@TKWEM@("RELAY",D,E,F,"recall"))["^" S recall=^("recall"),ERR="Undelivered" X recall  K @TKWEM@("RELAY",D,E,F) Q
+	L +MCONNECT S (CON,@TKWEM@("CONNECT"))=$G(@TKWEM@("CONNECT"))+1 L -MCONNECT
+	S @TKWEM@("IN",-CON,1)="HELO pattersongray.com",^(2)="MAIL FROM: MAIL SERVER",^(3)="RCPT TO:"_B,^(4)="DATA",^(5)="QUIT"
+	S ^(4,"DATA",1)="From: Mail Administrator<postmaster@pattersongray.com>",^(2)="Reply-To: Mail Administrator<postmaster@pattersongray.com>",^(3)="Subject: Mail System Error - Returned Mail"
+	S ^(4)="Date: "_DTMA,^(5)="Message-ID: <"_CON_">",^(6)="MIME-Version: 1.0"
+	S ^(7)="Content-Type: text/plain",^(8)="",^(9)="This Message was undeliverable due to the address",^(10)="",^(11)="The following destination addresses were incorrect or unreachable:",^(12)="Correct the addresses and re-mail the message.  If you feel the"
+	S ^(13)="address is correct - try resending it.",^(14)="",^(15)="     "_E_"@"_D,^(20)=""
+	S C=CON*100+5,B=$TR($P(B,"@"),LC_"<>",UP) S:$E(B)=" " B=$E(B,2,99)
+	F J=1:1:20 S SZ=SZ+$L($G(^(J)))
+	S A="" F J=21:1 S A=$O(@TKWEM@("RELAY",D,E,F,"DATA",A)) Q:A=""  S @TKWEM@("IN",-CON,4,"DATA",J)=@TKWEM@("RELAY",D,E,F,"DATA",A)
+	M @TKWEM@("MB",B,C)=@TKWEM@("IN",-CON,4,"DATA")
+	S @TKWEM@("MB",B,C)=SZ K @TKWEM@("RELAY",D,E,F) Q
+	;
+SENDIN	; SEND PARTICULAR "IN" FILE TO "MB"
+	R "which IN file-",IN,!,"store under what name-",B,!
+	S C=$P($H,",",2),E=$G(@TKWEM@("IN",-IN,4,"DATA")) I 'E W "not found" Q
+	S @TKWEM@("MB",B,C)=E M @TKWEM@("MB",B,C)=@TKWEM@("IN",-IN,4,"DATA")
+	Q
+	;
+RETRY L +RETRY:0 I  H 15*60 G ^%ZAPM.bs.BSpgWEMMR
+	Q

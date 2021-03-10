@@ -1,0 +1,153 @@
+ROUTINE %ZAPM.bs.BSpgWEBD1
+TKWEBD1	;PG&A;TK-WEB;1.1;HTML EDITOR;08OCT99  15:28
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+P	F D=1:1 S A=$T(DATA+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	S O=$G(@v@("open_files_single"))
+ S P="" F  S P=$O(^%ZAPM.bs.BSpgWEBF(98,DIR,P)) Q:P=""  W:DIR_"/"_P=O "<option selected>",DIR,"/",P W:DIR_"/"_P'=O "<option>",DIR,"/",P
+	W "</select><input type=hidden name='Loadfile' value='",O,"'>"
+	F D=1:1 S A=$T(DATA2+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+ S JM="" F  S JM=$O(^%ZAPM.bs.BSpgWEBF(98,JM)) Q:JM=""  W:JM=DIR "<option selected>",DIR W:JM'=DIR "<option>",JM
+	W "</select><input type=hidden name='dirfile' value='",DIR,"'>"
+	F D=1:1 S A=$T(DATA6+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+P1	I $g(TB) F D=1:1 S A=$T(DATA3+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	F D=1:1 S A=$T(DATA4+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+ I $G(@v@("submit"))="Open" I O'="" S A=0,D=$P(O,"/"),P=$P(O,"/",2) F  S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",D,P,A)) Q:A=""  S J=^(A) D P3
+	I $G(@v@("submit"))'="Open" I $D(@v@("TEXT")) W @v@("TEXT"),! S D="" F  S D=$O(@v@("TEXT",D)) Q:D=""  W @v@("TEXT",D),!
+	F D=1:1 S A=$T(DATA5+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	Q
+P3	S JJ=$TR(J,"texar","TEXAR") I JJ'["</TEXTAREA>" W J Q
+	S A=$F(JJ,"</TEXTAREA>") S $E(J,A-10)="\" G P3
+DATA	;
+	;
+	;<html>
+	;<title>HTML Editor</title>
+	;<body bgcolor="#356EA2">
+	;<center>
+	;<table bgcolor=#bbbbbb cellpadding=0 cellspacing=0 border=3 bordercolor=003366 bordercolorlight=558ec2 bordercolordark=002244><tr><td>
+	;<form method="post" action="in^tkwebd" name="formsql">
+	;<script language="JavaScript">
+	;<!--
+	;undo=""
+	;function jm(a,b) {
+	;undo=a.TEXT.value
+	;a.TEXT.value=a.TEXT.value+"<"+b+">"+"\r\n"
+	;}
+	;function jmp(a,b,c) {
+	;x=prompt(c,"");
+	;if (x==null)  {
+	;x="" }
+	;else
+	;undo=a.TEXT.value
+	;a.TEXT.value=a.TEXT.value+"<"+b+">"+x+"</"+b+">"+"\r\n"
+	;}
+	;function jml(a,b)  {
+	;y=prompt('Type the URL of the page to be linked to.','HTTP://')
+	;if (y==null)  {
+	;y="" }
+	;else {
+	;z=prompt('Type the TEXT for the link.','')
+	;if (z==null)  {
+	;z="" }
+	;else {
+	;undo=a.TEXT.value
+	;a.TEXT.value=a.TEXT.value+"<"+b+y+">"+z+"</A>"+"\r\n" }
+	;}}
+	;function previewer(p)  {
+	;if (navigator.appName == "Netscape") {
+	; alert("The PREVIEW feature does not work well with Netscape.")
+	; }
+	;msgWindow=window.open("","","status, resizable, scrollbars, menubar, width=800, height=600, left=100, top=100, screenX=100, screenY=100")
+	;msgWindow.document.open()
+	;msgWindow.document.write(p.TEXT.value)
+	;msgWindow.document.close()
+	;}
+	;function savas(a) {
+	;      x=prompt("File name: (dir/page)","");
+	;      if (x==null||x=="") {
+	;          x="" 
+	;      }
+	;      else {
+	;          a.saveas.value=x;
+	;          a.submit()
+	;      }
+	;}
+	;function fundo(a) {
+	;if (undo != "") {
+	;a.TEXT.value=undo
+	;}}
+	;//-->
+	;</script>
+	;<input type=hidden value="loadfile">
+	;<table cellspacing=4 cellpadding=2 border=0 height=500 align=center>
+	;<center><tr><td bgcolor=white><font size=5 color=000099
+	; face="Lucida Console",arial>
+	;<b>&nbsp;&nbsp;HTML Editor</b></td><td align=right>
+	;<input type="submit" name="submit" value="Toolbars">
+	;<input type="button" name="preview" value="Preview"
+	; onClick="previewer(this.form)">
+	;<input type="button" name="reset" value="Clear"
+	; onclick="this.form.TEXT.value=''">
+	;<input type="button" value="Undo"
+	; onclick="fundo(this.form)">
+	;<input type="submit" name="submit" value="Save">
+	;<input type=button value="Save As" onclick="savas(this.form)">
+	;<input type=hidden name="saveas" value="">
+	;</td></tr><tr><td valign=top align=left colspan=2>
+	;<font type=helvetica,arial size=3 color=black>
+	;<b>Page:</b>
+	;<select name="open_files_single" SIZE=1>
+	;;
+DATA2	;
+	;&nbsp;&nbsp;<input type="submit" name="submit" value="Open"
+	; onClick="this.form.TEXT.value=''">&nbsp; &nbsp; <b>Dir:</b>
+	;<select name="directories" size=1>
+	;;
+DATA6	;
+	;&nbsp;&nbsp;<input type="submit" name="submit" value="Open Dir"
+	; onClick="this.form.TEXT.value=''">
+	;</td></tr>
+	;;
+DATA3	;
+	;<tr><td colspan=2>
+	;<input type="hidden" name="Toolbars" value="1">
+	;<input type="button" value="Start" onClick="jm(this.form,'HTML')">
+	;<input type="button" value="End" onClick="jm(this.form,'/HTML','')">
+	;<input type="button" value="Start Table"
+	; onClick="jm(this.form,'TABLE')">
+	;<input type="button" value="Start Row"
+	; onClick="jm(this.form,'TR')">
+	;<input type="button" value="Start Col"
+	; onClick="jm(this.form,'TD')">
+	;<input type="button" value="End Col"
+	; onClick="jm(this.form,'/TD')">
+	;<input type="button" value="End Row"
+	; onClick="jm(this.form,'/TR')">
+	;<input type="button" value="End Table"
+	; onClick="jm(this.form,'/TABLE')">
+	;</td></tr><tr><td colspan=2>
+	;<input type="button" value="Header"
+	; onClick="jmp(this.form,'H1','Type text for HEADER.')">
+	;<input type="button" value=" Link "
+	; onClick="jml(this.form,'A HREF=')">
+	;<input type="button" value="New Paragraph"
+	; onClick="jm(this.form,'P')">
+	;<input type="button" value="Line Break"
+	; onClick="jm(this.form,'BR')">
+	;<input type="button" value="Italic"
+	; onClick="jmp(this.form,'I','Type text to be ITALICIZED.')">
+	;<input type="button" value="Underline"
+	; onClick="jmp(this.form,'U','Type text to be UNDERLINED.')">
+	;<input type="button" value="Bold"
+	; onClick="jmp(this.form,'B','Type text to be BOLDED.')">
+	;<input type="button" value="Preformatted"
+	; onClick="jmp(this.form,'PRE','Type text to be PREFORMATTED.')">
+	;</td></tr>
+	;;
+DATA4	;
+	;<tr><td colspan=2>
+	;<textarea name="TEXT" rows="25" cols="80" wrap=OFF>
+	;;
+DATA5	;
+	;</textarea></td></tr></table></form></td></tr></table></body></html>
+	;;

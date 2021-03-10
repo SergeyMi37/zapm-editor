@@ -1,0 +1,311 @@
+ROUTINE %ZAPM.bs.BSCtemplate3
+%BSCtemplate3 ; Портал B4I ; 14:50 12.01.2003
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ Q
+Gen(rn)
+ i rn="" q
+ i $zconvert($p(rn,".",$l(rn,".")),"L")'="cls" q
+ w "<hr> " s clna=$p(rn,".",1,$l(rn,".")-1) i $e(clna,$l(clna))?1n s prof=$e(clna,$l(clna))
+ w "<INPUT NAME='NewTop' TYPE=Submit TITLE='Генерить страницу для экземплятов класса ' VALUE='Генерить!'>"
+ W "<input type=text name=Clname value='"_$p(clna,"Edit")_"' title='введите имя класса без расширения :NamePacket.NameClass для которого будем генерить пользовательский интерфейс' size=50>"
+ W "<input type=text name='Profile3' value='"_$g(prof)_"' title='введите номер профиля (шестое поле по ; в коментариях полей класса' size=2>"
+ w "<select name='ModeSel' >"
+ w "<option value='1'>Режим редактирования с фильтрами на колонки</option>",!
+ w "<option value='2'>Режим редактирования без фильтра, но с параметром</option>",!
+ w "<option value='3'>Режим просмотра</option>",!
+ w "</select>",!
+ w "<hr>"
+ w "<INPUT NAME='NewDef' TYPE=Submit TITLE='Генерить описание класса из CSV файла' VALUE='Генерить из CSV'>"
+ W "<input type=file name=Cfile value='"_$p(rn,".",1,$l(rn,".")-1)_"' title='введите имя файла'>"
+ q
+fn(fn) ;генерация класса из текстового файла
+ n ccn,m,i,ii,da
+ s ccn=$p(RN,".",1,$l(RN,".")-1)
+ w "///  Это описание класса автоматически сгенерено из файл "_fn,!
+ w " Class "_ccn_" Extends %Persistent",!
+ w "{",!!
+ n fT1,fT2 D File2Arr^%ZAPM.bs.BSCEXE(fn,.fT1),STR2MAS^%ZAPM.bs.BSCmail(.fT1,.fT2,$C(13,10)) K fT1
+ S i="" F  S i=$O(fT2(i)) Q:i=""  I $G(fT2(i))'="" s m=$G(fT2(i)) q
+ F i=1:1 q:$p(m,",",i,i+1)=""  S ii=$tr($p(m,",",i),$c(34)) d
+ .w !," /// "_ii_";"_i_";1;"_$s(ii["DATE":"date",1:"")_";" i ii["DATE" s da(i)=""
+ .w !,"Property "_$tr(ii,"_","p")_" As %String(MAXLEN = 1000);",!
+ 
+ w !!,"/// Импорт данных из текстового файла "_fn
+ w !,"/// W ##CLASS("_ccn_").Import("""")"
+ w !,"ClassMethod Import(fn as %String) As %String"
+ w !,"{"
+ w !," if $g(fn)="""" s fn="""_fn_""""
+ w !," s sc=##class("_ccn_").%KillExtent()"
+ w !," i 'sc w sc q"
+ w !," D File2Arr^%ZAPM.bs.BSCEXE(fn,.fT1),STR2MAS^%ZAPM.bs.BSCmail(.fT1,.fT2,$C(13,10)) K fT1 s S1=$$s1^%ZAPM.bs.BSre(0),S2=$$s2^%ZAPM.bs.BSre(0)"
+ w !," S i="""" F i2=1:1 S i=$O(fT2(i)) Q:i=""""  I i2>1 s m=$G(fT2(i)) d  w i2_"" "" "
+ w !," .s ii="""" F i1=1:1 q:$p(m,""@"",i1,i1+1)=""""  s da=$tr($p(m,""@"",i1),S1,S2) d  S ii=ii_da_"","" "
+ S i="" F  S i=$O(da(i)) Q:i=""  w !," ..i i1="_i_" s da=$c(34)_$tr($p(da,""."",3),$c(34))_""-""_$p(da,""."",2)_""-""_$tr($p(da,""."",1),$c(34))_$c(34)" 
+ w !," ..s da=$c(34)_$tr($e(da,2,$l(da)-1),$c(34),""`"")_$c(34)" 
+ w !," .s ii=$e(ii,1,$l(ii)-1)"
+ w !," .x ""i ##class("_ccn_"Edit).Add(""_ii_"")"" "
+ w !," q 1"
+ w !,"}",!
+ g GenEnd 
+ 
+rn(cn,Mode,proFile) ;генерация класса редактирования по его свойствам
+ n pr,i,ccn
+ s ccn=$p(RN,".",1,$l(RN,".")-1)
+ d lp^%ZAPM.bs.BSCp2(cn,.pr)
+ i $O(pr(""))=""  w "Нет свойств!" q
+ w "///Эта %Zen страница предназначена для редактирования класса :"_cn_" на основе",!
+ w "/// класса Template.TableEditor                                        (c) D.Krytenev",!
+ w "///Она автоматически сгенерена программой %BSCtemiate3 шаблона BsLIB   (c) S.Mikhaylenko",!
+ w !
+ w "///коментарии у класса "_cn_" используются следующим образом:",!
+  w "/// ////Текст коментария;K;O",!
+  w "///Текст коментария применяем как заголовок таблицы",!
+  w "///K - кол-во строк выводимых на страницу",!
+  w "///O - имя поля по которому упорядочиваем строки",!
+ w !
+ w "///коментарии у свойств класса "_cn_" используются следующим образом:",!
+ w "/// ////Текст коментария;x;f;date;w;(1,2,7)",!
+ w "///    1   Текст коментария - заголовок колонки и коментарий в поле редактирования",!
+ w "///    2   x - код сортировки поля при формирования таблицы просмотра",!
+ w "///    3   f - нужен ли фильтр для этого поля",!
+ w "///    4   date - свойство имеет тип %String, но там лежит дата в формате ГГГГММДД",!
+ w "///    5   w - значение параметра width при формировании панели навигации",!
+ w "///    6   ("_proF_") - номера профилей по которым программа будет включать это поле при формировании панели навигации. Если пусто, то включается во все профили",!
+ w "///",!
+ w " Class "_ccn_" Extends Template.TableEditor",!
+ w "{",!!
+ 
+ w "///Параметр - заголовок таблицы",!
+ w "Parameter PAGENAME = """_$p(pr,";",1)_""";",!!
+ 
+ w "/// Свойство - заоловок таблицы",!
+ w "Property PageTitle As %ZEN.Datatype.string [ InitialExpression = {..#PAGENAME} ];",!!
+ 
+ w "/// Свойство - панель таблицы",!
+ w "Property TablePaneId As %ZEN.Datatype.string [ InitialExpression = ""table"", ReadOnly ];",!!
+ 
+ i Mode=2 {
+ w " /// cgi-переменная CgiPar2 - должна быть в URL",!
+ w "Property CgiPar1 As %String(ZENEXPRESSION = 1, ZENURL = ""CgiPar2"") [ InitialExpression = ""table"" ];",!!
+ }
+ 
+ s PageSise=$p(pr,";",2) //количество строк в странице
+ i PageSise="" s PageSise=5
+ 
+ w " /// переопределение таблицы",!
+ w "XData tablePane [ XMLNamespace = ""http://www.intersystems.com/zen"" ]",!
+ w "{",!
+ w "<pane xmlns=""http://www.intersystems.com/zen"">",!
+ w "<tablePane id=""table""",!
+ 
+  //упорядочивание по умолчанию
+ s order="" i $p(pr,";",3)'="" s order=" orderByClause="""_$p(pr,";",3)_""" "
+ 	 
+ 	 w "onupdate=""zenPage.getTableHeight()"" ",!
+ i Mode=3 {
+	 w "bodyHeight=""100%"" ",!
+	 w "autoExecute=""true"" ",!
+	 w "width=""100%"" ",!
+	 w order,!
+	 w "useSnapshot=""true"" ",!
+	 w "maxRows="""" ",!
+	 w "pageSize="""_PageSise_""" ",!
+	 w "tableName="""_cn_""" ",!
+	 w "valueColumn=""ID"" ",!
+	 w "showQuery=""false"" ",!
+	 w "showZebra=""true"" ",!
+	 w "useKeys=""false"" ",!
+	 w "fixedHeaders=""true"" ",!
+	 w "headerLayout=""headersOnTop"" ",!
+	 w "nowrap=""false"" ",!
+ 
+  }
+  i Mode'=3 {  i Mode=2 s sq="sql=""select Id As ID" d
+ 	.S i="" F  S i=$O(pr(i)) Q:i=""   s sq=sq_","_pr(i) 
+ 	.s sq=sq_" from "_cn_" where CgiPar1 = ?"" " w sq,!
+ 	i Mode=1 w "tableName="""_cn_""" ",!
+ 	w "dataSource=""columns"" ",!
+	 w order,!
+ 	w "valueColumn=""ID"" ",!
+ 	w "showRowNumbers=""0""",!
+ 	w "showRowSelector=""0""",!
+ 	w "useSnapshot=""true""",!
+ 	w "nowrap=""false""",!
+ 	w "maxRows="""" ",!
+ 	w "fixedHeaders=""true"" ",!
+ 	w "autoExecute=""true"" ",!
+ 	w "pageSize="""_PageSise_""" ",!
+ 	w "onselectrow=""zenPage.rowSelected();"" ",!
+  }
+ 
+ w ">",!
+ w "<column colName=""ID"" hidden=""true""/>",!
+ S i="" F  S i=$O(pr(i)) Q:i=""  i $g(pr(i,"prof"))[proFile w "<column colName="""_pr(i)_""" cellTitle="""_pr(i)_""" " d  w " header="""_$g(pr(i,"desc"),"?"_pr(i))_"""/>",!
+ .i $g(pr(i,"w"))'="" w "width="""_pr(i,"w")_""""
+ .i "13"[Mode,$g(pr(i,"filt"))'="" d
+ ..s ii="контекст" i pr(i,"type")="%Date"!($g(pr(i,"spec"))="date") w " filterType=""date"" " s ii="дату"
+ ..e  w " filterType=""text"" "
+ ..w " filterTitle=""введите "_ii_" фильтра"" "
+ i Mode=2 w "<parameter id=""p1"" value=""#(%page.CgiPar1)#"" />",!
+ w "</tablePane>",!
+ w "<tableNavigator tablePaneId=""table""/>",!
+ w "</pane>",!
+ w "}",!
+ 
+ 
+ 
+ 
+ w "/// переопределение формы редактирования полей",!
+ w "XData formPane [ XMLNamespace = ""http://www.intersystems.com/zen"" ]",!
+ w "{",!
+ w "<pane xmlns=""http://www.intersystems.com/zen"">",!
+  i Mode=3 g Gen2
+ w "<!--<vgroup >-->",!
+  S i="" F  S i=$O(pr(i)) Q:i=""  i $g(pr(i,"prof"))[proFile  d
+ .i pr(i,"type")="%Date"!($g(pr(i,"spec"))="date") w "<dateText id="""_pr(i)_""" label="""_$g(pr(i,"desc"),"?"_pr(i))_""" size=""10"" />",! q
+ .w "<text id="""_pr(i)_""" label="""_$g(pr(i,"desc"),"?"_pr(i))_""" size=""140"" />",! q
+ w "<!--</vgroup>-->",!
+Gen2 w "</pane>",!
+ w "}",!
+  i Mode=3 d ModeView g GenEnd
+  
+  
+  
+ w "/// заполнение полей формы редактирования записи  - должно быть переопределено в подклассах",!
+ w "/// Id - ид объекта",!
+ w "/// Form - форма редактирования полей",!
+ w "ClassMethod openObject(Id, Form As %ZEN.Component.form) As %Status [ ZenMethod ]",!
+ w "{",!
+ w "	s cur = ##class("_cn_").%OpenId(Id)",!
+ S i="" F  S i=$O(pr(i)) Q:i=""  i $g(pr(i,"prof"))[proFile  d
+ .i pr(i,"type")="%Date" w "	d Form.%page.%SetValueById("""_pr(i)_""",$zdt(cur."_pr(i)_",3))",! q
+ .w "	d Form.%page.%SetValueById("""_pr(i)_""",cur."_pr(i)_")",!
+ w "	q $$$OK",!
+ w "}",!
+ 
+ 
+ 
+ 
+ w "/// добавление/редактирование записи(сервер) - должно быть переопределено в подклассах",!
+ w "ClassMethod addRowS(Id = 0, Form As %ZEN.Component.form) As %String [ ZenMethod ]",!
+ w "{",!
+ w "	i 'Id s cur = ##class("_cn_").%New()",!
+ w "	else  s cur = ##class("_cn_").%OpenId(Id)",!
+ w "	 //запись		",!
+ w "	//	s cur.XXX = Form.%page.CgiPar1",!
+ S i="" F  S i=$O(pr(i)) Q:i=""  i $g(pr(i,"prof"))[proFile  d
+ .I pr(i,"type")="%Date" w "		s cur."_pr(i)_" = $zdh(Form.%page.%GetValueById("""_pr(i)_"""),3)",! q
+ .w "		s cur."_pr(i)_" = Form.%page.%GetValueById("""_pr(i)_""")",!
+ w "		s sc = cur.%Save()",!
+	w !	
+ w "	i 'sc ",!
+ w "	{ ",!
+ w "		s mes = $System.Status.GetErrorText(sc)",!
+ w "			&js<alert('#(""Ошибка занесения информации! :""_$zcvt(mes,""O"",""JS""))#');>",!
+ w "		s Id = 0",!
+ w "	} ",!
+ w "	else ",!
+ w "	{",!
+ w "		s Id = cur.%Id()",!
+ w "	}",!
+ w "	q Id",!
+ w "}",!
+ w !
+ w "/// удаление записи(сервер) - должно быть переопределено в подклассах",!
+ w "ClassMethod delRowS(Id) As %Boolean [ ZenMethod ]",!
+ w "{",!
+ w "	s sc = ##class("_cn_").%DeleteId(Id)",!
+ w "	i 'sc ",!
+ w "	{ ",!
+ w "   			s mes = $tr($System.Status.GetErrorText(sc),""'"",""`"")",!
+ w " 			&js<alert('#(""Ошибка занесения информации! :""_$zcvt(mes,""O"",""JS""))#');>",!
+ w " 			q 0",!
+ w " 	}",!
+ w "	q 1",!
+ w "}",!!
+ //
+ w "///В этом методе присваиваем значения по умолчанию",!
+ w "Method %OnAfterCreatePage() As %Status",!
+ w "{",!
+ S i="" F  S i=$O(pr(i)) Q:i=""  i $g(pr(i,"prof"))[proFile  d
+ .w "	d ..%SetValueById("""_pr(i)_""","""")",!
+ w "	Quit $$$OK",!
+ w "}",!!
+ //
+ 
+   d Add(""),Add("RecId") 
+ 
+ //
+ 
+ w "/// показать статус или ошибку",!
+ w "ClassMethod ShowStatus(s As %String, sc As %String) As %String",!
+ w "{",! 
+ w " W s,+sc,! ",!
+ w " I $$$ISERR(sc) D",!
+ w " .D DecomposeStatus^%apiOBJ(sc,.err)",!
+ w " .F i=1:1:err W err(i),!",!
+ w " Q sc",!
+ w "}",!
+GenEnd 
+ ;w "///Это конец, а где же пистолет? (c) M.Shtirlich",!
+ w "}",!!!
+ q
+Add(m)
+ w " /// Добавить запись в базу данных"  i m'="" w " и возвратить новый ID в переменной newId"
+ w ".",!
+ w " ///Пример > w ##class("_ccn_").Add"_m_"(" i m'="" w ".newId,"
+ s sq=""
+ S i="" F  S i=$O(pr(i)) Q:i=""   d  s sq=sq_","
+ .i pr(i,"type")="%Date" s sq=sq_"+$h" q
+ .s sq=sq_""""_pr(i)_"2""" 
+ s sq=$e(sq,1,$l(sq)-1) w sq_")",!
+ 
+ s sq="ClassMethod Add"_m_"(" i m'="" s sq=sq_"newID As %String,"
+ S i="" F  S i=$O(pr(i)) Q:i=""   d  s sq=sq_","
+ .s sq=sq_pr(i)_" As "
+ .i pr(i,"type")="%Date" s sq=sq_"%Date"
+ .e  s sq=sq_"%String = """" "
+ s sq=$e(sq,1,$l(sq)-1)
+ w sq_") As %String",!
+ w "{",!
+ w " S o=##class("_cn_").%New()",!
+ S i="" F  S i=$O(pr(i)) Q:i=""   d 
+ .w " s o."_pr(i)_"="_pr(i),!
+ w " S sc=o.%Save()",!
+ i m'="" w " s newID=o.%Id()",!
+ w " i sc'=1 d ..ShowStatus(""Ошибка :"",sc)",!
+ w " D o.%Close()",!
+ w " q sc",!
+ w "}",!
+ 
+ q
+ModeView 
+ w " /// This Style block contains page-specific CSS style definitions.",!
+ w "XData Style",!
+ w "{",!
+ w "<style type='text/css'>",!
+ 
+ w "<!-- стиль для таблицы, цепляется по ид компонента -->",!
+ w "#table {",!
+ w "	height: 100%;",!
+ w "	width: 900px;",!
+ w "	overflow: auto;",!
+ w "	border: 1px solid darkblue;",!
+ w "}",!
+ w "</style>",!
+ w "}",!
+ 
+ w "XData mainPane [ XMLNamespace = ""http://www.intersystems.com/zen"" ]",!
+ w "{",!
+ w "<pane xmlns=""http://www.intersystems.com/zen"">",!
+ 
+ w "<vgroup width=""100%"" height=""100%"">",!
+ w "<pane paneName=""tablePane"" width=""100%""/>",!
+ w "</vgroup>",!
+ 
+ w "</pane>",!
+ w "}",!
+ 
+ q

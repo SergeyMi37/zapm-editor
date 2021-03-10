@@ -1,0 +1,174 @@
+ROUTINE %ZAPM.bs.BSzZ
+%BSzZ ;Пакетные запросы  (А.Тимофеев) ; 14:56   20.04.2000
+ G LOAD1
+LOAD(%1,%2) ;Выполнение с параметрами (%1- имя списка, %2'="" - выполнение без загрузки запросов на ключи !)
+LOAD1 N i,i1,i2,i3,i4,i5,C1,STOP,unL,NaMePack,NaMPack,ListPack ;Загрузка условий
+ S %zT=$ZT,$ZT="ERROR",PACET=1
+ I $G(%1)'="" S i=%1,STOP="" S:$G(%2)'="" unL=1 G 0
+ S i=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(Sz1)","1#2#2",2)
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4),tabYES=0
+ I tab=27 Q
+0 I $E($P(i,"~"))="S" D PPACK($P(i,"~")) Q
+00 S (NaMePack,na)=$P(i,"~") I na="" D ErrMsg^%ZAPM.bs.BSXfun("НЕ ВЫБРАН ЗАПРОС !!") S $ZT=%zT Q
+ S usl=$E(na,1)
+ N sraV
+ ;выходные переменные: C,G1(C),G2(C),nf,na,uslL,Per,tabYES
+ D BUFF(usl)
+ K @mas5
+1 ;Загрузка общих условий
+ I '$D(@mas0@(na,"4,4")) D ErrMsg^%ZAPM.bs.BSXfun("НЕ УКАЗАНЫ АНАЛИТИЧЕСКИЕ ФОРМЫ !!") S $ZT=%zT Q
+ I '$D(^("6,4")) D ErrMsg^%ZAPM.bs.BSXfun("НЕ УКАЗАН ЗАПРОС !!") S $ZT=%zT Q
+ S zp=$G(^("6,4")),na1=$G(^("4,4")),bok=$G(^("8,4")),start=$G(^("10,4"))
+ S sraV=$G(^("SraV"))
+ I '$D(@mas1@(zp)) D ErrMsg^%ZAPM.bs.BSXfun("ЗАПРОСА "_zp_" НЕТ") S $ZT=%zT Q
+ K @mas3 S @mas3="Буфер насчета"
+ 
+2 ;Загрузка запросов в буфер
+ S @mas3@("zp")="Условия на ключи БД"
+ F i1=0:1:11 S i2="k"_i1,i3=i1+2 D
+ .F i4=2:1:7 S i5=i3_","_i4 I $G(@mas1@(zp,"O",i5))'="" S @mas3@("zp",i2,i4)=$G(@mas1@(zp,"O",i5))
+ S i1="",Per="" F  S i1=$O(@mas3@("zp",i1)) Q:i1=""  D
+ .I $G(@mas3@("zp",i1,2))="Y" S Per="Y" Q
+ G:$G(unL)=1 41    ;Без загрузки запросов (!!!)
+ K C,G1,G2
+ 
+3 ;Загрузка периодов сравнения
+ S STOP="" I Per="" G 4
+ I $D(PackP),$D(@PackP@(1)),$$PACKREST(PackP) G 4 ;ГЛОБАЛЬНОЕ СРАВНЕНИЕ
+ I $G(sraV)'="",$$SRAV(sraV) G 4 ;ЛОКАЛЬНОЕ СРАВНЕНИЕ
+ S i=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SVz0)","4#1#20",2)
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S $ZT=%zT Q
+ S C=$P(i,"~",2) I C="" D ErrMsg^%ZAPM.bs.BSXfun("ОТКАЗ ОТ ЗАПРОСА !!") S $ZT=%zT Q
+ F C1=1:1:C S G1(C1)=$P(i,"~",(2*C1+1)),G2(C1)=$P(i,"~",(2*C1+2))
+ I G1(C)=""!(G2(C)="") K G1,G2
+ I $D(PackP),'$D(@PackP@(1)) D PACKSAVE ;```MSW
+4 ;Загрузка запросов на ключи
+ S (i,STOP)="" F  S i=$O(@mas3@("zp",i)) Q:i=""  S i1=$E(i,2,3) D  G:STOP=1 3
+ .I $G(@mas3@("zp",i,3))="Y" I $D(@mas1@(zp,i1)) D 5
+41 I STOP'=1 D @usl Q
+ I STOP=1 G 3
+ S $ZT=%zT Q
+ 
+5 ;Загрузка стандартного запроса на ключ
+ N adr,tab,ind,ind1
+ S A=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SVz3)",2,1,"","6^%ZAPM.bs.BSzvU") Q:A=""
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S STOP=1 Q
+ I $P(adr,",")>3 S ind=$P(adr,","),ind1=$P(adr,",",2) I $D(@mas5@(ind,ind1)) D  Q
+ .S @mas3@("zp",i,1)=$G(@mas5@(ind,1))
+ .S @mas3@("zp",i,6)=$G(@mas5@(ind,2))
+ S @mas3@("zp",i,4)=$G(@mas5@(3,1))
+ S @mas3@("zp",i,5)=$G(@mas5@(3,2))
+ I $E(i,2,3)<10 S @mas3@("zp",i,6)=i_"'<"_$G(@mas5@(3,1))_","_i_"'>"_$G(@mas5@(3,2))
+ Q
+ 
+a ;На сводки
+ S bok1=0 I bok'="" S bok1=1 D 7
+ X "F na="_na1_" D a1^%ZAPM.bs.BSzZ Q:STOP=1 "
+ Q:STOP=1  I $D(PackPa) Q
+ D ADDHIS,SAY(NaMePack) ;^%ZAPM.bs.BSzZ1
+ Q
+a1 ; По одной сводке
+ S mas=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVm2"))),mas1=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVz1"))),mas2=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVb1")))
+ S nf=$E(na,1,3)
+ I '$D(@mas@(nf,na))!('$D(@mas@(nf,na,0))) D ErrMsg^%ZAPM.bs.BSXfun("НЕТ УСЛОВИЙ НА ФОРМУ !! "_$NA(@mas@(nf,na))) S $ZT=%zT Q
+ S ls="Сводка !!"_na D WAITS^%ZAPM.bs.BSF2
+ I bok1=0 D 8^%ZAPM.bs.BSzZ ;БОКОВИНА
+ D 9^%ZAPM.bs.BSzvU,SETHIST
+ Q
+SAY(NaMePack) D OK^%ZAPM.bs.BSF("ПАКЕТ '"_NaMePack_"' НАСЧИТАН")
+ Q
+NamePack() ;ИМЯ ПАКЕТА
+ N I S I=""
+ I $D(NaMPack) S I=NaMPack_"-"
+ I $D(NaMePack) S I=I_NaMePack_"-"
+ Q I
+ADDHIS ;В ИСТОРИЮ НАСЧЕТОВ
+ N I S I=$G(ListPack)
+ I ($L($G(ListPack))+25)>($$LNG^%ZAPM.bs.BSF12-1) S I="ПАКЕТ '"_$G(NaMPack,$G(NaMePack))_"' ПРЕВЫШАЕТ ДОПУСТИМУЮ ДЛИНУ !"
+ D AddHist^%ZAPM.bs.BSzmOL("PackO",I)
+ Q
+SETHIST ;ПРИСВОИТЬ
+ N li
+ S li=$$SETHI(BSl) S ListPack=$G(ListPack)_li_"~"
+ Q
+SETHI(li) ;ССЫЛКА
+ N BSr,BSt,BSu,BSs D TIR^%ZAPM.bs.BST4 I $E($P(li,",",2))="^" S $P(li,",",2)=$E($P(li,",",2),2,999)
+ Q li
+b ;На списки
+ X "F na="_na1_" D b1^%ZAPM.bs.BSzZ Q:STOP=1 "
+ Q:STOP=1  D Z^%ZAPM.bs.BSzZ1 I $D(PackPa) Q
+ D ADDHIS,SAY(NaMePack)
+ Q
+b1 ;По одному списку
+ S mas=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SLm1"))),mas1=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVz1")))
+ S nf=$P(na,"#"),BSzap=$G(BSl)
+ I '$D(@mas@(nf,na))!('$D(@mas@(nf,0))) D ErrMsg^%ZAPM.bs.BSXfun("НЕТ УСЛОВИЙ НА ФОРМУ !! "_$NA(@mas@(nf,na))) S $ZT=%zT Q
+b2 S ls="Список !!"_na D WAITS^%ZAPM.bs.BSF2 D
+ .;Копирование данных из БД по запросу на сортировку
+ .S (srt(1),srt(2),srt(3))=0 I $G(@mas@(nf,na,"17,4"))'="" I $$NOCHANGE^%ZAPM.bs.BSzmOL($G(@mas@(nf,na,"17,4"))) Q
+ .S srt(1)=$P($G(@mas@(nf,na,"17,4")),"!"),srt(2)=$P($G(^("17,4")),"!",2),srt(3)=$P($G(^("17,4")),"!",3)
+ .F I=1:1:3 I $G(srt(I))="" S srt(I)=0
+ D 7^%ZAPM.bs.BSzlU D:$G(BSl)'=BSzap SETHIST
+ Q
+ 
+7 ;Запрос на боковину
+ K @mas5 S uslL=$G(@mas2@(bok,0,"2,4"))
+ I start="" G 71
+ S ls="Используем стандартную боковину?",%B=2 D YES^%ZAPM.bs.BSF I YES'=1 D
+ .X "D "_start
+71 S ls="Уточняем боковину?" D YES^%ZAPM.bs.BSF I YES=1 D ^%ZAPM.bs.BSzvUB
+ S ls="Понеслись !!" D WAITS^%ZAPM.bs.BSF2 D B^%ZAPM.bs.BSzvUB
+ Q
+8 ;Сброс боковины (если не указана в запросе)
+ S bok=$G(@mas@(nf,na,0,"18,4")),uslL=$G(@mas2@(bok,0,"2,4"))
+ S ls="Понеслись !!" D WAITS^%ZAPM.bs.BSF2 D B^%ZAPM.bs.BSzvUB
+ Q
+BUFF(usl) ;ПРИСВОЕНИЕ ССЫЛОК БАЗ И БУФЕРОВ
+ S mas0=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("Sz2"))),mas=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVm2"))),mas1=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVz1"))),mas2=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVb1")))
+ S mas3=$S(usl="a":"^%ZAPM.bs.BSbufB(""PO""_$G(%BS(3),$P)_$J_""u"")",usl="b":"^%ZAPM.bs.BSbufB(""PO""_$G(%BS(3),$P)_$J_""ul"")",1:"^%ZAPM.bs.BSbufB(""PO""_$G(%BS(3),$P)_$J_""uPackP"")")
+ S mas4="^%ZAPM.bs.BSbufB(""fTS""_$G(%BS(3),$P)_$J_""u"")",mas5="^%ZAPM.bs.BSbufB(""W""_$G(%BS(3),$P)_$J_""u"")"     ;Буфера
+ Q
+ERROR ;
+ I $ZE["<NOSYS"!($ZE["<NAMESPACE") D ErrMsg^%ZAPM.bs.BSXfun("НЕ ДОСТУПНА БАЗА ДАННЫХ !!") S $ZT=%zT Q
+ D ErrMsg^%ZAPM.bs.BSXfun("Ошибка ! "_$ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) Q
+ Q
+SRAV(S) ;СРАВНЕНИЕ ВЫТАЩИТЬ ИЗ ЗАПРОСА
+ N BD,I,II
+ K G1,G2,C S BD=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("ZP")))
+ F I=1:1 Q:'$D(@BD@(S,I))  D
+ .I $D(@BD@(S,I,1)) S G1(I)=$G(@BD@(S,I,1)),G2(I)=$G(@BD@(S,I,2))
+ Q:'$D(G1) 0 S C=I-1
+ Q C
+PPACK(na) ;ПАКЕТ ПАКЕТОВ
+ N i,PackPa,PackP,C,G1,G2,SraV,ZapK,vdl,srt
+ S NaMPack=na
+ D BUFF("S") I '$D(@mas0@(na,"4,4")) D ErrMsg^%ZAPM.bs.BSXfun("НЕТ ПАКЕТОВ "_na) S $ZT=%zT Q
+ S SraV=$G(@mas0@(na,"SraV")),ZapK=$G(@mas0@(na,"6,4"))
+ S PackPa=$G(@mas0@(na,"4,4")),PackP=mas3 K @PackP I SraV'="",$$SRAV(SraV) D Copy^%ZAPM.bs.BSF8("G1",$NA(@PackP@(1))),Copy^%ZAPM.bs.BSF8("G2",$NA(@PackP@(2))) S @PackP=C
+ I ZapK'="" S @PackP@("Z")=ZapK
+ X "F i="_PackPa_" D 00^%ZAPM.bs.BSzZ"
+ K @PackP D ADDHIS,SAY(NaMPack) ;^%ZAPM.bs.BSzZ1
+ Q
+PACKSAVE ;СОХРАНИТЬ ПЕРИОДЫ
+ Q:'$D(C)!('$D(G1))!('$D(G2))  S @PackP=C D Copy^%ZAPM.bs.BSF8("G1",$NA(@PackP@(1)))
+ D Copy^%ZAPM.bs.BSF8("G2",$NA(@PackP@(2)))
+ Q
+PACKREST(P) ;ВОССТАНОВИТЬ ПЕРИОДЫ
+ Q:'$D(@P) 0 S C=@P D Copy^%ZAPM.bs.BSF8($NA(@P@(1)),"G1"),Copy^%ZAPM.bs.BSF8($NA(@P@(2)),"G2")
+ Q 1
+STOP ;
+ S $ZT=%zT D ErrMsg^%ZAPM.bs.BSXfun("Некорректно сформулированы условия !!!") Q
+ ;D ErrMsg^%ZAPM.bs.BSXfun("ОТКАЗ ОТ ЗАПРОСА !!") S $ZT=%zT
+ Q
+TESTsv ;ТЕСТИРОВАНИЕ ПАКЕТА СВОДОК
+ S G1(1)="980101",G2(1)="980520"
+ S G1(2)="990101",G2(2)="990520"
+ S C=3 D LOAD^%ZAPM.bs.BSzZ("a7",1)
+ Q
+TESTsp ;ТЕСТИРОВАНИЕ ПАКЕТА СПИСКОВ
+ S G1(1)="980101",G2(1)="980520"
+ S G1(2)="990101",G2(2)="990520"
+ S C=2 D LOAD^%ZAPM.bs.BSzZ("b7",1)
+ Q

@@ -1,0 +1,64 @@
+ROUTINE %ZAPM.bs.BSMSMV3
+%BSMSMV3 ;DJM;VERIFY FREE SPACE IN MAPS; [ 03/11/93  7:41 PM ] ; 17:11 23-JUN-97
+ ;COPYRIGHT MICRONETICS DESIGN CORP @1984
+ U 0 O 63::0 E  W !,"View buffer in use.. request aborted" Q
+ W !?10,$P($P($ZV,","),"-")," - Map Block Verification Utility"
+ S $ZT="ERR^%ZAPM.bs.BSMSMV3"
+ D GETVG^%VGUTIL
+ I VG=1 S VGI=0,VGCNT=1 G DEV
+ D VGPMT G:VGI="^"!(VGI="^Q") EXIT
+DEV ;
+ D CRT^%SDEV I $D(QUIT) G EXIT
+ U %DEV W !
+ D START
+EXIT ;
+ C 63 U 0 I $D(%DEV),%DEV'=$I,+%DEV C %DEV K %DEV
+ K %DEVTYPE,%ER,BAD,DB,I,MAP,MAPS,MAPT,VALIDATE,VG,VGI,VGCNT,VGVOL
+ Q
+VALIDATE ; Entry point for VALIDATE
+ ; Requires the following:
+ ; open 63, invoke GETVG^%VGUTIL
+ ; VGCNT=1,VGI=vgindex if only 1 VG being verified
+ ; VGCNT=VG if all being verified
+ NEW (VG,VGCNT,VGI,%BS,BSt,BSr,se,ke,CReATe,l1)
+ D START K VGCNT
+ Q
+cr(t1,cl) S cl=$P($G(%BS,"!!!!!!!!!1;6;33;41"),"!",cl) D CR^%ZAPM.bs.BSN Q
+START ; Internal entry point
+ S BAD=0,MAPT=0
+ F  D LOOP Q:VGCNT<2  S VGI=$O(VG(VGI)) Q:VGI'?1.N
+ D cr(MAPT_" Map Blocks Processed, "_$S(BAD=0:"no",1:BAD)_" errors found.",5)
+ Q
+LOOP ;
+ D VGINFO^%VGUTIL2(VGI,1)
+ S CURGEN=$S($ZB(VGFLAGS,#4000,1):$V(VGBIJCTL+56),1:0),DIFFGEN=0
+ D VGINFK^%VGUTIL2
+ D GETVOL^%VGUTIL
+ F DB=0:1:VGVOL-1 S MAP=+$P(VGVOL(DB),"^",2)+1,MAPS=+$P(VGVOL(DB),"^",3) D %V
+ Q
+%V ;
+ S MAPT=MAPT+MAPS
+ F I=1:1:MAPS V MAP:"G"_VGI D %V1 S MAP=MAP+512
+ Q
+%V1 ;
+ S %ER=$ZV(MAP,99,VGI) S:CURGEN DIFFGEN=($V(516,0,4)>CURGEN)
+ I %ER="",'DIFFGEN Q
+ D cr("Volume Group:<"_VGI_"> Volume:<"_DB_"> Map "_(MAP\512+1)_" (Block "_MAP_")",10)
+ D cr("Free space counter: "_$J($V(1022,0,2),3,0))
+ I DIFFGEN D cr("Map contains invalid BIJ generation number",10) I %ER="" S BAD=BAD+1 Q
+ S %NM="",VALIDATE=0 D INT^%ZAPM.bs.BSMSMV2
+ Q
+ERR I $F($ZE,"<INRPT>") U 0 W !!,"...Aborted." D EXIT V 0:$J:$ZB($V(0,$J,2),#0400,7):2
+ ZQ
+VGPMT ;
+ W !!,"Select volume group <ALL>: " R VGI Q:VGI="^"!(VGI="^Q")
+ I VGI="?" W !,"Enter the name or index of the volume group to be verified"
+ I  W !,"Enter <RETURN> to verify all volume groups"
+ I  W !,"Enter '^' or '^Q' to exit"
+ I  W !,"Enter '^L' for a list of mounted volume groups" G VGPMT
+ I VGI="" S VGI=0,VGCNT=VG Q
+ I VGI="^L" W ! D VGLIST^%VGUTIL G VGPMT
+ I VGI'?1.N&(VGI'?3U) W " ... Invalid" G VGPMT
+ I VGI="ALL" S VGI=0,VGCNT=VG Q
+ I '$D(VG(VGI)) W "   ...Volume Group ",VGI," does not exist" G VGPMT
+ S VGCNT=1 S:VGI?3U VGI=VG(VGI) Q

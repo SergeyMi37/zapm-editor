@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Document name="zapm-editor.ZPM">
+<Module>
+ <Name>zapm-editor</Name>
+  <Version>1.0.0</Version>
+  <Description>Namespace navigator and area navigator and editor of routines, globals, texts and tables in terminal mode in terminal mode.</Description>
+  <Keywords>navigator, editor, routines, globals, texts, tables</Keywords>
+  <Author>
+   <Person>Mikhaylenko Sergey</Person>
+   <CopyrightDate>2021</CopyrightDate>
+   <License>MIT</License>
+  </Author>
+  <Packaging>module</Packaging>
+  <SourcesRoot>src</SourcesRoot>
+	<Invokes>
+	<Invoke Class="%SYSTEM.OBJ" Method="CompilePackage">
+      <Arg>%ZAPM.bs</Arg>
+	  <Arg>cuk</Arg>
+    </Invoke>
+	</Invokes>
+  <Resource Name="_ZAPM.bs.PKG"/> 
+</Module>
+</Document>
+</Export>

@@ -1,0 +1,146 @@
+ROUTINE %ZAPM.bs.BSpgWEMM
+TKWEMM	;PG&A,TK-IMAIL,1.1,SMTP CONTROL;29SEP97  12:54 [ 12/18/97  10:25 AM ];23FEB2004  10:37;;18NOV2002  09:20
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	Q
+M3 S TRACE=1,LOG=1,$ZT="ERROR^%ZAPM.bs.BSpgWEMM"
+ S TKWEM="^%ZAPM.bs.BSpgWEMM" I $G(^%ZAPM.bs.BSpgWEMM("DATABASE"))]"" X ^("DATABASE")
+	L +CONNECT S (CON,@TKWEM@("CONNECT"))=$G(@TKWEM@("CONNECT"))+1 L -CONNECT
+	S ADDR=$P($ZDEV($P),"~"),OS="M3",TCP=0 G cont
+	;
+	;
+accept(%ddb,CON,TRACE,LOG)	; Accept connection
+ S TKWEM="^%ZAPM.bs.BSpgWEMM" I $G(^%ZAPM.bs.BSpgWEMM("DATABASE"))]"" X ^("DATABASE")
+ S $ZT="ERROR^%ZAPM.bs.BSpgWEMM"
+	; Associate the ddb with this job
+	I %ddb=0 S OS="M11",TCP=0,ADDR="" U TCP:(::"AS":$C(10)) G cont
+	V %ddb+46::$J-$V(272,-4,4):2
+	S addr=$V(%ddb+16,-3,0),ADDR=$V(addr+13,-3,$V(addr+12,-3,1),9)
+	U 56:$ZH(+%ddb) S TCP=56
+cont	S CNT=1,CR=$C(13,10),TMO=30 D INIT,TDATE($H) S SYR=YR,SMT=MT
+	;
+LOGON	S R=$G(@TKWEM@("HOST")) I R]"" S RELAYHOST=$TR(R,UP,LC) K SPAM
+	U TCP W "220 tkweb Sendmail 1.0/1/0 ready at ",DTMA,CR
+CMD	W ! S TT=$H,Y="" R X:TMO S C=$ZC G:X="" ERRD:C<0,ERRT:'$T,ERRE:X="" F  Q:$TR(X,$C(13),$C(10))[$C(10)  Q:C<0  S T=$P(TT,",",2)-$P($H,",",2)+TMO Q:T<0  R Y:5 S C=$ZC,X=X_Y
+	I X[$C(31) S X=$P(X,$C(31),2,99)
+	S OX=X,X=$TR(X,LC_$C(13,10,1),UP) S @TKWEM@("IN",-CON,CNT)=$E(OX,1,511),CNT=CNT+1 I CNT=2,$G(ADDR)]"" S ^(CNT-1)=^(CNT-1)_" ["_ADDR_"]"
+	I C<0 G END:X="QUIT",ERRD
+	S CMD=$P(X," ") G HELLO:CMD="HELO",HELLO:CMD="EHLO",QUIT:CMD="QUIT",RSET:CMD="RSET"
+	I '$D(RHOST) W "550 Requested action not taken",CR,! G CMD
+	G DATA:CMD="DATA",MAIL:CMD="MAIL",RCPT:CMD="RCPT",VRFY:CMD="VRFY",OTHER
+	;
+HELLO	S RHOST=$TR($P(X," ",2,9),UP,LC) W "250 tkweb HELLO ",RHOST,", please to meet you",CR G CMD
+QUIT	W "221 tkweb delivering mail",CR,! G END
+MAIL	S FROM=$P(X,":",2,9) S:$E(FROM)=" " FROM=$E(FROM,2,99)
+	I $D(RCPT) L +MCONNECT S (CON,@TKWEM@("CONNECT"))=$G(@TKWEM@("CONNECT"))+1 L -MCONNECT S CNT=2,@TKWEM@("IN",-CON,1)=$E(OX,1,511)
+	I ADDR]"" S @TKWEM@("ADDR",ADDR,CON)=FROM I $D(@TKWEM@("SPAM",ADDR)) S SPAM=1,^(ADDR)=^(ADDR)+1_","_$H
+	W "250 ",FROM,"... Sender ok",CR K RCPT
+	G CMD
+RCPT	S RCPT=$P(X,":",2)
+	S:RCPT["<" RCPT=$P($P(RCPT,"<",2),">") 
+	S:$E(RCPT)=" " RCPT=$E(RCPT,2,99) 
+	S:RCPT'["""" RCPT=$TR(RCPT," ") S (LHOST,HOST)=$P(RCPT,"@",2),RCPT=$P(RCPT,"@") G CMD:HOST=""  
+	I HOST?1.3N1"."1.3N1"."1.3N1"."1.3N I $ZV["Cach"||($ZV["IRIS") S HOST=$ZCONVERT($P($zu(54,14,$zu(54,1,HOST)),",",2),"U") S ^%ZZZ(2)=HOST
+	S:$D(@TKWEM@("HOST",HOST)) HOST="" 
+	S:RCPT="" RCPT=$G(@TKWEM@("DEFAULT MASTER")) S:RCPT="" RCPT="DEFAULT"
+	I HOST="" S RCPT=$S($D(@TKWEM@("USER",RCPT,"HOST"))=0:RCPT,$D(^("HOST",LHOST)):RCPT,1:"") S:RCPT]"" RCPT1=$G(@TKWEM@("USER",RCPT)) I RCPT1="" W "550 no such user "_RCPT,CR S @TKWEM@("550 NO USER",-CON)=X,^(-CON,"RHOST")=RHOST G CMD
+	I HOST'="" S FR=$TR($P($P(FROM,"@",2),">")," ") D  I FR="" M @TKWEM@("REFUSED",-CON)=@TKWEM@("IN",-CON) W "550 User not local - refused to relay",CR G CMD
+	.; S ^%ZZZ(3)=FR
+	. Q:FR=""  I '$D(@TKWEM@("HOST",FR)) S FR="" Q
+	. S FR=$TR($P(FROM,"@"),"< ") Q:FR=""  I '$D(@TKWEM@("USER",FR)) S FR="" Q
+	I $G(@TKWEM@("USER",RCPT,"FWD"))]"" S X="TO:"_$TR(^("FWD"),LC,UP) G RCPT
+	I $D(SPAM) W "553 Requested action not taken; mailbox unavailable",CR G CMD
+	S RCPT(RCPT_"@"_HOST)=HOST W "250 Recipient ok",CR G CMD
+VRFY	S V=$TR($P(X,":",2,9),"<>"),H=$P(V,"@",2),V=$P(V,"@")
+	I V]"",$D(@TKWEM@("USER",V)) W "250 Recipient ok",CR G CMD
+	W "550 no such user",CR G CMD
+OTHER	W "502 tkweb Command not implement ",CR G CMD
+RSET	W "250",CR K RCPT G CMD
+DATA	W "354 Enter mail, end with ""."" on a line by itself",CR,!
+	; THIS DATA SECTION SET TO RUN MAX OF 15 MINUTES PER MESSAGE
+DATA1	S TT=$H,(D,E,B)=0,X="Received: from "_RHOST_$S(ADDR]"":" ["_ADDR_"]",1:"")_" by "_$G(@TKWEM@("HOST"))_" with SMTP id "_CON_" for "_$G(RCPT)_"; "_DTMA_$C(10)
+	;R Y:TMO S C=$ZC,X=X_Y Q:$TR(X,$C(13,0))=$C(46,10)  G ERRD:C,ERRT:'$T F  Q:C  S T=$P(TT,",",2)-$P($H,",",2)+1200 G:T<0 DATATO R Y:5 S C=$ZC,X=X_Y I $L(X)>511!(X[$C(10)) D DATAS Q:B
+	S C10=$C(13) R Y:TMO S C=$ZC,X=X_Y Q:$TR(X,$C(13,0))=$C(46,10)  G ERRD:C,ERRT:'$T F  Q:C  S T=$P(TT,",",2)-$P($H,",",2)+1200 G:T<0 DATATO R Y:5 S C=$ZC,X=X_Y I $L(X)>511!(X[C10) D DATAS Q:B  
+	G ERRD:C
+	W "250 Mail accepted",CR S @TKWEM@("IN",-CON,CNT-1,"DATA")=E D SAVE G CMD
+DATATO	K @TKWEM@("IN",-CON,CNT-1,"DATA") S ^("DATA",1)="MAIL DELETED AND CANCELLED SINCE IT RAN FOR MORE THAN 15 MINUTES" H
+DATAS I $L(X)>511,$E(X,1,511)'[C10 S A=$E(X,1,511),X=$E(X,512,99999) S @TKWEM@("IN",-CON,CNT-1,"DATA",D)=A,D=D+1,E=E+$L(A)
+	I $L(X,C10)>1 F J=1:1:$L(X,C10)-1 S A=$TR($P(X,C10,J),$C(13,0)) S B=A="."+B Q:B  S @TKWEM@("IN",-CON,CNT-1,"DATA",D)=$E(A,1,511),D=D+1,E=E+$L(A)
+	I  S X=$P(X,C10,J+1)
+	Q
+SAVE	Q:$D(RCPT)<2
+ S (A,B)="",C=CON*100+CNT F  S B=$O(RCPT(B)) Q:B=""  I RCPT(B)="" J JSAVE^%ZAPM.bs.BSpgWEMM($P(B,"@"),C,CON,CNT,E)
+	S B="" F  S B=$O(RCPT(B)) Q:B=""  I RCPT(B)]"" D
+	. S C=RCPT(B),@TKWEM@("RELAY",C,$P(B,"@"),CNT)=FROM M @TKWEM@("RELAY",C,$P(B,"@"),CNT,"DATA")=@TKWEM@("IN",-CON,CNT-1,"DATA")
+	Q
+JSAVE(B,C,CON,CNT,E) S $ZT="ERROR^%ZAPM.bs.BSpgWEMM" S TKWEM="^%ZAPM.bs.BSpgWEMM" I $G(^%ZAPM.bs.BSpgWEMM("DATABASE"))]"" X ^("DATABASE")
+	I $D(@TKWEM@("SPAMFILTER")) D INIT S I="" F J=1:1:100 S I=$O(@TKWEM@("IN",-CON,CNT-1,"DATA",I)) Q:I=""  S L=$TR($G(^(I)),LC,UP) I L[" "
+JS1	N X H 5 S @TKWEM@("MB",B,C)=E M @TKWEM@("MB",B,C)=@TKWEM@("IN",-CON,CNT-1,"DATA") I $G(@TKWEM@("USER",B,"RTN"))]"" D @^("RTN")
+	I $G(@TKWEM@("USER",B,"COPY"))]"" S X=B N B S B="" F  S B=$O(@TKWEM@("USER",X,"COPY",B)) Q:B=""  D JS1
+	Q
+	;
+CATCHUP	; REBUILD "MB" FROM "IN"
+ S TKWEM="^%ZAPM.bs.BSpgWEMM" I $G(^%ZAPM.bs.BSpgWEMM("DATABASE"))]"" X ^("DATABASE")
+	R "Enter Domain-",DOMAIN,! S HOST=@TKWEM@("HOST"),RELAYHOST=""
+	D INIT S (CCN,E)="",CNT=5
+	F  S CCN=$O(@TKWEM@("IN",CCN)) Q:CCN=""  K RCPT S B=$G(^(CCN,3)) S B=$P($TR(B,LC,UP),"<",2) I B[DOMAIN S FROM=$P($P($G(^(CNT-1,"DATA",1)),"<",2),">") D
+	. W !,B," ",FROM," (N)-" R CC#1 I CC="Y" S RCPT($P(B,"@"))=$S(DOMAIN=HOST:"",1:DOMAIN) S CON=-CCN  D SAVE
+	Q
+INIT	S LC="abcdefghijklmnopqrstuvwxyz",UP="ABCDEFGHIJKLMNOPQRSTUVWXYZ" Q
+	;
+ERROR	S @TKWEM@("ERR",$H)=$ZE_","_$G(CON)_","_$G(CNT) G END
+	;
+ERRC	S ER="CMND" G ERR
+ERRT	S ER="TIMEOUT" G ERR
+ERRD	S ER="DISCON"_","_$ZA_","_$ZB_","_$ZC G ERR
+ERRL	S ER="LENGTH" G ERR
+ERRE	S ER="EMPTY" G ERR
+ERR	I TRACE S @TKWEM@("IN",-CON,CNT)=ER_","_$G(X),CNT=CNT+1
+	;
+END I $O(@TKWEM@("RELAY",""))'="" L +^%ZAPM.bs.BSpgWEMMR:3 I  J ^%ZAPM.bs.BSpgWEMMR L -^%ZAPM.bs.BSpgWEMMR
+	Q
+TimeZone() Q $S($G(^%ZAPM.bs.BSpgWEBC("TimeZone"))<0:"-"_$E(100-$G(^%ZAPM.bs.BSpgWEBC("TimeZone"))*100,2,5),1:$E(100+$G(^%ZAPM.bs.BSpgWEBC("TimeZone"))*100,2,5))
+	;
+TDATE(X)	D DATE,TIME S DTM=$P(DT,"/",1,2)_" "_TM
+	S DTMA=$P("Thu,Fri,Sat,Sun,Mon,Tue,Wed",",",X#7+1)_", "_(+$P(DT,"/",2))_" "_$P("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",",",MT)_" "_$P(DT,"/",3)_" "_TM_" "
+ S DTMA=DTMA_$$TimeZone
+TIME	S TM=$P(X,",",2),TM=$E(TM\3600+100,2,3)_":"_$E(TM#3600\60+100,2,3)_":"_$E(TM#60+100,2,3),TMA=$S(TM>12:TM-12,1:+TM)_":"_$P(TM,":",2)_$S(TM>11:" PM",1:" AM") Q
+	;         
+	;         
+DATE	S K=X>21608+305+X,YR=4*K+3\1461,D=K*4+3-(1461*YR)+4\4,MT=5*D-3\153,D=5*D-3-(153*MT)+5\5,MT=MT+2,YR=MT\12+YR+1840,MT=MT#12+1
+	S DT=YR*100+MT*100+D,DT=$E(DT,5,6)_"/"_$E(DT,7,8)_"/"_$E(DT,1,4)
+	K K,D Q
+	;
+CLEANUP Q:$G(^%ZAPM.bs.BSpgWEBC("CLEANUP","MAIL"))=+$H
+	Q
+REFUSED	; RELAY "REFUSED" EMAIL
+	D INIT S (CCN,E)="",CNT=5 F  S CCN=$O(@TKWEM@("IN",CCN)) Q:CCN=""  D
+	. Q:$G(^(CCN,5))'["REFUSED TO RELAY"  S RCPT=$P($P($TR(^(3),LC_" ",UP),"<",2),">"),FROM="<"_$TR($P($P(^(2),"<",2),">"),LC_" ",UP)_">"
+	. S HOST=$P(RCPT,"@",2),RCPT=$P(RCPT,"@")
+ . I $D(@TKWEM@("RELAY",HOST)) J ^%ZAPM.bs.BSpgWEMMR F  H 1 I '$D(^(HOST)) Q
+	. S @TKWEM@("RELAY",HOST,RCPT,CCN)=FROM M @TKWEM@("RELAY",HOST,RCPT,CCN,"DATA")=@TKWEM@("IN",CCN,4,"DATA") W HOST,! R CCC
+	Q
+	;
+USERSMAILIST(list)
+ N i,I
+ s i="" f I=1:1 s i=$O(^%ZAPM.bs.BSpgWEMM("USER",i)) Q:i=""  S list(I)=i
+ Q
+USERSMAIL //СПИСОК ПОЛЬЗОВАТЕЛЕЙ ПОЧТОВЫХ СЕРВЕРОВ
+ D USERSMAILIST(.list)
+ ZW list
+ Q
+ALLUSERSMAIL //РАЗРЕШИТЬ ВСЕМ 
+ N i,I 
+ N BDSES,P9,noPASS,WW,GC
+ S GC=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""PROTECT"")"),u=""
+ For i=1:1 Set u=$O(@GC@(u)) Quit:u=""  Write !,i,". User ip: ",$$JF^%ZAPM.bs.BSC4r4(u,20) D
+ .s ^%ZAPM.bs.BSpgWEMM("USER",u)=u,^%ZAPM.bs.BSpgWEM("USER",u)=u,@GC@(u,"FNM","Amail","V")=1
+ Q
+ALLMAIL //ПОЧИСТИМ СТАРЫЕ ПИСЬМА
+ S DO=$G(^%ZAPM.bs.BSpgWEBC("DateOut"),10) //ЗА СКОЛЬКО ДНЕЙ ОСТАВЛЯЕМ ПОЧТУ
+ S U="",M=0 f  S U=$O(^%ZAPM.bs.BSpgWEMM("MB",U)) Q:U=""  S I="" f  S I=$O(^%ZAPM.bs.BSpgWEMM("MB",U,I)) Q:I=""  D
+ .S S=$G(^%ZAPM.bs.BSpgWEMM("MB",U,I,0)),M=M+1,S=$P($P(S,$C(10)),";",2,99)
+ .W !,M,". ",U,$C(9,9),$P(S," ",3,5) 
+ .I ($H-$ZDATEH($P(S," ",3,5),2))>DO K ^%ZAPM.bs.BSpgWEMM("MB",U,I) ;W "-"
+ ;K ^%ZAPM.bs.BSpgWEMM("IN"),^%ZAPM.bs.BSpgWEMM("OUT")
+ Q 

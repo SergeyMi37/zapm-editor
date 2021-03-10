@@ -1,0 +1,146 @@
+ROUTINE %ZAPM.bs.BSout2
+%BSout2 ; Вывод на устройство  (А.Тимофеев) ; 11:40   09.10.2000
+ 
+OUT(%1,%2,%Uout) ;Вывод буфера на устройство
+ ;%1 -BSR, %2 - BST, %Uout - устройство
+ I $G(%1)=""!($G(%2)="") S %0=0 Q %0
+ 
+ N i,i1,us,US,%I,ot,rp,sr,sr1,sr2,sr3,qz,txt,%zT,ExZ,UStro,TermLPT,Tmp
+ I '$D(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u")) S %0=0 Q %0
+ S us=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","TXT")),"#")  ;определение устройства
+ S:$G(%Uout)'="" us=$G(%Uout)
+ I us=4 G COM
+ I us=2 G DOS
+ I us=3 G TXT
+ 
+PRN ;На принтер
+ S %I=$I
+1 ;Старт печати
+ S US=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","TXT")),"#",2)
+ S:$G(%Uout)'="" US="|PRN|\\XXX\ZZZ" ;3 //```
+ S Tmp=$$TermF() G ExZ:+Tmp I Tmp="ESC" S %0=0 Q %0 ;ОПРЕДЕЛЕН ТЕРМИНАЛ И ПЕЧАТЬ НА ТЕРМИНАЛЬНЫЙ ПРИНТЕР
+ S US=$$DFLT^%ZAPM.bs.BSJPRN ;```
+ //````I '$$INIT^%ZAPM.bs.BSJPRN(US) S %0=0 Q %0 ;Инициализация DPP ---->
+ //```I $G(pacetF)="",$G(Tmp)'="LPT" S ls=" Готово УСТРОЙСТВО ВЫВОДА ("_US_") ? " D YES^%ZAPM.bs.BSF I 'YES S %0=0 Q %0
+ I $G(pacetF)="",$G(Tmp)'="LPT" D  I 'YES S %0=0 Q %0
+ .D MENU^%ZAPM.bs.BSF5(" ПРИНТЕР_"_US_" ВЫВОД_В_SPOOLER ОТМЕНА ","ВЫБЕРИТЕ УСТРОЙСТВА ВЫВОДА..")
+ .I %B=2 S US=2
+ .I %B=3 S YES=0
+ExZ I $G(TermLPT) G TermLPT
+ O US:$$MAX^%ZAPM.bs.BSJPRN(US):1 E  S ls=" ПЕЧАТЬ ЗАНЯТА " D O^%ZAPM.bs.BSF7 G PRN
+ S %zT=$ZT,$ZT="ZT^%ZAPM.bs.BSout2"
+ U US W $$SBROS^%ZAPM.bs.BSJPRN(US) ;Сброс параметров
+ ;ot - отступ, rp - режим печати, sr - установки принтера
+TermLPT S ot=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","DOS")),"#"),rp=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","DOS")),"#",2)
+ S sr=$$CTRL^%ZAPM.bs.BSJPRN($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","SHR")),US),sr1=$P(sr,"#"),sr2=$P(sr,"#",2),sr3=$P(sr,"#",3)
+ D Prn
+ D USECON(%I) R *R:0 I R=27 G STOP
+ S ls=" Вывод информации " D WAITS^%ZAPM.bs.BSF2
+ S (S2,S1)="" D  ;ПЕРЕКОДИРОВАТЬ ЕСЛИ НЕ СПУЛЕР
+ .I US'=2 D INIT^%ZAPM.bs.BSre(0)
+ S i="",qz="" F  S i=$O(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)) Q:i=""  D  Q:qz'=""
+ .D  Q:qz'=""
+ ..I rp=3&($E($G(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)),1,5)="~'~'~") D  Q
+ ...S ns=$P($G(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)),"~'~'~end ",2),i=i+1
+ ...D USECON(%I) S ls="Страница N "_ns_". Печатать с переводом формата ?" D YES^%ZAPM.bs.BSF I 'YES S qz=2 Q
+ ...D USELPT(US) W:YES # D Prn
+ ..I rp=2&($E($G(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)),1,5)="'~'~'") S i=i+1 D USELPT(US) W #
+ .D USELPT(US) W !,$J("",ot),$TR($G(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)),S2,S1) D USECON(%I) X $G(WA) W $$rt^%ZAPM.bs.BS3(0) I R=27 S qz=1 Q
+ G:qz=1 STOP  G:qz=2 END
+ D USELPT(US) W !
+END ;Конец печати
+ I $G(TermLPT) G TermLPTC
+ U US W $$SBROS^%ZAPM.bs.BSJPRN(US)
+2 I '$G(TermLPT) C US D COPY2BSSES^%ZAPM.bs.BSCpool(US,$$MAX^%ZAPM.bs.BSJPRN(US),%2) O US U US W ! C US  ;ДОПОЛНИТЕЛЬНЫЙ СБРОС
+TermLPTC D USECON(%I) S $ZT=$G(%zT) W $$rt^%ZAPM.bs.BS3(0)
+ S R=1 I $D(ExZ),ExZ>1 S ExZ=ExZ-1 G ExZ
+ I '$D(pacetO) S %B=2,ls="Еще экземпляр ?" D YES^%ZAPM.bs.BSF I YES G 1
+ S %0=0 Q %0
+USELPT(US) ;СДЕЛАТЬ ТЕКУЩИМ УСТРОЙСТВО ПЕЧАТИ
+ I $G(TermLPT) X "W "_$P(TermLPT,"~",2) Q
+ U US
+ Q
+USECON(US) ;СДЕЛАТЬ ТЕКУЩИМ УСТРОЙСТВО КОНСОЛИ
+ I $G(TermLPT) X "W "_$P(TermLPT,"~",3)
+ U US
+ Q
+STOP ;Прерывание печати
+ W $$bel^%ZAPM.bs.BS3 S ls=" ПЕЧАТЬ ПРЕРВАНА " D O^%ZAPM.bs.BSF7
+ G 2
+TermF() ;ОПРЕДЕЛЕНИЕ УСТРОЙСТВО ПЕЧАТИ ДЛЯ ТЕРМИНАЛА И СТАНЦИИ
+ K TermLPT
+ S %0=0 I $G(%BS(14))="" Q 0 ;НЕ ЧЕГО НЕ ДЕЛАТЬ - ВСЕ ПО-СТАРОМУ
+ I $E(%BS(14),5)="1" Q 0 ;ВСЕГДА ПО-СТАРОМУ
+ I $E(%BS(14),5)="2" Q $$Term(1) ;ВСЕГДА ТЕРМИНАЛЬНЫЙ ПРИНТЕР
+ I $E(%BS(14),5)="0" D  Q:YES<1!(%B=3) "ESC" Q:%B=2 $$Term(0) Q:%B=1 "LPT"  ;СЕЛЕКТОР МЕЖДУ ПЕЧАТЯМИ
+ .D MENU^%ZAPM.bs.BSF5(" ПЕЧАТЬ_НА_ЛОКАЛЬНОМ_ПРИНТЕРЕ_MSM ПЕЧАТАТЬ_НА_ПРИНТЕРЕ_ТЕРМИНАЛА ОТМЕНА ","ВЫБЕРИТЕ ПРИНТЕР...")
+ Q 0
+Term(lsss) ;СОЗДАТЬ ЛОКАЛЬ ПЕЧАТИ ТЕРМИНАЛА
+ N ls I $G(lsss) S ls=" Готово ЛОКАЛЬНОЕ устройство печати ТЕРМИНАЛА ? " D YES^%ZAPM.bs.BSF I 'YES S %0=0 Q "ESC"
+ S TermLPT=$$Ter() I "1~~"[TermLPT D ErrMsg^%ZAPM.bs.BSXfun("Для терминала "_$P_" не определен код инициализации ПЕЧАТИ") Q "ESC"
+ Q TermLPT
+Ter() N BDTRM S BDTRM=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSVOL(""TRM"")") I $D(@BDTRM@($P)) S TermLPT="1~"_$G(@BDTRM@($P,"OpenLPT"))_"~"_$G(@BDTRM@($P,"CloseLPT")) Q TermLPT
+ Q ""
+Prn ;Инициализация принтера
+ Q:$G(TermLPT)
+ U US W:$G(sr1)'="" @("$C("_sr1_")") W:$G(sr2)'="" @("$C("_sr2_")") W:$G(sr3)'="" @("$C("_sr3_")")
+ Q
+ZT ;Сборщик ошибок для принтера
+ G END
+DOS ;В DOS файл
+ N %DEV,%FN,%I,%3,%4
+ S %zT=$ZT,$ZT="C^%ZAPM.bs.BSout2",%I=$I
+ S PR1=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","TXT")),"#",2)
+ ;Открытие файла
+ I $G(pacetD)'="" S PR1=$S($G(pacetD)=1!($G(pacetO)=1):PR1,1:$G(pacetPR1))
+Mas1 N f1,Mas1,Mas2,f2,f  //
+ S f=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","bzOUTtables","V","^[""%SYS""]BSC4.ISS.Setup") //
+ I $$File2Arr^%ZAPM.bs.BSCEXE(f_"header.html",.Mas1) ;ZW Mas1 //
+ I $$File2Arr^%ZAPM.bs.BSCEXE(f_"footer.html",.Mas2) ;ZW Mas2 //
+ 
+ D DOSOPN^%ZAPM.bs.BSBL1
+ I $G(%FN)="" D OkMsg^%ZAPM.bs.BSXfun("Отказ от вывода !",6) S %0=0 Q %0
+ S ls=" Вывод информации " D WAITS^%ZAPM.bs.BSF2
+ 
+ D:$G(Pfl) Mas(.Mas1) //
+ S i="",qz="" F  S i=$O(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)) Q:i=""  D
+ .U %DEV W $G(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)),! U %I X $G(WA)
+ D:$G(Pfl) Mas(.Mas2) //
+ 
+C ;Закрытие устройства
+ S $ZT=$G(%zT)
+ C %DEV K %DEV,%FN U 0
+ D:$G(pacetD)="" OkMsg^%ZAPM.bs.BSXfun("Вывод завершен !",6)
+ S %0=0 Q %0
+ 
+Mas(Mas1) I $D(Mas1) S f1="" F  S f1=$O(Mas1(f1)) Q:f1=""  U %DEV W Mas1(f1) //
+ Q 
+ 
+TXT ;Вывод в текст
+ 
+ S %zT=$ZT,$ZT="Ztxt^%ZAPM.bs.BSout2",%I=$I
+ S li=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","TXT")),"#",2)
+ 
+NAME ;определение текста для вывода
+ N BSr,BSt,li,YES
+ S NoCheck=1 D RIT^%ZAPM.bs.BSF3 K NoCheck
+ I li="" D OkMsg^%ZAPM.bs.BSXfun("Отказ от вывода !",6) S %0=0 Q %0
+ I BSr=""!(BSt="") S %0=0 Q %0
+ I '$D(@(BSr)) S %0=0 Q %0
+ I $D(@(BSr_"(BSt)")) S ls=" Есть уже такой текст !  Перепишем ? " D YES^%ZAPM.bs.BSF I YES'=1 G NAME
+ I $D(@(BSr_"(BSt)")) K @(BSr_"(BSt)")
+ S @(BSr_"(BSt)")="Таблица "_BSR_","_BST_" в тексте@@@@@@@1@1@22@80@@@@1@@5@@@1@@@@@@@@@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ 
+ S ls=" Вывод информации " D WAITS^%ZAPM.bs.BSF2
+ S i="" F  S i=$O(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i)) Q:i=""  D
+ .S @(BSr_"(BSt,i)")=$G(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",i))
+ 
+ D OkMsg^%ZAPM.bs.BSXfun("Вывод завершен !",6)
+Ztxt ;The end
+ S $ZT=$G(%zT)
+ S %0=0 Q %0
+ 
+COM ;Вывод в порт
+ S %zT=$ZT,$ZT="Ztxt^%ZAPM.bs.BSout2"
+ I '$D(%BS(21)) D ErrMsg^%ZAPM.bs.BSXfun(" Вывод на ПФЛ не определен в SETUP") G Ztxt
+ S out=$$MassPFL^%ZAPM.bs.BSXdos("^%ZAPM.bs.BSbufB(""uP"_$G(%BS(3),$P)_$J_"u"")",1) G Ztxt

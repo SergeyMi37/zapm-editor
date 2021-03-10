@@ -1,0 +1,108 @@
+ROUTINE %ZAPM.bs.BSMSMV
+%BSMSMV ;ТЕСТИРОВАНИЕ ТОМОВ ;  0:17 28-FEB-88
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D  Q
+ .I $ZV["MSM-Workstation" D ^VALIDATE Q
+ .I $ZV["Cach"||($ZV["IRIS") D ErrMsg^%ZAPM.bs.BSXfun(" НЕТ РЕЖИМА В "_$ZV)
+1 ZF  I %BS(23) D LOCKTAB^%ZAPM.bs.BSF6 W /R
+START0 ZF  D SI^%ZAPM.bs.BSN N (%BS,vl)
+ S WA="",l1=77,ke=1 I '$D(IntVER) S BSr="^%ZAPM.bs.BSbufB",BSt="VALIDATE"_$P
+ D CLr^%ZAPM.bs.BSF4,0 I $D(IntVER) D CREAT^%ZAPM.bs.BSN,SAVE^%ZAPM.bs.BSMSMF Q
+ D CREATE^%ZAPM.bs.BSN,SAVE^%ZAPM.bs.BSMSMF K @(BSR_"(BST)") Q
+ ;COPYRIGHT MICRONETICS DESIGN CORP @1984
+0  U 0 W /CUP(1,1),/ED,!,"             ТЕСТ БАЗ ДАННЫХ ",$ZV D OP^%ZAPM.bs.BSF4
+ i $P($ZV,"Version ",2)'<4 G 0^%ZAPM.bs.BSMSMV4 ;MSM 4.0
+ D MGR^%ZAPM.bs.BS S %ZT="ERR^%ZAPM.bs.BSMSMV",%zT=$ZT,$ZT="%MGR^%LOGON"
+ S %DEV=$I U 0
+ S %HI=$V(2,$J,2) ; home UCI
+ O 63::0 E  S ls="View buffer in use.. request aborted" D O K %DEV Q
+ S VIEW=$ZB($V($V(44)+2,-3,2),#80,1) I VIEW V 0:$J:$ZB($V(0,$J,2),#8000,7):2
+ S cl=$P(%BS,"!",7),t1="         "_$P($P($ZV,","),"-")_" - Database Integrity Utility" D CR^%ZAPM.bs.BSN K cl
+VG ;SELECT VOLUME GROUP
+ S (%ALLFLG,%UCI)="" D GETVG^%VGUTIL I VG=1 S %VG="G0",%VGN=VG(0),(%VGI,%VGR)=0 G UCI ;ONLY ONE VOLUME GROUP
+VG1 R !!,"Enter volume group to validate <ALL>: ",%VGR S %VGI=%VGR G:%VGI="^"!(%VGI="^Q")!(%VGI="^Q") EXIT S:%VGI="" (%VGI,%VGR)="ALL" G:%VGI="ALL" TRACE
+ I %VGI="?" W !!,"Enter the Volume Group (i.e., 0, 1, etc.) that is to be validated.",!,"Enter <RETURN> or 'ALL' to validate all Volume Groups."
+ I  W !,"Enter '^L' for a list all mounted volume groups."
+ I  W !,"Enter '^' or '^Q' to exit this utility." G VG1
+ I %VGI="^L" W ! D VGLIST^%VGUTIL G VG1
+ I '$D(VG(%VGI))#10 S ls="...Volume Group not found." D O G VG1
+ S:%VGI'?1N %VGI=VG(%VGI) S %VG="G"_%VGI,%VGN=VG(%VGI)
+UCI R !!,"Enter UCI to validate <ALL>: ",%UCI S:%UCI="" %UCI="ALL" G EXIT:%UCI="^Q"!(%UCI="^q"),VG:%UCI="^"&(VG>1),EXIT:%UCI="^",TRACE:%UCI="ALL"
+ I %UCI="^L"!(%UCI="^l") W !!,"Choose from: ",!! F I=1:1:$V(12,-4,2)+1 G:I=($V(12,-4,2)+1) UCI I $$ZU^%ZAPM.bs.BS3(I,%VGI)'="" W $P($$ZU^%ZAPM.bs.BS3(I,%VGI),",")," " W:$X>76 !
+ I %UCI="?" W !!,"Enter the UCI that contains the routines or globals that will be validated.",!,"Enter '^L' for a list of available UCIs.",!,"Enter <RETURN> or '^' to quit." G UCI
+ I $L(%UCI)>7 W " ??" G UCI
+UCINUM ;
+ S %UN="" I %UCI?1.2N S %UI=$S($$ZU^%ZAPM.bs.BS3(%UCI,%VGI)'="":%UCI,1:"") S:%UI %UN=$P($$ZU^%ZAPM.bs.BS3(%UCI,%VGI),",")
+ E  S %UI=$P($$ZU^%ZAPM.bs.BS3(%UCI,%VGN),",") S:%UI %UN=%UCI
+ I %UI'>0 W "   ...UCI not found" G UCI
+TRACE S TR=0
+ I %UCI'="ALL"&(%VGR'="ALL") DO
+ .W !,"Validating ^UTILITY ... "
+ .V 2:$J:%VGI*32+%UI:2 S %GLO="UTILITY",TOP=$ZBN(@("^["""_%UN_","_%VGN_"""]"_%GLO)) S %ER=$ZV(TOP) V 2:$J:1:2
+ .I %ER="" W "no errors." Q
+ .W !!,"Warning:  The following errors have been found in ^UTILITY."
+ .S BAD=0,%NM="UTILITY" D ^%ZAPM.bs.BSMSMV1
+ .W !,"If you continue, VALIDATE could terminate unexpectedly due to these errors."
+ .W !,"Run GBMAINT or DBFIX to repair ^UTILITY."
+ I %UCI="ALL"!(%VGR="ALL") D CRT^%SDEV G:$D(QUIT) UCI
+ S SV=$V(44),%PB=$V(SV+8,-3,2),%USZ=$V(SV+14,-3,2) S %VGT=$V(4*10+%PB+SV) G UCIALL:%UCI="ALL",VGALL:%VGI="ALL" D PTR
+TYPE W !!,"Select data type:",!!,?5,"1 - GLOBALS",!,?5,"2 - ROUTINES",!,?5,"3 - BOTH"
+ R !!,"Select option: ",%TYPE
+ G UCI:%TYPE="^",EXIT:%TYPE="^q"!(%TYPE="^Q")!(%TYPE="")
+ I %TYPE="?" W !!,"Enter one or more characters or the option number to identify whether GLOBALS",!,"or ROUTINES, or BOTH are to be validated.",!,"Enter '^' to return to the UCI question or '^Q' to exit the utility" G TYPE
+ I $E("GLOBALS",1,$L(%TYPE))=%TYPE W $E("GLOBALS",$L(%TYPE)+1,999) S %TYPE=1 G GLOBAL
+ I $E("ROUTINES",1,$L(%TYPE))=%TYPE W $E("ROUTINES",$L(%TYPE)+1,999) S %TYPE=2 W !!,"All Routines for ",%UCI," selected" G START
+ I $E("BOTH",1,$L(%TYPE))=%TYPE W $E("BOTH",$L(%TYPE)+1,999) S %TYPE=3 G GLOBAL
+ I %TYPE=1 W " - GLOBALS" G GLOBAL
+ I %TYPE=2 W " - ROUTINES" V 2:$J:32*%VGI+%UI:2 G START
+ I %TYPE=3 W " - BOTH" G GLOBAL
+ W "  ??",*7 G TYPE
+GLOBAL I %TYPE=3 W !!,"Both Routines and Globals for ",%UCI," selected"
+ V 2:$J:%VGI*32+%UI:2 D INT^%GSEL I '$D(^UTILITY($J)) W !!,"No Globals Selected" V 2:$J:%HI:2 G TYPE
+START D CRT^%SDEV G:$D(QUIT) TYPE
+VALROUT G:%TYPE=1 VALGLOB
+ U 0 W "." S t1=%VGN_" кип "_%UN_"  ROUTINES" D CR^%ZAPM.bs.BSN
+ I %DEV'=$I U %DEV W !!,"Validating Routines from [",%UN,",",%VGN,"]",!
+ U %DEV ZM:TR 1 S %ER=$ZV(%RBN,9999,%VGI) ZM:TR 0
+ S BAD=0 I %ER'="" S %NM="" D VALIDAT1
+ W "." S t1="           All Routines Processed, "_$S(BAD=0:"no",1:BAD)_" error"_$S(BAD=0:"s",BAD=1:"",1:"s")_" found." D CR^%ZAPM.bs.BSN
+VALGLOB G:%TYPE=2 DONE
+ S BAD=0,%GLB="" U 0 W "." S t1=%VGN_" кип "_%UN_"  GLOBALS" D CR^%ZAPM.bs.BSN
+ I %DEV'=$I U %DEV W !!,"Validating Globals from [",%UN,",",%VGN,"]",!
+ U %DEV V 2:$J:%VGI*32+%UI:2
+ F %COUNT=1:1 S %GLB=$S(%UCI'="ALL"&(%VGR'="ALL"):$O(^UTILITY($J,%GLB)),1:$O(@("^"_%GLB))) Q:%GLB=""  S %PRT=$ZBN(@("^["""_%UN_"""]"_%GLB)) I %PRT D
+ . U 0 W:%DEV'=$I ?%COUNT-1#8*10,%GLB W:%DEV'=$I&(%COUNT#8=0) ! U %DEV
+ . V %PRT:"G"_%VGI I $V(1020,0,1)'=2 S %ER="3,"_%PRT_",0",%NM=%GLB D VALIDAT1 Q
+ . ZM:TR 1 S %ER=$ZV(%PRT,9999,%VGI) ZM:TR 0 I %ER'="" S %NM=%GLB D VALIDAT1
+ W "." S t1="           "_(%COUNT-1)_" Global"_$S(%COUNT'=2:"s",1:"")_" Processed, "_$S(BAD=0:"no",1:BAD)_" error"_$S(BAD=0:"s",BAD=1:"",1:"s")_" found." D CR^%ZAPM.bs.BSN W "."
+ V 2:$J:%HI:2 Q:%UCI="ALL"!(%VGR="ALL")
+DONE U 0 W !!,"Done"
+EXIT I $D(%DEV),%DEV'=$I U %DEV W ! C %DEV
+ V 2:$J:%HI:2 C 63 V:VIEW 0:$J:$ZB($V(0,$J,2),#8000,2):2 K (%BS,BSr,BSt,ke,se,WA,WAI) Q
+ERR ;
+ V 2:$J:%HI:2 V:VIEW 0:$J:$ZB($V(0,$J,2),#8000,2):2
+ I $F($ZE,"<INRPT>") U 0 W !!,"...Aborted." D EXIT V 0:$J:$ZB($V(0,$J,2),#0400,7):2
+ ZQ
+TRHLP W !!,"Enter:"
+ W !!?5,"'Y' to turn on UCI"
+ W !?5,"<RETURN> or 'N' to leave UCI disabled"
+ W !?5,"'^' to return to UCI question"
+ W !?5,"'^Q' to exit" G UCI
+PTR ;GET POINTERS TO DIRECTORY BLOCKS FOR UCI
+ S %VGP=$V(%VGI*4+%VGT),%UT=$V(%VGP+20),%UT=%UI-1*%USZ+%UT,%GBN=$V(%UT+4,-3,4),%RBN=$V(%UT+8,-3,4)
+e Q
+VGALL ;VALIDATE ALL VOLUME GROUPS
+ S %ALLFLG=1 F %VGI=0:1:7 I $D(VG(%VGI)) S %VG="G"_%VGI,%VGN=VG(%VGI),VGP=$V(%VGI*4+%VGT) D:$V(VGP+4,-3,2) UCIALL
+ G DONE
+UCIALL ;VALIDATE ALL UCIS FOR A GIVEN VOLUME GROUP
+ S %TYPE=3 F %UI=1:1:$V(12,-4,2) S %UN=$P($$ZU^%ZAPM.bs.BS3(%UI,%VGI),",") I %UN'="" D PTR,VALROUT
+ Q:%ALLFLG  G DONE
+UTIL ;SET UP UTILITY GLOBAL FOR ALL
+ V 2:$J:%VGI*32+%UI:2 K ^UTILITY($J) S S="" F J=0:0 S S=$N(@("^"_S)) Q:S=-1  S ^UTILITY($J,S)=""
+ Q
+VALIDAT1 ;
+ V 2:$J:%HI:2 D ^%ZAPM.bs.BSMSMV1 V 2:$J:32*%VGI+%UI:2
+ Q
+Int(BSr,BSt) ;ВНУТРЕННЯЯ ТОЧКА ВХОДА
+ N Int ZF
+ S IntVER=0 D LV^%ZAPM.bs.BSF4 G START0
+O D O^%ZAPM.bs.BSF7 Q

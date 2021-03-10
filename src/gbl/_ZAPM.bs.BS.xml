@@ -1,0 +1,1114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+<Global>
+<Node><Sub>^%ZAPM.bs.BS</Sub>
+<Data>9 11.01.2006</Data>
+<Node><Sub>1</Sub>
+<Data>СЛУЖЕБНЫЙ МАССИВ КОМПЛЕКСА %BS</Data>
+<Node><Sub>1</Sub>
+<Data><![CDATA[ 1.ОПис 2.ВЫВод 3.ЗАПись 4.РЕД 5.КОПиp 6.СЕРВис 7.ПОИСк 8.УДал 9.ИНфо 10.ВЫХ @^%ZAPM.bs.BSHLP@ @0@11@;@;@;2;3;4;5;6;7;8]]></Data>
+<Node><Sub>2</Sub>
+<Data> ВЫВОД_ПОЛНОСТЬЮ ТОЛЬКО_БЛОК @@ @0@36@;@;@;  </Data>
+<Node><Sub>1</Sub>
+<Data> ТАБЛИЦУ ДАННЫЕ @@ @0@37@;@;@;  </Data>
+<Node><Sub>1</Sub>
+<Data> ПЕЧАТЬ MSDOS-ФАЙЛ ТЕКСТ РТА-80Л HTML-ТЕКСТ JavaTabView HTML-ТАБЛ @6@ @0@38@@@</Data>
+<Node><Sub>1</Sub>
+<Data> ВЫВОД ОПЦИИ ПРИНТ-УСТАНОВКИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(1);D OPprn^%ZAPM.bs.BSout()@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> ВЫВОД ОПЦИИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(2)@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> ВЫВОД ОПЦИИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(3)@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ВЫВОД ОПЦИИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(4)@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Data> ПЕЧАТЬ MSDOS-ФАЙЛ ТЕКСТ РТА-80Л @6@ @0@38@;;;@@</Data>
+</Node>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Data><![CDATA[ КЛЕТКУ ОПИСАНИЕ_ТАБлицы ЭКРАННОЕ_РЕДактиpование_блока ДУБЛ.ДАННЫЕ_В_БЛОК @^%ZAPM.bs.BSHLP@ @0@4@@;;13]]></Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> КЛЕТКУ_В_БУФеp БЛОК_В_БУФеp ОП.ТАБл._В_БУФеp ДАННые_БЛока В_ТЕКСТ.буфеp @6@ @0@@</Data>
+<Node><Sub>4</Sub>
+<Data> СОХРАНИТЬ_В_БУФЕРЕ ВОССТАНОВИТЬ_ИЗ_БУФЕРА @6@ @0@@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> СОХРАНИТЬ_В_БЛОКОВОМ_БУФЕРЕ СОЗРАНИТЬ_В_БУФЕРЕ_ВСЕГО_ТЕКСТА @6@ @0@@</Data>
+</Node>
+</Node>
+<Node><Sub>6</Sub>
+<Data><![CDATA[ ВЫЧИСЛ СОРТИРОВ/ПОДЖатие СОЗДать РЕМонт ЗАМЕНа MSM DOS ЛОГика A-ФОРМ ТИТУЛ @6@ @0@13@@;;;;;;;;;TITUL^%ZAPM.bs.BSF12]]></Data>
+<Node><Sub>3</Sub>
+<Data> КОДИФикатоpы МИКРОЗАПРОСЫ МЕНЮ_БЛочное ПАНЕЛЬ_с_кнопками @6@ @0@18@</Data>
+<Node><Sub>1</Sub>
+<Data> ИЗ_ТАБЛИЦЫ_--&gt;&gt;КОДИФикатоp ИЗ_КОДИФИКАТОРА--&gt;&gt;ТАБЛИЦУ @6@ @0@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> ИЗ_ТАБЛИЦЫ_--&gt;&gt;М-ЗАПРОС ИЗ_М-ЗАПРОСА--&gt;&gt;ТАБЛИЦУ @6@ @0@@</Data>
+</Node>
+</Node>
+<Node><Sub>5</Sub>
+<Data> ЗАМЕНА_В_БАЗЕ_ДАННЫХ ЗАМЕНА_В_БЛОКЕ_ТЕКУЩЕЙ_ТАБЛИЦЫ @6@ @0@@</Data>
+</Node>
+</Node>
+<Node><Sub>7</Sub>
+<Data> ПОИСК_В_КОЛОНКЕ ВО_ВСЕЙ_ТАБЛ В_БАЗЕ_ДАННЫХ ПОМЕТКИ @6@ @0@23@</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> ДАННЫХ_КЛЕТКИ БЛОКА @6@ @0@@</Data>
+</Node>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Data></Data>
+<Node><Sub>1</Sub>
+<Data><![CDATA[ ВЫч ТРан ИМя ГДе ВОсс ЗАп ВЫс ДЛин ВСт КЛюч ЦВет ТАб УДал ЛОг ОПц СИнт ДВЖ F1 @^%ZAPM.bs.BSHLP@ @0@10@@@101;102;103;104;105;106;107;108;109;110;111;112;113;114;115;116;117;118]]></Data>
+<Node><Sub>1</Sub>
+<Data> РЕДАКТИРОВАТЬ_ФОРМУЛУ КОПИРОВАТЬ_В_БЛОК @6@ @0@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> РЕДАКТИРОВАТЬ_ФОРМУЛУ КОПИРОВАТЬ_В_БЛОК @6@ @0@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> ИМЯ_ХРАНЕНИЯ_В_БАЗЕ_ДАННЫХ ИМЯ_ВЫВОДА_ДАННЫХ ПОЛЯ_DBF ИНДЕКС @6@ @0@44@</Data>
+<Node><Sub>1</Sub>
+<Data> РЕДАКТИРОВАТЬ АВТОМАТИЧЕСКАЯ_УСТАНОВКА_ВО_ВСЁМ_БЛОКЕ @6@ @0@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> РЕДАКТиpовать КОПИРовать_В_БЛОК ССЫЛКА_НА_ВЫЧ @6@ @0@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> СТРУКТУРА_DBF РЕДАКТиpовать КОПИРовать_В_БЛОК @6@ @0@45@@;EdNumF^%ZAPM.bs.BSF7;CoNumF^%ZAPM.bs.BSF7</Data>
+<Node><Sub>1</Sub>
+<Data><![CDATA[ ИЗ_DBF-ФАЙЛА ИЗ_БАЗЫ_ОБРАЗЦОВ @6@ @0@@D File^%ZAPM.bs.BSXdbf1(BSR_"(BST)");D Obraz^%ZAPM.bs.BSXdbf1(BSR_"(BST)")]]></Data>
+</Node>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Data> КЛЕТКА БЛОК @6@ @0@@</Data>
+<Node><Sub>2</Sub>
+<Data> ХРАНИМ_В_ОПИСАНИИ_ТАБЛИЦЫ ХРАНИМ_В_БАЗЕ_ДАННЫХ @6@ @0@</Data>
+</Node>
+</Node>
+<Node><Sub>5</Sub>
+<Data> ИЗ_БУФЕРА ИЗ_MSDOS-ФАЙЛА ИЗ_DBF-ФАЙЛА ИЗ_ТЕКСТА @6@ @0@12@</Data>
+<Node><Sub>1</Sub>
+<Data><![CDATA[ КЛЕТКА БЛОК ТАБЛИЦА ТЕКСТ АТРИБУТЫ @6@ @0@39@@B1^%ZAPM.bs.BSTT;B2^%ZAPM.bs.BSTT;B3^%ZAPM.bs.BSTT;B4^%ZAPM.bs.BSTT;B5^%ZAPM.bs.BSF9]]></Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> ВЕСЬ_DBF_В_ТАБЛИЦУ ЗАМЕНА_ДАННЫХ_ИЗ_DBF ЗАМЕНА_БЛОКА_ИЗ_DBF @6@ @0@48@@</Data>
+</Node>
+</Node>
+<Node><Sub>6</Sub>
+<Data> КЛЕТКА БЛОК ВСЯ_ТАБЛИЦА ПРИ_СУММИРОВАНИИ_И_ВЫЧИТАНИИ_УЗЛОВ @6@ @0@@</Data>
+<Node><Sub>2</Sub>
+<Data> РАЗРЕШИТЬ ЗАПРЕТИТЬ @6@ @0@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> РАЗРЕШИТЬ ЗАПРЕТИТЬ @6@ @0@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> РАЗРЕШИТЬ ЗАПРЕТИТЬ @6@ @0@@@CYES^%ZAPM.bs.BSF5;CNO^%ZAPM.bs.BSF5;</Data>
+</Node>
+</Node>
+<Node><Sub>7</Sub>
+<Data> СТРОКИ БЛОК @6@ @0@</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> КОЛОНКИ БЛОК @6@ @0@</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> СТРОК КОЛОНОК @6@ @0@</Data>
+</Node>
+<Node><Sub>11</Sub>
+<Data> КЛЕТКА БЛОК ЦВЕТ_ИЗ_ТЕКущей_клетки_в_блок ВСЕЙ_ТАБлицы @6@ @0@</Data>
+</Node>
+<Node><Sub>12</Sub>
+<Data> ВХОД_В_ТАБлицу ВЫПОЛНИТЬ_КОМанду КОПИРОВАТЬ_В_Блок @6@ @0@</Data>
+</Node>
+<Node><Sub>13</Sub>
+<Data> СТРоки КОЛонки ПРИКpепл_СБ_Меню КЛЮЧи ФОРмулы СТРукт_DBF ПРобелы ПАНель @6@ @0@46@</Data>
+<Node><Sub>5</Sub>
+<Data> !!!ВЫЧисл ТРАНС СИНТ ЛОГики!!! @6@ @0@</Data>
+</Node>
+</Node>
+<Node><Sub>14</Sub>
+<Data> РЕДАКТировать_ЛОГ.контроль КОПИРовать_В_БЛОК РЕДАКТировать_ТЕКСТ_об_ОШибке @6@ @0@@</Data>
+</Node>
+<Node><Sub>15</Sub>
+<Data><![CDATA[ ОКно ИНф Ф.КЛ ЗАЩ ВЫЧ ТИТул ПАР ВИД СТат ТИП КУpс РЕД ЛОГ !!! ЗАКp ГЛо EXT @6@ @0@19@@BS^%ZAPM.bs.BSF2]]></Data>
+<Node><Sub>2</Sub>
+<Data> ПОЛНАЯ ЧАСТИЧНАЯ НЕ_НАДО @6@ @0@@@I1^%ZAPM.bs.BSF2;I2^%ZAPM.bs.BSF2;I3^%ZAPM.bs.BSF2</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> ВКЛЮЧЕНЫ ВЫКЛЮЧЕНЫ @6@ @0@@@FK1^%ZAPM.bs.BSF2;FK2^%ZAPM.bs.BSF2</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ВЫКЛЮЧЕНA ВКЛЮЧЕНA @6@ @0@@@Z0^%ZAPM.bs.BSF2;Z1^%ZAPM.bs.BSF2</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> ПОРЯДОК_ВЫЧИСЛЕНИЙ КОГДА_ВЫЧИСЛЯТЬ @6@ @0@@</Data>
+<Node><Sub>1</Sub>
+<Data><![CDATA[ СПРаво-НАЛево,СВЕРху-ВНиз СПР-НАЛ,СНИ-ВВеpх СЛЕв-НАП,СВеp-ВНиз С-НАП,СН-ВВ @6@ @0@@@V1^%ZAPM.bs.BSF2;V2^%ZAPM.bs.BSF2;V3^%ZAPM.bs.BSF2;V4^%ZAPM.bs.BSF2]]></Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data><![CDATA[ ПОСТОЯННО ТОЛЬКО_ПО_КОМАНДЕ_(F6) ПОСТОЯННО,НО_НЕ_ПЕРЕД_ВЫХОДОМ @6@ @0@@@C1^%ZAPM.bs.BSF3;C2^%ZAPM.bs.BSF3;C3^%ZAPM.bs.BSF3]]></Data>
+</Node>
+</Node>
+<Node><Sub>6</Sub>
+<Data> ОЧИСТИТЬ УСТАНОВИТЬ @6@ @0@@</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> ПАРОЛЬ_НА_ВХОД ПАРОЛЬ_КОРpекции_ДАННЫХ ПАРОЛЬ_КОРРекции_ОПИСания_ТАБлицы @6@ @0@</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> ВЫКЛЮЧИТЬ ВКЛЮЧИТЬ @6@ @0@@@VB0^%ZAPM.bs.BSF3;VB1^%ZAPM.bs.BSF3</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> ВЫКЛЮЧИТЬ ВКЛЮЧИТЬ @6@ @0@@@VS0^%ZAPM.bs.BSF3;VS1^%ZAPM.bs.BSF3</Data>
+</Node>
+<Node><Sub>10</Sub>
+<Data> ПОЛЬЗОВАТЕЛЬСКОЕ_МЕНЮ ТАБЛИЦУ_В_ТЕКСТ СДЕЛАТЬ_ОТЧЕТОМ @6@ @0@56@</Data>
+<Node><Sub>1</Sub>
+<Data> ВКЛЮЧИТЬ ВЫКЛЮЧИТЬ @6@ @0@@</Data>
+</Node>
+</Node>
+<Node><Sub>11</Sub>
+<Data> В_24_СТРОКЕ В_ТЕКУЩЕЙ_КЛЕТКЕ @6@ @0@@@E15111^%ZAPM.bs.BSF4;E15112^%ZAPM.bs.BSF4</Data>
+</Node>
+<Node><Sub>12</Sub>
+<Data><![CDATA[ В_24_СТРОКЕ В_ТЕКУЩЕЙ_КЛЕТКЕ В_ОКНЕ @6@ @0@47@@E15121^%ZAPM.bs.BSF4;E15122^%ZAPM.bs.BSF4;WIND^%ZAPM.bs.BSF7]]></Data>
+</Node>
+<Node><Sub>13</Sub>
+<Data> ВКЛЮЧИТЬ ВЫКЛЮЧИТЬ @6@ @0@@@E15131^%ZAPM.bs.BSF4;E15132^%ZAPM.bs.BSF4</Data>
+</Node>
+<Node><Sub>15</Sub>
+<Data> ЗАКРЫВАТЬ НЕ_ЗАКРЫВАТЬ @6@ @0@@@E15151^%ZAPM.bs.BSF4;E15152^%ZAPM.bs.BSF4</Data>
+</Node>
+<Node><Sub>16</Sub>
+<Data><![CDATA[ СОРТ ЛОГ РАМка СМ_и_ИСК ОБЖать F1 СКРЫТ УКАЗ ПРЕД ПОДтв ОБОИ А-ФОРМ КОМ ИСП @6@ @0@35@@;;;;;F1^%ZAPM.bs.BSF6;;;;;OB^%ZAPM.bs.BSF10@]]></Data>
+<Node><Sub>1</Sub>
+<Data> РАЗРешить ЗАПРетить @6@ @0@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data><![CDATA[ СТАНДаpтный_СПИСок_ЛОГ_ОШибок СПИСок_ПО_ИМЕНам_ВЫВОДА ВЫЧИСЛЕНИЕ СПИСОК_? @6@ @0@@@E151621^%ZAPM.bs.BSF4;E151622^%ZAPM.bs.BSF4]]></Data>
+<Node><Sub>3</Sub>
+<Data> ВЫЧИСЛЯТЬ_ЗНАЧЕНИЯ НЕ_ВЫЧИСЛЯТЬ @6@ @0@@@VL1^%ZAPM.bs.BSF8;VL0^%ZAPM.bs.BSF8</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ПРЕДЛАГАТЬ_СМОТРЕТЬ_СПИСОК_ЛОГ_ОШИБОК НЕ_ПРЕДЛАГАТЬ @6@ @0@@@VLY0^%ZAPM.bs.BSF8;VLY1^%ZAPM.bs.BSF8</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Data><![CDATA[ ОТМЕНить ОДИНаpная ДВОЙная СИМВолом @6@ @0@@@E151631^%ZAPM.bs.BSF4;E151632^%ZAPM.bs.BSF4;E151633^%ZAPM.bs.BSF4;E151634^%ZAPM.bs.BSF4]]></Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ВКЛючить ВЫКЛючить @6@ @0@@@E151641^%ZAPM.bs.BSF4;E151642^%ZAPM.bs.BSF4</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> ВКЛючить ВЫКЛючить @6@ @0@@@HIDON^%ZAPM.bs.BSF7;HIDOFF^%ZAPM.bs.BSF7</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> ВКЛючить ВЫКЛючить @6@ @0@@@UK1^%ZAPM.bs.BSF8;UK0^%ZAPM.bs.BSF8</Data>
+</Node>
+<Node><Sub>10</Sub>
+<Data> ВКЛючить ВЫКЛючить @6@ @0@@@PK1^%ZAPM.bs.BSF8;PK0^%ZAPM.bs.BSF8</Data>
+</Node>
+<Node><Sub>12</Sub>
+<Data> ВКЛючить ВЫКЛючить @6@ @0@@@AF1^%ZAPM.bs.BSF8;AF0^%ZAPM.bs.BSF8</Data>
+</Node>
+<Node><Sub>13</Sub>
+<Data> ВКЛючить ВЫКЛючить @6@ @0@@@KM1^%ZAPM.bs.BSF8;KM0^%ZAPM.bs.BSF8</Data>
+</Node>
+<Node><Sub>14</Sub>
+<Data><![CDATA[ КОМАНДА_М_ПОСЛЕ_ФОРМИРОВАНИЯ_ТАБЛИЦЫ КОМАНДА_М_ПЕРЕД_ВХОДОМ @6@ @0@@@SAVE^%ZAPM.bs.BSre;REST^%ZAPM.bs.BSre]]></Data>
+</Node>
+</Node>
+<Node><Sub>17</Sub>
+<Data> ТИТУЛ_ДЛЯ_ПЕЧАТИ ПОДЖАТИЕ_СВОДОК @6@ @0@57@@TitPrO^%ZAPM.bs.BSF8;PRESSCFG^%ZAPM.bs.BSSR;;</Data>
+</Node>
+</Node>
+<Node><Sub>16</Sub>
+<Data> РЕДАКТИРОВАТЬ_СИНТаксический_КОНТРоль_НА_ВВОД КОПИРОВАТЬ_В_БЛОК @6@ @0@@</Data>
+</Node>
+<Node><Sub>18</Sub>
+<Data> РЕДАКТиpовать КОПИРовать_ИЗ_ТЕКущей_КЛетки_В_БЛок @6@ @0@@@F1K^%ZAPM.bs.BSF6;F1KCOPY^%ZAPM.bs.BSF6</Data>
+</Node>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data></Data>
+<Node><Sub>1</Sub>
+<Data>    На коррекцию данных клетки можно еще выйти по команде (ALT-E)</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>                  Коррекция описания таблицы</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Если блок определен, то будем корректировать видимую часть блока</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>Если блок определен, то будем корировать в блок содержание текущей Клетки</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>    На коррекцию данных клетки можно еще выйти по команде (ALT-E)</Data>
+</Node>
+</Node>
+<Node><Sub>5</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data>данных клетки можно еще выйти по команде (ALT-E)</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>10</Sub>
+<Node><Sub>1</Sub>
+<Data> Ввод / Коррекция функций вычислений (F1-ПОМОЩЬ) (ALT-C)</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Ввод / Коррекция функции трансформации (F1-ПОМОЩЬ) (ALT-T)</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Ввод / Коррекция символьного имени клетки / Поля DBF для вывода / Индекс</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Коррекция места хранения информации в клетке</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Восстановление из буфера Клеток / Блока (F1-ПОМОЩЬ)</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Коррекция флага разрешения / запрещения записи /также при СУММИРОВАНИИ</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> Коррекция высоты клетки</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> Коррекция длины клетки</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> Вставка строк / колонок правее и ниже текущей Клетки</Data>
+</Node>
+<Node><Sub>10</Sub>
+<Data> Ввод / Коррекция ключей таблицы и ссылки на базу данных</Data>
+</Node>
+<Node><Sub>11</Sub>
+<Data> Ввод / Коррекция цвета</Data>
+</Node>
+<Node><Sub>12</Sub>
+<Data> Ввод / Коррекция входов в таблицу ,или выполнение команд MUMPSа</Data>
+</Node>
+<Node><Sub>13</Sub>
+<Data> Удаление Строк / Колонок ниже и правее текущей Клетки</Data>
+</Node>
+<Node><Sub>14</Sub>
+<Data> Ввод / Коррекция логического контроля на Клетку (F1-ПОМОЩЬ) (ALT-L)</Data>
+</Node>
+<Node><Sub>15</Sub>
+<Data> Коррекция параметров :размеры окна,информация о клетке,защита и т.д.</Data>
+</Node>
+<Node><Sub>16</Sub>
+<Data>Коррекция синтаксического контроля на ввод данных (F1-ПОМОЩЬ) (ALT-V)</Data>
+</Node>
+<Node><Sub>17</Sub>
+<Data> Определение постдвижение указателя после редактирования данных</Data>
+</Node>
+<Node><Sub>18</Sub>
+<Data> Ввод / Коррекция вызова по F1 таблицы помощи на текущую клетку</Data>
+</Node>
+</Node>
+<Node><Sub>11</Sub>
+<Data></Data>
+<Node><Sub>1</Sub>
+<Data>           Общее описание комплекса электронных таблиц </Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>        Вывод Таблиц и Данных на печать и в DOS-файл</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>      Сохранение коррекции описания таблицы,данных таблицы</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>             Редактирование описания таблиц</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>       Копирование Блока,Клеток,Таблицы и Данных в буфер</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data>     Произвести вычисления,поиск,сортировку,поджатие,и т.д.</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data>    Определение диапазона клеток для групповой работы с ними</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data>            Удаление Данных в текущей Клетке / Блоке</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data>         Смотреть информацию по системе,таблице и клетке</Data>
+</Node>
+<Node><Sub>10</Sub>
+<Data>                        Выход из таблицы     </Data>
+</Node>
+</Node>
+<Node><Sub>12</Sub>
+<Node><Sub>1</Sub>
+<Data> Восстановление КЛЕТКИ/БЛОКА/ТАБЛИЦЫ из буфера ,сохраненные режимом &lt;F5&gt;</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Замещение таблицы ,таблицей сформируемой из DOS-файла в формате %BS</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Замещение таблицы ,таблицей сформируемой из DBF-файла</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Замещение таблицы ,таблицей сформируемой ТЕКСТА размеченной в формате %BS</Data>
+</Node>
+</Node>
+<Node><Sub>13</Sub>
+<Node><Sub>1</Sub>
+<Data> Вычисления по всей таблицы при наличии функций вычисления</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Сортировка СПИСКА по текущей колонке/ Поджатие таблицы  (ALT-S)</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Создание инвертированных массивов, или динамической боковины Сводки</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Ремонт текущей таблицы - Выpавнивание клеток по 1 стpоке и 1 колонке</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Контекстная Замена Данных</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> MUMPS интерфейс</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> DOS интерфейс</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> Проверка логического контроля</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> Проверка формата данных и при необходимости раздвижка колонок</Data>
+</Node>
+</Node>
+<Node><Sub>14</Sub>
+<Node><Sub>1</Sub>
+<Data> СОХРАНИТЬ ВОССТАНОВИТЬ КОПИРОВАТЬ_В_БУФЕР @6@ @0@15@</Data>
+</Node>
+</Node>
+<Node><Sub>15</Sub>
+<Node><Sub>1</Sub>
+<Data> Сохранить текущую таблицу, или таблицы помеченные в блоке в DOS-файле</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Восстановить из DOS-файла сохраненные ранее таблицы</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Копировать таблицу, или все помеченные в БУФЕР удаляя с одинаковыми именами </Data>
+</Node>
+</Node>
+<Node><Sub>16</Sub>
+<Node><Sub>1</Sub>
+<Data> ПОДЖАТЬ_ПО_СТРОКАМ КОЛОНКАМ ОБЩЕЕ_ПОДЖАТИЕ @6@ @0@17@</Data>
+</Node>
+</Node>
+<Node><Sub>17</Sub>
+<Node><Sub>1</Sub>
+<Data> Для таблиц с Базами Данных &quot;ПОДЖИМАЮТСЯ&quot; строки с пустыми данными</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Для таблиц с Базами Данных &quot;ПОДЖИМАЮТСЯ&quot; колонки с пустыми данными</Data>
+</Node>
+</Node>
+<Node><Sub>18</Sub>
+<Node><Sub>1</Sub>
+<Data> Создание кодификатоpов для использования в $$INV и $$TIN</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Создание динамической боковины СВОДКИ по клеткам включенным в блок</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Создание блочного меню,пpикpепленного к дpугой таблицы с вызовом (ALT-F2)</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Создание Панели с кнопками</Data>
+</Node>
+</Node>
+<Node><Sub>19</Sub>
+<Node><Sub>1</Sub>
+<Data> Редактирование Координат ОКНА работы с таблицей</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Редактирование степени детализации информации по текущей клетке</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> ВКЛ/ВЫКЛ стандартной обработки функциональных клавищ</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ВКЛ/ВЫКЛ флага запрещения редактирования всей таблицы</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Редактирование порядка и периодичности работ формул вычисления</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> ВКЛ/ВЫКЛ титула таблицы</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> Редактирование паролей таблицы</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> ВКЛ/ВЫКЛ запоминания в видео-буфере последнего экрана таблицы</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> ВКЛ/ВЫКЛ запоминания последнего состояния указателя в таблицы</Data>
+</Node>
+<Node><Sub>10</Sub>
+<Data> Редактирование Типа таблицы :Пользовательское Меню/Текст/Отчет</Data>
+</Node>
+<Node><Sub>11</Sub>
+<Data> Редактирование положения курсора при движении по таблицы</Data>
+</Node>
+<Node><Sub>12</Sub>
+<Data> Редактирование места РЕДАКТИРОВАНИЯ данных текущей клетки</Data>
+</Node>
+<Node><Sub>13</Sub>
+<Data> ВКЛ/ВЫКЛ разрешения работы Формул ЛОГического контроля</Data>
+</Node>
+<Node><Sub>14</Sub>
+<Data> ОПТИМИЗАЦИЯ (удаление исходных текстов ФОРМУЛ) !!!!</Data>
+</Node>
+<Node><Sub>15</Sub>
+<Data> ВКЛ/ВЫКЛ разрешения ЗАКРЫВАТЬ от входа ТАБЛИЦУ пpи текущей pаботе с ней</Data>
+</Node>
+<Node><Sub>16</Sub>
+<Data> Глобальные паpаметpы всей таблицы (Часть 1)</Data>
+</Node>
+<Node><Sub>17</Sub>
+<Data> Глобальные паpаметpы всей таблицы (Часть 2)</Data>
+</Node>
+</Node>
+<Node><Sub>20</Sub>
+<Node><Sub>1</Sub>
+<Data> МОНТИРовать ДЕМОНТИРовать УСТАНОВКИ-%BS СОСТояние ОБНОВить @6@ @0@21@</Data>
+</Node>
+</Node>
+<Node><Sub>21</Sub>
+<Node><Sub>1</Sub>
+<Data> Монтировать дополнительный ТОМ базы данных</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Демонтировать первый ТОМ базы данных</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Редактирование основных параметров комплекса %BS</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Посмотреть состояние занятых таблиц %BS</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Обновить экран , таблицу томов и кипов %BS</Data>
+</Node>
+</Node>
+<Node><Sub>22</Sub>
+<Node><Sub>1</Sub>
+<Data> КОЛОНКА ТАБЛИЦА СТРОКА ГРАНИЦА </Data>
+</Node>
+</Node>
+<Node><Sub>23</Sub>
+<Node><Sub>1</Sub>
+<Data> Поиск в текущей колонке и установка на образец указателя</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Поиск контекста во всей таблице и установка на образец указателя</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Поиск контекста в текущей Клетке в текущей БАЗЕ данных (ALT-Y)</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Поиск помеченных Клеток</Data>
+</Node>
+</Node>
+<Node><Sub>24</Sub>
+<Node><Sub>1</Sub>
+<Data> СОХРАНИТЬ ВОССТАНОВИТЬ @6@ @0@28@</Data>
+</Node>
+</Node>
+<Node><Sub>25</Sub>
+<Node><Sub>1</Sub>
+<Data> Суммиpование ДАННЫХ помеченных КЛЮЧЕЙ в новый КЛЮЧ</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Копиpование ДАННЫХ ТЕКУЩЕГО КЛЮЧА в новый КЛЮЧ</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Искать Ключи по контексту (ALT-Y)</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Копиpование ДАННЫХ ТЕКУЩЕГО КЛЮЧА в новый КЛЮЧ С УДАЛЕНИЕМ СТАРОГО</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Вычитание из ТЕКУЩЕГО КЛЮЧА помеченного с записью результата в новый</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Логический контроль помеченных узлов</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> Межуровневый контроль данных</Data>
+</Node>
+</Node>
+<Node><Sub>26</Sub>
+<Data>     &lt;Enter&gt; - ВЫБОР , &lt;Стpелки&gt; - ДВИЖЕНИЕ УКАЗАТЕЛЯ , &lt;Esc&gt; - ОТМЕНА</Data>
+</Node>
+<Node><Sub>27</Sub>
+<Node><Sub>1</Sub>
+<Data> СУМмировать ДУБЛировать ИСКать ПЕРЕЗАПись ВЫЧитание ЛОГика МУ-Контроль @6@ @0@25@</Data>
+</Node>
+</Node>
+<Node><Sub>28</Sub>
+<Node><Sub>1</Sub>
+<Data> Сохранить текущий КЛЮЧИ, или КЛЮЧИ помеченные в блоке в DOS-файле</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Восстановить из DOS-файла сохраненные ранее ДАННЫЕ БАЗЫ ДАННЫХ</Data>
+</Node>
+</Node>
+<Node><Sub>29</Sub>
+<Node><Sub>1</Sub>
+<Data> SYSTEM GLOBALS ROUTINE %BS-ROU РАЗДелы-%BS БАЗЫ-%BS КОД ДИН ФУНКЦИИ @6@ @0@30@</Data>
+</Node>
+</Node>
+<Node><Sub>30</Sub>
+<Node><Sub>1</Sub>
+<Data> Системные pаботы</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Работа с МАССИВАМИ ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Работа с ПРОГРАММЫМИ ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Работа с %BS-ПРОГРАММЫМИ ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Работа с РАЗДЕЛАМИ КОМПЛЕКСА ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Работа с БАЗАМИ ДАННЫХ ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> Работа с КОДИФИКАТОРАМИ ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> Работа с ДИНАМИЧЕСКОЙ БОКОВИНОЙ СВОДОК ТЕКУЩЕГО КИПА</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> Ввод или Редактиpование Функций %BS</Data>
+</Node>
+</Node>
+<Node><Sub>31</Sub>
+<Node><Sub>1</Sub>
+<Data> Files DiskSpace Version @6@ @0@32@</Data>
+</Node>
+</Node>
+<Node><Sub>32</Sub>
+<Node><Sub>1</Sub>
+<Data> Работа с ФАЙЛАМИ и ДИРЕКТОРИЯМИ </Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Доступное Дисковое Постpанство</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Смотpеть веpсию DOS</Data>
+</Node>
+</Node>
+<Node><Sub>33</Sub>
+<Node><Sub>1</Sub>
+<Data> В_ФАЙЛ ИЗ_ФАЙЛА УЗЕЛ_в_УЗЕЛ В_БУФЕР ИЗ_БУФЕРА ВЫВОД_НА_&quot;ПФЛ&quot; @6@ @0@58</Data>
+<Node><Sub>1</Sub>
+<Data> СОХРанить ПО_ДАТАМ ГОpячие_УЗЛЫ ПОЛЬЗователем ВСЮ_БАЗУ @6@ @0@34@</Data>
+</Node>
+</Node>
+</Node>
+<Node><Sub>34</Sub>
+<Node><Sub>1</Sub>
+<Data> Сохpанить текущий узел ,или помеченные в блоке</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Сохpанить все узлы созданные, или модифициpованные в диапазоне дат</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Сохpанить все узлы созданные,модифициpованные после последнего сохpанения</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Сохpанить все узлы созданные,модифициpованные опpеделенным пользователем</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Сохpанить всю базу данных</Data>
+</Node>
+</Node>
+<Node><Sub>35</Sub>
+<Node><Sub>1</Sub>
+<Data> Опpеделить паpаметpы соpтиpовки пpостой таблицы</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Опpеделить паpаметpы фоpмиpования списка логических ошибок</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Опpеделить паpаметpы РАМКИ</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ВКЛ/ВЫКЛ pежим ТАБЛИЦЫ только ПРОСМОТРА И ПОИСКА</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Пеpеопpеделить pазмеpы окна до pеальных гpаниц ТАБЛИЦЫ</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Опpеделить вызов таблицы помощи по клавише F1 вместо стандаpтной</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> ВКЛ/ВЫКЛ флага скрытости ТАБЛИЦЫ В разделе</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> УКАЗАТЕЛЬ ТОЛЬКО В КЛЕТКАХ РАЗРЕШЕННЫХ К КОРРЕКЦИИ</Data>
+</Node>
+<Node><Sub>9</Sub>
+<Data> Определить программу предобработку Функц.Клавиш</Data>
+</Node>
+<Node><Sub>10</Sub>
+<Data> Подтверждать Запись в Базу Данных</Data>
+</Node>
+<Node><Sub>12</Sub>
+<Data> ВКЛ/ВЫКЛ pежим АВТОМАТИЧЕСКОЙ ПРОВЕРКИ И РАЗДВИЖКИ ТАБЛИЦЫ</Data>
+</Node>
+<Node><Sub>13</Sub>
+<Data>ТЕКСТ КОМЕНТАРИЯ ВСТАВЛЯТЬ В ВОПРОС О ЗАПИСИ КОРРЕКЦИИ В БД</Data>
+</Node>
+<Node><Sub>14</Sub>
+<Data>Определить программу ИСПОЛНЯЕМУЮ ПОСЛЕ ФОРМИРОВАНИЯ И ПРИ ВХОДЕ</Data>
+</Node>
+</Node>
+<Node><Sub>36</Sub>
+<Node><Sub>1</Sub>
+<Data> Вывод для всей таблицы</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Вывод для клеток, помеченных блоком</Data>
+</Node>
+</Node>
+<Node><Sub>37</Sub>
+<Node><Sub>1</Sub>
+<Data> Вывод таблицы</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Выводить данные клеток у котоpых имеются СИМВОЛЬНЫЕ ИМЕНА ВЫВОДА</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Последовательный коммутативный поpт</Data>
+</Node>
+</Node>
+<Node><Sub>38</Sub>
+<Node><Sub>1</Sub>
+<Data> На принтер</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> В текстовый MS-DOS файл (Cyrillic, 866)</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> В %BS-текст </Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> РТА 80л Подключенный К Последовательному коммутативному поpту</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Вывести в HTML-Файл в виде текста (Cyrillic, 1251)</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Вывести в HTML-Файл для Java - АПЛЕТА ../BS/TabView/TabView.class</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> Вывести в HTML-Файл в виде таблицы (Cyrillic, 1251)</Data>
+</Node>
+</Node>
+<Node><Sub>39</Sub>
+<Node><Sub>1</Sub>
+<Data> Восстановление КЛЕТКИ из буфеpа</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Восстановление БЛОКА из буфеpа</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Восстановление ВСЕЙ ТАБЛИЦЫ из буфеpа с заменой ТЕКУЩЕЙ !!!</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Восстановление ТЕКСТА из буфеpа с заменой ТЕКУЩЕЙ на ТЕКСТ !!!</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Восст. из буфеpа в БЛОК всех атрибутов клеток кроме данных и размеров</Data>
+</Node>
+</Node>
+<Node><Sub>40</Sub>
+<Node><Sub>1</Sub>
+<Data> SYSTEM GLOBALS ROUTINE %BS-ROU РАЗДелы-%BS БАЗЫ-%BS КОД ДИН ФУНКЦИИ @6@ @0@30@</Data>
+</Node>
+</Node>
+<Node><Sub>41</Sub>
+<Node><Sub>1</Sub>
+<Data> Системные pаботы</Data>
+</Node>
+</Node>
+<Node><Sub>42</Sub>
+<Node><Sub>2</Sub>
+<Data> Работа с МАССИВАМИ ТЕКУЩЕГО КИПА</Data>
+</Node>
+</Node>
+<Node><Sub>43</Sub>
+<Node><Sub>1</Sub>
+<Data> Вывод на устройство</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Определение параметров вывода</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Определение параметров принтера</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Карта вывода, которую можно редактировать (для ПАКЕТНОГО РЕЖИМА)</Data>
+</Node>
+</Node>
+<Node><Sub>44</Sub>
+<Node><Sub>1</Sub>
+<Data> Определение символьного имени для адресно-независимого хранения в БД</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Определение символьного имени для вывода в формате ПФЛ</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Определение структуры DBF и номеров полей для вывода данных в формате DBF</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Определение формулы индексно-поискового массива для текущей клетки</Data>
+</Node>
+</Node>
+<Node><Sub>45</Sub>
+<Node><Sub>1</Sub>
+<Data>Определение DBF по DBF-файлу или по обазцу DBF описанному в БД ^%ZAPM.bs.BSdbfBA</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Определение номера поля для текущей клетки</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Копирование номера поля в БЛОК</Data>
+</Node>
+</Node>
+<Node><Sub>46</Sub>
+<Node><Sub>1</Sub>
+<Data> Следующие за указателем</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Правее указателя</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Удалить прикрепленное Строчно-Блочное Меню</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Удалить КЛЮЧИ , ТАБЛИЦА ПЕРЕСТАНЕТ БЫТЬ БАЗОЙ ДАННЫХ </Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Удалить ФОРМУЛЫ</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Удаление СТРУКТУРЫ DBF у таблицы</Data>
+</Node>
+<Node><Sub>7</Sub>
+<Data> Удаление оконечных пробелов в ДАННЫХ помеченных КЛЕТОК</Data>
+</Node>
+<Node><Sub>8</Sub>
+<Data> Удаление у таблицы атрибута ПАНЕЛИ С КНОПКАМИ</Data>
+</Node>
+</Node>
+<Node><Sub>47</Sub>
+<Node><Sub>1</Sub>
+<Data> Все клетки таблицы редактировать в строчном редакторе</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Все клетки таблицы редактировать в окне текущей клетки</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Установить коррекцию текущей клетки в окне определенного размера</Data>
+</Node>
+</Node>
+<Node><Sub>48</Sub>
+<Node><Sub>1</Sub>
+<Data> Замещение таблицы ,таблицей сформируемой из DBF-файла</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Изменение данных таблицы из соответствующих полей DBF-файла</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Изменение данных БЛОКА таблицы из соответствующих полей DBF-файла</Data>
+</Node>
+</Node>
+<Node><Sub>49</Sub>
+<Node><Sub>1</Sub>
+<Data> I_ТАБЛИЦА_ключей II_ТАБЛИЦА_ключей III_ТАБЛИЦА_ключей ВЗЯТЬ_ЗА_ОСНОВУ_чужие @6@ @0@50</Data>
+</Node>
+</Node>
+<Node><Sub>50</Sub>
+<Node><Sub>1</Sub>
+<Data> В таблице один ключ - первый индексный ключ</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> В таблице 2 ключа 1,2 индексный ключ</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> В таблице 3 ключа - именной и 1,2 индексный ключ</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Экспорт таблицы описания ключей из другой таблицы описания базы данных</Data>
+</Node>
+</Node>
+<Node><Sub>51</Sub>
+<Node><Sub>1</Sub>
+<Data> СОЗДАТЬ ИНСТАЛЛИРОВАТЬ @6@ @0@52</Data>
+</Node>
+</Node>
+<Node><Sub>52</Sub>
+<Node><Sub>1</Sub>
+<Data> Создать приложение работающее под управлением комплекса</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Восстановить приложение в текущий КИП</Data>
+</Node>
+</Node>
+<Node><Sub>55</Sub>
+<Data> Восстановить приложение в текущий КИП</Data>
+<Node><Sub>1</Sub>
+<Data> ТАБЛИЦУ ДАННЫЕ @@ @0@37@;@;@;  </Data>
+<Node><Sub>1</Sub>
+<Data> ПЕЧАТЬ MSDOS-ФАЙЛ ТЕКСТ РТА-80Л @6@ @0@38@@@</Data>
+<Node><Sub>1</Sub>
+<Data> ВЫВОД ОПЦИИ ПАРАМЕТРЫ_ПРИНТЕРА @6@ @0@43@;D OPout^%ZAPM.bs.BSout(1);D OPprn^%ZAPM.bs.BSout()@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> ВЫВОД ОПЦИИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(2)@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> ВЫВОД ОПЦИИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(3)@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> ВЫВОД ОПЦИИ @6@ @0@43@;D OPout^%ZAPM.bs.BSout(4)@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Data> ПЕЧАТЬ MSDOS-ФАЙЛ ТЕКСТ РТА-80Л @6@ @0@38@;;;@@</Data>
+</Node>
+</Node>
+</Node>
+<Node><Sub>56</Sub>
+<Node><Sub>1</Sub>
+<Data> Селать таблицу пользовательским меню</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Переделать текущую таблицу в текст</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Сделать ее таблицей описания отчета по б.данных</Data>
+</Node>
+</Node>
+<Node><Sub>57</Sub>
+<Node><Sub>1</Sub>
+<Data> Установить титул толко для печати (для таблиц с высокой шапкой)</Data>
+</Node>
+</Node>
+<Node><Sub>58</Sub>
+<Node><Sub>1</Sub>
+<Data> Запасное копирование узлов базы данных в ДОС-ФАЙЛ</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data> Восстановление узлов базы данных из ДОС-ФАЙЛов</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data> Копирование узлов в пределах одной базы данных </Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data> Копирование узлов базы данных в буфер</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data> Восстановление узлов базы данных из буфера</Data>
+</Node>
+<Node><Sub>6</Sub>
+<Data> Вывод данных из текущих узлов Базы Данных в &quot;Новом Формате ПФЛ&quot; </Data>
+</Node>
+</Node>
+<Node><Sub>%GSEL</Sub>
+<Data><![CDATA[GS1 U 0 R !!,"Global selector: ^",%GN I %GN["~" D ^%ZAPM.bs.BSMSMS(2,%GN,$G(%GTEMP,"^UTILITY("_$J_")")) G GS1]]></Data>
+</Node>
+<Node><Sub>%GSEL4</Sub>
+<Data><![CDATA[ R !!,"Global selector: ^",%GN I %GN["~" D ^%ZAPM.bs.BSMSMS(2,%GN,$G(%GTEMP,"^UTILITY("_$J_")")) G GS1]]></Data>
+</Node>
+<Node><Sub>%RSEL</Sub>
+<Data> R !!,&quot;Routine selector: &quot;,%RS I %RS[&quot;~&quot; D ^%ZAPM.bs.BSMSMS(1,%RS,&quot;^UTILITY(&quot;_$J_&quot;)&quot;) G L0</Data>
+</Node>
+<Node><Sub>BSDSR</Sub>
+<Node><Sub>0</Sub>
+<Data>N:/ROU/BSNEW</Data>
+</Node>
+<Node><Sub>1</Sub>
+<Data>N:/ROU/BSNEW</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>N:/ROU/BSNEW</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>N:/ROU/BSNEW</Data>
+</Node>
+<Node><Sub>%MIR</Sub>
+<Data>N:/ROU/BSNEW</Data>
+</Node>
+<Node><Sub>ARX</Sub>
+<Data>N:\ROU\bsdsr.zip</Data>
+</Node>
+<Node><Sub>Profile</Sub>
+<Data>L:/MSW_TOOLS/ROU/PROFILE</Data>
+</Node>
+</Node>
+<Node><Sub>CacheTune</Sub>
+<Data>2003-04-24</Data>
+</Node>
+<Node><Sub>Client BS-Portal ver.4.</Sub>
+<Data>5011</Data>
+</Node>
+<Node><Sub>Debug</Sub>
+<Data>0</Data>
+</Node>
+<Node><Sub>DriveISS</Sub>
+<Data>n:/InfoPortal/</Data>
+</Node>
+<Node><Sub>HADDV</Sub>
+<Data>ADDV I QF=1&amp;(VGIN&apos;=7)&amp;($ZU(1,2)=&quot;&quot;) W !,&quot;Расшиpение таблицы томов...&quot; D ADDV^%ZAPM.bs.BSH G VGSLOT</Data>
+</Node>
+<Node><Sub>HFILE</Sub>
+<Data><![CDATA[ R !,"File Name >: ",%FN D:%FN="??" FILE^%ZAPM.bs.BSDOS2 G QUIT:%FN="",P1:%FN="^",QUIT:%FN="^Q"!(%FN="^q")]]></Data>
+</Node>
+<Node><Sub>HNAME</Sub>
+<Data>HNAME I $D(%BShNAME),&apos;$G(QF) S HNAME=%BShNAME K %BShNAME G HNAME+3</Data>
+</Node>
+<Node><Sub>INT^%SP</Sub>
+<Data>INT NEW (%FTOTBLK,%TOTBLK,%VGI,%NOSHOW,%SPDBNA) I &apos;$D(%NOSHOW) S %NOSHOW=1</Data>
+</Node>
+<Node><Sub>INT^%SPmsm4</Sub>
+<Data>INT NEW (%FTOTBLK,%TOTBLK,%VGI,%NOSHOW,VOLDBNA) I &apos;$D(%NOSHOW) S %NOSHOW=1</Data>
+</Node>
+<Node><Sub>LPT</Sub>
+<Node><Sub>3</Sub>
+<Data>135</Data>
+</Node>
+</Node>
+<Node><Sub>RVG18</Sub>
+<Data><![CDATA[ S:$G(%BSvgT)=$H %BSvg="" S:$D(%BSvg) VGNAME=%BSvg,%BSvgT=$H I '$D(%BSvg) W !!,"Enter Volume Group Name to be Mounted: " R VGNAME]]></Data>
+</Node>
+<Node><Sub>RVG8</Sub>
+<Data><![CDATA[ G:$G(%BSvg,"?")="" RELSE S:$D(%BSrs) SYS=%BSrs I '$D(%BSrs) W !!,"Enter Remote System Name: " R SYS G:SYS=""!(SYS="^") RELSE]]></Data>
+</Node>
+<Node><Sub>SGDDB</Sub>
+<Data>PROMPT K ^%ZAPM.bs.BS(&quot;SYSGEN&quot;)</Data>
+</Node>
+<Node><Sub>SYSGEN</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>Startup</Sub>
+<Node><Sub>DBSizesAllowed</Sub>
+<Data>8192</Data>
+</Node>
+<Node><Sub>DefaultPort</Sub>
+<Data>1972</Data>
+</Node>
+<Node><Sub>DomainspaceMaster</Sub>
+<Data>0,</Data>
+</Node>
+<Node><Sub>ErrorPurge</Sub>
+<Data>30</Data>
+</Node>
+<Node><Sub>JobServers</Sub>
+<Data>0</Data>
+</Node>
+<Node><Sub>LicenseServer</Sub>
+<Data>127.0.0.1,4001</Data>
+</Node>
+<Node><Sub>Section Head</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>ShutdownTimeout</Sub>
+<Data>300</Data>
+</Node>
+<Node><Sub>TempDirectory</Sub>
+<Data>Temp</Data>
+</Node>
+<Node><Sub>WebServer</Sub>
+<Data>ON,57772</Data>
+</Node>
+<Node><Sub>WebServerURLPrefix</Sub>
+<Data></Data>
+</Node>
+<Node><Sub>maxconsolelogsize</Sub>
+<Data>5</Data>
+</Node>
+<Node><Sub>start_0</Sub>
+<Data>System~1~1</Data>
+</Node>
+<Node><Sub>start_1</Sub>
+<Data>Process~1~1</Data>
+</Node>
+<Node><Sub>start_2</Sub>
+<Data>Job~1~1</Data>
+</Node>
+<Node><Sub>start_3</Sub>
+<Data>Callin~1~1</Data>
+</Node>
+<Node><Sub>stu</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>zstu</Sub>
+<Data>1</Data>
+</Node>
+</Node>
+<Node><Sub>Telnet</Sub>
+<Node><Sub>DNSLookup</Sub>
+<Data>OFF</Data>
+</Node>
+<Node><Sub>Port</Sub>
+<Data>23</Data>
+</Node>
+<Node><Sub>Section Head</Sub>
+<Data></Data>
+</Node>
+</Node>
+<Node><Sub>VER</Sub>
+<Data>3.0.10</Data>
+</Node>
+<Node><Sub>login</Sub>
+<Node><Sub>BS</Sub>
+<Data>PQIAAA|%SYS|^%ZAPM.bs.BSC|0,0</Data>
+</Node>
+</Node>
+</Node>
+</Global>
+</Export>

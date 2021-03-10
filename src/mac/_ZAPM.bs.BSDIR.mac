@@ -1,0 +1,17 @@
+ROUTINE %ZAPM.bs.BSDIR
+%BSDIR ;КАТАЛОГИЗАТОР ; 13:37 18-DEC-98
+D(ot,do,fi,co,fo,r,t,com,new,cmdl,Fk,comnew,PrEd) ;d-cквозная локаль
+ ;new=1 СТРОКА НОВОГО ОБ'ЕКТА ОБЯЗАТЕЛЬНА
+ ;new=2 СТРОКА НОВОГО ОБ'ЕКТА ТОЛЬКО ПРИ ОТСУТСТВИИ ОБ'ЕКТОВ
+ ;new="" СТРОКА НОВОГО ОБ'ЕКТА НЕ НУЖНА
+ ;cmdl КОМАНДА СПЕЦ-ПОДСКАЗКИ
+ ;PrEd - ПРОГРАММА ПРЕДОБРАБОТКИ
+ S d=ot,v=1,l1=78,ke=1,BSr=r,BSt=t,cl=$P(%BS,"!",4),t1=" .. "_com_" в "_$$ZU^%ZAPM.bs.BS3(0) D CR^%ZAPM.bs.BSN
+ I $G(new)=1 D NEWLINE
+ K LINEDIR S ls=com D WAITS^%ZAPM.bs.BSF2
+ S cl=$P(%BS,"!",5) F  X co Q:do[d  X WA I @fi X fo D CR^%ZAPM.bs.BSN S LINEDIR=1
+ I $G(new)=2,'$D(LINEDIR) D NEWLINE
+ D CREAT^%ZAPM.bs.BSN I $G(cmdl)'="" S $P(@(BSR_"(BST)"),"@",13)=cmdl
+e Q
+NEWLINE S cl=$P(%BS,"!",5),t1=" ..  "_comnew D CR^%ZAPM.bs.BSN Q
+ 

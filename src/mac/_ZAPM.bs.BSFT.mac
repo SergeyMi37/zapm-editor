@@ -1,0 +1,47 @@
+ROUTINE %ZAPM.bs.BSFT
+%BSFT ;CТАРАЯ ТРАНСЛЯЦИЯ ФОРМУЛ ; 13:13   16.07.99
+ S (li1,i0)=li,ft=1 ;li-ИСХОДНЫЙ ТЕКСТ li1-ОТТРАНСЛИРОВАННЫЙ ТЕКСТ
+ I i0["$$TSP" S ft=2 G TSP ;СПИСОК
+ I i0["$$TSV" S ft=3 G TSV ;СВОДКА
+ S %zT=$ZT,$ZT="ERRO^%ZAPM.bs.BSFT"
+ I i0["$$" D FUN ;->i0
+ D AAA
+ S (d3,d,d0,d1)=1,li1=$S(f="COL":"I ",1:"S d1=")_li1 X li1 S ^%ZAPM.bs.BSbufB(0,$G(%BS(3),$P),5)=li1,$ZT=$G(%zT),YES=1 Q
+AAA F i=2:1 Q:i0'["{"  S i0=$P(i0,"{")_"$$A^%ZAPM.bs.BSA("_$P(i0,"{",2,9999)
+ S i0=$TR(i0,"}",")"),li1=i0 Q
+FUN ;ФУНКЦИИ ОБЩЕГО НАЗНАЧЕНИЯ
+ S i1=i0,YES=1 F  Q:i1'["$$"  S i5=$P($P(i1,"$$",2,255),"(") D  Q:'YES
+ .I '$D(@("^%ZAPM.bs.BSFUN(i5)")) S YES=1 D  Q  //S ls=" ФУНКЦИЯ "_i5_" НЕ ОПРЕДЕЛЕНА В %BS !!! ЭТО ВАША ФУНКЦИЯ ? " D YES^%ZAPM.bs.BSF D  Q
+ ..I YES S i1=$P(i1,"$$")_"||"_$P(i1,"$$",2,9999) Q
+ .I i5["TS" S i1=$P(i1,"$$")_"||"_$P(i1,"$$",2,9999) Q
+ .S pr=$G(^%ZAPM.bs.BSFUN(i5,"9,4"))_"!"_$G(^%ZAPM.bs.BSFUN(i5,"11,4")),i2=$P($P(i1,"$$",2,9999),"(",2,9999)
+ .;I ^%ZAPM.bs.BS("FUN")[i5 D F
+ .I $G(^%ZAPM.bs.BSFUN(i5,"7,4"))=1 D F
+ .S i2=$P($P(i1,"$$",2,9999),"(",2,9999)
+ .S i1=$P(i1,"$$")_"||"_$P(pr,"!",2)_"("_$P($P(i1,"$$",2,9999),"(",2,9999) Q
+ S (li1,i0)=$TR(i1,"|","$") K i1,i2,i3,i4,i5,i6,i7,ii1,ii2,ii3,ii4 Q
+TSP ;СПИСКОВЫЕ ФУНКЦИИ
+ G:f'="FCL" OTL I TIP=3 G TS
+ I TIP>1 S ls=" ВАША ТАБЛИЦА УЖЕ НЕ МОЖЕТ БЫТЬ СПИСКОМ " G OTLUP
+ I TIP<2 S ls=" Вы хотите что-бы ваша таблица:"_BSR_","_BST_" стала списком ? Вы уверены " D YES^%ZAPM.bs.BSF I 'YES S ls=" ОТМЕНА " G OTLUP
+ S $P(@(BSR_"(BST)"),"@",17)=3,TIP=3 G TS
+TSV ;СВОДКОВЫЕ ФУНКЦИИ
+ G:f'="FCL" OTL I TIP=4 G TS
+ I TIP>1 S ls=" ВАША ТАБЛИЦА УЖЕ НЕ МОЖЕТ БЫТЬ СВОДКОЙ " G OTLUP
+ I TIP<2 S ls=" Вы хотите что-бы ваша таблица стала сводкой ? Вы уверены ? " D YES^%ZAPM.bs.BSF I 'YES S ls=" ОТМЕНА " G OTLUP
+ S $P(@(BSR_"(BST)"),"@",17)=4,TIP=4
+TS S i1=i0,YES=1,i6=$P(i1,"$$",2,255),i5=$P(i6,"(") I '$D(@("^%ZAPM.bs.BSFUN(i5)")) S ls=" ФУНКЦИЯ "_i5_" НЕ ОПРЕДЕЛЕНА !!!" D O^%ZAPM.bs.BSF7 S YES=0 Q
+ S:i6["$$TS" i6=$P($P(i6,"$$TS"),")",1,$L($P(i6,"$$TS"),")")-1)_")" S %zT=$ZT,$ZT="ERRO^%ZAPM.bs.BSFT",li1="S YES=$$"_i5_"^%ZAPM.bs.BSsFUNR("_$P(i6,"(",2,999) I li1[",," F  Q:li1'[",,"  S li1=$P(li1,",,")_$C(44,34,44)_$P(li1,",,",2,999)
+ X li1 S $ZT=$G(%zT),li1=i0 Q
+ERRO I $ZE["<MXSTR" S ls=" ДЛИНА СТРОКИ ПОСЛЕ ТРАНСЛЯЦИИ БОЛЬШЕ ДОПУСТИМОЙ " G ERR
+ I $ZE["PARM>"!($ZE["<FUN") S ls=" ОШИБКА В ПАРАМЕТРАХ ФУНКЦИИ ИЛИ НЕВЕРНЫЙ АДРЕС КЛЕТКИ " ;G ERR
+ S ls=" ОШИБКА "_$E($ZE,1,21) D O^%ZAPM.bs.BSF7 S ls=$G(li1,"???")
+ERR D O^%ZAPM.bs.BSF7 S YES=0,li1="" Q
+OTL S ls=" ФОРМУЛЫ $$TS* РАЗРЕШЕНЫ ТОЛЬКО В ФОРМУЛАХ ВЫЧИСЛЕНИЯ ! "
+OTLUP D O^%ZAPM.bs.BSF7 S (ft,li,li1)="" Q
+F ;ЗАМЕНА "{}" НА "Її" ДЛЯ ФУНКЦИИЙ ТИПА SUM,MAX,MIN,PLU...
+ S i4=1 F i3=1:1:$L(i2) Q:$E(i2,i3)=""  S:$E(i2,i3)="(" i4=i4+1 S:$E(i2,i3)=")" i4=i4-1 Q:$E(i2,i3)=")"&(i4=0)
+ S p0="FU("_$E(i2,1,i3) D @p0 I $D(p44) S i3=i3-$L(p44)-1-$L(p44,$C(34))
+ S i1=$P(i1,"$$")_"$$"_$P($P(i1,"$$",2),"(")_"("_$TR($E(i2,1,i3),"{}","")_$E(i2,i3+1,9999) Q
+FU(p1,p2,p3,p4) I $D(p4) S p44=p4
+e Q

@@ -1,0 +1,32 @@
+ROUTINE %ZAPM.bs.BSTREE
+%BSTREE(G) ;пpогpамма РАБОТЫ С ДЕРЕВОМ ГЛОБАЛЕЙ ; 15:05 21-OCT-98
+ Q:'$$Data^%ZAPM.bs.BSF12(G)  N (%BS,G)  S BSR="^%ZAPM.bs.BSVOL",BST="TREE"
+ S %BS("Tmp","Tree")=G D ^%ZAPM.bs.BST
+ Q
+T() ;ТРАНСФОРМАЦИЯ
+ N G,a,n s n=65 Q:ny=3 ""
+ S G=$$SS(ny=1!(ny=2)) Q:G="" ""
+ S ii=$D(@G)
+ s a=G i $l(a)>n s a="..."_$e(a,$l(a)-n,$l(a))
+ Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.bs.BSChT(@G))
+EDIT ;РЕДАКТИРОВАТЬ УЗЕЛ
+ N G,S,i
+ S G=$$SS(ny=1!(ny=2))
+ S i=$D(@G),ii=$G(@G)
+ i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ S S=$$LineEdit^%ZAPM.bs.BSXfun(ii,G_"="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")) Q:YES<1
+ i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ I i["0",S="" D Yes^%ZAPM.bs.BSXfun("ВЫ ХОТИТЕ ВВЕСТИ ПУСТОЕ ЗНАЧЕНИЕ ?") Q:YES<1
+ S @G=S
+ Q
+ /* .// //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
+ .i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ .S S=$$LineEdit^%ZAPM.bs.BSXfun(ii,txt) Q:YES<1
+ .i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ */
+SS(A) N ii,i,G
+ Q:'$D(BSD) ""
+ S G=BSD
+ I $D(%KEYS) F ii=1:1:%KEYS Q:'$D(%KEYS(ii))  S G=$NA(@G@(%KEYS(ii)))
+ I $G(A) Q $NA(@G)
+ Q $NA(@G@(d))

@@ -1,0 +1,70 @@
+ROUTINE %ZAPM.bs.BSpgWEBOS
+TKWEBOS ;PG&A,TK-WEB,1.1,SELECT A PAGE;17SEP93 10:12A;;;16JUL97  10:51 [ 10/15/97   8:11 AM ]
+ ;;Copyright (C) 1997 Patterson, Gray and Associates, Inc. ;#7280
+ ;Copyright (C) 1984, Patterson, Gray & Associates, Inc.
+BEG N Y S %R=3,%C=1 W @TKP,TK("HI"),TK("CS") L
+R4 S DOC="",%R=4,%C=4 D GETY
+ W @TKP,TK("LO") F I=1:1:4 S %C=$P("5,24,52,73",",",I) W @TKP,$P(Y,"\",I)
+ I $O(^%ZAPM.bs.BSpgWEBF(98,DIR,""))="" S %R=23,%C=12,Y=$S('$D(TK(9)):"Directory has no pages - Press\RETURN\to continue",1:@TK(9)@(27)) W @TKP,TK("LO"),$P(Y,"\"),TK("HI")," ",$P(Y,"\",2)," ",TK("LO"),$P(Y,"\",3)," " X "F I=0:0 R *X Q:X=13!(X=27)" S DOC="" Q
+ S SEL="""==>""",SEL1=""""""
+ S Y=$S('$D(TK(9)):"Type\Number\or use\ARROWS\to move selector - \RETURN\to make selection\No Pages found with keyword\Selected Page\Password\Page busy\Page Number\K\Keyword\B\Beginning\E\End\to look for\KBE",1:@TK(9)@(28))
+ S L=$S('$D(TK(9)):"Function Keys\EXIT  HELP\NEXT SCREEN\FIND\PREVIOUS SCREEN  1ST SCREEN",1:@TK(9)@(29))
+TOP S I="",PP=0 I $D(FDOC) S %R=20 G FD
+LEV S %R=22,%C=80-$L($P(Y,"\",1,7))\2 K IA W @TKP,TK("LO"),$P(Y,"\"),TK("HI")," ",$P(Y,"\",2)," ",TK("LO"),$P(Y,"\",3),TK("HI")," ",$P(Y,"\",4)," ",TK("LO"),$P(Y,"\",5)," ",TK("HI"),$P(Y,"\",6)," ",TK("LO"),$P(Y,"\",7)
+ S (TG,TH)=" ",CN=0,%C=1,%R=5 W @TKP G:$D(KEY) KEY1
+LEV1 S I=$O(^%ZAPM.bs.BSpgWEBF(98,DIR,I)) G FK:I="" S CN=CN+1 I CN=1,'$D(PAGE(PP)) S PAGE(PP)=I
+ S X=^(I) W !,?3,$E(I,1,18),?22,$E($P(X,"`"),1,27),?50,$E($P(X,"`",5),1,20),?71,$J($P(X,"`",3),8)
+ S TH=TH_I_"\ ",IA(I)=CN G LEV1:CN<15 S CN=16 S:$O(^%ZAPM.bs.BSpgWEBF(98,DIR,I))="" CN=15 G FK
+KEY1 S I=$O(^%ZAPM.bs.BSpgWEBF(98,DIR,I)) G FK:I="",KEY1:^(I)'[$E(KEY)&(^(I)'[$E(KEY1)),KEY1:^(I)'[KEY&(^(I)'[KEY1)&(^(I)'[KEY2)&(^(I)'[KEY3) S CN=CN+1 I CN=1,'$D(PAGE(PP)) S PAGE(PP)=I
+ S X=^(I) W TK("LO"),!,?3,I,?29,$E($P(X,"`"),1,25),?60,$P(X,"`",5),?70,$J($P(X,"`",3),7)
+ S TH=TH_I_"\ ",IA(I)=CN G KEY1:CN<15 S CN=16 I $O(^%ZAPM.bs.BSpgWEBF(98,DIR,I))="" S CN=15 G FK
+KEY2 S J=I,I=$O(^%ZAPM.bs.BSpgWEBF(98,DIR,I)) I I'="" G KEY2:^(I)'[$E(KEY)&(^(I)'[$E(KEY1)),KEY2:^(I)'[KEY&(^(I)'[KEY1)&(^(I)'[KEY2)&(^(I)'[KEY3) S I=J G FK
+ S CN=15 G FK
+KEY3 S (KEY,KEY1)="",KEY3=X F J=1:1:$L(X) S KEY=KEY_$S($E(X,J)?1L:$C($A(X,J)-32),1:$E(X,J)),KEY1=KEY1_$S($E(X,J)?1U:$C($A(X,J)+32),1:$E(X,J))
+ S KEY2=$E(KEY)_$E(KEY1,2,99) D CLEAR G TOP
+ ;
+ASK S J=1,%C=1,N=CN S:CN=16 N=15 X TK("ECHO-OFF") I $D(FIND) S J=IA(FIND) K FIND
+A1 S %R=J+5 W @TKP,TK("HI"),@SEL,TK("LO")
+A2 R C#1 I C'="" G @$S(C=" ":"B",C'?1.N:"ERR",1:"SEL")
+ X TK("T") S TG=" ",C=$E(XX,$F(XX,ZF)) I C'="",$T(@C)'="" G @C
+ W *7 G A1
+ ;
+A W *8,*8,*8,"   ",@SEL1 S J=$S(J>1:J-1,1:N) G A1
+B W *8,*8,*8,"   ",@SEL1 S J=$S(J<N:J+1,1:1) G A1
+O G:CN'=16 ERR D CLEAR S PP=PP+1,I=$P(TH,"\ ",15) G LEV
+P G:'PP A1 D CLEAR S PP=PP-1,I=PAGE(PP) D P2 G LEV
+P2 S I=$S(+I=I:I-1E-9,1:$E(I,1,$L(I)-1)_$C($A(I,$L(I))-1)_"~") Q
+Q I PP D CLEAR G TOP
+ G A1
+ ;
+E G EXIT
+ERR W *7 G A1
+CLEAR S %R=5,%C=1 W @TKP,TK("LO"),TK("CS") Q
+ ;
+FK I CN<1 W !!?5,$P(Y,"\",8)," - " W:$D(KEY3) TK("HI"),KEY3,! G 6
+ S A="[ "_$P(L,"\")_":  "_TK("HI")_$P(L,"\",2) S:CN=16 A=A_"  "_$P(L,"\",3) S:CN=16!PP A=A_"  "_$P(L,"\",4) S:PP A=A_"  "_$P(L,"\",5) S A=A_TK("LO")_" ]"
+ S %R=24,%C=($L(TK("HI"))*2+80-$L(A)\2) S:%C<1 %C=1,A=$P(A,":",2) W @TKP,A G ASK
+ ;
+Y S HP=8 D HELP^%ZAPM.bs.BSpgWPV9 D CLEAR S FDOC=$E($P(TH,"\",J),2,9) K IA G TOP
+ ;
+SEL S TG=TG_C,TJ=$F(TH,TG) I TJ S J=$L($E(TH,1,TJ-1),"\") W *8,*8,*8,"   ",@SEL1
+ E  I $L(TG)>2 S TG=" " G SEL
+ G A1
+ ;
+F S DOC=$E($P(TH,"\",J),2,29),X=^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC),DES=$P(X,"`",1),%R=24,%C=1 W @TKP,TK("LO"),$P(Y,"\",9)," [ ",TK("HI"),DIR,": ",DOC,TK("LO")," ] ",TK("HI"),TK("CL")
+BUSY L ^%ZAPM.bs.BSpgWEBF(DIR,DOC):0 E  S %C=1 W @TKP,TK("CL"),$P(Y,"\",11) H 3 S FIND=DOC,DOC="" W *13,TK("CL") G FK
+PWD G EXIT
+ ;
+EXIT K CN,CRT,DAT,DES,IA,PAGE,PP,PWD,SEL,SEL1,TG,TH,TJ,KEY,KEY1,KEY2,KEY3 X TK("ECHO-ON") Q
+ ;
+GETY S Y=$S('$D(TK(9)):"Page\Description\Last Edited\Length",1:@TK(9)@(26)) Q
+ ;
+6 W *8,*8,*8,"   ",@SEL1 K KEY
+ S %R=22,%C=5,X="" W @TKP,TK("CS"),"   ",TK("LO"),$P(Y,"\"),TK("HI")," ",$P(Y,"\",12),TK("LO"),", ",TK("HI"),$P(Y,"\",13),TK("LO"),"-",$P(Y,"\",14),", ",TK("HI"),$P(Y,"\",15)
+ W TK("LO"),"-",$P(Y,"\",16),", ",TK("HI"),$P(Y,"\",17),TK("LO"),"-",$P(Y,"\",18),":"
+ S LNG=4,PAT=""""_$P(Y,"\",20)_"""[X!(X?1.4N&$D(^%ZAPM.bs.BSpgWEBF(98,DIR,X)))",UC=1,%C=14+$L($P(Y,"\",12,18)_$P(Y,"\")) X ^%ZAPM.bs.BSpgREAD I $P(Y,"\",15)[X D CLEAR G TOP
+ I X=$P(Y,"\",13) W *13,TK("CL") S %C=50-$L($P(Y,"\")_$P(Y,"\",14)_$P(Y,"\",19)) W @TKP,TK("LO"),$P(Y,"\"),TK("HI")," ",$P(Y,"\",14)," ",TK("LO"),$P(Y,"\",19)," - ",TK("HI") S LNG=20,%C=55,X="" X ^%ZAPM.bs.BSpgREAD G KEY3:X'="",TOP
+FD1 F P=0:1 Q:'$D(PAGE(P))  I X']PAGE(P) Q:X]PAGE(P)  S J=1,%C=5,PP=P+1 G P
+ S:'$D(PAGE(P))&P P=P-1 S I=PAGE(P) F CN=1+1:1 S I=$O(^%ZAPM.bs.BSpgWEBF(98,DIR,I)) Q:I=""  S:CN=16 CN=1,P=P+1,PAGE(P)=I Q:X=I
+ S:I'="" CN=16 S FIND=$S($D(^%ZAPM.bs.BSpgWEBF(98,DIR,X)):X,1:PAGE(P)),I=PAGE(P) D P2 W @TKP,*13,TK("CS") G:P=PP&$D(IA) FK S PP=P D CLEAR G LEV
+FD S X=FDOC,PAGE(0)=$O(^%ZAPM.bs.BSpgWEBF(98,DIR,"")) K FDOC G FD1

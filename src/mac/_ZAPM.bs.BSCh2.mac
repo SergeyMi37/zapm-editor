@@ -1,0 +1,129 @@
+ROUTINE %ZAPM.bs.BSCh2
+%BSCh2 ;БИБЛИОТЕКА ФУНКЦИЙ РАБОТЫ С ОПЦИЯМИ ; 13:39   12.09.2002
+  ;УСТАРЕЛАЯ ПРОГРАММА
+ Q
+VAR ;НАЧАЛО
+ I '$$TABVAR^%ZAPM.bs.BSCh1 Q
+ D TABBEGIN^%ZAPM.bs.BSCh1
+ S O=$NA(@PART@(TABL))
+ Q
+BSVAR ;ПЕРЕМЕННЫЕ ДЛЯ ТАБЛИЦЫ
+ w "<input type=""hidden"" name=""BSTABL"" value="""_%KEY("BSTABL")_""">",$G(BK)
+ w "<input type=""hidden"" name=""BSPART"" value="""_%KEY("BSPART")_""">",$G(BK)
+ w "<input type=""hidden"" name=""BSNSPACE"" value="""_%KEY("BSNSPACE")_""">",$G(BK)
+ Q
+ENTER ;основной вход в таблицу опций
+ N O
+ D VAR
+ D TITLE(O)
+ I $G(@O@("OPT"))'=1,'$P($G(@O@("OPT")),",",2) W "В ТАБЛИЦЕ ОПЦИЙ НЕ ВЕРНЫЙ ПАРАМЕТР",BK D BACK^%ZAPM.bs.BSCh Q
+ D OPT(O)
+ D BSVAR
+ w "<input type=""hidden"" name=""BSLABEL"" value=""SAVE^~BSCh2"">"
+ w "<input type=""SUBMIT"" name=""SubMit1"" value=""Запомнить"">"
+ w "<input type=""RESET"" name=""Reset1"" value=""Отменить"">"
+ W "</form>"
+ENTE D END2^%ZAPM.bs.BSCh D BACK^%ZAPM.bs.BSCh
+ Q
+SAVE ;СОХРАНИТЬ НОВЫЕ ПАРАМЕТРЫ
+ N O
+ D VAR
+ S O=$NA(@PART@(TABL))
+ D SAVEOPT^%ZAPM.bs.BSCh2(O)
+ D END2^%ZAPM.bs.BSCh
+ q
+TITLE(TBL) ;вывести заголовок
+ W "<CENTER>"
+ I $G(@TBL@("OPT"))=1 W "<H3>",$P(@TBL@(2,4),"@",15),"</H3>" I 1 ;D CRP^%ZAPM.bs.BSCh($P(@TBL@(2,4),"@",15),4) Q
+ E  W "<H3>",$P(@TBL,"@",1),"</H3>"
+ W "<HR></CENTER>"
+ ;D CRP^%ZAPM.bs.BSCh($P(@TBL,"@",1),4)
+ Q
+OPT(TBL,NOFORM) ;ФОРМА С ПАРАМЕТРАМИ
+ I '$G(NOFORM) D FORMN^%ZAPM.bs.BSCh($QS(TBL,1))
+ I '$D(@TBL@("OPT")) W "В ТАБЛИЦЕ ОПЦИЙ ОТСУТСТВУЮТ БАЗОВЫЕ ПАРАМЕТРЫ",BK D BACK^%ZAPM.bs.BSCh G ENTE
+ w "<input type=""hidden"" name=""BSROU"" value="""_$G(MainRef,"MAIN^~BSCh1")_""">"
+ N I,II,P1,P2,P3,P4,P5,X,Y,S
+ w BK,"<table border=0>",BK
+ I $G(@TBL@("OPT"))'=1 S S=@$ZR F I=$S($P(S,",",3):$P(S,",",2),1:1):1 Q:'$D(@TBL@(I))  D  W BK
+ .Q:'$P(S,",",2)  Q:'$P(S,",")
+ .S P4=$P($G(@TBL@(I,+$P(S,",",1))),"@",15),P1=$P($G(@TBL@(I,+$P(S,",",2))),"@",15)
+ .S P3=" SIZE=50 ",P5=$P($P($G(@TBL@(I,$P(S,",",2))),"@",18),"#")
+ .I P4'="",$P($G(@TBL@(I,$P(S,",",2))),"@",5)="" D text1(P1,P3,P5)
+ I $G(@TBL@("OPT"))=1 F I=3:1 Q:$P($G(@TBL@(I,2)),"@",15)=""  D  W BK
+ .S P1=$P(@TBL@(I,1),"@",15),P2=$P(@TBL@(I,2),"@",15),P3=$P(@TBL@(I,3),"@",15)
+ .S P4=$P(@TBL@(I,4),"@",15),P5=$P(@TBL@(I,5),"@",15)
+ .D TAB
+ w "</table>"
+ Q
+TAB ;ТЕКУЩАЯ СТРОКА
+ I P2="textarea" D  Q
+ .W "<tr><td align=""right""><textarea name="""_$$name(P5)_""" "_P3_" >"_P1_"</textarea></td><td>",$$TEGS^%ZAPM.bs.BSre(P4),"</td></tr>"
+ I P2="text" D text(P1,P3,P5) Q
+ I P2="checkbox" D  Q
+ .W "<tr><td align=""right""><input type=""checkbox"" name="""_$$name(P5)_""" value="""_P1_""""_P3_$$ch(P1)_"></td><td>",$$TEGS^%ZAPM.bs.BSre(P4),"</td></tr>"
+ I P2="radio" w "<p>",BK D  Q
+ .F II=1:1:$L(P4,"~") W "<tr><td align=""right""><input type=""radio"" name="""_$$name(P5)_""" value="_II_" "_P3_$$ch(P1=II)_"></td><td>",$$TEGS^%ZAPM.bs.BSre($P(P4,"~",II)),"</td></tr>",BK
+ .w "</p>"
+ Q
+text(P1,P3,P5) W "<tr><td align=""right""><input type=""text"" name="_$$name(P5)_" "_P3_" value='"_P1_"'></td><td>",$$TEGS^%ZAPM.bs.BSre(P4),"</td></tr>"
+ Q
+text1(P1,P3,P5) W "<tr><td align=""right"">",$$TEGS^%ZAPM.bs.BSre(P4),"</td><td><input type=""text"" name="_$$name(P5)_" "_P3_" value='"_P1_"'></td></tr>"
+ Q
+name(P) ;ИМЯ КОМПОНЕНТЫ
+ I P="" Q $QS(TBL,1)_I
+ Q P
+ch(P) I P q " checked "
+ q ""
+SAVEOPT(TBL) ;ПРИСВОЕНИЕ
+ N I,C,N,S
+ W "<CENTER>"
+ W "<H3>Опции запомнены</H3>"
+ W "<HR></CENTER>"
+ ;D CRP^%ZAPM.bs.BSCh("Опции запомнены",4)
+ I $G(@TBL@("OPT"))'=1 S S=@$ZR F I=$S($P(S,",",3):$P(S,",",2),1:1):1 Q:'$D(@TBL@(I))  D
+ .Q:'$P(S,",",2)  Q:'$P(S,",")  Q:$P($G(@TBL@(I,$P(S,",",2))),"@",5)'=""
+ .;S P4=$P($G(@TBL@(I,+$P(S,",",1))),"@",15),P1=$P($G(@TBL@(I,+$P(S,",",2))),"@",15)
+ .S N=$P($P($G(@TBL@(I,$P(S,",",2))),"@",18),"#") i N="" s N=$QS(TBL,1)_I
+ .I $TR($G(%KEY(N)),"@","")=$G(%KEY(N)) S $P(@TBL@(I,$P(S,",",2)),"@",15)=$G(%KEY(N)) Q
+ .S $P(@TBL@(I,$P(S,",",2)),"@",15)=$TR($G(%KEY(N)),"@","") D PROT(N)
+ 
+ I $G(@TBL@("OPT"))=1 F I=3:1 Q:$P($G(@TBL@(I,2)),"@",15)=""  D
+ .S C=$P($G(@TBL@(I,2)),"@",15)
+ .I $P($G(@TBL@(I,5)),"@",15)'="" S N=$P($G(@TBL@(I,5)),"@",15)
+ .E  S N=$QS(TBL,1)_I
+ .I C="checkbox" D  Q
+ ..I $D(%KEY(N)) S $P(@TBL@(I,1),"@",15)=1
+ ..E  S $P(@TBL@(I,1),"@",15)=0
+ .I $TR($G(%KEY(N)),"@","")=$G(%KEY(N)) S $P(@TBL@(I,1),"@",15)=$G(%KEY(N)) Q
+ .S $P(@TBL@(I,1),"@",15)=$TR($G(%KEY(N)),"@","") D PROT(N)
+ Q
+PROT(N) ;ЗАПИСЬ ЗАПРЕЩЕННОГО
+ W "<br>Параметр '"_N_"' имеет запрещенный символ '@': "_RED_$G(%KEY(N))_EF_"<br>"
+ W "<br>Запомнили : "_GREEN_$TR($G(%KEY(N)),"@","")_EF_"<br>"
+ Q
+GETOPT(TBL,NO,NK) ;ВОЗВРАТИТЬ ЗНАЧЕНИЕ ОПЦИИ NO
+ ;NO - ИМЯ ПОКАЗАТЕЛЯ
+ ;NK - НОМЕР КОЛОНКИ В ТАБЛИЦЕ
+ N N,I,Q S Q="?"
+ F I=3:1 Q:$P($G(@TBL@(I,2)),"@",15)=""  D
+ .I $P($G(@TBL@(I,5)),"@",15)'="" S N=$P($G(@TBL@(I,5)),"@",15)
+ .E  S N=$QS(TBL,1)_I
+ .I N=NO S Q=$P($G(@TBL@(I,$G(NK,1))),"@",15) Q
+ Q Q
+SETOPT(TBL,NO,Q) ;ПРИСВОИТЬ ЗНАЧЕНИЕ ОПЦИИ NO=Q
+ N N,I
+ F I=3:1 Q:$P($G(@TBL@(I,2)),"@",15)=""  D
+ .I $P($G(@TBL@(I,5)),"@",15)'="" S N=$P($G(@TBL@(I,5)),"@",15)
+ .E  S N=$QS(TBL,1)_I
+ .I N=NO S $P(@TBL@(I,1),"@",15)=Q
+ Q
+UPLOAD ;UPLOAD FILES -=CSP=-
+ ;&html<
+ ;<form enctype="multipart/form-data" method=post action="upload.csp">
+ ;Enter a file to upload here: <input type=file size=30 name=FileStream>
+ ;<p>
+ ;<ul><input type=submit value="Upload file"></ul>
+ ;<p>
+ ;</form>
+ ;>

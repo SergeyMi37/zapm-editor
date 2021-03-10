@@ -1,0 +1,31 @@
+ROUTINE %ZAPM.bs.BSpgWEBE
+TKWEBE	;PG&A,TK-WEB,1.1,PAGE EDITOR;22JUL97  11:38 [ 10/15/97   8:12 AM ];;;10APR2000  14:19
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+LOCAL	R !,"TK-WEB EDITOR",!!,"Directory-",DIR,! Q:DIR=""
+ R "Page-",DOC,! G:DOC="" LOCAL  I '$D(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC)) W "NOT DEFINED - DO YOU WANT A NEW PAGE? (Y) - " R A G:A["N" LOCAL G:A["n" LOCAL
+	D EP G LOCAL
+EP S TKWPD="^mtempBSpgTWEB($J)" K @TKWPD S A=.03,J=1,D="" F  S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,A)) Q:A=""  S MG=126 D EXP
+	I D'="" S C=D F  D EXP1 Q:C=""
+ S TL=3,MG=126,NM=DOC,TKWPD="^mtempBSpgTWEB($J)",TKWPOPT="ST,OT,IM"  D ENTRY^%ZAPM.bs.BSpgWPV6
+	; R "Save page? (Y) - ",A,! Q:A["N"  Q:A["n"
+ S TKWPD="^mtempBSpgTWEB($J)" D SAVE Q
+	;
+EXP	S B=D_$S(^(A)[$C(13)&(^(A)'[$C(10)):$TR(^(A),$C(13,9),$C(183)),1:$TR(^(A),$C(10,13,9),$C(183))),D="" F L=1:1:$L(B,$C(183))-1 S C=$P(B,$C(183),L)_$C(183) F  D EXP1 Q:C=""
+	S D=$S(B'[$C(183):B,1:$P(B,$C(183),L+1)) Q
+EXP1	I $L(C)<MG S @TKWPD@(J)=C,J=J+1,C="" Q
+	I $E(C,1,MG)[">" S I=$L($E(C,1,MG),">"),@TKWPD@(J)=$P(C,">",1,I-1)_">",C=$P(C,">",I,99),J=J+1 Q
+	I $E(C,1,MG)[" " S I=$L($E(C,1,MG)," "),@TKWPD@(J)=$P(C," ",1,I-1),C=$P(C," ",I,99),J=J+1 Q
+	S @TKWPD@(J)=$E(C,1,MG-1)_"+",J=J+1,C=$E(C,MG,511) Q
+	;
+SAVE S A=0,L=0 F  S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,A)) Q:A=""  K ^(A)
+	S A=0,C="",J=1 F  S A=$O(@TKWPD@(A)) Q:A=""  S B=^(A) D
+	. ; ,I=$TR(B," ",""),I=$E(I,$L(I)),B=$E(B,1,$L($P(B,I,1,$L(B,I)-1)_I)) D
+ . S C=C_$TR(B,$C(183),$C(10)) S:$L(C)>510 ^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,J)=$E(C,1,510),C=$E(C,511,9999),L=L+510,J=J+1
+ S:$L(C) ^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,J)=C,L=L+$L(C)
+ D INIT^%ZAPM.bs.BSpgWEBH S D=$$GMT^%ZAPM.bs.BSpgWEBH($H,+$G(^%ZAPM.bs.BSpgWEBC("TimeZone"))),C=$$DTEX^%ZAPM.bs.BSpgWEBH(D)
+ S $P(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC),"`",3,5)=L_"`"_D_"`"_C
+ S $P(^%ZAPM.bs.BSpgWEBF(98,DIR,DOC),"`",3,5)=L_"`"_D_"`"_C
+ S FILE=DOC,T="H" D XREF^%ZAPM.bs.BSpgWEBF
+	Q
+	;

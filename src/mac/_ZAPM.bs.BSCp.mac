@@ -1,0 +1,546 @@
+ROUTINE %ZAPM.bs.BSCp
+%BSCp ;СИСТЕМНЫЕ "ПРИМИТИВЫ" Cache' ; 13:32   21.07.2005
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+clone ;сделать суперюзера  m m
+ m ^%ZAPM.bs.BScPROT("m")=^%ZAPM.bs.BScPROT("B4I")
+ s ^%ZAPM.bs.BScPROT("m","PSW")="m"
+ q
+VerTelnet() //версия телнет
+ i $$ZV^%ZAPM.bs.BSCp>2008 q ""
+ i $$ZV^%ZAPM.bs.BSCp>5 q "RU"
+ q ""
+DelUser(u,sess) //удалить временного пользователя Каши для v.5.2
+ i $$ZV<2000 q
+ n x,e,%objlasterror,ons
+ s ons=$zu(5) zn "%sys"
+ s x=##Class(Security.Users).Delete("IpUser"_$p(sess,".",1))
+ zn ons
+ q
+CreateUser(u,sess) //создать временного пользователя Каши для v.5.2
+ i $$ZV<2000 q
+ n x,e,%objlasterror,ons
+ s ons=$zu(5) zn "%sys"
+ s x=##Class(Security.Users).Create("IpUser"_$p(sess,".",1),"%All",$p(sess,".",2),"Временный пользователь ИнфоПортала ("_u_") Сессия: "_sess_" Создан:"_$$TD^%ZAPM.bs.BSC4base($H),"%SYS") //,ASU,"^%ZAPM.bs.BSC")
+ ;D DecomposeStatus^%apiOBJ(%objlasterror,.e) zw e
+ zn ons
+ q
+Unicode() q $e($G(^%SYS("LOCALE","CURRENT"),"enu8"),4)="w"
+CFGSN() //ИМЯ СЕРВЕРА ТЕКУЩЕЙ КОНФИГУРАЦИИ
+ Q $G(^%ZAPM.bs.BS("Config","Server"))
+CFG() //ИМЯ ТЕКУЩЕЙ КОНФИГУРАЦИИ ПОРТАЛА
+ Q $G(^%ZAPM.bs.BS("Config"))
+ZV() //НОМЕР ВЕРСИИ КАШИ
+ Q $P($P($ZV," (Build",1),") ",2)
+ N I F I=1:1 Q:$P($ZV," ",I)?1N1"."1N.E
+ ;Q "5.1"
+ Q $P($ZV," ",I)
+TR(S,A,B) //REPLACE
+ Q $$TR^%ZAPM.bs.BSsFUNM(S,A,B)
+TL //TRAP LOC VAR
+ D locvar^%ZAPM.bs.BSCh0("",1)
+ Q
+DOEVENTS //PAUSE
+    i $f($zv,"2.") d  q
+    .i $$InVB^%mvb d DoEvents^%mvb
+    i $$InVB^%CDSrv d DoEvents^%CDSrv
+   q
+CacheSysDir(ADD) //ДОМАШНИЙ КАТАЛОГ СУБД
+ N tmp S tmp=$ZU(86)
+ I $ZV["Windows" Q $P(tmp,"\",1,$L(tmp,"\")-1)_$G(ADD)
+ Q $P(tmp,"/",1,$L(tmp,"/")-1)_$TR($G(ADD),"\","/") ;ДЛЯ UNIX
+Exec I $D(PutJSEx) Q  //УЖЕ ВЫВОДИЛИ
+ w BK,BK ;AsysEInoActivX
+ D JS
+ W "function Exec(R,P,D) {"_BK
+ ;w "alert(P);"_BK
+ w "status='Status :Exec:*'+R+'*'+P+'*'+D+'*';"_BK  ;R=Path\\Prog.exe  R="parametrs in command line"  D=/directory/run
+ ;i $G(@BDSES@(BSSES,"VAR","DirRun"))'="" 
+ w "status='Ждите, программа запускается...';"_BK
+ ;e  w "status='"_$ZR_" Ошибка запуска ! Клиет ИП должен был загружен программой WebView.exe';"_BK
+ W "}"_BK S PutJSEx=1
+ D JSE W BK,BK
+ q
+ExecTel I $D(PutJSExTel) Q  //УЖЕ ВЫВОДИЛИ
+ w BK,BK ;AsysEInoActivX
+ D JS
+ W "function ExecTel(NS,PART,TABL,TITLE) {"_BK
+  N A,FTerm,TelPort,R
+ S FTerm=$$FTerm^%ZAPM.bs.BSCmDDR
+ I FTerm=1 D
+ .S R="BSCacheTel.exe"
+ .//S A=$P($$ADDSN^%ZAPM.bs.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /p="_$$PortTerm^%ZAPM.bs.BSCp2_" /t="_TABL_" /n="_NS_" /y=1 /v="_$$VerTelnet^%ZAPM.bs.BSCp_" /x="_PART_" /f="_$$nse^%ZAPM.bs.BSCmDDR_TITLE
+ .W "var Par='"_$P($$ADDSN^%ZAPM.bs.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /p="_$$PortTerm^%ZAPM.bs.BSCp2_" /t='+TABL+' /n='+NS+' /v="_$$VerTelnet^%ZAPM.bs.BSCp_" /y=1 /x='+PART+' /f="_$$nse^%ZAPM.bs.BSCmDDR_"'+TITLE;"_BK
+ .;W "prompt('Вот она!',Par);"_BK 
+ I FTerm=2 D
+ .S R="AdvSockTerm.exe"
+ .W "var cmdline='D BST^%ZAPM.bs.BSC(""""'+NS+'"""",""""'+PART+'"""",""""'+TABL+'"""",""""1"""","""""""","""""_BSLOGIN_""""","""""_BSSES_""""")'; "_BK
+ .//W "prompt('Вот она!',cmdline);"_BK
+ .w "var Par='server="""_$P($$ADDSN^%ZAPM.bs.BSC4,":")_""" port="""_$$PortTerm^%ZAPM.bs.BSCp2_""" user=""SYS"" psw=""XXX"" cmdline=""'+cmdline+'"" title="""_$$nse^%ZAPM.bs.BSCmDDR_"'+TITLE+'""' ;"_BK
+ .//W "prompt('Вот она!',Par);"_BK
+ ;w "alert(Par);"_BK
+ w "status='Status :Exec:*"_R_"*'+Par+'*"_$$DirClientIP^%ZAPM.bs.BSCp2_"*';"_BK  ;R=Path\\Prog.exe  R="parametrs in command line"  D=/directory/run
+ w "status='Ждите, программа запускается...';"_BK
+ W "}"_BK S PutJSExTel=1
+ D JSE W BK,BK
+ q
+ /*
+  I FTerm=1 D
+ .W "var cmdline='"_$P($$ADDSN^%ZAPM.bs.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /p="_$G(tcpPORT,$G(TelPort,23))_" /t='+TABL+' /n='+NS+' /v="_$$VerTelnet^%ZAPM.bs.BSCp_" /y=1 /x='+PART+' /f="_$$nse^%ZAPM.bs.BSCmDDR_"'+TITLE;"_BK
+ .;W "prompt('Вот она!',cmdline);"_BK 
+ .//BSCacheTel.exe 190.98.101.61 /s=Styx /i=124 /t=$ /n=1 /y=1 /x=$ /f=(mswdell)_BS+TELNET
+ .//D BST^%ZAPM.bs.BSC("1","$","$","1","","Styx","124")<13><10>
+ .;////OLD////  w "parent."_$G(rd1,"rd1.")_"RDos.Command='BSCacheTel.exe "_$P($$ADDSN^%ZAPM.bs.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /t='+TABL+' /n='+NS+' /y=1 /x='+PART+' /f="_$$nse_"'+TITLE;"_BK
+ .I '$G(Ext) w "parent."_$G(rd1,"rd1.")_"RDos.Command='BSCacheTel.exe '+cmdline;"_BK Q
+ .w "var Rou='BSCacheTel.exe';"_BK
+ .w "var Par=cmdline;"_BK
+ .w "var Dir='"_$G(WorkDir)_"';"_BK
+ .w "status='Status :Exec:*'+Rou+'*'+Par+'*'+Dir+'*';"_BK
+ .w "status='Ждите, программа запускается...';"_BK
+ I FTerm=2 D
+ .W "var cmdline='D BST^%ZAPM.bs.BSC(""""'+NS+'"""",""""'+PART+'"""",""""'+TABL+'"""",""""1"""","""""""","""""_BSLOGIN_""""","""""_BSSES_""""")'; "_BK
+ .;W "prompt('Вот она!',cmdline);"_BK
+ .I '$G(Ext) w "parent."_$G(rd1,"rd1.")_"RDos.Command='AdvSockTerm.exe server="""_$P($$ADDSN^%ZAPM.bs.BSC4,":")_""" port="""_$G(tcpPORT,$G(TelPort,23))_""" user=""SYS"" psw=""XXX"" cmdline=""'+cmdline+'"" title="""_$$nse^%ZAPM.bs.BSCmDDR_"'+TITLE+'""' ;"_BK Q
+ .w "var Rou='AdvSockTerm.exe';"_BK
+ .w "var Par='server="""_$P($$ADDSN^%ZAPM.bs.BSC4,":")_""" port="""_$G(tcpPORT,$G(TelPort,23))_""" user=""SYS"" psw=""XXX"" cmdline=""'+cmdline+'"" title="""_$$nse^%ZAPM.bs.BSCmDDR_"'+TITLE+'""' ;"_BK
+ .W "prompt('Вот она!',Par);"_BK
+ .w "var Dir='"_$G(WorkDir)_"';"_BK
+ .w "status='Status :Exec:*'+Rou+'*'+Par+'*'+Dir+'*';"_BK
+ .w "status='Ждите, программа запускается...';"_BK
+ */
+js() Q "<SCRIPT LANGUAGE=""JavaScript"" TYPE=""text/JavaScript"">"_BK
+JS w $$js() Q
+JSE w $$jse() Q
+jse() Q "</SCRIPT>"_BK
+CHANGESYSDATE() N BS1,BS2 S BS2="CHANGESYSDATE1^~BSCp",BS1=BSG Q $$B^%ZAPM.bs.BSC4cal("","Сменить системную Дату : "_$ZD($H,3),,"EDITDATE^~BSC4cal",1)
+CHANGESYSDATE1 N D,COMM S D=$$RETURN^%ZAPM.bs.BSC4cal I D=$TR($ZD($H,3),"-","")!(D="") G CHANGESYSDATE2
+ S D=$E(D,7,8)_"-"_$E(D,5,6)_"-"_$E(D,1,4)
+ S COMM=$S($ZU(100):"COMMAND.COM",1:"CMD /C") I $ZF(-2,COMM_" date "_D)
+ D Tex^%ZAPM.bs.BSMSMF("ChangeSysDate","")
+ H 3 W "сменили на "_$ZD($H,3)
+ Q
+CHANGESYSDATE2
+ D JS
+ W "window.close();"_BK
+ D JSE
+ Q
+CHANGESYSTIME() N BSLABEL S BSLABEL="CHANGESYSTIME1^~BSCp"
+ Q "<A name='SysTime2' onclick='open("""_$$ADDBSGET^%ZAPM.bs.BSC4()_""","""_$G(Targ,"times")_""",""toolbar=no,menubar=no,scrollbars=no,width="_$G(W,440)_",height="_$G(H,180)_",status=1,resizable=1"");' ><IMG src='"_BSDOMAIN_"/img/time.gif' alt='Сменить системное время'></A>"
+CHANGESYSTIME1 D BEG1^%ZAPM.bs.BSC4
+ Write "<title>Смена системного времени</title>",!
+ W "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+ S BSLABEL="CHANGESYSTIME2^~BSCp"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ W "<input type=""text"" size=40 maxlength=148 name='Timesc' value='"_$ZT($P($H,",",2),1)_"'>"
+ w "<input type=""submit"" name='ST' value='Установить новое время'><br><input type=""SUBMIT"" name='ESC' value='"_$$LNG^%ZAPM.bs.BSC4("отмена",73)_"'>",BK
+ Q
+CHANGESYSTIME2
+ I $D(ESC)  G CHANGESYSDATE2
+ I $G(Timesc)'?2N1":"2N W "Ошибка формата " G CHANGESYSTIME1
+ S COMM=$S($ZU(100):"COMMAND.COM",1:"CMD /C") I $ZF(-2,COMM_" time "_Timesc)
+ D Tex^%ZAPM.bs.BSMSMF("ChangeSysTime","")
+  H 1 W "сменили " G CHANGESYSTIME1
+ Q
+LT //ТАБЛИЦА ЛОКИРОВКИ
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("Таблица локированных ссылок"),$$B27^%ZAPM.bs.BSCm4()
+ ZN "%SYS"
+ S SL=80
+ D GATHER^LOCKTAB ;,DISPLAY^LOCKTAB
+ S TEMPGLO="^mtemp($j,""LOCKTAB"")"
+ S I="" F  S I=$O(@TEMPGLO@(I)) Q:I=""  D
+ .S data=$G(@TEMPGLO@(I))
+ .S StartOwner=$g(StartOwner,1) I StartOwner=0 S StartOwner=1
+ .S entry=$LIST(data,1),info=$LIST(data,2)
+ .S ref=$LIST(info,1),Owners=$LIST(info,2)
+ .;W !,$LIST($LIST(entry,StartOwner),1)
+ .W BBK,Owners ;"------" ;," ",Owners," "   ПОКА ТАК
+ W "<HR>" D ALIVE
+ D END^%ZAPM.bs.BSC4
+ Q
+ALIVE    N M,J S J="" F  S J=$O(^%CDServer("alive",$ZU(110),J)) Q:J=""  D  W "<HR>"
+ .W RED_$G(@$ZR@("clientid"))_" : "_$G(^("port"))_EF_" имя программы : "_RED_$G(^("taskname"))_EF_" имя пользователя : "_RED_$G(^("username"))_EF
+ Q
+LTAB //ТАБЛИЦА ЛОКИРОВКИ
+ ZN "%SYS"
+ N COMMAND,INDEX
+ N MSYS,FF,SL,BS,RM,SUB,XY
+ N context,LockTime,FreeSpace,StartOwner,LockData
+ S $ZT=""
+ D CURRENT^%IS
+ S SL=800
+ D GATHER^LOCKTAB,DISPLAY^LOCKTAB
+ S $ZT="" U 0:0 I $$DESTROY^%LM()
+ Q
+NS() ;ВСЕ НАМЕСПЭЙСЫ
+ ;P1=КОЛИЧЕСТВО НС
+ ;VALUE="NS1"_$C(1)_"NS2..."
+ 	s disp="",P1=0
+	s curNs=$zu(5) try {zn "%SYS"} catch e {}	
+	set tRS = ##class(%Library.ResultSet).%New("Config.Namespaces:List")
+	set tSC = tRS.Execute()
+	While tRS.Next() {	
+		s name=tRS.GetData(1) 
+		i name["%ALL" continue
+		s P1=$g(P1)+1
+		s disp=disp_name_$C(1)
+	}
+	d tRS.Close()
+	zn curNs	
+	Q $g(disp)
+ n i,l,n
+ i '$zu(90,0) Q "" ;There are no defined namespaces.
+ S n="",P1=$zu(90,0)
+ f i=1:1:P1 s l($zu(90,2,0,i))=""
+ s l="" f  s l=$o(l(l)) q:l=""  s n=n_l_$C(1)
+ Q n
+ERRORLIST(NAME) ;СПИСОК ОШИБОК
+ N out,POP,X,I,BSr,BSt S out(0)=0
+ D CHECKRO,TempT^%ZAPM.bs.BSTT
+ F I=1:1:out(0) D TempTX^%ZAPM.bs.BSTT(out(I))
+ D TempTXT^%ZAPM.bs.BSTT("В ПРОГРАММЕ '"_NAME_"' НАЙДЕНО "_(out(0)\3)_" ОШИБОК",$G(@%BS(20)@("TextEdit")))
+ D TempTXTE^%ZAPM.bs.BSTT ;ВХОД В ТЕКСТ
+ Q
+CHECKRO I $P($ZV," ",6)<4 D CHECK^%RCHECK("^ROUTINE("""_NAME_""",0)",.out,0)
+ ;ЧЕРЕЗ ОБЪЕКТ
+ Q
+CHECKROU(NAME) ;СИНТАКСИС КОНТРОЛЯ
+ N out,POP,M,MM,X,I,S,SS S out(0)=0
+ D CHECKRO I '$G(out(0)) Q 0 ;НЕТ ОШИБОК
+ S M=$P(out(1),":"),S=$$LABEL(M,NAME)
+ I 'S S ErrCol=1 Q 1
+ S M=$L($P(out(2),"|")),MM=$E(out(1),M,$L(out(1))),M=$L($P(SS,MM))
+ S ErrCol=M+2
+ Q S
+LABEL(ME,NAME) ;СМЕЩЕНИЕ
+ S MM=+$P(ME,"+",2),M=$P(ME,"+")
+ S S=0 F I=1:1 Q:'$D(^ROUTINE(NAME,0,I))  I $P($P(^ROUTINE(NAME,0,I)," "),"(")=M S S=I+MM,SS=^ROUTINE(NAME,0,S) Q
+ Q S
+v(v)  n b s b=$G(^%ZAPM.bs.BS("Config",v)) //получить значение дополнительных переменных
+ q b
+CbaseNS() //перейти в базовый НС конфигурации
+ n b s b=$G(^%ZAPM.bs.BS("Config","vBaseNSP"))
+ i b'="",$$CNS(b) Q b
+ q ""
+CNS(NS) ;ИЗМЕНИТЬ NS
+ S $ZT="ERCNS^%ZAPM.bs.BSCp"
+ I NS'="" D  I $ZU(5)'=NS Q ""
+ .i $zu(5,NS)
+ Q 1
+ERCNS Q ""
+NameKey() ;СПИСОК БД ДЛЯ ТОБД (ИМЕННОЙ КЛЮЧ)
+ Q
+OPO ;ОТКРЫТЬ   $ORDER ДЛЯ ГЛОБАЛЕЙ
+ N NS,t S NS=$ZU(5) K ^mtempmBSdirGlob($J,"GLOBAL",NS) S t=$ZR
+ D GetGlobalDir(NS,t) ; GetDir^%GD(NS,t)
+ Q
+CLO ;ЗАКРЫТЬ   $ORDER ДЛЯ ГЛОБАЛЕЙ
+ N NS,t S NS=$ZU(5) K ^mtempmBSdirGlob($J,"GLOBAL",NS)
+ Q
+ ///z d GetGlobalDir^%ZAPM.bs.BSCp("user","test")
+GetGlobalDir(ns,t,Mapped=0,SystemGlobals=0) ;получение списка глобалов
+ ;s g="" f  s g=$o(^$GLOBAL(g)) q:g=""  s @t@($p(g,"^",2))=""
+ new s,r,name
+ set s = ##class(%SQL.Statement).%New()
+ do s.%PrepareClassQuery("%SYS.GlobalQuery", "NameSpaceList")
+ set r = s.%Execute(ns, "*",SystemGlobals,,,,Mapped)
+ ;set $namespace = ns
+ while r.%Next() { 
+	;w !,r.%Get("Name")	;s list(r.%Get("Name"))=""
+	set name=r.%Get("Name")
+	if name'["(" {
+		if $g(t)'="" set @t@(name)=""
+		else  set t(name)=""
+	}
+ }
+ q
+O(GLO) ;ЭМУЛЯТОР $ORDER ДЛЯ ГЛОБАЛЕЙ
+ N NS,t S NS=$ZU(5) I '$D(^mtempmBSdirGlob($J,"GLOBAL",NS)) D OPO
+ S t=$ZR Q $O(@t@(GLO))
+GD(NS,TIP) ;,usr)         ;ВСЕ ГЛОБАЛИ В НС
+ ;P1=КОЛИЧЕСТВО МАССИВОВ
+ ;VALUE="GL1"_$C(1)_"GL2~..."
+ S P1=0,P3="",P2="" N n,i,ii
+ s TIP=$p(TIP," ;") i TIP="" q ""
+ I NS'="" D  I $ZU(5)'=NS Q ""
+ .i $zu(5,NS)
+ ;K ^%ZAPM.bs.BStemp($J,"GLO") S t=$ZR
+ ;K ^mtempmBSdirGlob($J,"GLO") S t=$ZR
+ n t s t="glvn" K @t
+ D GetGlobalDir(NS,t) // D GetDir^%GD($ZU(5),"glvn")
+ S (n,i)="" F ii=1:1 S i=$O(@t@(i)) Q:i=""  d
+ .i $D(TIP),TIP'[$$TIP(i) K @t@(i) Q
+ .//S n=n_i_$C(1),
+ .S P1=P1+1
+ .S @t@(i)=$$TIP(i)_$C(1)_$P($$TIP(i,1),"@",2,$S(TIP="P":2,1:3)) // ;ТИПЫ;КОМЕНТАРИИ
+ .;k @t
+ .S @t@(i)=$$OEM2ANSI(@t@(i)) ;ПЕРЕКОДИРОВАТЬ
+ Q t //n
+TIP(G,D)  ;ТИПЫ ГЛОБАЛОВ  --> ? C B K M P
+ N T,H
+ S T="C" S:$E(G,1)'="^" G="^"_G I '$$Data^%ZAPM.bs.BSF12(G) Q "?"
+ I $D(D) Q $G(@G) ;ПРОСТО ВОЗВРАТИТЬ ДАННЫЕ В ИМЕНИ МАССИВА
+ S H=$P($G(@G),"@") I H="BSD - MSW" Q "B"
+ I H["%BS-invert-" Q "K"
+ I H["%BS-dinam" Q "M"
+ I H="BaSe MsW " Q "P"
+ Q T
+%BS3 N BDTRM,I,name S BDTRM=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSVOL(""TRM"")")
+ S name=$TR($P($P($I,"|",3),":"),".'-`~!@#$%^&*() =+][{}>_<,|\/?""","1") I name'="" F I=1:1 L +@("%BS"_name_"c"_I):0 I  S %BS(42)="%BS"_name_"c"_I,%BS(3)=I,%BS(14)=1,%BS(13)="%BSCacheTrm'" Q
+ I $I["|TRM|" F I=$P($G(^%ZAPM.bs.BSETUP("SERVER",14,4)),"@",15)+1:1 L +@("%BStrmc"_I):0 I  S %BS(42)="%BStrmc"_I,%BS(3)=I,%BS(14)=1,%BS(13)="%BSCacheTrm'" Q
+ I name="" S %BS(3)=$J,%BS(14)=1,%BS(13)="%BSCache'" Q
+ I '$$Data^%ZAPM.bs.BSF12($NA(@BDTRM@(name))) D
+ .S %BS(14)=1,%BS(13)="%BSCache'"
+ I $$Data^%ZAPM.bs.BSF12($NA(@BDTRM@(name))) D
+ .S %BS(13)=$G(@BDTRM@(%BS(3),"NSP"))
+ .S %BS(14)=$G(@BDTRM@(%BS(3),"FLG"))
+ .S %BS(14,1)=$G(^("OpenLPT")),%BS(14,2)=$G(^("CloseLPT"))
+ .S %BS(3)=$G(^("Principal"),%BS(3))
+ I %BS(3)'=+%BS(3) S %BS(3)=$J
+ Q
+TEXT(G) ;ТЕКСТ
+ N I,II
+ S (II,P1)=""
+ F I=1:1 Q:'$D(@G@(I))  S II=II_@G@(I)_$C(13,10)
+ Q II
+CBS(NS,BSR,usr)  ;ВСЕ таблицы %BS В разделе BSR
+ ;P1=КОЛИЧЕСТВО ТАБЛИЦ
+ ;VALUE="T1"_$C(1)_"T2~..."
+ S P1=0,(P3,P2,P4)="" N n,i,ii,S1,S2
+ I NS'="" D  I $ZU(5)'=NS Q ""
+ .i $zu(5,NS)
+ S (n,i)="" F  S i=$O(@BSR@(i)) Q:i=""  d
+ .S n=n_i_$C(1),P1=P1+1,ii=$G(@BSR@(i))
+ .S P2=P2_$$TIP^%ZAPM.bs.BS($P(ii,"@",17))_$C(1)  ;ТИПЫ
+ .S P3=P3_$P(ii,"@")_$C(1)               ;КОМЕНТАРИИ
+ S (S2,S1)="" I $$IFDOS^%ZAPM.bs.BSHTML1(P3) D  ;ПЕРЕКОДИРОВАТЬ
+ .K S1,S2 I $$ANSI^%ZAPM.bs.BSre("")
+ .S P3=$TR(P3,S1,S2),P2=$TR(P2,S1,S2),n=$TR(n,S1,S2)
+ Q n
+OEM2ANSI(P3) ;ПЕРЕКОДИРОВАТЬ
+ N S1,S2
+ I $$IFDOS^%ZAPM.bs.BSHTML1(P3) D  ;ПЕРЕКОДИРОВАТЬ
+ .K S1,S2 I $$ANSI^%ZAPM.bs.BSre("")
+ .S P3=$TR(P3,S1,S2)
+ Q P3
+BDEX ;ВЫПОЛНЯЕТСЯ В KBD^%ZAPM.bs.BSF12
+ ;ЗАКРОЕМ ДОСТУП К MSM ???
+ ;I $P($P(BB,"]"),$C(34),4)'="" S $P(BB,$C(34),4)=""
+ Q
+Versions() ;ТЕКУЩАЯ ВЕРСИЯ
+ S P8=+$G(^%ZAPM.bs.BS)
+ S P9="%BS+Cache' ver."_$G(^%ZAPM.bs.BS)
+ Q $ZV ;VALUE
+ ; ///=====================================================\\\
+ ;<<<           УСТАРЕЛАЯ ИДЕОЛОГИЯ "SESSIONS"                                                 >>>
+ ; \\\=====================================================///
+KILLTMP(U) ;ЧИСТИТЬ БУФЕР
+ N D,I,N,M
+ N M S M=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""SESSIONS"")") I M="" Q
+ I $G(U)'="" K @M@(U) Q
+ S D=1 //ОДИН ДЕНЬ НЕ ЧИСТИТЬ ССЫЛКУ
+ S N=$$h^%ZAPM.bs.BS3-D
+ S I="" F  S I=$O(@M@(I)) Q:I=""  I +$G(@M@(I,"OHR"))<N K @M@(I)
+ Q
+SETMP(G,N,D) ;СОХРАНИТЬ ВРЕМЕННЫЕ ДАННЫЕ
+ Q:G=""  Q:N=""  Q:D=""
+ N M S M=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""SESSIONS"")") I M="" Q
+ I '$D(@M@(G,"OHR")) S @M@(G,"OHR")=$$h^%ZAPM.bs.BS3,@M@(G,"NM")=$G(NameUS,"?"),@M@(G,"IP")=$G(CurUS,"?")
+ S @M@(G,N)=D
+ Q
+GETMP(G,N) ;ПРОЧИТАТЬ ВРЕМЕННЫЕ ДАННЫЕ
+ Q:G="" "" Q:N="" ""
+ N M S M=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""SESSIONS"")") I M="" Q ""
+ Q $G(@M@(G,N))
+ ;////=====================================================\\\\\\
+ ;                                       "PASSWORD"
+ ;\\\\=====================================================//////
+CheckPass(NAME,PASS,APP,TOBD) ;ПРОВЕРКА ПАРОЛЯ ДЛЯ ПРИЛОЖЕНИЯ APP
+ I NAME="" Q ""
+ N G,GC,GRAND,EP
+ S P9="",GRAND="" I $G(TOBD)="" S TOBD="^%ZAPM.bs.BSC(""PROTECT"")"
+ S GC=$$KBD^%ZAPM.bs.BSF12(TOBD)
+ I $$Data^%ZAPM.bs.BSF12($NA(@GC@(NAME))) Q $$PROTECT(NAME,PASS,$G(APP)) ;НОВАЯ БАЗА =ПРОВЕРКА ПАРОЛЯ B APP
+ ;СТАРЫЙ ПАРОЛЬ ДЛЯ MSM
+ S G=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSS(""USER"")")
+ I '$$Data^%ZAPM.bs.BSF12(G) Q ""
+ I $O(@G@(""))="" Q ""
+ I $$Data^%ZAPM.bs.BSF12(G),$D(@G@(NAME)),$G(@G@(".@PASSWORD",NAME))=PASS D  Q GRAND
+ .S P9=$$OEM2ANSI($G(@G@(".@WHO",NAME))),GRAND=$NA(@G@(NAME))
+ .I $G(@G@(NAME,0,"9,4"))'="" D
+ ..S EP=@$ZR I $D(@G@(EP)) S GRAND=$NA(@G@(EP))
+ .I $G(APP)'="" D
+ ..S GRAND=1
+ ..I $D(@G@(NAME,APP)) S GRAND=$NA(@G@(NAME,APP))
+ .S P8=GRAND                                                                                                             ;УЗЕЛ БД ПРАВ ДОСТУПА
+ Q ""
+FullName(NAME) ;ПОЛНОЕ ИМЯ ПОЛЬЗОВАТЕЛЯ
+ I $$CheckPass(NAME,"","","")
+ Q $S(P9="":"?",1:P9)
+CRC(NAME,PASS) ;ПРОВЕРКА КОНТОЛЬНОЙ СУММЫ ПАРОЛЯ
+ N S S S="" F I=1:1:40  S S=S_$E(NAME,I)_$E(PASS,I)
+ ;I $$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","AtopSecret") Q $$Encrypt^%ZAPM.bs.BSCmd5(S) //ПРОВЕРКА ПО НОВОМУ
+ Q $ZCRC(S,7)
+Grand2User(noPASS,NAME)
+ Q 1
+PROTECT(NAME,PASS,APP,WW) ;НОВАЯ БАЗА =ПРОВЕРКА ПАРОЛЯ
+ N G,GRAND,RET      S G=GC,RET=""
+ ;КОНТРОЛЬ PASS
+ ;S ^%ZZZ(1,1)=NAME,^%ZZZ(1,2)=PASS,^%ZZZ(1,3)=$G(noPASS,"?")
+ S P9=$G(@G@(NAME,"FNM"))
+ I $D(@G@(NAME)),$G(@G@(NAME,"PSW"))="" Q 1 ;ПУСТОЙ ПАРОЛЬ  !!!! 1B
+ I $D(@G@(NAME)),$G(noPASS)'=""         Q 1 ;ПАРОЛЬ НЕ ПРОВЕРЯЕМ, ПРОВЕРКА ТОЛЬКО НА СУЩЕСТВОВАНИЕ у ПОЛЬЗОВАТЕЛЯ прав на GRAND !!! 1B
+ I '$D(WW),$G(@G@(NAME,"PSW"))'=$$CRC(NAME,PASS) Q 1 ; "" ;ОТКАЗ
+ S GRAND=$G(@G@(NAME,"GRAND")),RET=1
+ I $G(APP)'="",GRAND'="" D                ; APP ;ГРАНД ПРИЛОЖЕНИЯ
+ .N GRU,GRA
+ .S GRU=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""GRAND"")")  ;ГРАНД ПОЛЬЗОВАТЕЛЯ
+ .I $$Data^%ZAPM.bs.BSF12(GRU) S APPVAL=$G(@GRU@(GRAND,APP,"APP")) I APPVAL'="" D
+ ..S GRA=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""GRANDAPP"")")  ;ГРАНД ПРИЛОЖЕНИЯ
+ ..I $$Data^%ZAPM.bs.BSF12(GRA),$D(@GRA@(APP,APPVAL)) D
+ ..S (P8,RET)=$NA(@GRA@(APP,APPVAL))
+ Q RET
+N4       N TOBD2,G2 //НОВЫЙ ПАРОЛЬ ДЛЯ НОВОЙ БАЗЫ B4Y
+ S TOBD2="^%ZAPM.bs.BSC4(""PROTECT"")",G2=$$KBD^%ZAPM.bs.BSF12(TOBD2)
+ I $D(@G2@(NAME)) S @G2@(NAME,"PSW")=$$CRC(NAME,NEWPASS)
+ Q
+PassNew(NAME,PASS,NEWPASS,TOBD,ALL) ;ВВЕСТИ НОВЫЙ ПАРОЛЬ ВЗАМЕН СТАРОГО
+ I NAME="" Q "0 ;NULL NAME"
+ N G I $G(TOBD)="" S TOBD="^%ZAPM.bs.BSC(""PROTECT"")"
+ S G=$$KBD^%ZAPM.bs.BSF12(TOBD)
+ I '$$Data^%ZAPM.bs.BSF12(G) Q "0 ;NO ACCESS"
+ I '$D(@G@(NAME)) S @G@(NAME,"PSW")=$$CRC(NAME,NEWPASS) D N4 Q "1 ;NEW USER"
+ I '$G(ALL),$G(@G@(NAME,"PSW"))'=$$CRC(NAME,PASS) Q "0 ;NO PASS"
+ S @G@(NAME,"PSW")=$$CRC(NAME,NEWPASS) D N4
+ Q "1 ;OK"
+NEW ;СМЕНА ПАРОЛЯ У ПОЛЬЗОВАТЕЛЯ
+ N NAM,PAS,NPAS,RET
+ S NAM=$$LineEdit^%ZAPM.bs.BSXfun($G(%BS(12)),"ВАШЕ ИМЯ ПОЛЬЗОВАТЕЛЯ (LOGIN)")
+ S PAS=$$LineEdit^%ZAPM.bs.BSXfun("***","СТАРЫЙ ПАРОЛЬ (OLD PASSWORD)")
+ S NPAS=$$LineEdit^%ZAPM.bs.BSXfun("***","НОВЫЙ ПАРОЛЬ (NEW PASSWORD)")
+ I $ZCRC(PAS,7)=254381883 S RET=$$PassNew(NAM,PAS,NPAS,"",1)
+ E  S RET=$$PassNew(NAM,PAS,NPAS,"")
+ I RET D OkMsg^%ZAPM.bs.BSXfun("СМЕНИЛИ..."_RET) Q
+ D ErrMsg^%ZAPM.bs.BSXfun("НЕ СМЕНИЛИ..."_RET) Q
+ Q
+KillUser(BSLOGIN) n i //удалить пользователя
+ S BDUS=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""PROTECT"")") K @BDUS@(BSLOGIN) 
+ S BDUSE=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""PROTECT"")") K @BDUSE@(BSLOGIN)
+ K ^%ZAPM.bs.BSpgWEMM("USER",BSLOGIN),^%ZAPM.bs.BSpgWEM("USER",BSLOGIN) ;ПОЧТОВЫЙ ПОЛЬЗОВАТЕЛЬ
+ q
+WEEK(H) ;ТЕКСТ НЕДЕЛИ
+ Q $CASE($ZD(H,10),1:"Понедельник",2:"Вторник",3:"Среда",4:"Четверг",5:"Пятница",6:"Суббота",0:"Воскресенье",:"input error")
+ Q
+ ;F I="BSY","FON","MAL","KSG","MS","MIKHAYLENKO","TEST","DS" W I,"=",$$PassNew(I,"","","",1)
+ Q
+B4I F I="B4I" W I,"=",$$PassNew^%ZAPM.bs.BSCp(I,"","B","",1)
+ Q
+MENU N  S BSR="^%ZAPM.bs.BSC",BST="PROTECTM" D ^%ZAPM.bs.BST
+ Q
+HIST //ДОБАВЛЕНИЕ В HISTORY СТРОКУ ИЗ БУФЕРА ОБМЕНА
+ W /CUP(10,5),"!!! Правой кнопкой мыши всталяйте строку из Буфера Обмена и нажмите {Enter}",!
+ N A,R1,R2,R3 S A="" W /CUP(11,5) F  R *R1,*R2:0,*R3:0 Q:R1=13  Q:R1=27  S A=A_$C(R1,R2,R3)
+ W /CUP(12,5) I A="" W "Не "
+ W "Вставили: ",A
+ I A'="",$D(%HIS) d AddHist^%ZAPM.bs.BSXuse(%HIS,A) s $E(LocS,Col)=A,cLen=$L(A)+1,Qu=1 q
+ Q
+2LAT(S,N) //перевод в латиницу
+ N S1,S2,S3,S4 S S3="_- ",S4="sss" I $G(N) S (S3,S4)=""
+ S S1="ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮЁёйцукенгшщзхъфывапролджэячсмитьбю"_S3
+ S S2="ICUKEHGSCZXTFYBAPROLDZEACSMITMBUEeicukehgsczxtfybaproldzeacsmitmby"_S4
+ Q $TR(S,S1,S2)
+FOR D CLr^%ZAPM.bs.BSF4 U $P::"^%ZAPM.bs.BS364"
+ n ss f  d  q:$g(ss)
+ .I $$rt^%ZAPM.bs.BS3(999)
+ .I R1=13 s ss=1 q  ;W /CUP(10,10),"ww-ww",! g FOR
+ .S iiV=R1_","_R2_","_R3_","_R4_","_R5
+ .W !,$IO_" --> ",iiV,"  ",$c(R1)
+ Q
+TABL //ВЫВОД НАЧАЛО ТАБЛИЦЫ
+ w "<table border=0 width=100%>"
+ Q
+TABLE //ВЫВОД КОНЕЦ ТАБЛИЦЫ
+ w "</table>"
+ Q
+TR2(C1,C2) //СТРОКА В 2 КОЛОНКИ
+ w "<tr><td class=s1 width=50%>"_C1_"</td><td class=s1  width=50%>"_C2_"</td></tr>"_BK
+ Q
+TR21(n) //СТРОКА В 2 КОЛОНКИ
+ w "<tr><td class=s"_$s($d(cla):$p(cla,",",1),1:$g(n,2))_" width="_$s($d(wid):$p(wid,",",1)_"%",1:"50%")_">" 
+ Q
+TR22(n,w) W "</td><td class=s"_$s($d(cla):$p(cla,",",w),1:$g(n,1))_"  width="_$s($d(wid):$p(wid,",",w)_"%",1:"50%")_">" 
+ Q
+TR23 W "</td></tr>"_BK
+ Q
+LE(vis,file,gl,mode,R,C,rou,filename) //манипуляции с шаблоном Excel
+ n curpw,i,cuC,j
+ D JS^%ZAPM.bs.BSCp
+	//------------------------------------------------------------------------------------------------------------------
+	W "var objExcel = new ActiveXObject('Excel.Application');"_BK
+	W "var objExcelBook;"_BK
+	W "FillExcelObj();"_BK
+	//------------------------------------------------------------------------------------------------------------------
+	W "function FillExcelObj()"_BK
+	W "{"_BK
+	W "var range;"_BK
+	W "if(objExcel!='Microsoft Excel'){alert('Не удалось запустить сервер автоматизации EXCEL.');return;};"_BK  //Открываем EXCEL'и
+	if $g(vis) W "objExcel.Visible = true;"_BK
+	else  W "objExcel.Visible = false;"_BK
+	//s file="N:123.xls"
+    //w "prompt('','"_file_"')"_BK
+    W "objExcelBook = objExcel.WorkBooks.Open('"_file_"');"_BK  //ОТКРОЕМ ШАБЛОН ОТЧЕТА
+	//W "objExcelBook = objExcel.WorkBooks.Add();"_BK  //ОТКРОЕМ ШАБЛОН ОТЧЕТА
+	W "var AS=objExcelBook.ActiveSheet;"_BK
+	s curow=R
+    S i="" F  S i=$O(@gl@(i)) Q:i=""  d
+    . w "objExcel.Rows("""_(curow+1)_":"_(curow+1)_""").Select;"_BK 
+    .i mode="ins" w "objExcel.Selection.Insert.Shift='-4121';"_BK  //вставить со сдвигом вниз
+    .s cuC=C-1
+    .F j=0:1:200 d
+    ..s cuC=cuC+1
+    ..i $d(@gl@(i,j)) w "objExcel.Cells("_curow_","_cuC_").Value = """_$g(@gl@(i,j))_""";"_BK
+    .s curow=curow+1
+	w "objExcel.Rows("""_(curow)_":"_(curow)_""").Select;"_BK
+	i mode="ins" d
+    .w "objExcel.Selection.Delete.Shift='-4162';"_BK //удалить со сдвигом вверх
+    .w "objExcel.Selection.Delete.Shift='-4162';"_BK
+	i $g(rou)'="" d @rou
+	W "objExcel.Cells(1,1).Select;"_BK
+	i $g(filename)'="" W "objExcelBook.SaveAs("""_$$TR^%ZAPM.bs.BSCp2(filename,"\","\\")_""");"_BK d
+	.W "objExcel.DisplayAlerts = 0;"_BK
+	.W "objExcel.Quit();"_BK
+	i $g(filename)="" W "objExcel.Visible = true;"_BK
+	W BK_"}"_BK
+ D JSE^%ZAPM.bs.BSCp
+ q
+MONT(%1) ;%1-НОМЕР МЕСЯЦА --> ТЕКСТ МЕСЯЦА в родительном падеже
+ Q $P("янваpя,февpаля,маpта,апpеля,мая,июня,июля,августа,сентябpя,октябpя,ноябpя,декабpя",",",+%1)
+ddmmgg(h) n d // --> ДД.ММ.ГГ
+ s d=$zd(h,3),d=(+$p(d,"-",3))_"."_$p(d,"-",2)_"."_$p(d,"-",1)
+ q d
+GetIpUrl(cid) //возвратить ссылку для закачки файла из инфотеки с сервера IP
+ n card,fn,ons,l,ret
+ s ons=$zu(5) i ons'=$$v^%ZAPM.bs.BSCp("vASU") zn $$v^%ZAPM.bs.BSCp("vASU")
+ s $zt="ErrGetIpUrl"
+ set card = ##class(ASUJNLl.clCard).%OpenId(cid)
+ s fn=card.AbsoluteName //$ZCVT($ZCVT(card.AbsoluteName,"O","UTF8"),"O","URL")
+ Set l=card.File.SizeGet() //Read(100)
+ s ret="infoteca/id("_cid_")size("_l_")name("_fn
+ kill card zn ons
+ q "http://"_$$ADDSN^%ZAPM.bs.BSC4()_"/"_ret
+ret
+ErrGetIpUrl kill card zn ons
+ i $ze["<INVALID OREF" q "INVALID_OREF="_cid
+ q "Error:"_$ze
+DC(xCardID,M) //загрузка файла из инфотеки в глобальный массив M (вызывается из HTML^%ZAPM.bs.BSpgBS)
+ n card,fn,ons,l,ret
+ s ons=$zu(5) i ons'=$$v^%ZAPM.bs.BSCp("vASU") zn $$v^%ZAPM.bs.BSCp("vASU")
+ set card = ##class(ASUJNLl.clCard).%OpenId(xCardID)
+ s l=0
+ While 'card.File.AtEnd {
+    s l=l+1,M(l)=card.File.Read(32000)
+    }
+ kill card zn ons
+ quit

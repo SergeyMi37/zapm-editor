@@ -1,0 +1,100 @@
+ROUTINE %ZAPM.bs.BSDDR2
+%BSDDR2 ;ВВОД ИЗ ПОРТА, ЗАПИСЬ В БПО ; 12:49   29.10.1999
+IP ;ВВОД ИЗ ПОРТА
+ N II,PK,%KPL,%IN
+ S B=1,%I=$I D TIP+1^%ZAPM.bs.BST S ls=" Запись в буфеp " D WAITS^%ZAPM.bs.BSF2
+ I '$$OPN^%ZAPM.bs.BSDDRR(+%BS(21),"R")!('+$G(%BS(21))) d ErrMsg^%ZAPM.bs.BSXfun("Не опpеделено устpойство РТА-80л") q
+ S %KPL=$P(%BS(21),",")_"$$r^%ZAPM.bs.BS3" D %OPEN^%ZAPM.bs.BSDDRR I '$D(%IO) W !,"СВЯЗЬ НЕ УСТАНОВЛЕНА...",*7 Q
+ K I,^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15))
+ F II=1:1 D %KPL^%ZAPM.bs.BSDDRR D  Q:R=-1
+ .S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),II)=PK
+ 
+ZAP ;ПРОВЕРКА И ЗАПИСЬ В БПО
+ N BSR,BST,%IN,STOP,Stop,DOP,s,sh,EF,NF,NF1,OP,INF,s1,t,t1,IND,Nf,%zT,Ipr,Ipr1
+ S B=1,%I=$I,%IN="",%zT=$ZT,$ZT="ERR^%ZAPM.bs.BSDDR2"
+ S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15))="БУФЕР @@@@@@@1@1@22@80@@@@1@@5@@@1@@@@@@@@@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ S $P(^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15)),"@",17)=5
+TXT S ls=" Пpовеpить и откоppектиpовать ? " D YES^%ZAPM.bs.BSF I YES S STOP="" D  Q:STOP=1
+ .D ^%ZAPM.bs.BSX("EDIT","^%ZAPM.bs.BSbufB","PO"_$G(%BS(3),$P)_"U"_%BS(15))
+ .S ls=" Заносим ?  " D YES^%ZAPM.bs.BSF I YES S Ipr1=2 Q
+ .S STOP=1 S Ipr1=1 D Wpro Q
+ 
+ I $D(IntREAD) Q  ;ВНУТРЕННЯЯ ТОЧКА ВХОДА =MSW
+ 
+REST ;ЗАПИСЬ В БПО
+ S bufO=$$GETkey^%ZAPM.bs.BSDDR() D L^%ZAPM.bs.BS3(bufO)
+ U 0 S (STOP,Stop)="",%IN=^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),1)
+ I %IN["---=" S ls=" Запись в БПО " D WAITS^%ZAPM.bs.BSF2 G I
+ D ErrMsg^%ZAPM.bs.BSXfun("Нет начала документа (---=) !") G TXT
+I S ls="ВВОД ИНФОРМАЦИИ..." D WAITS^%ZAPM.bs.BSF2 S (OBR,STOP,Stop,EF,s1)="",s=1,sh=1
+ D OBR Q:STOP=1  Q:Stop=1  D:STOP="" PR  F  S s=$O(^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),s)) Q:'s  D   ;G:'s QQQ D
+ .S %IN=^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),s) D:STOP=2 OBR2 D:STOP="" OBR1 Q:Stop=1  S sh=sh+1
+QQ S $ZT=$G(%zT) U 0 D OkMsg^%ZAPM.bs.BSXfun("ВВОД "_$G(%FN)_" ЗАВЕРШЕН",1)
+ D U^%ZAPM.bs.BS3(bufO)
+ D ^%ZAPM.bs.BSDDR1 Q  ;K ^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"U"_%BS(15)) Q
+ 
+OBR2 ;ОБРАБОТКА СТРОКИ СЛЕД.ДОК.
+ S OP="",INF=$E(%IN,1) I DOP="" I %IN'["-" S STOP=1 D OkMsg^%ZAPM.bs.BSXfun("ПУСТАЯ СТРОКА "_$G(EF),1) Q
+ I DOP="" I %IN'["-=" S STOP=2 Q
+OBR22 I DOP'="" S %IN=DOP_%IN
+ S OP="",NF1="",NF=$P($P(%IN,"-=",2),"="),NF1=NF I NF="" S:DOP'="" STOP=1 Q:DOP'=""  S STOP=2,DOP="-=" Q  ;
+ G OBR01
+OBR ;ОБРАБОТКА СТРОКИ
+ S OP="",INF=$E(%IN,1) I INF="" S STOP=1 D OkMsg^%ZAPM.bs.BSXfun("ПУСТАЯ СТРОКА "_EF,1) Q
+OBR0 S OP="",NF1="",NF=$P($P(%IN,"--=",2),"="),NF1=NF I NF="" S STOP=1 D OkMsg^%ZAPM.bs.BSXfun("КОНЕЦ ФАЙЛА",1) Q
+ 
+OBR01 ;ВЫБОРКА ФОРМАТОВ ИЗ DDRB
+ S k=""
+OBR011 K IK S mDDR=$G(^%ZAPM.bs.BSDDR("DDR","KEY"))
+ F  S k=$O(@(mDDR_"(k)")) Q:k=""  S PK=@(mDDR_"(k,""3,4"")") I NF=PK S OP=1 Q
+ I OP="" S STOP=2 S ls=" Не знаю я такой ФОРМЫ : "_NF_" " D  Q:YES=0  G:YES'=0 OBR01
+ .D O^%ZAPM.bs.BSF7 S li=NF D LE^%ZAPM.bs.BSTT I YES'=0 D
+ ..I li'["=" S NF=li Q
+ ..S NF=$P(li,"="),%IN="----="_NF_"="_$P(%IN,"--=",2),NF1=NF Q
+ S STOP="",IMQ=@(mDDR_"(k,""5,4"")"),uci=@(mDDR_"(k,""4,4"")")
+ S:uci'["[" uci1="["""_$E(uci,1,3)_""","""_$E(uci,5,7)_"""]",uci=uci1
+ S uci1=uci,uci=$E(uci1,3,5)_","_$E(uci1,9,11) D %GU^%ZAPM.bs.BSF4 S uci=uci1
+ G:OBR="" OPR
+OBR02 S IK="" F l=1:1:9 S n=l+7,n1=n_","_4,IK(l)=$G(@(mDDR_"(k,n1)")) Q:IK(l)=""
+ S n1=7_","_4,IK(0)=$G(@(mDDR_"(k,n1)")),mtBD=$G(@(mDDR_"(k,""35,4"")"))
+ S PG=$G(@(mDDR_"(k,""18,4"")")),KOR=$G(@(mDDR_"(k,""19,4"")")),IGN=$G(@(mDDR_"(k,""21,4"")")),l1=l-1
+ S (KORP,KORE)="" I KOR["#" D  S KOR=$P(KOR,"#")
+ .I $P(KOR,"#",2)'="" S KORE=$P(KOR,"#",2) Q
+ .S KORP=1
+ 
+OPR ;ОПРЕДЕЛЕНИЕ ТАБЛИЦЫ
+ S Stop=""  ;D %GU^%ZAPM.bs.BSF4
+ S BSR="^"_uci_$P(IMQ,","),BST=$P(IMQ,",",2)
+ Q:OBR=1
+ I '$D(@(BSR_"(BST)")) S YES=0 D  G:Stop="" OPR  Q
+ .S ls=" Не найдено таблицы : "_IMQ_" " D O^%ZAPM.bs.BSF7 S li=IMQ D LE^%ZAPM.bs.BSTT I YES'=0 S IMQ=li Q
+ .D OkMsg^%ZAPM.bs.BSXfun("ОБРАБОТКА ПРЕРВАНА") S Stop=1 Q
+ D  S t1=2,IND=""_t1_","_2_"",@bufO@(NF,t,IND)=$P(%IN,"-="_NF1,2) S ls=" ЗАНОСИТСЯ ФОРМА: "_NF_" " D WAITS^%ZAPM.bs.BSF2 S s1=s,@bufO@(NF)=$$ESDAY^%ZAPM.bs.BSsFUNR(9,$$h^%ZAPM.bs.BS3())
+ .S t="",Nf=1 I $D(@bufO@(NF)) S t=$O(@bufO@(NF,t),-1) S Nf=t+1
+ .S t=Nf
+e Q
+ 
+OBR1 ;СОЗДАНИЕ БУФЕРА ПО
+ I s1'=s D  S t1=t1+1,IND=""_t1_","_2_"",@bufO@(NF,t,IND)=%IN G PR
+ .I %IN'["---" I $E(%IN,1)'="=" S %IN="="_%IN
+PR D  I %IN["+++" S STOP=2,DOP="",@bufO@(NF,t,"2,1")=1 S Ipr=2 D Wpro Q
+ .I $E(%IN,1)="=" Q
+ .I %IN'["---" I $E(%IN,1)'="=" S %IN="="_%IN
+ S %IN=$E(%IN,1,$L(%IN)-1)
+ Q
+QQQ S EF=", КОНЕЦ ФАЙЛА " I sh=1 G QQ
+ D:STOP=2 OBR D:STOP="" OBR1 G QQ
+ Q
+ 
+ERR ;ERROR
+ d ErrMsg^%ZAPM.bs.BSXfun($$ErrSay^%ZAPM.bs.BSF8($ZE))
+ S $ZT=$G(%zT) D:$D(bufO) U^%ZAPM.bs.BS3(bufO) Q
+ 
+Wpro ;Протокол отработки файлов
+ S NamePro=$P($G(^%ZAPM.bs.BSDDR("DDRM6",2,1)),"@",14)
+ S Ipr=$O(@NamePro@(""),-1)
+ D L^%ZAPM.bs.BS3(NamePro)
+ I $G(Ipr1)=1 S Ipr=Ipr+1,@NamePro@(Ipr)=" Отказ от ввода !!" D U^%ZAPM.bs.BS3(NamePro) Q
+ S Ipr=Ipr+1
+ S @NamePro@(Ipr)="Форма: "_NF_" документ N: "_t
+ D U^%ZAPM.bs.BS3(NamePro) Q

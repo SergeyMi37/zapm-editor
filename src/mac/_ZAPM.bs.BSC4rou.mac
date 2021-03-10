@@ -1,0 +1,503 @@
+ROUTINE %ZAPM.bs.BSC4rou
+%BSC4rou ;Программа создания программных модулей
+ ;
+ ;    Copyright (C) 2002 Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ q
+MST  S @("^"_pin_".ROU")@(Rou,"MST")=newTP_","_Tab
+ Q
+UFD(pin,Rou,Tab) ;ПОКА ОТКЛЮЧЕНА - НЕ ОПРАВДАЛА СЕБЯ - НЕТ ИД СЕССИИ
+ D MST S V=$$LNG^%ZAPM.bs.BSC4("Унифицированная форма занесения данных в таблицу")_" '"_Tab_"'"
+ S @("^"_pin_".ROU")@(Rou,"REM")=V
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ S C="UFD1 ; "_$$say2_" "_BK
+ S C=C_" S V1="""_pin_""",V2="""_Tab_""""_BK
+ S C=C_" D $$$ROU(""%BSCm3"",""T"")"_BK
+ S C=C_" quit"_BK
+ S H="<HTML><BODY>"_$$VAR(1,"UFD1"),BSLABEL="UFD1" 
+ S H=H_"<a href="_$$add_">"_V_"</a>"_BK
+ S H=H_"</BODY></HTML>"_BK
+ g Save
+RunCode(pin,Rou,Tab) ; 
+ D MST S V=$$LNG^%ZAPM.bs.BSC4("Выполнить программу",226)
+ S @("^"_pin_".ROU")@(Rou,"REM")=V
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ S C="Variables1 ; "_$$say2_" "_$$hr_BK
+ S C=C_" write ""<pre>"""_BK
+ S C=C_" D $$$XECUTE(CACHECODE)"_BK
+ S C=C_" write ""</pre>"""_BK
+ S C=C_" quit"_BK
+ S H="<HTML><BODY>"_$$VAR(1,"Variables1"),BSLABEL="Variables1" 
+ S H=H_$$form("NameForm")        
+ S H=H_"<textarea cols=70 rows=5 name='CACHECODE'> "_BK
+ S H=H_" W ""<br>СЕГОДНЯ: "",$ZD($H,3)"_BK_" W ""<br>СЕЙЧАС: "",$ZT($P($H,"","",2),1) </textarea><br>"_BK
+ S H=H_"<input type='submit' name='Run' title='"_$$LNG^%ZAPM.bs.BSC4("Выполнить программу",226)_"' value='RUN'>"_BBK
+ S H=H_RED_$$LNG^%ZAPM.bs.BSC4("Не используйте макрос $$$XECUTE в цикле, так как при каждом его выполнении создается и компилирутся программа, а по окончании выполнения она удаляется.")_EF_BK
+ S H=H_"</form></center></BODY></HTML>"_BK
+ g Save
+Populate(pin,Rou,Tab) I $G(Tab)="" G TabEmpty
+ D MST S V=$$LNG^%ZAPM.bs.BSC4(" Создать тестовые записи для `",228)_Tab_"` "
+ S @("^"_pin_".ROU")@(Rou,"REM")=V
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ S C="Populate1 ; "_$$say2_" "_$$hr_BK
+ S C=C_" s Num=50 do Pop(Num)"_BK
+ S C=C_" w !,"""_$$LNG^%ZAPM.bs.BSC4("Создание",229)_" ""_(Num-$G(Error))_"" "_$$LNG^%ZAPM.bs.BSC4("записей произведено",230)_""""_BK
+ S C=C_"  d ShowRow(100) quit"_BK
+ d InputForm1
+ S C=C_" quit"_BK
+ S C=C_"Pop(N) for i=1:1:N do  ;"_$$LNG^%ZAPM.bs.BSC4("создание N записей",231)_""_BK
+ F I=1:1:K S C=C_"  .set "_$p(C1,",",I)_"=$$RandomField(10)"_BK  
+ S C=C_"  .do NewRow if SQLCODE'=0 s Error=$G(Error)+1"_BK       
+ S C=C_" quit"_BK
+ S C=C_"RandomField(N) ;"_$$LNG^%ZAPM.bs.BSC4("создание строки из N случайных символов",232)_""_BK
+ S C=C_" new st,str ;"_$$LNG^%ZAPM.bs.BSC4("делаем приватными переменные",233)_" st,str"_BK     
+ S C=C_"  set str="""" ; "_$$LNG^%ZAPM.bs.BSC4("делаем начальное присвоение",234)_""_BK 
+ S C=C_"  for st=1:1:N set str=str_$char($$CodeLetter)"_BK       
+ S C=C_" quit str ;"_$$LNG^%ZAPM.bs.BSC4("возвратить строку",235)_""_BK
+ S C=C_"CodeLetter() ;"_$$LNG^%ZAPM.bs.BSC4("функция возвращает код случайной буквы",236)_""_BK
+ S C=C_" new с"_BK       
+ S C=C_" for  set c=$R(255) if c>64&(c<123)!(c>191&(c<256)) q  "_BK      
+ S C=C_" q c"_BK 
+ d ShowRow S C=C_" quit"_BK
+ ;-----------------------------------------
+ S H=$$VAR(1,"Populate1"),BSLABEL="Populate1" 
+ S H=H_"<a href="_$$add_">"_$$LNG^%ZAPM.bs.BSC4("Создать для таблицы 50 тестовых записей",237)_"</a>"_BK
+ S H=H_"</center>"_BK
+ g Save
+DynamicSQL(pin,Rou,Tab)  I $G(Tab)="" G TabEmpty
+ D MST S V=" "_$$LNG^%ZAPM.bs.BSC4("Динамические SQL запросы для `",238)_""_Tab_"` "
+ S @("^"_pin_".ROU")@(Rou,"REM")=V
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ s C="DynSQL ; "_$$say2_V_BK_$$hr_BK
+ S C=C_"DynSQL1 ; (вариант 1)"_$$hr_BK
+ S C=C_" set Header="""_V_""" // "_$$LNG^%ZAPM.bs.BSC4("заголовок страницы",186)_""_BK  
+ S C=C_" &html<"_BK
+ S C=C_"<html><title>#(Header)#</title>"_BK
+ S C=C_"<body><center><H4>#(Header)#</H4>"_BK
+ D 
+ .N BSRoutineId
+ .S C=C_""_$$form("NameForm")
+ S C=C_"<input type='hidden' name='BSLABEL' value='DynSQL2'>"_BK
+ S C=C_">"_BK
+ S C=C_" set Maxfeild=$$$CoutFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество полей",187)_""_BK
+ 
+ S C=C_" G:$D(SQLstr1) L2  set var2="""" //"_$$LNG^%ZAPM.bs.BSC4("начальное пустое значение",239)_""_BK
+ S C=C_" set SQLstr1=""INSERT INTO ""_$$$NameTable("""_BSPRO_""","""_Tab_""")_"" ("" //"_$$LNG^%ZAPM.bs.BSC4("присвоим начальное значение строки утверждения",240)_""_BK
+ S C=C_" for Num=1:1:Maxfeild {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_""_BK
+ S C=C_"    set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля в переменную",241)_""_BK
+ S C=C_"    set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_""_BK
+ S C=C_"    s SQLstr1=SQLstr1_NameFeild //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_""_BK
+ S C=C_"    s var2=var2_""'ТЕСТОВОЕ ЗНАЧЕНИЕ'"" //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_""_BK
+ S C=C_"     if Num'=Maxfeild s SQLstr1=SQLstr1_"", "",var2=var2_"", "" //"_$$LNG^%ZAPM.bs.BSC4("присвоить запятую если это не последнее поле",243)_""_BK
+ S C=C_"  }"_BK
+ S C=C_" s SQLstr1=SQLstr1_"") VALUES (""_var2_"")"" //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_""_BK
+ S C=C_"L2 w ""<table border=0>"""_BK
+ S C=C_" w ""<tr><td><input type='submit' name='INSERT' value='"_$$LNG^%ZAPM.bs.BSC4("Вставить",244)_"'></td><td><textarea cols=70 rows=5 name='SQLstr1'>"",SQLstr1,""</textarea></td></tr>"""_BK
+ 
+ S C=C_" G:$D(SQLstr2) L3  set var2="""" //"_$$LNG^%ZAPM.bs.BSC4("начальное пустое значение",239)_""_BK
+ S C=C_" set SQLstr2=""UPDATE ""_$$$NameTable("""_BSPRO_""","""_Tab_""")_"" SET "" //"_$$LNG^%ZAPM.bs.BSC4("присвоим начальное значение строки утверждения",240)_""_BK
+ S C=C_" for Num=1:1:Maxfeild {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_""_BK
+ S C=C_"    set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля в переменную",241)_""_BK
+ S C=C_"    set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_""_BK
+ S C=C_"     if Num=1 set var2=NameFeild //"_$$LNG^%ZAPM.bs.BSC4("запомнить первое поле",245)_""_BK
+ S C=C_"    s:Num'=1 SQLstr2=SQLstr2_NameFeild_""='НОВОЕ ТЕСТОВОЕ ЗНАЧЕНИЕ'"" //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения, если это не 1 поле",246)_""_BK
+ S C=C_"     if Num'=Maxfeild s:Num'=1 SQLstr2=SQLstr2_"", "" //"_$$LNG^%ZAPM.bs.BSC4("присвоить запятую если это не последнее поле",243)_""_BK
+ S C=C_"  }"_BK
+ S C=C_" s SQLstr2=SQLstr2_"" WHERE ""_var2_""='ТЕСТОВОЕ ЗНАЧЕНИЕ'"" //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_""_BK
+ S C=C_"L3 write ""<tr><td><input type='submit' name='UPDATE' value='"_$$LNG^%ZAPM.bs.BSC4("Обновить",247)_"'></td><td><textarea cols=70 rows=5 name='SQLstr2'>""_SQLstr2_""</textarea></td></tr>""  "_BK
+ 
+ S C=C_" G:$D(SQLstr3) L4  set var2="""" //"_$$LNG^%ZAPM.bs.BSC4("начальное пустое значение",239)_""_BK
+ S C=C_" set SQLstr3=""DELETE FROM ""_$$$NameTable("""_BSPRO_""","""_Tab_""")_"" "" //"_$$LNG^%ZAPM.bs.BSC4("присвоим начальное значение строки утверждения",240)_""_BK
+ S C=C_" for Num=1:1:Maxfeild {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_BK
+ S C=C_"    set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля в переменную",241)_BK
+ S C=C_"    set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"     if Num=1 set var2=NameFeild //"_$$LNG^%ZAPM.bs.BSC4("запомнить первое поле",245)_BK
+ S C=C_"  }"_BK
+ S C=C_" s SQLstr3=SQLstr3_"" WHERE ""_var2_""='ТЕСТОВОЕ ЗНАЧЕНИЕ'"" "_BK
+ S C=C_"L4 write ""<tr><td><input type='submit' name='DELETE' value='"_$$LNG^%ZAPM.bs.BSC4("Удалить",119)_"'></td><td><textarea cols=70 rows=5 name='SQLstr3'>""_SQLstr3_""</textarea></td></tr>""  "_BK
+ 
+ S C=C_" G:$D(SQLstr4) L5  set SQLstr4=""SELECT "" //"_$$LNG^%ZAPM.bs.BSC4("присвоим начальное значение стоки утверждения",248)_BK
+ S C=C_" for Num=1:1:Maxfeild {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_BK
+ S C=C_"    set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля в переменную",241)_BK
+ S C=C_"    set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"     if Num=1 set var2=NameFeild //"_$$LNG^%ZAPM.bs.BSC4("запомнить первое поле",245)_BK
+ S C=C_"    s SQLstr4=SQLstr4_NameFeild //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_BK
+ S C=C_"     if Num'=Maxfeild s SQLstr4=SQLstr4_"", "" //"_$$LNG^%ZAPM.bs.BSC4("присвоить запятую если это не последнее поле",243)_BK
+ S C=C_"  }"_BK
+ S C=C_" s SQLstr4=SQLstr4_"" FROM ""_$$$NameTable("""_BSPRO_""","""_Tab_""")_"" WHERE ""_var2_"" LIKE '%ТЕСТОВОЕ ЗНАЧЕНИЕ%'"" //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_BK
+ S C=C_"L5 write ""<tr><td><input type='submit' name='SELECT' value='"_$$LNG^%ZAPM.bs.BSC4("Выбрать",249)_"'></td><td><textarea cols=70 rows=5 name='SQLstr4'>""_SQLstr4_""</textarea></td></tr>""  "_BK
+ S C=C_" &html<"_BK
+ S C=C_"</table>"_BK
+ S C=C_"<input type='hidden' name='BSRoutineId' value='#(BSRoutineId)#'>"_BK
+ S C=C_"</center></form></body></html>"_BK
+ S C=C_">"_BK
+ 
+ S C=C_" quit"_BK
+ S C=C_"DynSQL2 ; "_$$hr_BK
+ S C=C_" if $D(SELECT) set SQLstat=SQLstr4"_BK
+ S C=C_" if $D(INSERT) set SQLstat=SQLstr1"_BK
+ S C=C_" if $D(UPDATE) set SQLstat=SQLstr2"_BK
+ S C=C_" if $D(DELETE) set SQLstat=SQLstr3"_BK
+ D DYNS
+ S C=C_" GOTO DynSQL1"_BK
+ ;-----------------------------------------
+ s H="<!-- "_$$say1_" -->"_BK
+ S H=H_$$VAR(1,"DynSQL1"),BSLABEL="DynSQL1"
+ S H=H_"<a href="_$$add_">"_$$LNG^%ZAPM.bs.BSC4("Вызвать сгенеренные на сервере формы Динамических SQL запросов",250)_"</a>"_BK
+ S H=H_"</center>"_BK
+ s H=H_$$end
+ g Save
+DYNS ;ТЕЛО ПРОГРАММЫ
+ S C=C_" write ""<center>"" s result=$$$DynSQLprep(SQLstat,.hhh) //hhh - "_$$LNG^%ZAPM.bs.BSC4("ссылка на объект - результат запроса",251)_BK
+ S C=C_" if +result=1 write """_GREEN_"SQL "_$$LNG^%ZAPM.bs.BSC4("утверждение выполнилось удачно",252)_"."_EF_""",! "_BK
+ S C=C_" else  write """_RED_$$LNG^%ZAPM.bs.BSC4("Ошибка выполнения SQL утверждения",253)_" : "_EF_"""_$$$MsgSQLError(result) goto DynSQL2end"_BK
+ S C=C_" w ""<table border=1>"" new allcol,row2 //"_$$LNG^%ZAPM.bs.BSC4("делаем приватной переменную",254)_" allcol и row2"_BK
+ S C=C_" s x=$$$DynSQLColInfo(.COL,.hhh) // "_$$LNG^%ZAPM.bs.BSC4("получим информацию о колонках, она присвоится в переменную",255)_" COL"_BK
+ S C=C_"  for  Q:$$$DynSQLfetch(.hhh,.row1,.STOP)=1  s row2=$G(row2)+1  D  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем записям результата выполнения утверждения",256)_BK
+ S C=C_"  .if '$D(allcol) s allcol=$LISTLENGTH(row1) d  //"_$$LNG^%ZAPM.bs.BSC4("один раз вычисляется количество колонок в результате запроса",257)_BK
+ S C=C_"  ..W ""<tr><td bgcolor=#E4E4E4>.</td>"""_BK
+ S C=C_"  .. for col=1:1:allcol W ""<td bgcolor=#E4E4E4>"",$$$DynSQLcol(COL,col),""</td>""  //"_$$LNG^%ZAPM.bs.BSC4("цикл по колонкам",258)_BK
+ S C=C_"  .W ""<tr><td bgcolor=#E4E4E4>"",row2,""</td>"""_BK
+ S C=C_"  . for col=1:1:allcol do  //"_$$LNG^%ZAPM.bs.BSC4("цикл по колонкам",258)_BK
+ S C=C_"  ..W ""<td>"",$$$DynSQLGetData(row1,col),""</td>"""_BK
+ S C=C_"  .W ""</tr>"""_BK       
+ S C=C_" w ""</table><BR>"""_BK
+ S C=C_" if '$D(row2) w ""<br>"_$$LNG^%ZAPM.bs.BSC4("но нет ни одной записи удовлетворяющей предложенным условиям",259)_""""_BK
+ S C=C_"DynSQL2end  w $$$DynSQLclose(.hhh)"_BK
+ S C=C_"  write ""</center>"""_BK
+ Q       
+Find(pin,Rou,Tab)  I $G(Tab)="" G TabEmpty
+ D MST S V=" Модуль поиска для `"_Tab_"` "
+ S @("^"_pin_".ROU")@(Rou,"REM")=V
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ s C="Find ; "_$$say2_V_BK_$$hr_BK
+ S C=C_"Find1 ; "_$$hr_BK
+ S C=C_" set Header="""_V_""" // "_$$LNG^%ZAPM.bs.BSC4("заголовок страницы",186)_BK  
+ S C=C_" &html<"_BK
+ S C=C_"<html><title>#(Header)#</title>"_BK
+ S C=C_"<body><center><H4>#(Header)#</H4>"_BK
+ D 
+ .N BSRoutineId
+ .S C=C_""_$$form("NameForm")
+ S C=C_"<input type='hidden' name='BSLABEL' value='Find2'>"_BK
+ S C=C_"<table border=0>"_BK
+ S C=C_">"_BK
+ S C=C_" set Maxfeild=$$$CoutFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество полей",187)_BK
+ S C=C_" set MaxIndxfeild=$$$CoutIndxFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество индексированных полей",188)_BK
+ S C=C_" N Sel"_BK
+ S C=C_" for Num=1:1:Maxfeild {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_BK
+ S C=C_"     set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля",195)_BK
+ S C=C_"     set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"     set Description=$P(var1,""~"",2) //"_$$LNG^%ZAPM.bs.BSC4("вычленить описание поля",199)_BK
+ S C=C_"     write ""<tr><td align='right'><strong>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести начало строки таблицы",260)_BK
+ S C=C_"       if MaxIndxfeild'<Num write ""<FONT COLOR=RED>*</FONT>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести красную звездочку если поле индексированное",261)_BK
+ S C=C_"     write Description,"" ("",NameFeild,"") <input type='checkbox' title='"_$$LNG^%ZAPM.bs.BSC4("поле учавствует в SQL запросе",262)_"' name='C""_Num_""' checked></strong></td>"""_BK
+ S C=C_"     write ""<td> AS <input type='text' size=7 maxlength=48 title='"_$$LNG^%ZAPM.bs.BSC4("превдоним",263)_"' name='A""_Num_""' value=''>"""_BK
+ S C=C_"     write ""</td></tr>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести окончание строки таблицы",264)_BK
+ S C=C_"      if '$D(Sel) s Sel=""<option value='""_NameFeild_""' selected>""_NameFeild_""</option>"" //"_$$LNG^%ZAPM.bs.BSC4("подготовить опции для",265)_" SELECT"_BK
+ S C=C_"      else  set Sel=Sel_""<option value='""_NameFeild_""'>""_NameFeild_""</option>"""_BK
+ S C=C_"     }"_BK
+ S C=C_" write ""<input type='hidden' name='BSRoutineId' value='""_BSRoutineId_""'>"""_BK
+ S C=C_" &html<"_BK
+ S C=C_"</table><hr>"_BK 
+ S C=C_"<select name='FIELD1'>#(Sel)#</select><select name='OPER1'><option value='1' selected>равно</option><option value='2'>"_$$LNG^%ZAPM.bs.BSC4("начинается",266)_"</option><option value='3'>"_$$LNG^%ZAPM.bs.BSC4("включает",267)_"</option></select>"_BK
+ S C=C_"<input type='text' size=7 maxlength=48 title='"_$$LNG^%ZAPM.bs.BSC4("строка",268)_"' name='STR1' value='123'><br><input type='submit' name='Find1' title='"_$$LNG^%ZAPM.bs.BSC4("искать",269)_"' value='"_$$LNG^%ZAPM.bs.BSC4("Искать",270)_"'>"_BK
+ S C=C_"<br><hr><FONT COLOR=RED>*</FONT> "_$$LNG^%ZAPM.bs.BSC4("обязательные (индексированные) показатели",271)_"</form>"_BK
+ S C=C_"</center></body></html>"_BK
+ S C=C_">"_BK
+ S C=C_" quit  ;"_$$LNG^%ZAPM.bs.BSC4("внутри тела макроса &html можно применять выражения COS в скобках",272)_" #(...)#"_BK
+ S C=C_"Find2 ; "_$$hr_BK
+ S C=C_" &html<"_BK
+ S C=C_"<html><title></title>"_BK
+ S C=C_"<body><center><H4>SQL "_$$LNG^%ZAPM.bs.BSC4("утверждение",273)_"</H4>"_BK
+ D 
+ .N BSRoutineId
+ .S C=C_""_$$form("NameForm")
+ S C=C_">"_BK
+ S C=C_" set Maxfeild=$$$CoutFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество полей",187)_BK
+ S C=C_" s SQL=""SELECT "" "_BK
+ S C=C_" for Num=1:1:Maxfeild if $$$DDATA(""C""_Num) D  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_BK
+ S C=C_"    .set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля в переменную",241)_BK
+ S C=C_"    .set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"    .s SQL=SQL_NameFeild if $$$DGET(""A""_Num)'="""" s SQL=SQL_"" AS ""_$$$DGET(""A""_Num) //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_BK
+ S C=C_"    . if Num'=Maxfeild s SQL=SQL_"", "" //"_$$LNG^%ZAPM.bs.BSC4("присвоить запятую если это не последнее поле",243)_BK
+ S C=C_" IF $G(OPER1)=1 S S1=""="",(S2,S3)="""" "_BK
+ S C=C_" IF $G(OPER1)=2 S S1=""LIKE"",S2="""",S3=""%"" "_BK
+ S C=C_" IF $G(OPER1)=3 S S1=""LIKE"",S2=""%"",S3=""%"" "_BK     
+ S C=C_" s SQLstat=SQL_"" FROM ""_$$$NameTable("""_BSPRO_""","""_Tab_""")_"" WHERE ""_FIELD1_"" ""_S1_"" '""_S2_STR1_S3_""'"" //"_$$LNG^%ZAPM.bs.BSC4("присвоить имя поля к строке утверждения",242)_BK
+ S C=C_" write ""<input type='hidden' name='BSRoutineId' value='""_BSRoutineId_""'>"""_BK
+ S C=C_" write ""<textarea cols=70 rows=5 name='SQLstat'>""_SQLstat_""</textarea>"""_BK
+ S C=C_" write ""<input type='submit' name='SELECT' value='"_$$LNG^%ZAPM.bs.BSC4("Выбрать",249)_"'>"""_BK
+ S C=C_" W ""<input type='hidden' name='BSLABEL' value='Find3'>"""_BK
+ S C=C_" W ""</form></center></body></html>"""_BK        
+ S C=C_" quit  "_BK
+ S C=C_"Find3 ; "_$$hr_BK
+ D DYNS
+ S C=C_" G Find1"_BK
+ ;-----------------------------------------
+ s H="<!-- "_$$say1_" -->"_BK
+ S H=H_$$VAR(1,"Find1"),BSLABEL="Find1"
+ S H=H_"<a href="_$$add_">"_$$LNG^%ZAPM.bs.BSC4("Вызвать поисковый модуль",274)_"</a>"_BK
+ S H=H_"</center>"_BK
+ s H=H_$$end
+ g Save
+Navigator(pin,Rou,Tab) I $G(Tab)="" G TabEmpty
+ D MST S V=" "_$$LNG^%ZAPM.bs.BSC4("Навигатор прямого доступа к таблице `",275)_Tab_"` "
+ S @("^"_pin_".ROU")@(Rou,"REM")=V
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ s C="Navigator ; "_$$say2_V_BK_$$hr_BK
+ S C=C_" set Home1=1 "_BK     
+ S C=C_"Navig1 ; "_$$hr_BK
+ S C=C_" set Header="""_V_""" // "_$$LNG^%ZAPM.bs.BSC4("заголовок страницы",186)_BK  
+ S C=C_" set Max=$$$CoutFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество полей",187)_BK
+ S C=C_" set MaxI=$$$CoutIndxFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество индексированных полей",188)_BK
+ S C=C_" D $$$DKILL(""Dis"") // "_$$LNG^%ZAPM.bs.BSC4("удалить массив признака опции",189)_" DISABLE"_BK
+ S C=C_" D $$$DKILL(""STOP"") "_BK
+ S C=C_" for Num=1:1:MaxI D  Q:$G(STOP)=1  G:$G(STOP)=2 Navigator  //"_$$LNG^%ZAPM.bs.BSC4("цикл по индексным полям",190)_BK
+ S C=C_"    .D KKey(Num)  "_BK
+ S C=C_"    .IF $$$DDATA(""Home""_Num) D $$$DSET(""Home""_(Num+1),1) D $$$DSET(""value""_Num,$$$ORDER("""_BSPRO_""","""_Tab_""",.Key,"""",1)) D CheckL Q:$D(STOP)  "_BK
+ S C=C_"    .IF $$$DDATA(""End""_Num) D $$$DSET(""Home""_(Num+1),1) D $$$DSET(""value""_Num,$$$ORDER("""_BSPRO_""","""_Tab_""",.Key,"""",-1)) D CheckR "_BK
+ S C=C_"    .IF $$$DDATA(""Del""_Num) D $$$DKILL(""Del""_Num) D $$$DSET(""Left""_Num,1) D $$$KillDirectTab("""_BSPRO_""","""_Tab_""",.Key) //"_$$LNG^%ZAPM.bs.BSC4("удалить узел ",191)_BK
+ S C=C_"    .IF $$$DDATA(""Left""_Num) D $$$DSET(""Home""_(Num+1),1) D $$$DSET(""value""_Num,$$$ORDER("""_BSPRO_""","""_Tab_""",.Key,$$$DGET(""value""_Num),-1)) D CheckL Q:$D(STOP)  "_BK
+ S C=C_"    .IF $$$DDATA(""Right""_Num) D $$$DSET(""Home""_(Num+1),1) D $$$DSET(""value""_Num,$$$ORDER("""_BSPRO_""","""_Tab_""",.Key,$$$DGET(""value""_Num),1)) D CheckR "_BK
+ S C=C_"    .S Dis(Num,1)=($$$ORDER("""_BSPRO_""","""_Tab_""",.Key,$$$DGET(""value""_Num),-1)="""") "_BK
+ S C=C_"    .S Dis(Num,2)=($$$ORDER("""_BSPRO_""","""_Tab_""",.Key,$$$DGET(""value""_Num),1)="""") "_BK
+ S C=C_" &html<"_BK
+ S C=C_"<html><title>#(Header)#</title>"_BK
+ S C=C_"<body><center><H4>#(Header)#</H4>"_BK
+ D 
+ .N BSRoutineId
+ .S C=C_""_$$form("NameForm")
+ S C=C_"<input type='hidden' name='BSLABEL' value='Navig2'>"_BK
+ S C=C_"<table border=0>"_BK
+ S C=C_">"_BK
+ S C=C_"   D $$$DSET(""Key(Key)"",$$$DGET(""value""_Num)) //"_$$LNG^%ZAPM.bs.BSC4("присвоить значение последнего индекса ",276)_BK
+ S C=C_"    IF $D(Save) D  //присвоить исправления"_BK
+ S C=C_"       .for Num=(MaxI+1):1:Max D  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем неиндексным полям",194)_BK
+ S C=C_"       ..set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля",195)_BK
+ S C=C_"       ..set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"       ..IF $$$SetDirectTab("""_BSPRO_""","""_Tab_""",.Key,NameFeild,$$$DGET(""value""_Num)) //"_$$LNG^%ZAPM.bs.BSC4("присвоим в прямом доступе",197)_BK
+ S C=C_"   for Num=1:1:Max {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_BK
+ S C=C_"     set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля",195)_BK
+ S C=C_"     set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"     set Description=$P(var1,""~"",2) //"_$$LNG^%ZAPM.bs.BSC4("вычленить описание поля",199)_BK
+ S C=C_"     write ""<tr>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести описание",200)_BK
+ S C=C_"     if $P(var1,""~"",4)'="""" D  //"_$$LNG^%ZAPM.bs.BSC4("эти поля индексные",201)_BK
+ S C=C_"       .W ""<td align='right'><input type='submit' name='Del""_Num_""' title='"_$$LNG^%ZAPM.bs.BSC4("удалить узел",202)_" ""_$SELECT(Num=MaxI:"""",1:""со всеми потомками высших уровней"")_""' value='Удалить'>&nbsp;<input type='submit' ""_$$Disable(Num,1)_"" name='Home""_Num_""' value='&lt;&lt;'><input type='submit' name='Left""_Num_""' ""_$$Disable(Num,1)_"" value='&lt;'></td>"""_BK
+ S C=C_"     if Num=(MaxI+1) w ""<tr><td><hr></td><td><hr></td><td></td><td><hr></td></tr><td align='right'><input type='submit' name='Save' value='Coхранить'></td>"" "_BK
+ S C=C_"     if Num=(MaxI+2) w ""<td align='right'><input type='Reset' name='Reset' value='"_$$LNG^%ZAPM.bs.BSC4("Отменить",204)_"'></td>"" "_BK
+ S C=C_"     if Num>(MaxI+2) w ""<td></td>"""_BK
+ S C=C_"     if $P(var1,""~"",4)="""" D  //"_$$LNG^%ZAPM.bs.BSC4("эти поля неиндексные",205)_BK
+ S C=C_"       .D $$$DSET(""value""_Num,$$$GetDirectTab("""_BSPRO_""","""_Tab_""",.Key,NameFeild)) //"_$$LNG^%ZAPM.bs.BSC4("прямой доступ к данным таблицы, когда знаешь индексы",206)_BK
+ S C=C_"     if $P(var1,""~"",3)'=1 write ""<td><input type='text' size=40 maxlength=2048 title='""_NameFeild_""' name='value""_Num_""' value='""_$$$DGET(""value""_Num)_""'></td>"""_BK
+ S C=C_"     if $P(var1,""~"",3)=1 write ""<td><textarea cols=40 rows=5 title='""_NameFeild_""' name='value""_Num_""' >""_$$$DGET(""value""_Num)_""</textarea></td>"""_BK
+ S C=C_"     S var2=""<td align='left'>"" "_BK
+ S C=C_"     if $P(var1,""~"",4)'="""" D  //"_$$LNG^%ZAPM.bs.BSC4("эти поля индексные",201)_BK
+ S C=C_"       .S var2=var2_""<input type='submit' name='Right""_Num_""' ""_$$Disable(Num,2)_"" value='&gt;'><input type='submit' ""_$$Disable(Num,2)_"" name='End""_Num_""' value='&gt;&gt;'>"" "_BK
+ S C=C_"     write var2_""</td>"" "_BK
+ S C=C_"     write $$Desc("" (""_NameFeild_"") ""_Description)_""</tr>"" "_BK
+ S C=C_"     }"_BK
+ S C=C_" write ""<input type='hidden' name='BSRoutineId' value='""_BSRoutineId_""'>"""_BK
+ S C=C_" &html<"_BK
+ S C=C_"</table></form></center>"_BK
+ S C=C_"</body></html>"_BK
+ S C=C_">"_BK
+ S C=C_" ;D $$$DoRou("""_BSPRO_""",""NewRoutin3"",""Variables1"") Q  "_BK
+ S C=C_" quit"_BK
+ S C=C_"Desc(D) Q ""<td align='lift'><strong>""_D_""</strong></td>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести описание",200)_BK
+ S C=C_"CheckL //"_$$LNG^%ZAPM.bs.BSC4("проверить значение ключей",211)_BK
+ S C=C_" if $$$DGET(""value""_Num)="""" D $$$DSET(""value""_Num,$$$ORDER("""_BSPRO_""","""_Tab_""",.Key,"""",1)) d  "_BK
+ S C=C_" .if $$$DGET(""value""_Num)="""" D  "_BK
+ S C=C_" ..I Num=1 S STOP=1 Q  "_BK
+ S C=C_" ..E  S Num=Num-1 S STOP=2"_BK
+ S C=C_" quit"_BK
+ S C=C_"CheckR //"_$$LNG^%ZAPM.bs.BSC4("проверить значение ключей",211)_BK
+ S C=C_" if $$$DGET(""value""_Num)="""" D $$$DSET(""value""_Num,$$$ORDER("""_BSPRO_""","""_Tab_""",.Key,"""",-1)) d  "_BK
+ S C=C_" .if $$$DGET(""value""_Num)="""" D  "_BK
+ S C=C_" ..I Num=1 S STOP=1 Q  "_BK
+ S C=C_" ..E  S Num=Num-1 S STOP=2"_BK
+ S C=C_" quit"_BK
+ S C=C_"Disable(N,A) Q $S($G(Dis(N,A)):""DISABLED"",1:"""") //"_$$LNG^%ZAPM.bs.BSC4("выставить опцию",212)_BK        
+ S C=C_"KKey(k) //"_$$LNG^%ZAPM.bs.BSC4("подготовить массив данных узлов",213)_BK    
+ S C=C_" D $$$DKILL(""Key"") //"_$$LNG^%ZAPM.bs.BSC4("Удалить массив",214)_BK
+ S C=C_" n i f i=1:1:k s Key(i)=$$$DGET(""value""_i)"_BK 
+ S C=C_" s Key=k Q"_BK   
+ S C=C_"Navig2 ; "_$$hr_BK
+ S C=C_" G Navig1"_BK    
+ ;-----------------------------------------
+ s H="<!-- "_$$say1_" -->"_BK
+ S H=H_$$VAR(1,"Navigator"),BSLABEL="Navigator"
+ S H=H_"<a href="_$$add_">"_$$LNG^%ZAPM.bs.BSC4("Загрузить навигатор прямого доступа",277)_"</a>"_BK
+ S H=H_"</center>"_BK
+ s H=H_$$end
+ g Save
+ShowRow S C=C_"ShowRow(MaxNum)  &sql(DECLARE ActiveRow CURSOR FOR SELECT "_C1_" INTO "_C2_" FROM "_TN_")"_BK
+ S C=C_"  &sql(OPEN ActiveRow)"_BK
+ S C=C_" W $$$Meta(1251)"_BK
+ S C=C_"  write ""<center><br><table border=1><tr><td>"_$$LNG^%ZAPM.bs.BSC4("Имена полей",278)_"</td>"",!"_BK
+ F I=1:1:K S C=C_"  write ""<td bgcolor=#B4B4B4>"_$$RedStar^%ZAPM.bs.BSC4rou(I'>INDX)_$p(C1,",",I)_"</td>"""_BK
+ S C=C_"  write ""</tr>"",! set Num=0"_BK        
+ S C=C_"  for   &sql(FETCH ActiveRow) q:SQLCODE'=0  q:MaxNum=Num  do  ;"_$$LNG^%ZAPM.bs.BSC4("цикл по выбранным записям",279)_BK
+ S C=C_"  .write ""<tr>"",!"_BK
+ S C=C_"  .set Num=Num+1   write ""<td bgcolor=#E4E4E4> "_$$LNG^%ZAPM.bs.BSC4("Запись",280)_" "",Num,""</td>"""_BK
+ F I=1:1:K S C=C_"  .write ""<td>"",$G("_$p(C1,",",I)_"),""</td>"""_BK
+ S C=C_"  .write ""</tr>"",!"_BK
+ S C=C_"  &sql(CLOSE ActiveRow)"_BK
+ S C=C_"  write ""</table><br></center>"",!"_BK  
+ q
+InputForm1 S TN=$TR(pin,".","_")_"."_Tab
+ S C=C_"NewRow &sql( INSERT INTO "_TN_" ("
+ s K=$$GetField("","","Count")   ;РАЗБОР ПОЛЕЙ ТАБЛИЦЫ
+ S (I1,I2,C1,C2)="" F Y=1:1:K S TA=$$GetField("","",Y) D  ;NAME ~ DESCRIPTION ~ TYPE ~ INDEX
+ .S C1=C1_$p(TA,"~",1),C2=C2_":"_$p(TA,"~",1) D  I Y'=K S C1=C1_",",C2=C2_"," ;ВСЕ ПОЛЯ
+ .I $p(TA,"~",4) S INDX=Y,I1=I1_$p(TA,"~",1)_"=:"_$p(TA,"~",1)_" and "  ;ИНДЕКСНЫЕ ПОЛЯ
+ .S I2=I2_$p(TA,"~",1)_"=:"_$p(TA,"~",1)_","
+ S I1=$E(I1,1,$L(I1)-5),I2=$E(I2,1,$L(I2)-1)
+ S C=C_C1_") VALUES ("_C2_") )"_BK
+ q
+InputForm(pin,Rou,Tab) I $G(Tab)="" G TabEmpty
+ D MST 
+ n BSSES,BSLOGIN,BSLABEL,BSG,BSGRANT,BSTOP
+ S BSG="B4",BSRoutineId="????????"
+ n C,H,T1,T2,I,TA,RT,PT,TAB,K,KI,Y,TN,GetField
+ s I=$$LNG^%ZAPM.bs.BSC4("Форма ввода для",281)_" `"_Tab_"`"
+ S @("^"_pin_".ROU")@(Rou,"REM")=I
+ s C="InputForm ; "_$$say2_" ("_I_")"_BK_$$hr_BK                          ;_" #include %BSC4inc"_BK   
+ S C=C_"Label1 ; ("_$$LNG^%ZAPM.bs.BSC4("вариант",282)_" 1)"_$$hr_BK
+ S C=C_" do Update:$d(Upd),NewRow:$d(New),Delete:$d(Del) //"_$$LNG^%ZAPM.bs.BSC4("диспетчер",283)_BK
+ S C=C_" do ShowRow($GET(CountRows,10)) // "_$$LNG^%ZAPM.bs.BSC4("ограничим вывод списка 10 записями, если неопределена переменная",284)_" CountRows"_BK        
+ S C=C_" quit"_BK
+ d InputForm1
+ S C=C_" goto Final"_BK  
+ S C=C_"Update &sql(UPDATE "_TN_" SET "_I2_" WHERE "_I1_")"_BK
+ S C=C_" goto Final"_BK
+ 
+ S C=C_"Delete &sql(DELETE FROM "_TN_" WHERE "_I1_")"_BK
+ S C=C_" goto Final"_BK
+ 
+ S C=C_"Final write ""<center>"" if '$Data(SQLCODE) quit  "_BK
+ S C=C_" if SQLCODE=0 write """_GREEN_"SQL "_$$LNG^%ZAPM.bs.BSC4("утверждение выполнилось удачно",252)_"."_EF_""",! "_BK
+ S C=C_" else  write """_RED_""_$$LNG^%ZAPM.bs.BSC4("Ошибка выполнения SQL утверждения",253)_" : "_EF_""",$$$ASqlError("""_BSDOMAIN_""","""_$$LNG^%ZAPM.bs.BSC4("смотреть код ошибки",285)_"""),SQLCODE,$$$A"_BK
+ ;S C=C_" if SQLCODE=-119 write "" "_$$LNG^%ZAPM.bs.BSC4("Такая Запись уже есть",286)_" !"",! "_BK
+ S C=C_"  write ""</center>"""_BK        
+ S C=C_" quit"_BK
+ 
+ d ShowRow ;SQL
+ S C=C_" goto Label2"_BK
+ 
+ S C=C_"Label2 ; (вариант 2)"_$$hr_BK
+ S C=C_"     set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",1) //"_$$LNG^%ZAPM.bs.BSC4("взять атрибуты первого поля",287)_BK
+ S C=C_"     set NameFeild=$P(var1,""~"",1) // "_$$LNG^%ZAPM.bs.BSC4("взять имя первого поля",288)_BK
+ S C=C_"     set Header=""Форма ввода для `"_Tab_"`"" // "_$$LNG^%ZAPM.bs.BSC4("заголовок страницы",186)_BK  
+ S C=C_" write ""<html><title>"",Header,""`</title>"""_BK
+ //S C=C_" write ""<body onload='NameForm1.""_NameFeild_"".focus();'>"""_BK //ДАВАЛА ОШИБКУ
+ S C=C_" write ""<body >"""_BK
+ S C=C_" write ""<center><H3>"",Header,""</H3>"""_BK
+ S C=C_" &html<"_BK      
+ D 
+ .N BSRoutineId
+ .S C=C_""_$$form("NameForm")
+ S C=C_"<input type='hidden' name='BSLABEL' value='Label1'>"_BK
+ S C=C_"<table border=0>"_BK
+ S C=C_">"_BK
+ S C=C_" set Maxfeild=$$$CoutFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество полей",187)_BK
+ S C=C_" set MaxIndxfeild=$$$CoutIndxFeild("""_BSPRO_""","""_Tab_""") //"_$$LNG^%ZAPM.bs.BSC4("количество индексированных полей",188)_BK
+ S C=C_" for Num=1:1:Maxfeild {  //"_$$LNG^%ZAPM.bs.BSC4("цикл по всем полям",198)_BK
+ S C=C_"     set var1=$$$GetFeild("""_BSPRO_""","""_Tab_""",Num) //"_$$LNG^%ZAPM.bs.BSC4("взять все атрибуты текущего поля",195)_BK
+ S C=C_"     set NameFeild=$P(var1,""~"",1) //"_$$LNG^%ZAPM.bs.BSC4("вычленить имя поля",196)_BK
+ S C=C_"     set Description=$P(var1,""~"",2) //"_$$LNG^%ZAPM.bs.BSC4("вычленить описание поля",199)_BK
+ S C=C_"     write ""<tr><td align='right'><strong>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести начало строки таблицы",260)_BK
+ S C=C_"       if MaxIndxfeild'<Num write ""<FONT COLOR=RED>*</FONT>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести красную звездочку если поле индексированное",261)_BK
+ S C=C_"     write Description,""</strong></td>"""_BK
+ S C=C_"     if $P(var1,""~"",3)=1 write ""<td><textarea cols=40 rows=5 title='""_NameFeild_""' name='""_NameFeild_""' ></textarea>"""_BK
+ S C=C_"     if $P(var1,""~"",3)'=1 write ""<td><input type='text' size=40 maxlength=2048 title='""_NameFeild_""' name='""_NameFeild_""' value=''>"""_BK
+ S C=C_"     write ""</td></tr>"" //"_$$LNG^%ZAPM.bs.BSC4("вывести окончание строки таблицы",264)_BK
+ S C=C_"     }"_BK
+ S C=C_" write ""<input type='hidden' name='BSRoutineId' value='""_BSRoutineId_""'>"""_BK
+ S C=C_" &html<"_BK
+ S C=C_"</table><BR>"_BK 
+ S C=C_"<input type='text' size=3 maxlength=3 title='"_$$LNG^%ZAPM.bs.BSC4("количество записей",289)_"' name='CountRows' value='#($g(CountRows,15))#'>"_BK      
+ S C=C_"<input type='submit' name='Show' title='смотреть первые записи' value='смотреть записи'>"_BK
+ S C=C_"<input type='submit' name='New' title='"_$$LNG^%ZAPM.bs.BSC4("создать новую запись",292)_"' value='"_$$LNG^%ZAPM.bs.BSC4("Новая запись",293)_"'>"_BK
+ S C=C_"<input type='submit' name='Upd' title='"_$$LNG^%ZAPM.bs.BSC4("модифицировать существующую запись",294)_"' value='"_$$LNG^%ZAPM.bs.BSC4("Обновить запись",295)_"'>"_BK
+ S C=C_"<input type='submit' name='Del' title='"_$$LNG^%ZAPM.bs.BSC4("удалить существующую запись",296)_"' value='"_$$LNG^%ZAPM.bs.BSC4("Удалить запись",297)_"'>"_BK
+ S C=C_"<input type='reset' title='"_$$LNG^%ZAPM.bs.BSC4("Отменить текущие изменения",112)_"' name='Reset1' value='"_$$LNG^%ZAPM.bs.BSC4("Отменить",204)_"'>"_BK
+ S C=C_"<br><FONT COLOR=RED>*</FONT> "_$$LNG^%ZAPM.bs.BSC4("обязательные (индексированные) показатели",271)_"</form></center>"_BK
+ S C=C_"</center></body></html>"_BK
+ S C=C_">"_BK
+ S C=C_" quit   ;"_$$LNG^%ZAPM.bs.BSC4("внутри тела макроса &html можно применять выражения COS в скобках",272)_" #(...)#"_BK
+ ;-----------------------------------------
+ ;S BSLABEL="NewRow"
+ s H="<!-- "_$$say1_" -->"_BK
+ S H=H_$$VAR(1,"Label2"),BSLABEL="Label2"
+ S H=H_"<a href="_$$add_">"_$$LNG^%ZAPM.bs.BSC4("Вызвать динамически сгенеренную на сервере форму ввода. Отрабатывают их статические SQL запросы",298)_"</a>"_BK
+ S H=H_"</center>"_BK
+ s H=H_$$end
+Save S @("^"_pin_".ROU")@(Rou,"HTM")=H ;$$TR^%ZAPM.bs.BSsFUNM($$TR^%ZAPM.bs.BSsFUNM(H,"<","&lt;"),">","&gt;")
+ S @("^"_pin_".ROU")@(Rou,"COS")=C ;$$TR^%ZAPM.bs.BSsFUNM($$TR^%ZAPM.bs.BSsFUNM(C,"<","&lt;"),">","&gt;")
+ q
+add() q $$ADDBSGET^%ZAPM.bs.BSC4("")   ;$P($G(HTTPREF),$G(MGWLIB),1)_$$ADDBSGET^%ZAPM.bs.BSC4("")
+RedStar(a) i a q RED_"*"_EF
+ q ""
+TabEmpty W RED,$$LNG^%ZAPM.bs.BSC4("Вы не определили таблицу",299),EF Q
+TypeBeg(t) q "<input type=""text"" size=27 maxlength=2048"
+TypeEnd(t) q ""
+NameTable(P,T) ;имя таблицы для SQL
+ q $P($P(%ZName,"."),"^",2)_"_"_P_"."_T
+GetField(P,T,A,BSFLAG) ;Информация по полям таблицы // Современем сделать по объектам
+ N PT,a
+ S a=$NA(@("GetField")@("1"_P,"2"_T))
+ I $D(BSFLAG) G GetField1
+ I P="" S P="^"_pin
+ I P'["." D
+ .I $D(pi) S P="^"_pi_"."_P Q
+ .S P="^"_$P($P(%ZName,"."),"^",2)_"."_P Q
+ I T="" S T=Tab
+GetField1 S PT=$NA(@P@(T)) I '$$Data^%ZAPM.bs.BSF12(PT) Q "!NoTable="_PT
+ N K,KI,TA,Y,I
+ I '$D(@a) D GetMass 
+ I A="Count" Q +$G(@a)
+ I A="Index" Q $P($G(@a),",",2)
+ I A?.N Q $G(@a@(A),"?")
+ F I=1:1:+$G(@a) I $P($G(@a@(I),"?"),"~")=A Q
+ q $G(@a@(I),"?")
+GetMass          //ОСОБАЯ МОДЕЛЬ BS- БАЗ ДАННЫХ
+ N X
+ S K=0,KI=0   //...ИМЯ ПОЛЯ~ОПИСАНИЕ~ТИП ДАННЫХ~№ИНДЕКСА~YxX-НОМЕРА СТРОКxКОЛОНОК
+ F Y=1:1 Q:'$D(@PT@("KEY",Y))  S K=K+1,TA=@PT@("KEY",Y),KI=K,@a@(K)=$P(TA,"@",22)_"~"_$P(TA,"@",17)_"~"_$P(TA,"@",21)_"~"_Y D
+ .I $P(TA,"@",17)="" S $P(@a@(K),"~",2)=$P(TA,"@",9)
+ .I $P(@a@(K),"~",1)="" S $P(@a@(K),"~",1)="KEY"_Y 
+ .S $P(@a@(K),"~",5)=Y
+ F Y=2:1 Q:'$D(@PT@(Y))  F X=1:1 Q:'$D(@PT@(Y,X))  I $P(@PT@(Y,X),"@",9)=2 S TA=@PT@(Y,X) S K=K+1 D 
+ .S @a@(K)=$P($P(TA,"@",18),"#")_"~"_$P(TA,"@",17)_"~"_$P(TA,"@",21)
+ .I $P(TA,"@",17)="" S $P(@a@(K),"~",2)=$P($P(TA,"@",18),"#")
+ .S $P(@a@(K),"~",5)=Y_"x"_X
+ S @a=K_","_KI
+ Q
+1 W BK,pin,BK
+ W Rou,BK
+ W Tab,BK Q
+t1 q "&lt;"      
+t2 q "&gt;"
+VAR(N,L) Q "<hr><center><H2>"_$$say1_" ("_$$LNG^%ZAPM.bs.BSC4("вариант",282)_" "_N_")</H2> "_BK_$$cmt(L)_BK
+cmt(L) Q AF_" "_$$LNG^%ZAPM.bs.BSC4("Этот HTML-код вызывает выполнение программного модуля Cache' с метки :",300)_L_" "_EF_"<br>"
+say1() q $$LNG^%ZAPM.bs.BSC4("Пример HTML кода :",301)
+say2() q $$LNG^%ZAPM.bs.BSC4("Пример CacheObjectScript кода :",302)
+form(Tab) q "<form name='"_Tab_"1'  method='POST' action='#("_$$cgievar_")#' >"_BK_$$ADDBSPOST0^%ZAPM.bs.BSC4reg()_BK
+beg(tit,first) q "<html><title>"_tit_"</title><body onload='"_Tab_"1."_first_".focus();'>"
+end() q "</body></html>"
+hr() q " ;"_$tr($j("",60)," ","=")
+cgievar() q "$$ADDLIB^%ZAPM.bs.BSC4()" ; $p($g(%CGIEVAR("HTTP_REFERER")),"?")

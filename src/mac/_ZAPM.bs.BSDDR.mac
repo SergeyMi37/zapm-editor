@@ -1,0 +1,102 @@
+ROUTINE %ZAPM.bs.BSDDR
+%BSDDR ;ДИСПЕТЧЕР ВВОДА ДАННЫХ;;[ 25/09/93 11:09 ] ; 12:49   29.10.1999
+ 
+EXPORT ;СЧИТЫВАНИЕ DOS-ФАЙЛА
+ D ^%ZAPM.bs.BSDDR4 
+ Q
+ S B=1 K %BS("Tmp","DosFiles") N Ipr,Ipr1,%zT,FR,%IN,%IN1,%IN2,INF,ops,s,s1,PREK,STOP,OBR,EF,%FN,%DEV,XN
+REST 
+ D DOSREAD^%ZAPM.bs.BSS1 D ErrMsg^%ZAPM.bs.BSXfun("* "_%DEV_"  *")
+ I '$D(%FN) Q
+ I $D(%BS("Tmp","DosFiles")) S XN="" F  S XN=$O(%BS("Tmp","DosFiles",XN)) G:XN="" XNE D XNOPN I $D(%FN) D XN
+XN U 0 S %I=$I,%zT=$ZT,$ZT="ER^%ZAPM.bs.BSBL1" S FR=%DEV U %DEV R %IN   ;G:$ZC'=0 CLO^%ZAPM.bs.BSBL1
+RES ;D SCAN^%ZAPM.bs.BSF11(%FN)
+ I %IN["---" K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15)) G I
+ U 0 D ErrMsg^%ZAPM.bs.BSXfun("У ФАЙЛА "_%FN_" Не тот ФОРМАТ !!!") D CLO^%ZAPM.bs.BSBL1 S Ipr1=1 G Wpro
+I U 0 S ls="ВВОД ИНФОРМАЦИИ..." D WAITS^%ZAPM.bs.BSF2 S (OBR,STOP,EF)="",s=1,s1=0
+ D  Q:STOP=1  F s=2:1 U %DEV R %IN D  Q:STOP=1  Q:$ZC'=0
+ .S INF=$E(%IN,1) I INF="" S STOP=1 Q
+ .S PREK=0,s1=s1+1 D PR I PREK=0 S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),s1)=%IN,%IN1=%IN Q
+ .S s1=s1-1,%IN1=%IN1_%IN2 Q
+QQ S $ZT=$G(%zT) U 0 D OkMsg^%ZAPM.bs.BSXfun("ФАЙЛ "_%FN_" СЧИТАН",2) D CLO^%ZAPM.bs.BSBL1 S Ipr1=0 D Wpro G ZAP^%ZAPM.bs.BSDDR2
+ 
+PR ;ОБРАБОТКА СТРОКИ И ЗАПИСЬ
+ I s=1 Q
+ I $E(%IN,1)="=" Q
+ I $P(%IN,"=")["--" Q
+ S %IN2=$P(%IN,"=") D  S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),s1-1)=%IN3,%IN=$E(%IN,$L(%IN2)+1,$L(%IN)) I %IN="" S PREK=1 Q
+ .S %IN3=%IN1_%IN2
+ .I $L(%IN3)<($$LNG^%ZAPM.bs.BSF12-1) Q
+ .S %IN4="="_$P(%IN3,"=",$L(%IN3,"=")),^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),s1-1)=$P(%IN3,%IN4)
+ .S %IN3=%IN4,s1=s1+1 K %IN4 Q
+e Q
+XNOPN N DOS K %DEV,%FN S DOS=$$OpenDOS^%ZAPM.bs.BSXdos() Q:DOS<0
+ Q:$$Open^%ZAPM.bs.BSXdos(XN,"R")<0  S %DEV=DOS,%FN=XN Q
+XNE K %BS("Tmp","DosFiles") Q
+SF ;ВЫБОР ФОРМ ДЛЯ ОБРАБОТКИ
+ D MGR^%ZAPM.bs.BS
+SF1 S i="" F i=1:1:39 S $P(^%ZAPM.bs.BSDDR("DDRM4",i,1),"@",15)=""
+ S (NF,NF1)="",i=0,i1="" S bufO=$$GETkey^%ZAPM.bs.BSDDR()
+ F   S NF=$O(@bufO@(NF)) Q:NF=""  S STOP="" D
+ .S NP="" F  S NP=$O(@bufO@(NF,NP)) Q:'NP  I $G(@bufO@(NF,NP,"2,1"))=1 D  Q:STOP
+ ..I NF1'=NF S i=i+1,$P(^%ZAPM.bs.BSDDR("DDRM4",i,1),"@",15)=NF,NF1=NF,STOP=1
+ ..Q
+ S BSR="^%ZAPM.bs.BSDDR",BST="DDRM4" G ^%ZAPM.bs.BST Q
+ Q
+GETkey() Q $$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSDDR(""DDRB"")")
+SFR ;ОБРАБОТКА БПО ДЛЯ ОДНОЙ ФОРМЫ
+ I d="" S EXITout=1 Q
+ S %I=$I,B=1 ;D TIP+1^%ZAPM.bs.BST U 0 
+ S (OBR,PO,NF)=""
+ S bufO=$$GETkey^%ZAPM.bs.BSDDR()
+ S OBR=1,PO=d S NF=PO,Kp="" 
+ I $D(@bufO@(PO)) F  S Kp=$O(@bufO@(PO,Kp)) Q:'Kp  I ^(Kp,"2,1")=1 D
+ .;S ls=" Заносится форма "_PO D WAITS^%ZAPM.bs.BSF2
+ .S (PNK,PNK2,NIK,PKL,KOr)=""
+ .D OBR01^%ZAPM.bs.BSDDR2,IF^%ZAPM.bs.BSDDR3,BL1^%ZAPM.bs.BSDDR3,DDR1^%ZAPM.bs.BSDDR3 S (PNK,PNK2,NIK,PKL,KOr)=""
+ .I mtBD'="" S ls="По личной части" D WAITS^%ZAPM.bs.BSF2 D OBR011^%ZAPM.bs.BSDDR2,IF1^%ZAPM.bs.BSDDR3,BL1^%ZAPM.bs.BSDDR3,DDR1^%ZAPM.bs.BSDDR3
+ .D DDR2^%ZAPM.bs.BSDDR3 K ^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P)),mtBD
+ .K t,t1,iN,pG,STOP,KON,PKL,PPI,NIK,PIN,PNK,PNK1,PNK2,PNK3,IKE,KPL1,pz,pzi,zi,zi1,%NAmN
+ D ^%ZAPM.bs.BSDDR1
+ D OkMsg^%ZAPM.bs.BSXfun("ОТРАБОТАНО !",2) S $P(^%ZAPM.bs.BSDDR("DDRM4"),"@",30)="",EXITout=1 Q
+ 
+ ;ОПРЕДЕЛЕНИЕ КЛЮЧЕЙ ДЛЯ %BSDDR3
+ 
+BB(at) S ti=1,YES=0 F  S ti=$O(^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,ti)) Q:'ti  S dat=^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,ti) D   I YES G BBE
+ .S (pok,im,PK,ti1)="" F ti1=1:1 S pok=$P(dat,"=",ti1) Q:pok["+++"  Q:pok=""&(ti1'=1)  I $E(pok,1,3)=at S PK=$E(pok,4,$L(pok)),IM=$E(pok,1,3) D PPI^%ZAPM.bs.BSDDR3 I PIN=1 S YES=1 Q
+ Q ""
+BBE  S IM=$E(pok,1,3),PK=$E(pok,4,$L(pok)) I PK["@" D RED^%ZAPM.bs.BSDDR
+ Q PK
+ 
+Wpro ;Протокол отработки файлов
+ N NamePro S NamePro=$P($G(^%ZAPM.bs.BSDDR("DDRM6",2,1)),"@",14)
+ I '$D(@NamePro) Q
+ D L^%ZAPM.bs.BS3(NamePro)
+ S Ipr=$O(@NamePro@(""),-1)
+ S Ipr=Ipr+1 S @NamePro@(Ipr)="       * Время работы: "_$$ESDAY^%ZAPM.bs.BSsFUNR(8,$$h^%ZAPM.bs.BS3())_$J("",70)_"#"_$$SYSDATE^%ZAPM.bs.BSsFUNR(6,$$h^%ZAPM.bs.BS3())
+ S Ipr=Ipr+1 S @NamePro@(Ipr)=%FN_$J("",50-$L(%FN))_" : "_$S(Ipr1=1:"Error !!! - Не тот формат",1:"OK ! - файл в норме")
+ D U^%ZAPM.bs.BS3(NamePro) Q
+ 
+Dpro ;Очистка протокола
+ N i,i1,i2,i3,NamePro S NamePro=$P($G(^%ZAPM.bs.BSDDR("DDRM6",2,1)),"@",14)
+ S i=$$SYSDATE^%ZAPM.bs.BSsFUNR(6,$$h^%ZAPM.bs.BS3()),ls="До какой даты чистим протокол ?"
+ D LE^%ZAPM.bs.BSTT I YES'=1 Q
+ I '$$DAT^%ZAPM.bs.BSsFUNR(6,li) Q  ;'MSW
+ I '$D(@NamePro) Q
+ S ls="Пошкрябали..." D WAITS^%ZAPM.bs.BSF2
+ D L^%ZAPM.bs.BS3(NamePro)
+ S (i,i3)="" F  S i=$O(@NamePro@(i)) Q:i=""  D  Q:i3=1  X $G(WA)
+ .I $G(^(i))[" *" S i2=$P(^(i),"#",2) I i2'<i1 S i3=1 Q
+ .K ^(i)
+ I i3="" D U^%ZAPM.bs.BS3(NamePro) Q
+ K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15))
+ S (i,i1)="" F  S i=$O(@NamePro@(i)) Q:i=""  D  X $G(WA)
+ .S i1=i1+1,^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),i1)=$G(@NamePro@(i))
+ .K @NamePro@(i)
+ S i="" F  S i=$O(^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),i)) Q:i=""  D  X $G(WA)
+ .S @NamePro@(i)=$G(^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),i))
+ .K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_"U"_%BS(15),i)
+ D U^%ZAPM.bs.BS3(NamePro)
+ D OkMsg^%ZAPM.bs.BSXfun("Я буду жаловаться !!",5)
+ Q
+   

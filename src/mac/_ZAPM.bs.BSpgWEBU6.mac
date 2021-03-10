@@ -1,0 +1,54 @@
+ROUTINE %ZAPM.bs.BSpgWEBU6
+TKWEBU6	;PG&A,TK-WEB,1.1,MISC UTILITIES;08OCT97  18:36 [ 10/15/97   8:12 AM ];;;01FEB98  21:54
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+ D INIT^%ZAPM.bs.BSpgDEV X ^%ZAPM.bs.BSpg("TERM-ON") S DIR="PGA" D IMAGES Q
+	;
+	;
+IMAGES	N:1 (TK,MC,REFRESH,TKP,DIR,DOC) S REFRESH="",MC=""
+ S Y="10,3\RLHS\1\Pages & Images",Y(0)="15\EX\^%ZAPM.bs.BSpgWEBF(""PAGES"",DIR)\$$IM^%ZAPM.bs.BSpgWEBU6(TO)"
+ D ^%ZAPM.bs.BSpgWEBU2 I X[";EX" S X="" Q
+	S A=$$IM(X) I X[".H" S MC(1)="<a href="""_X_""">xxx</a>",X="" Q
+	I X'[".G" S MC(1)="<img src="""_X_""">",X="" Q
+	S MC(1)="<IMG SRC="""_X_""" WIDTH="_(+$P(A,"(",2))_" HEIGHT="_(+$P(A," X ",2))_">" Q
+	;
+IM(X) I X'[".G" Q X_$J($P(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,X),"`",3),52-$L(X))_" bytes"
+ S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,X,"")) Q:A="" X S C=^(A)
+	S C=$E(C,7,999),LSD=$E(C,1,7),WIDTH=$A(LSD,2)*256+$A(LSD),HEIGHT=$A(LSD,4)*256+$A(LSD,3),D=$A(LSD,5),CR=D\16#8+1
+	S D=" ("_WIDTH_" X "_HEIGHT_" X "_CR_")",D=$E(X_$J("",30),1,30)_D
+ Q D_$J($P(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,X),"`",3),52-$L(D))_" bytes"
+	;
+TKFAX	F J=2:1 S A=$P($T(TKFAX+J),";",2,9) Q:A=""  W:$E(A)'="#" A X:$E(A)="#" $E(A,2,255)
+	Q
+	;</pre><TABLE BORDER=1><TABLE BORDER=0><TD COLSPAN=3><H2><CENTER>TK-FAX ON THE WEB</H2></CENTER><P><TR>
+	;<FORM ACTION="/CONTROL/M/TKFAXQ" METHOD=POST><INPUT TYPE=HIDDEN NAME="ROU" VALUE="TKFAXQ">
+	;<TD><B>From:</B><TD><INPUT NAME="FROM" SIZE=30>
+	;# I $D(ER("FROM")) W "<FONT COLOR=""FF0000"">***<FONT COLOR=""FFFFFF"">"
+	;<TR><TD><B>To:</B><TD><INPUT NAME="TO" SIZE=30>
+	;# I $D(ER("TO")) W "<FONT COLOR=""FF0000"">***<FONT COLOR=""FFFFFF"">"
+	;<TD><B>Fax:</B><INPUT NAME="FAX" SIZE=15>
+	;# I $D(ER("FAX")) W "<FONT COLOR=""FF0000"">***<FONT COLOR=""FFFFFF"">"
+	;<TR><TD><TD>
+	;<INPUT TYPE="CHECKBOX" NAME="COVER" VALUE="CS">Cover Sheet
+	;<TD><INPUT TYPE="CHECKBOX" NAME="PRIORITY" VALUE="PR">Priority
+	;<TR><TH>Message:<TD COLSPAN=2><textarea name="MESSAGE" rows=6 cols=55></textarea></TABLE>
+	;<input type="submit" value="SEND">
+	;</FORM></TABLE>
+	;
+TKFAXQ	K ER F J="FROM","TO","FAX" I $D(%("FORM",J))=0 S ER(J)=""
+	I $D(ER) S ST=202 G TKFAX
+	S FAXPARAM=$G(%("FORM","FROM"))_"`847 870 8559`Subject`"_$G(%("FORM","TO"))_"`"_$G(%("FORM","FAX"))_"``1``N```N`````DOC",TKWPD="^TESTFAX($J)" K @TKWPD S @TKWPD@(1)=$G(%("FORM","MESSAGE"))
+	I $D(%("FORM","MESSAGE"))>2 S A="",J=1 F  S A=$O(%("FORM","MESSAGE",A)) Q:A=""  S @TKWPD@(J)=%("FORM","MESSAGE",A),J=J+1
+ D QUEUE^%ZAPM.bs.BSpgFAXQ S ST=202,LL(1)="JOB IS QUEUED TO FAX" Q
+	;
+TRACEC L CLEAN S A=$P($G(^%ZAPM.bs.BSpgWEBC("Control")),",",2) G TEND:A=""
+ D TDATE^%ZAPM.bs.BSpgWEBH($H-A) S DT=$P(DTM," ")
+ S B="" F  S B=$O(^%ZAPM.bs.BSpgWEBL("LOG",B)) Q:B=""  I $P(^(B),"`",11)']DT Q
+ S B=B\100-1 F  S B=$O(^mtempBSpgWEBT(B)) Q:B=""  K ^(B)
+ S ^%ZAPM.bs.BSpgWEBC("TraceCleanup")=$P($H,",") L  Q
+	;
+TIME S AA=$H F JJ=1:1:1000 D TRACEC^%ZAPM.bs.BSpgWEBU6 L CLEAN L
+	W $P($H,",",2)-$P(AA,",",2),!
+ S AA=$H F JJ=1:1:1000 J TRACEC^%ZAPM.bs.BSpgWEBU6 L CLEAN L
+	W $P($H,",",2)-$P(AA,",",2) Q
+TEND Q

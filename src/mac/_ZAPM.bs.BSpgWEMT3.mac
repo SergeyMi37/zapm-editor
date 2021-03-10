@@ -1,0 +1,63 @@
+ROUTINE %ZAPM.bs.BSpgWEMT3
+TKWEMT3	;PG&A,TK-IMAIL,1.1,CONFIG;03OCT97  18:07 [ 10/15/97   8:12 AM ];11DEC97  15:28;;18FEB98  23:33
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	;
+CONFIG	S AA=+$P($G(FLN),"MCONFIG",2) W "</PRE>"
+	I AA=0 W "<BASE HREF=""http://"_$G(%("HOST:"))_"/"">"
+	E  W "<FORM METHOD=""POST"" ACTION=""MCONFIG"">"
+	W "<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=2 BORDER=0>",!
+	D TX
+	W "</TABLE>" Q:AA=0
+	W "<HR><CENTER><INPUT TYPE=hidden NAME=ROUTINE VALUE=""CONFIGM"_AA_""">" W:$D(HP) "<INPUT TYPE=hidden NAME=HELP VALUE=1>" W !
+	W "<INPUT TYPE=submit NAME=TYP VALUE=""Save Changes""><INPUT TYPE=reset VALUE=""Reset""><INPUT TYPE=submit NAME=TYP VALUE=""Help On/Off""><BR><INPUT TYPE=submit NAME=TYP VALUE=""Back to Configuration Menu""></CENTER></FORM>" W !
+ D MSW^%ZAPM.bs.BSpgWEBT3 Q
+	;
+P	K AA S AA=+$P($G(%("FORM","ROUTINE")),"MCONFIG",2)
+	I $G(%("FORM","TYP"))["Help" S HP=1,FLN="MCONFIG"_AA K:$D(%("FORM","HELP")) HP G CONFIG
+	I $G(%("FORM","TYP"))["Back" S FLN="MCONFIG" G CONFIG
+	S A="" F  S A=$O(%("FORM",A)) Q:A=""  I A["-" D P1
+	D MESS("</PRE>Configuration Saved","<a href=""/?mconfig"_AA_""">Return to configuration screen</a>") W LL(1),LL(2) K LL
+	S ST=202,@TKWEM@("Config change")=DTM_";"_$G(%("ADDRESS"))
+	Q
+P1 S X=$TR($P(A,"-"),"D"),D="D=$P($T("_$E(A)_(X\100)_"+"_(X#100)_"^%ZAPM.bs.BSpgWEMT4),"";"",7,11)",@D,X=$P(A,"-",2,9),B=$G(%("FORM",A)) Q:D=""
+	I $O(%("FORM",A,"")) S B=$G(%("FORM",A,$O(%("FORM",A,""))))
+	S B=$TR(B,LC_"\`",UP_"/") S:B="---" B=""
+	S I=$TR(B," ",""),I=$E(I,$L(I)),B=$E(B,1,$L($P(B,I,1,$L(B,I)-1)_I))
+	I $P(D,";",5)="" S D=$P(D,";"),D=$P(D,"$G")_$P(D,"$G",2) Q:D=""  S:D["(("&(D["))") D=$P(D,"((")_"("_$P(D,"((",2,9),D=$P(D,"))")_")"_$P(D,"))",2,9) Q:D[",X"&(X="")  X "S "_D_"=B"
+	E  S D=$P(D,";",5) X D
+	W:0 A," ",D," ",B," ",$G(X),"<BR>" Q
+	;
+	; FORM DRIVER - TABLE FORMATS
+	;tr flag-td flag;align;text;type;name;value;size;span;other;altstore
+	;    1             2    3    4    5    6     7    8    9     10
+TX S AB="D"_AA,X="" F D=1:1 S A=$P($T(@AB+D^%ZAPM.bs.BSpgWEMT4),";",2,99) Q:A=""  D TX1
+	Q
+LP F  S X=$O(@AD@(X)) Q:X=""  F D=1:1 S A=$P($T(@AB+D^%ZAPM.bs.BSpgWEMT4),";",2,99) Q:A=""  D TX1
+	Q
+TX1	S B="" I $P(A,";")="H" Q:'$D(HP)  W "<TR><TD><TD BGCOLOR=""#CC4444"""_$P(A,";",2)_">"_$P(A,";",3) Q
+	I $P(A,";")="L" N AB,D S AB=$P(A,";",2),AD=$P(A,";",3) D LP Q
+	I $P(A,";")["R" S B="<TR"
+	I $P(A,";")["D" S B=$S(B'="":B_">",1:"")_"<TD"_$S($P(A,";",2)["R":" align=right",$P(A,";",2)["C":" align=center",1:"")
+	S:$P(A,";",8) B=B_" colspan="_$P(A,";",8)
+	S:$P(A,";",9)]"" B=B_" "_$P(A,";",9)
+	S:B'="" B=B_">" S:$P(A,";",3)]"" B=B_$P(A,";",3)
+	I $P(A,";",4)="" W B,! Q
+	I $P(A,";",4)="M" S B=B_"<select size=1 name="""_$P(A,";",5)_""">",G=$P(A,";",6),X="",J=$P(A,";",7) W B,! X:G]"" "F  S X=$O(@G) Q:'$L(X)  W ""<OPTION>"" X $S($L(J):J,1:""W X"") W !" W "</SELECT>",! Q
+	I $P(A,";",4)="X" W B,X,! Q
+	S K=0,J=$S($P(A,";",6)]"":$$VALUE($P(A,";",6)),1:""),I=" name="""_$S($P(A,";",5)["*":$E(AB)_($TR(AB,"D")*100+D)_"-"_X,1:$P(A,";",5))_""""
+	S:$L(K) B=B_"<input type=""hidden"" "_I_" value=""---"">"
+	S B=B_"<input type="""_$P("checkbox,text,submit,textarea",",",$F("CTSA",$P(A,";",4))-1)_""""
+	S B=B_I_J_$S($P(A,";",7)]"":" size="_$P(A,";",7),1:"")_">"
+	W B,! Q
+VALUE(x)	I $P(A,";",4)="M" Q "><OPTION VALUE=""""><OPTION>1<OPTION>2</SELECT"
+	I $P(A,";",4)'="C" S K=$$V0(x) Q " value="""_K_""""
+	S K=$S($L($$V0(x)):" checked",1:"") Q K
+V0(x)	I x?.1"^"1A.ANP Q $G(@x)
+	I x?.E1"^"1A.ANP Q @x
+	I x["""" Q $TR(x,"""")
+	Q ""
+	;
+	;
+MESS(X,Y)	S LL(1)="<html><head><title>TK-IMAIL STATUS</title></head><body bgcolor=""#ffffff""><h1><font color=""#00ff00"">TK-IMAIL Message</h1></font><p>"
+	S LL(2)="<h2>"_$G(X)_"</h2><P><font size=3> - "_DTMA_" -<p>"_$G(Y) Q

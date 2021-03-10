@@ -1,0 +1,122 @@
+ROUTINE %ZAPM.bs.BSJPRN
+%BSJPRN ;ПРИНТ-СЕРВЕРА; 21:28 29-JUL-96 ; 8:42   07.03.99
+ Q
+START() ;СТАРТ СЕРВЕРА
+ S %zT=$ZT,$ZT="ER1^%ZAPM.bs.BSJPRN" D Wait^%ZAPM.bs.BSXfun("ЗАПУСК\АКТИВАЦИЯ ПРИНТ-СЕРВЕРА")
+ I $$U("A")=1,$$U("D") D E("ПРИНТ-СЕРВЕР ЗАНЯТ, ИЗ "_$G(@UStro@("Z"),"?")) Q 0
+ I $$U("A")=1,$$U("D")=0,$$U("Z")="" D S("O",""),S("C",$$ZU^%ZAPM.bs.BS3(1,0)_"u"_$G(%BS(3),$P)) G ZAPR
+ I '$$U("A"),$$JOBSR(UStro) G ZAPR
+EX Q 0
+ER1 D ErrMsg^%ZAPM.bs.BSXfun($$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) Q
+ZAPR F Z=1:1 Q:$$U("O")=($$ZU^%ZAPM.bs.BS3(1,0)_"u"_$G(%BS(3),$P))  H 1 X WA I Z=$$PAR^%ZAPM.bs.BSprint(3) D E("ПРИНТ-СЕРВЕР НЕ АКТИВИРУЕТСЯ") G EX
+ D S("O",""),S("C","!")
+ F Z=1:1 Q:$$U("O")'=""  H 1 X WA I Z=$$PAR^%ZAPM.bs.BSprint(3) G XXX
+ I $$U("O")=1 D E("У ПРИНТ-СЕРВЕРА НЕ ГОТОВО УСТРОЙСТВО ПЕЧАТИ")
+ I $$U("O")=0 D E("У ПРИНТ-СЕРВЕРА ЧТО-ТО С НОМЕРОМ ПЕЧАТИ")
+ I $$U("O")'="OK" G XXX
+ D BUF,S("Z",$$ZU^%ZAPM.bs.BS3(1,0)),S("B",BUF),S("US",uS),S("UL",uL),S("UK",uK),S("OT",oT),S("RP",rP),S("EXE",uE)
+ D S("O",""),S("C","P")
+ Q 1
+BUF ;СДЕЛАТЬ БУФЕР И ПЕРЕМЕННЫЕ
+ ;TXT
+ S uK=$G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","SHR")),uS=$P(uK,"#"),uL=$P(uK,"#",2),uK=$P(uK,"#",3)
+ S uE=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","TXT")),"#",2)
+ S oT=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","DOS")),"#"),rP=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","DOS")),"#",2)
+ S BUF=$NA(^%ZAPM.bs.BSbufP($P($$RANDFILE^%ZAPM.bs.BSF11,".")))
+ D Copy^%ZAPM.bs.BSF8($NA(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u")),BUF,0,1) S @BUF=@%BS(20)@("TextEdit"),$P(@BUF,"@")="Для "_$G(date)_" от "_$$ZU^%ZAPM.bs.BS3(1,0)_" "_$$ESDAY^%ZAPM.bs.BSsFUNR(9,$$h^%ZAPM.bs.BS3())
+ Q
+XXX D E("У ПРИНТ-СЕРВЕРА ЧТО-ТО ПЕЧАТЬЮ") G EX
+CN(UStro) N Z D Wait^%ZAPM.bs.BSXfun("КОНТРОЛЬ СЕРВЕРА")
+ D S("O",""),S("C","?")
+ F Z=1:1 Q:$$U("O")="?"  H 1 X WA I Z=$$PAR^%ZAPM.bs.BSprint(3) D Yes^%ZAPM.bs.BSXfun("МНЕ КАЖЕТСЯ, ЧТО СЕРВЕР ПОМЕР...ПОХОРОНИМ ?") G:YES<1 CNN D EXIT^%ZAPM.bs.BSprint G CNN
+ D S("O",""),OkMsg^%ZAPM.bs.BSXfun("СЕРВЕР ЕЩЕ ЖИВОЙ, ЗАГАСИТЬ ЕГО МОЖЕТЕ КОМАНДОЙ 'D'")
+CNN Q 1
+JOBSR(UStro) ;ЗАПУСК СЕРВЕРА
+ X "J ^%ZAPM.bs.BSprint(UStro)["""_$$TR^%ZAPM.bs.BSsFUNM($$PR(19),",",""",""")_"""]:$$PAR^%ZAPM.bs.BSprint(6):1" E  D E("ПРИНТ-СЕРВЕР НЕ ХОЧЕТ ЗАПУСКАТЬСЯ...неполадки с мотором, наверное") Q 0
+ D S("O",""),S("C",$$ZU^%ZAPM.bs.BS3(1,0)_"u"_$G(%BS(3),$P))
+ Q 1
+STOP ;
+ Q
+ ;US,UO -УСТРОЙСТВО
+ ;UStro -ССЫЛКА
+ ;ExZ - КОЛ-ВО ЭКЗЕМПЛЯРОВ
+S(U,S) S @UStro@(U)=S Q
+U(U) Q $G(@UStro@(U))
+E(E) D ErrMsg^%ZAPM.bs.BSXfun(E) Q
+INIT(UO) ;ПЕРЕОПРЕДЕЛЕНИЕ US
+ U 0 N B,BUF,uK,uL,oT,rP,uS,uE
+ S ExZ=1 I +UO S ExZ=+UO
+ S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSJPRN"
+ S B=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSJPRN(""PRN"")")
+ I $$9'=0,B'="",$O(@B@(""))'="" G CHOISE
+DF S US=$$DFLT
+DF1 Q 1
+9() Q $E(%BS(1),9)
+CHOISE ;ВЫБОР ПРИНТЕРА
+ D SA^%ZAPM.bs.BSsBUF
+ S IYI="PRN,%BSJPRN,,,<>" D ENTER^%ZAPM.bs.BSN D RE^%ZAPM.bs.BSsBUF I date="" Q 0
+ S UStro=$NA(@B@(date)) I $$9=1,$$PR(19)=$$ZU^%ZAPM.bs.BS3(1,0) S US=$$PR(17) G DF1
+ I $$START Q 0
+ D Yes^%ZAPM.bs.BSXfun("Может будем использовать ЛОКАЛЬНЫЙ принтер БЕЗ ПРИНТ-СЕРВЕРА",1) I YES>0 G DF
+ Q 0
+ERR S US=$$DFLT W $$bel^%ZAPM.bs.BS3 S $ZT=$G(%zT) G DF
+PR(P) I UStro["PRNDFLT" Q $P($G(^%ZAPM.bs.BSETUP("PRNDFLT",P,2),@%BS(20)@("PRNDFLT",P,2)),"@",15)
+ Q $G(@UStro@((P_",2")))
+DFLT() I $D(^%ZAPM.bs.BSETUP("PRNDFLT")) S UStro=$NA(^%ZAPM.bs.BSETUP("PRNDFLT"))
+ E  S UStro=$NA(@%BS(20)@("PRNDFLT"))
+ Q $$PR(17)
+MAX(UO) I UO=2 Q $J //ДЛЯ КАШИ!!!
+ Q $S('$$PR(18):255,1:$$PR(18))
+SBROS(UO) ;Сброс параметров
+ Q $C($$PR(15))
+CTRL(S,UO) ;УПРАВЛЕНИЕ ПРИНТЕРОМ
+ I S["@" S S=$TR(S,"@","#")
+ I S["27," Q S
+ F I=1:1:3 S II=$P($P(S,"#",I),",") I II'="" S $P(S,"#",I)=$$PR(II)
+ Q S
+COM ;КОМАНДА СЕРВЕРУ
+ S IYI="^%ZAPM.bs.BSJPRN,PCMD" D NE^%ZAPM.bs.BSN I date="" G CO
+ N E
+ I $E(date,1)="E" D  G CO
+ .I $G(@%BS("Tmp","BSD")@("D"))=2 S E=$$LineEdit^%ZAPM.bs.BSXfun($G(@%BS("Tmp","BSD")@("EXE"))) I YES>0,E S @%BS("Tmp","BSD")@("EXE")=E Q
+ .W $$bel^%ZAPM.bs.BS3
+ I $E(date,1)="?" D  G CO
+ .I $$CN(%BS("Tmp","BSD"))
+ I $E(date,1)="A" D  G CO
+ .I '$G(@%BS("Tmp","BSD")@("A")),$$JOBSR(%BS("Tmp","BSD")) Q
+ .W $$bel^%ZAPM.bs.BS3
+ I $E(date,1)'="" S @%BS("Tmp","BSD")@("C")=$E(date,1) G CO
+ Q
+CO S R1=-1 Q
+TRAN ;ПЕРЕРИСОВКА КЛЕТОК
+ S do="I $P(@$ZR,""@"",8)'="""",$P(@$ZR,""@"",9)'=1 D W^%ZAPM.bs.BSTM" D 66^%ZAPM.bs.BSF3
+ Q
+TRANS ;
+ Q:R1>332
+ I %BS(2)'["^" S %BS(2,1)=%BS(2),%BS(2)="2-D TRAN^%ZAPM.bs.BSJPRN" S R1=-1 Q
+ ;I R1=13,R2=-1,R3=-1 D UNDO Q
+ I R1=27,R2=-1,R3=-1 D UNDO Q
+ Q
+UNDO I %BS(2)["^" S %BS(2)=%BS(2,1) K %BS(2,1)
+ I %BS(2)["^" D CLr^%ZAPM.bs.BSF4
+ Q
+ERASER(Y) N I ;ЧИСТИЛЬЩИК
+ I '$G(Y) Q:$P($G(^%ZAPM.bs.BSETUP("PARPRN",7,2)),"@",15)'="Y"  Q:$O(^%ZAPM.bs.BSbufP(""))=""
+ERA S I="" F  S I=$O(^%ZAPM.bs.BSbufP(I)) Q:I=""  D L^%ZAPM.bs.BS3($NA(^%ZAPM.bs.BSbufP(I)),1) D  D U^%ZAPM.bs.BS3($NA(^%ZAPM.bs.BSbufP(I)))
+ .I 'LOC,$G(Y) K ^%ZAPM.bs.BSbufP(I) Q
+ .I LOC K ^%ZAPM.bs.BSbufP(I)
+ Q
+CHEKPRN N B,S,UStro,SS ;ПРОВЕРКА АКТИВНЫХ СЕРВЕРОВ
+ S %zT=$ZT,$ZT="ERB^%ZAPM.bs.BSJPRN"
+ S B=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSJPRN(""PRN"")") I $$9'=0,B'="",$D(@B) D
+ .S S="",SS="" F  S S=$O(@B@(S)) Q:S=""  S UStro=$NA(@B@(S)) I $$PR(19)=$$ZU^%ZAPM.bs.BS3(1,0),$$U("A") S SS=SS_S_","
+ S YES=1 I $G(SS)'="" D Yes^%ZAPM.bs.BSXfun("В СИСТЕМЕ АКТИВНЫ ПРИНТ-СЕРВЕРА:"_SS_",ПРЕРЫВАЕМ ИХ ?",2) I YES D
+ .S S="" F  S S=$O(@B@(S)) Q:S=""  S UStro=$NA(@B@(S)) I $$PR(19)=$$ZU^%ZAPM.bs.BS3(1,0),$$U("A") D EXIT^%ZAPM.bs.BSprint
+ Q
+ERB D BEL^%ZAPM.bs.BSprint S $ZT=$G(%zT) Q
+BEGINER N B,S ;НАЧАЛО
+ Q:$P($G(^%ZAPM.bs.BSETUP("PARPRN",2,2)),"@",15)=""  S S=$P($G(^%ZAPM.bs.BSETUP("PARPRN",2,2)),"@",15)
+ S %zT=$ZT,$ZT="ERB^%ZAPM.bs.BSJPRN"
+ S B=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSJPRN(""PRN"")") I $$9'=0,B'="",$D(@B@(S)) S S=$NA(@B@(S)) D  Q
+ .I '$G(@S@("A")),$$JOBSR(S) Q
+ Q

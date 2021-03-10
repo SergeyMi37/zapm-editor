@@ -1,0 +1,165 @@
+ROUTINE %ZAPM.bs.BSXfun1
+%BSXfun1           ; функции к %BSX ( том 1 )     (В.Лащев) ; 17:12 10-JUN-98
+ q
+ 
+Keys n Quitt d SA^%ZAPM.bs.BSsBUF w $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) ; Коды клавиш
+StartKBD s Quitt=0 w "Нажимайте клавиши ( Выход - 2 pаза Esc ) ...",!
+ReadKeys s (R1,R2,R3)=-1 W $$rt^%ZAPM.bs.BS3(+$G(%BS(2),9999)) ;
+ i (R1=-1)&(R2=-1)&(R3=-1) w $$bel^%ZAPM.bs.BS3 g StartKBD
+ i (R1=27)&(R2=-1)&(R3=-1) S Quitt=Quitt+1
+ e  s Quitt=0
+ i Quitt<2 w R1_","_R2_","_R3_","_$G(R4,-1)_","_$G(R5,-1),! g ReadKeys
+ d RE^%ZAPM.bs.BSsBUF
+ q
+ 
+ShowLock n Lock,Str,i,j,Lock0
+ I $ZV["Cach"||($ZV["IRIS") Q
+ s Str="Ins/Caps/Num/Scroll/Alt/Ctrl/LShift$$r^%ZAPM.bs.BS3Shift",Lock0=""
+ w $$atr^%ZAPM.bs.BS3(0),#,"Выход - Ctrl-C",$$atr^%ZAPM.bs.BS3("1;6;33;41") s $ZT="ShowLocE^%ZAPM.bs.BSXfun"
+ f  s Lock=$$GetLock^%ZAPM.bs.BSXfun() i Lock0'=Lock w /CUP(25,30)," " d
+ . f i=1:1:$L(Lock) s j=$P(Str,"/",i) w $S($E(Lock,i):j,1:$J("",$L(j)))," "
+ q
+ShowLocE w $$atr^%ZAPM.bs.BS3(0),# q
+ 
+CentrTxt(Msg,Delay,WinClr,TxtClr,ButClr) n Len,Hi,y,i,OldDev
+ s OldDev=$I u $P s Msg=$G(Msg),Len=$L(Msg),Hi=(Len\60)+1 i Hi>1 s Len=60
+ w $$esc^%ZAPM.bs.BS3(7) s Len=Len\2 i Hi>20 s Hi=20
+ i '$D(WinClr) s WinClr="1;33;44"
+ i '$D(TxtClr) s TxtClr=WinClr_$S($F(WinClr,"36"):";37",1:";36")
+ i '$D(ButClr) s ButClr=WinClr_$S($F(WinClr,"47"):";41",1:";47")
+ s y=9-(Hi\2) i y<1 s y=1
+ w $$atr^%ZAPM.bs.BS3("6") d SaveWin^%ZAPM.bs.BSXfun(y,36-Len,y+Hi+5,44+Len)
+ d Ramka^%ZAPM.bs.BSXfun(y,36-Len,y+Hi+4,42+Len,1,WinClr,1)
+ w $$atr^%ZAPM.bs.BS3(TxtClr) f i=1:1:Hi w /CUP(y+i+1,39-Len),$E(Msg,(60*(i-1))+1,60*i)
+ w /CUP(y+Hi+3,38),$$atr^%ZAPM.bs.BS3(ButClr)," Ok "
+ d Echo^%ZAPM.bs.BSXfun(0) s Delay=+$G(Delay) i Delay<0 s Delay=0
+ s Len=Delay i Len<1 s Len=+%BS(2)
+ f  w /CUP(y+Hi+3,39),$$rt^%ZAPM.bs.BS3(Len) q:(((R2=-1)&(R3=-1))&((R1=13)!(R1=32)!(R1=27)))!(Delay>0)  d
+ . I R1=0,(R2=139!(R2=140)!(R2=84)!(R2=88)) D AltKey^%ZAPM.bs.BSF8 Q
+ . i R1=-1 d GLUC^%ZAPM.bs.BSXgluc
+ d LoadWin^%ZAPM.bs.BSXfun s (R1,R2,R3)=-2 w $$esc^%ZAPM.bs.BS3(8) u OldDev q
+ 
+Lat(str,pos) n Cod s Cod=$A(str,pos) i Cod<0 q ""
+ i Cod<32 q 0                                  ; упpавляющий символ
+ i Cod>175,Cod<224 q 2                         ; псевдогpафика
+ i Cod>47,Cod<58 q 3                           ; цифpы
+ i ((Cod>64)&(Cod<91))!((Cod>96)&(Cod<123)) q 4 ; латинская буква
+ i Cod>127,Cod<240 q 5                         ; pусская буква
+ q 1                                           ; пунктуация
+ 
+CopySons(Mass,e1,e2,NOKILLER) ; копия узла с потомками массива Mass узла e1 в e2
+ n TRe1,TRe2,j,jj,WA,WAI,ls
+ i e1=+e1 s TRe1=Mass_"("_e1
+ e  s TRe1=Mass_"("""_e1_""""
+ i e2=+e2 s TRe2=Mass_"("_e2
+ e  s TRe2=Mass_"("""_e2_""""
+ d R^%ZAPM.bs.BS3($NA(@Mass)),TREE^%ZAPM.bs.BSTK,D^%ZAPM.bs.BS3($NA(@Mass)),ClrBot^%ZAPM.bs.BSXfun q
+ 
+CopyTree(TRe1,TRe2,NOKILLER) ; копия узла TRe1 с потомками в TRe2
+ n j,jj,ls,Orig s Orig=TRe2  ;  по закpытым ссылкам
+ i $F(TRe1,"(") s $E(TRe1,$L(TRe1))=""
+ e  s TRe1=TRe1_"("
+ i $F(TRe2,"(") s $E(TRe2,$L(TRe2))=""
+ e  s TRe2=TRe2_"("
+ d R^%ZAPM.bs.BS3($NA(@Orig)),TREE^%ZAPM.bs.BSTK,D^%ZAPM.bs.BS3($NA(@Orig)),ClrBot^%ZAPM.bs.BSXfun q
+ 
+Basa2Buf(Basa,Buf,NOKILLER) n Next s Next="" d R^%ZAPM.bs.BS3($NA(@Buf))
+ i '$D(NOKILLER) k @Buf
+ f  s Next=$O(@Basa@(Next)) q:Next=""  s @("@Buf@("_Next_")")=@Basa@(Next)
+ d D^%ZAPM.bs.BS3($NA(@Buf)) q
+ 
+BasaKeys(TAB,Keys) s TAB=$$KBD^%ZAPM.bs.BSF12($NA(@TAB)) i TAB="" q ""
+ s TAB=TAB_$G(Keys(0)) n i
+ f i=1:1:+$G(Keys) q:$G(Keys(i))=""  s TAB=$$AddLevel^%ZAPM.bs.BSXfun1(TAB,Keys(i))
+ q TAB
+ 
+SetData(TAB,i,j,Value,Buf,Keys) ; Не закpывает FS !!!
+ i $P(@TAB@(i,j),"@",9)=1 s $P(@TAB@(i,j),"@",15)=Value q
+ i +$G(Buf)'=0 d  q
+ . s ^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)=Value
+ . s $P(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)),"@",2)=1 q
+ s TAB=$$BasaKeys(TAB,.Keys),@TAB@(i_","_j)=Value q
+ 
+GetData(TAB,i,j,Buf,Keys) i $P(@TAB@(i,j),"@",9)=1 q $P(@TAB@(i,j),"@",15)
+ i +$G(Buf)'=0 q $G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j))
+ s TAB=$$BasaKeys(TAB,.Keys) q $G(@TAB@(i_","_j))
+ 
+AddLevel(Basa,Node) q $NA(@Basa@(Node))
+ 
+CutLevel(Basa) n Rez,Next,i
+ s (Rez,Basa)=$NA(@Basa)
+ f i=0:1 s Next=$NA(@Basa,i) q:Next=Basa  s Rez=Next
+ q Rez
+ 
+GetIndex(Basa) n Cut s Cut=$$CutLevel(Basa) i Basa=Cut q ""
+ i Cut'=$$CutLevel(Cut) q $E(Basa,$L(Cut)+1,$L(Basa)-1)
+ q $E(Basa,$L(Cut)+2,$L(Basa)-1)
+ 
+EntTABch(TAB,Orig) w $$esc^%ZAPM.bs.BS3(7) ; вход в таблицу с оpигиналом по закpытым
+ i $D(@TAB)[0 q:$G(Orig)=""  q:$D(@Orig)[0  d              ; ссылкам
+ . d CopyTree(Orig,TAB)
+ s IYI=$$GetIndex(TAB) i +IYI'=IYI s IYI=$E(IYI,2,$L(IYI)-1)
+ s IYI=$$TR^%ZAPM.bs.BSsFUNM(IYI,"""""","""")
+ s IYI=$NA(@TAB,0)_","_IYI d NE^%ZAPM.bs.BSN,Echo^%ZAPM.bs.BSXfun(0) w $$esc^%ZAPM.bs.BS3(8) q
+ 
+TxtPanel(Panel,y,x,Pos) n Win,i,Clr,OldDev,Delay
+ s y=+$G(y),x=+$G(x) s OldDev=$I u $P w $$esc^%ZAPM.bs.BS3(7)
+ s Delay=$P(%BS(2),"-",3)*1000 d Echo^%ZAPM.bs.BSXfun(0) ;```I %BS(13)'="%BS-PC" Q -5
+ i y<0!(y>22)!(x<0)!(x>80) s YES=0 q -1
+ s (Win("MsgLen"),Win("MsgNum"),Win("ButNum"))=0,Win("ButLen")=1
+ s i="" f  s i=$O(@Panel@(0,i)) q:i=""  s Win=$L($G(@Panel@(0,i))) d
+ . s Win("MsgNum")=Win("MsgNum")+1 i Win>Win("MsgLen") s Win("MsgLen")=Win
+ s i="" f  s i=$O(@Panel@(1,i)) q:i=""  s Win=$L($G(@Panel@(1,i))) d
+ . s Win("ButNum")=Win("ButNum")+1,Win("ButLen")=Win("ButLen")+Win+2
+ i Win("MsgLen")<Win("ButLen") s Win("MsgLen")=Win("ButLen")
+ i (y+Win("MsgNum"))>22 s Win("MsgNum")=22-y
+ i (x+Win("MsgLen"))>80 s Win("MsgLen")=80-x i Win("ButLen")>Win("MsgLen") d
+ . s i="" f  s i=$O(@Panel@(1,i),-1) q:i=""  d  i Win("ButLen")'>Win("MsgLen") q
+ .. s Win=$L($G(@Panel@(1,i))),Win("ButNum")=Win("ButNum")-1
+ .. s Win("ButLen")=Win("ButLen")-Win-2
+ i Win("MsgNum")<0 s YES=0 q -2
+ i Win("ButNum")<1 s YES=0 q -3
+ i y=0 s y=(22-Win("MsgNum"))\2
+ i x=0 s x=(80-Win("MsgLen"))\2
+ s Win(0,0)=y,Win(0,1)=x,Win(1,0)=y+Win("MsgNum")+4,Win(1,1)=x+Win("MsgLen")+1
+ d SaveWin^%ZAPM.bs.BSXfun(Win(0,0),Win(0,1),Win(1,0)+1,Win(1,1)+2)
+ s YES=$G(%BS(20)) i YES'="" s YES=$NA(@%BS(20)@("PanButt","BUT"))
+ s Win=$G(@Panel),Clr(0)=$P(Win,"/",2),Win=$P(Win,"/")
+ i Clr(0)="" s:YES'="" Clr(0)=$P($G(@YES),"/",2) i Clr(0)="" s Clr(0)="1;6;37;44"
+ d Ramka^%ZAPM.bs.BSXfun(Win(0,0),Win(0,1),Win(1,0),Win(1,1),1,Clr(0),1)
+ s Clr=$G(@Panel@(0)) i Clr="" s:YES'="" Clr=$G(@YES@(0)) i Clr="" d
+ . s Clr=Clr(0)_$S($F(Clr(0),"36"):";37;1",1:";36;1")
+ i Win'="",Win(1,1)>(Win(0,1)+5) s Win=$E(Win,1,Win(1,1)-Win(0,1)-5) d
+ . w /CUP(Win(0,0),(Win(0,1)+Win(1,1)-$L(Win)-2)\2)
+ . s y=Clr_$S($F(Clr,"33"):";37;1",1:";33;1")
+ . w $$atr^%ZAPM.bs.BS3(Clr(0)),"| ",$$atr^%ZAPM.bs.BS3(y),Win,$$atr^%ZAPM.bs.BS3(Clr(0))," |"
+ s y=1,i="" w $$atr^%ZAPM.bs.BS3(Clr)
+ f  s i=$O(@Panel@(0,i)) q:i=""  d  s y=y+1 i y>Win("MsgNum") q
+ . s Win=$E($G(@Panel@(0,i)),Win("MsgLen")>0,Win("MsgLen"))
+ . s x=$G(@Panel@(0,i,1),Clr) w /CUP(Win(0,0)+y,Win(0,1)+1),$$atr^%ZAPM.bs.BS3(x),Win
+ s y=Win(0,0)+Win("MsgNum")+2 k Win(0,0),Win(1)
+ s Win(0,1)=Win(0,1)-1,Clr(0)=Clr(0)_";6;2;30"
+ s Clr(1)=$G(@Panel@(1)),Clr(2)=$P(Clr(1),"/",2),Clr(1)=$P(Clr(1),"/")
+ i Clr(1)="" s:YES'="" Clr(1)=$P($G(@YES@(1)),"/") i Clr(1)="" s Clr(1)="2;6;30;42"
+ i Clr(2)="" s:YES'="" Clr(2)=$P($G(@YES@(1)),"/",2) i Clr(2)="" s Clr(2)="1;6;33;41"
+ s i="",x=1 f  s i=$O(@Panel@(1,i)) q:i=""  d  s x=x+1 i x>Win("ButNum") q
+ . s Win(x,2)=i,(Win(x,3),Win)=$L($G(@Panel@(1,i)))
+ . s Win(x,0)=Win(x-1,1)+3,Win(x,1)=Win(x,0)+Win-(Win>0) k Win(x-1,1)
+ s x=Win("MsgLen")-Win("ButLen")
+ i x>0 s x=x\2 f i=1:1:Win("ButNum") s Win(i,0)=Win(i,0)+x
+ f i=1:1:Win("ButNum") d Button(i,Clr(1))
+ s Win=+$G(Pos,1),Win(-1)=0,x=0
+ f  s:Win<1 Win=Win("ButNum") s:Win>Win("ButNum") Win=1 d  i Win(-1) q
+ . i x'=Win d Button(Win,Clr(2)) s x=Win
+ . x $$Read^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSX(""keyP"")") I R1=-1,R2=-1,R3=-1 s x=Win
+ . i x'=Win d Button(x,Clr(1))
+ s YES=1 i R1=27,R2=-1,R3=-1 s YES=0
+Quit d LoadWin^%ZAPM.bs.BSXfun s (R1,R2,R3)=-2 w $$esc^%ZAPM.bs.BS3(8) u OldDev q Win
+Button(Num,Cl) w /CUP(y,Win(Num,0)),$$atr^%ZAPM.bs.BS3(Cl),$G(@Panel@(1,Win(Num,2)))
+ w $$atr^%ZAPM.bs.BS3(Clr(0)),"|",/CUP(y+1,Win(Num,0)+1),$TR($J("",Win(Num,3))," ","=") ;```
+ w /CUP(y,Win(Num,0)) q
+PushBut w /CUP(y,Win(Win,0)),$$atr^%ZAPM.bs.BS3(Clr(0))," ",$$atr^%ZAPM.bs.BS3(Clr(2))
+ w $G(@Panel@(1,Win(Win,2))),/CUP(y+1,Win(Win,0)+1),$$atr^%ZAPM.bs.BS3(Clr(0)),$J("",Win(Win,3))
+ w /CUP(y,Win(Win,0)+1) f i=1:1:Delay s i=i+1
+ d Button(Win,Clr(2)) f i=1:1:Delay s i=i+1
+ q

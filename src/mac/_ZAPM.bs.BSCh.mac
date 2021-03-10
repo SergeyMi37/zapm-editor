@@ -1,0 +1,221 @@
+ROUTINE %ZAPM.bs.BSCh
+%BSCh ;ФУНКЦИИ HTML  ; 13:48   12.09.2002
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ ;D INIT^%ZAPM.bs.BSChW ;ПЕРВОНАЧАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ КОМПЛЕКСА
+ Q
+APPVAL() ;ВЕРНУТЬ ГЛОБАЛЬНУЮ ССЫЛКУ ПРИЛОЖЕНИЯ ???
+ N GS S GS=$$GETMP^%ZAPM.bs.BSCp($P($G(%KEY("BSUSER")),",",3),Grand) I $$Data^%ZAPM.bs.BSF12(GS) Q GS
+ Q ""
+ADMIN() ;ПОЛЬЗОВАТЕЛЬ - АДМИНИСТРАТОР ?
+ N GS
+ I $G(NameUS)'="" S GS=$$APPVAL I GS'="",$D(@GS@("-3")) Q 1
+ Q 0
+VAR ;СОЗДАНИЕ НУЖНЫХ ПЕРЕМЕННЫХ
+ S GREEN="<font color=Green>",RED="<font color=Red>",BLUE="<font color=Blue>",MAROON="<font color=Maroon>",GOLD="<font color=GOLD>",AQUA="<font color=AQUA>"
+ S AF="<font size=1 face='Arial, Helvetica, MS Sans Serif'>"
+ S (BK,CRLF)=$C(13,10),EF="</font>",(BBK,BR)="<br>"_BK
+ s $P(%BS(44),",",1)=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Aevlog")
+ s $P(%BS(44),",",2)=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Aevlogmail")
+ s $P(%BS(44),",",3)=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Aevlog1")
+ Q
+%(S) ;ТРАНСЛЯЦИЯ СТРОКИ //&nbsp;
+ S S=$TR(S,"~|","%"_$C(34))
+ I S["%20" S S=$$TR^%ZAPM.bs.BSsFUNM(S,"%20"," ")
+ Q S
+%T(S) ;ТРАНСЛЯЦИЯ СТРОКИ
+ I S[" " S S=$$TR^%ZAPM.bs.BSsFUNM(S," ","%20")
+ Q $TR(S,"%"_$C(34),"~|")
+IMG I $G(%KEY("BSONLY")) W "<P><IMG "_$$0(5)_"></P>"_CRLF Q
+ W "<P><A HREF="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"""><IMG "_$$0(5)_"></A></P>"_CRLF
+ Q
+0(N) ;НОМЕР ПАРАМЕТРА ИЗ ^%ZAPM.bs.BSC("HTML"_?,N)
+ I $G(NuMHtml)'="" S N=N+$S(NuMHtml=1:8,NuMHtml=2:12,NuMHtml=3:16,NuMHtml=4:20,1:1)-2
+ I $D(MainTabl),$$Data^%ZAPM.bs.BSF12(MainTabl) Q $P($G(@MainTabl@(N,2)),"@",15)
+ Q "" ;```$P($G(^%ZAPM.bs.BSETUP("HTML",N,2)),"@",15)
+BACK ;ЯКОРЬ НАЗАД
+ N A I $G(BSDOMAIN)'="" S A=" src='"_BSDOMAIN_"/img/back.gif' "
+ E  S A=$$0(33) 
+ I A="" S A="Назад"
+ E  S A="<IMG "_A_" border=0 align=""bottom"">"
+ W "<A HREF=""javascript:history.back(1)"">Возврат&nbsp;"_A_"</A>"_CRLF
+ Q
+CRT(T) ;ЗАГОТОВКА ТАБЛИЦЫ
+ N CRLF
+ S CRLF=$C(13,10)
+ W "<TABLE BORDER>",CRLF
+ W "<CAPTION><B><H3>",$G(T),"</H3></B></CAPTION>",CRLF
+ Q
+ENT W "</TABLE><HR>",$C(13,10)
+ Q
+FORMN(nA) ;НАЧАЛЬНЫЙ ТЕГ ФОРМЫ С ИМЕНЕМ
+FORM ;НАЧАЛЬНЫЙ ТЕГ ФОРМЫ
+ w "<form action="""_%KEY("MGWLIB")_"""" d  w " method=""POST"">",$G(BK)
+ .i $d(nA) W " name="""_nA_""""
+ ;I $G(%KEY("MGWLPN"))'="" w "<input type=""hidden"" name=""MGWLPN"" value="""_%KEY("MGWLPN")_""">",$G(BK)
+ ;I $G(%KEY("MGWCHD"))'="" w "<input type=""hidden"" name=""MGWCHD"" value="""_%KEY("MGWCHD")_""">",$G(BK)
+ ;I $G(%KEY("MGWAPP"))'="" w "<input type=""hidden"" name=""MGWAPP"" value="""_$G(%KEY("MGWAPP"))_"""></P>",$G(BK)
+ I $G(%KEY("BSG"))'="" w "<input type=""hidden"" name=""BSG"" value="""_$G(%KEY("BSG"))_"""></P>",$G(BK)
+ w "<input type=""hidden"" name=""BSUSER"" value="""_$G(%KEY("BSUSER"),"GUEST")_""">",$G(BK)
+ Q
+BK() Q $C(13,10)
+Er(S) ;СООБЩЕНИЕ ОБ ОШИБКЕ
+ D CRP(S,4,2),END(7)
+ Q
+Ok(S) ;СООБЩЕНИЕ
+ D CRP(S,4,1),END(7)
+ Q
+JavaComm W "<!--",BK
+ W BK,"// -->",BK Q
+JavaS(NU) I $$0(NU)="" Q  ;ЕСЛИ НЕТ ДЖАВЫ-SCRIPT
+ W BK,"<SCRIPT LANGUAGE=""JavaScript"" SRC="""_$$0^%ZAPM.bs.BSCh(NU)_""">",BK
+ W "</SCRIPT>",BK Q
+CRP(SaY,V,NuMHtml)  ;ЗАГОТОВКА СТАНДАРТНОЙ СТРАНИЦЫ
+ N CRLF ; NuMHtml=1 OK 2-ER 3-? 4-!
+ S CRLF=$C(13,10)
+ W "<HTML>",CRLF I $G(%KEY("BSCAPTION"))'="" S SaY=%KEY("BSCAPTION")
+ W "<HEAD><TITLE>"_$$0(2)_" "_$G(SaY)_"</TITLE>"
+ W "</HEAD>",CRLF
+ W "<BODY "_$$0(3)_">",CRLF
+ W "<P>"
+ D IMG
+ I $G(V)'="" D
+ .I +$G(V) W $$0(4)
+ .E  W V
+ W "</P>",CRLF
+ W "<HR>"
+ I $G(SaY)'="" W "<H2>"_$G(SaY)_"</H2>",CRLF
+ Q
+END(T) ;ЗАВЕРШЕНИЕ СТРАНИЦЫ
+ I $G(%KEY("BSONLY")) G ENDe
+ I $G(T)'="" D
+ .I +$G(T) W "<H6>",$$0(T),"</H6>"
+ .E  W "<H6>",$$MAIL(T),"</H6>"
+ENDe W "<H6>%BS versions ",$G(^%ZAPM.bs.BS),",  ID proc=",$J,", Service=",$G(%KEY("MGWLPN")) I '$G(%KEY("BSONLY")) W ", NS=",BLUE,$$ZU^%ZAPM.bs.BS3(0),EF,", Storage=",$S,", UseDevice=",$I
+ W "<br>",$zv," ",BLUE,$ZU(110),EF,"</H6>"
+END2 W "</BODY>",BK
+ W "</HTML>",BK
+ Q
+KILLJOB ;W "<a href="""_$$A()_$$NS()_"MGWCDN="_$G(%KEY("MGWCHD"))_"&BSROU=TERMIN^~BSCh1""><IMG "_$$0(6)_">Полностью Завершить Работу</a>"
+ ;W "<P>"          _"&MGWCHD="_$G(%KEY("MGWCHD"))_"&"
+ ;D FORM
+ ;w "<input type=""hidden"" name=""MGWCTO"" value=""5"">"
+ ;w "<input type=""hidden"" name=""BSROU"" value=""TERMIN^~BSCh1"">"
+ ;w "<input type=""SUBMIT"" name=""B1"" value=""Полностью Завершить Работу"">"
+ ;W "</P>"
+ Q
+MAIL(T) Q "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=MAIL^~BSCh1"">"_T_"</a>"
+NS() Q "BSNSPACE="_$$%T($G(%KEY("BSNSPACE"),"~SYS"))_"&"
+A() N A S A="Z=A"
+ ;I $G(%KEY("MGWLPN"))'="" S A=A_"&MGWLPN="_$G(%KEY("MGWLPN"))
+ ;I $G(%KEY("MGWCHD"))'="" S A=A_"&MGWCHD="_$G(%KEY("MGWCHD"))
+ ;I $G(%KEY("MGWAPP"))'="" S A=A_"&MGWAPP="_$G(%KEY("MGWAPP"))
+ I $G(%KEY("BSONLY"))'="" S A=A_"&BSONLY="_%KEY("BSONLY")
+ I $G(%KEY("BSG"))'="" S A=A_"&BSG="_$G(%KEY("BSG"))
+ ;Q "http://"_$G(%CGIEVAR("SERVER_NAME"))_$G(%KEY("MGWLIB"))_"?"_A_"&BSUSER="_$G(%KEY("BSUSER"),"GUEST")_"&"
+ Q $$ADDLIB^%ZAPM.bs.BSC4()_A_"&BSUSER="_$G(%KEY("BSUSER"),"GUEST")_"&"
+ONLY() I $G(%KEY("BSONLY")) Q "&BSONLY="_%KEY("BSONLY")
+ Q ""
+WebServer() q "http://"_$G(%CGIEVAR("SERVER_NAME"))
+3(A1,T1,A2,T2,A3,T3,A4,A5) ;ТРИ+1+1 ССЫЛКИ
+ W "<table border=""0"" width=""100%"">"
+ W "<tr>"
+ I $G(A4)'="" W "<td width=""25%""><p align=""center"">",A4,"</td>"
+ W "<td width=""25%""><p align=""center"">" I $G(A1)'="" W "<a href="""_$$A()_$$NS()_A1_""">"_T1_"</a></td>"
+ W "<td width=""25%""><p align=""center"">" I $G(A2)'="" W "<a href="""_$$A()_$$NS()_A2_""">"_T2_"</a></td>"
+ W "<td width=""25%""><p align=""center"">" I $G(A3)'="" W "<a href="""_$$A()_$$NS()_A3_""">"_T3_"</a></td>"
+ I $G(A5)'="" W "<td width=""25%""><p align=""center"">",A5,"</td>"
+ W "</tr>"
+ W "</table>"
+ Q
+WHO ;КТО ЭТО
+ Q:$G(NameUS)=""
+ W "<P>Вы вошли в систему под именем: <FONT COLOR=RED>",NameUS W " (",$$TRAN($$FullName^%ZAPM.bs.BSCp(NameUS)),")</FONT>"
+ W "<BR> Текущая Рабочая Область <FONT COLOR=RED>",$$ZU^%ZAPM.bs.BS3(0),"</FONT>"
+ ;I $G(@%BS(18)@(NameUS,0,"9,4"))'="" S i=@$ZR W "<BR> Рабочая группа пользователей <FONT COLOR=RED>",i,"</FONT>"
+ I $$ADMIN() W "<BR>ВЫ ИМЕЕТЕ ПРАВА АДМИНИСТРАТОРА." D
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=EDIT^~BSChT1&BSTABL=MAIL&BSPART=^~BSC"" TITLE='база данных сообщений'> Messages |</a>"
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=EDIT^~BSChT1&BSTABL=PROTECT&BSPART=^~BSC"" TITLE='база данных пользователей'> Users |</a>"
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=EDIT^~BSChT1&BSTABL=GRAND&BSPART=^~BSC"" TITLE='база данных прав доступа'> Grand |</a>"
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=EDIT^~BSChT1&BSTABL=TRM&BSPART=^~BSVOL"" TITLE='база данных терминалов'> Trm |</a>"
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=EDIT^~BSChT1&BSTABL=VISIT&BSPART=^~BSC"" TITLE='база данных визитов'> Visits |</a>"
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=OPTION^~BSChA"" TITLE='редактировать основные параметры'> Option |</a>"
+ .W "<a href="""_$$A()_$$NS()_"BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=NETOPT^~BSChA"" TITLE='редактировать сетевые параметры'> NetOpt |</a>"
+ w "</P><HR>"
+I Q
+TRAN(S) ;ТРАНСЛЯЦИЯ
+ I $$IFDOS(S) N S1,S2 Q $$ANSI^%ZAPM.bs.BSre(S)
+ Q S
+IFDOS(S) ;ПРОВЕРКА КОДИРОВКИ
+ I $TR(S,$C(128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175),"")'=S Q 1
+ Q 0
+ ;********************************************************************************
+ ;  ПРОГРАММНЫЕ МОДУЛИ ВИЗИТОВ
+ ;  P="P" попыток ,"R" регистаций ,"E" ошибок "Q" запросов к бд
+ ;
+TOBD() N TB,BD S TB=$S($G(APP)="":$$0^%ZAPM.bs.BSCh(25),1:"^%ZAPM.bs.BSC(""VISIT"")")
+ S BD=$$KBD^%ZAPM.bs.BSF12(TB) I '$$Data^%ZAPM.bs.BSF12(BD) Q ""
+ I '$D(CurUS) S CurUS=$$ADDRIP^%ZAPM.bs.BSC4
+ Q BD
+GetUsersVisit(P,APP) ;КОЛИЧЕСТВО ВИЗИТОВ ПОЛЬЗОВАТЕЛЕЙ С ТЕКУЩЕГО АДРЕСА
+ S BD=$$TOBD I BD="" Q 0
+ I $G(APP)'="" Q $G(@BD@("USERS",APP,CurUS,P))
+ Q +$G(@BD@("USERS",CurUS,P))
+GetAllVisit(P,APP) ;КОЛИЧЕСТВО ВСЕГО ВИЗИТОВ СО ВСЕХ АДРЕСОВ
+ S BD=$$TOBD I BD="" Q 0
+ I $G(APP)'="" Q $G(@BD@("ALL",APP,"ALLIP",P))
+ Q +$G(@BD@("ALL","ALL",P))
+ADDVISIT(P,APP) ;ВИЗИТ  P="P","R","E","Q"
+ D MAINVAR^%ZAPM.bs.BSC4
+ D Tex^%ZAPM.bs.BSMSMF("APP="_$G(APP)_" VISIT:"_P,$G(U)_","_$G(BSR)_","_$G(BST)_","_$G(EDIT)_","_$G(MODE)_","_$G(BSLOGIN)_","_$G(BSSES))
+ Q
+ /*N U1
+ S BD=$$TOBD I BD="" Q
+ S U1=$P($$h^%ZAPM.bs.BS3,",")
+ S Time1=+$P($ZT($P($H,",",2),1),":")
+ I $G(APP)'="" D  Q
+ .S @BD@(U1,APP,CurUS,Time1,P)=$G(@BD@(U1,APP,CurUS,Time1,P))+1
+ .S @BD@(U1,APP,CurUS,P)=$G(@BD@(U1,APP,CurUS,P))+1
+ .S @BD@("USERS",APP,CurUS,P)=$G(@BD@("USERS",APP,CurUS,P))+1
+ .S @BD@("USERS","ALLAPP",CurUS,P)=$G(@BD@("USERS","ALLAPP",CurUS,P))+1
+ .S @BD@("ALL",APP,"ALLIP",P)=$G(@BD@("ALL",APP,"ALLIP",P))+1
+ .S @BD@("ALL","ALLAPP","ALLIP",P)=$G(@BD@("ALL","ALLAPP","ALLIP",P))+1
+ S @BD@(U1,CurUS,Time1,P)=$G(@BD@(U1,CurUS,Time1,P))+1
+ S @BD@(U1,CurUS,P)=$G(@BD@(U1,CurUS,P))+1
+ S @BD@("USERS",CurUS,P)=$G(@BD@("USERS",CurUS,P))+1
+ S @BD@("ALL","ALL",P)=$G(@BD@("ALL","ALL",P))+1
+ Q  */
+ShowVisit(APP) Q
+ /*W "<h5 align=""left""><font face=""Times New Roman"">Обращений к модулю :"
+ W "&nbsp;&nbsp;Всего = "_$$GetAllVisit("Q",APP)_","
+ W "&nbsp;&nbsp;"_"с данного компьютера ="_$$GetUsersVisit("Q",APP)_"</font></h5>",$c(13,10)
+ Q  */
+StatVisit(APP) ;СТАТИСТИКА
+ S BD=$$TOBD I BD="" Q
+ w BK,"<table border=""1"">",BK
+ w "<tr>",BK
+   w "<td>Статистика для текущего приложения '"_APP_"'</TD>"
+   w "<td align=""center""><strong>Входов</strong></td>",BK
+   w "<td align=""center""><strong>Регистраций</strong></td>",BK
+   w "<td align=""center""><strong>Запросов в Базе Данных</strong></td>",BK
+   w "<td align=""center""><strong>Ошибок</strong></td>",BK
+ w "</tr>"
+ w "<tr>"
+   w "<td align=""right""><strong>с IP-адреса "_$g(CurUS)_"</strong></td>",BK
+   w "<td>"_+$g(@BD@("USERS",APP,CurUS,"P"))_"</td>",BK
+   w "<td>"_+$g(@BD@("USERS",APP,CurUS,"R"))_"</td>",BK
+   w "<td>"_+$g(@BD@("USERS",APP,CurUS,"Q"))_"</td>",BK
+   w "<td>"_+$g(@BD@("USERS",APP,CurUS,"E"))_"</td>",BK
+ w "</tr>"
+ w "<tr>"
+   w "<td align=""right""><strong>Всего</strong></td>",BK
+   w "<td>"_+$g(@BD@("ALL",APP,"ALLIP","P"))_"</td>",BK
+   w "<td>"_+$g(@BD@("ALL",APP,"ALLIP","R"))_"</td>",BK
+   w "<td>"_+$g(@BD@("ALL",APP,"ALLIP","Q"))_"</td>",BK
+   w "<td>"_+$g(@BD@("ALL",APP,"ALLIP","E"))_"</td>",BK
+ w "</tr>"
+  w "</table>",BK
+ Q
+ ;********************************************************************************

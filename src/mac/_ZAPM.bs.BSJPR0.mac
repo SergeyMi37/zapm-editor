@@ -1,0 +1,19 @@
+ROUTINE %ZAPM.bs.BSJPR0
+%BSJPR0 ;Обработка клавиш в таблице карты вывода ; 13:29 19-NOV-98
+ Q
+PRED ;Обработка клавиш в таблице карты вывода
+ Q:R1>332
+ ;I R1=27&(R2=79)&(R3=81) D  Q                       ;Вывод на устройство
+ .D 4 S out=$$Gout^%ZAPM.bs.BSout1(BSRnew,BSTnew,1,2)
+ .S BSRold=$P($G(^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u")),"#"),BSTold=$P($G(^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u")),"#",2)
+ .S out=$$OUT^%ZAPM.bs.BSout2(BSRold,BSTold)
+ .D W^%ZAPM.bs.BST
+ 
+ ;I R1=13&(R2=-1)&(R3=-1) D  Q                       ;Просмотр на экране
+ .D 4  S out=$$Gout^%ZAPM.bs.BSout1(BSRnew,BSTnew,1,1)
+ .S ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u")="БУФЕР @@@@@@@1@1@22@80@@@@1@@5@@@1@@@@@@@@@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ .D ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSbufB","uP"_$G(%BS(3),$P)_$J_"u")
+ .S R1=-2 D W^%ZAPM.bs.BST
+ 
+ I R1=27&(R2=79)&(R3=82) D OPprn^%ZAPM.bs.BSout(BSR,BST) Q   ;Опции принтера
+ Q

@@ -1,0 +1,415 @@
+ROUTINE %ZAPM.bs.BSC4r
+%BSC4r ;Трансляция и контроль кода ; 15:37   05.09.2002
+ ;
+ ;    Copyright (C) 2002 Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+DelBS ;УДАЛИТЬ ВЕСЬ ИСХОДНЫЙ КОД КОМПЛЕКСА
+ S I="%BS" D  F  S I=$O(^ROUTINE(I)) Q:I'["%BS"  D
+ .D DelSours(I)
+ Q
+DelSours(ro) K ^ROUTINE(ro,0),^rMAC(ro,0) ;УДАЛИТЬ ИСХОДНЫЙ ТЕКСТ
+ Q
+DelBSAll ;УДАЛИТЬ ВЕСЬ КОМПЛЕКС
+ I '$$ZU^%ZAPM.bs.BSF4("%SYS") Q
+ //I $ZU(5,"%SYS")="" Q
+ S I="^%ZAPM.bs.BS" D  F  S I=$O(^$GLOBAL(I)) Q:I'["^%ZAPM.bs.BS"  D
+ .K @I
+ S I="%BS" D  F  S I=$O(^rINC(I)) Q:I'["%BS"  D
+ .K ^rINC(I)
+ S I="%BS" D  F  S I=$O(^ROUTINE(I)) Q:I'["%BS"  I I'=$ZN D
+ .D DEL1^%ZAPM.bs.BSC4r4(I_".*")
+ X "D DEL1^%ZAPM.bs.BSC4r4($ZN_"".*"")"
+ Q
+XECUTE(CODE)
+ N pin,Rou S pin="Temp",Rou=BSRoutineId
+ I $$CheckRou^%ZAPM.bs.BSC4base1(CODE) D @("^"_pin_"."_Rou),DEL1^%ZAPM.bs.BSC4r4(pin_"."_Rou_".*") Q
+ Q
+GetResultRef(A,F) ;возвратить результат ссылки
+ i $e(A,1)="^" q $$GetTableBS^%ZAPM.bs.BSCi($P(A,":",1),$P(A,":",2),$P(A,":",3),$P(A,":",4),$P(A,":",5)) ;это таблица/текст %BS
+ i $e(A,1)="/"!($e(A,1,4)="HTTP")!($e(A,1,4)="http") q $$onLOAD(A,F) ;создание страницы с JS кодом на загрузку A-URL
+ i $e(A,1,6)="DoMaIn" q $$onLOAD($$TR^%ZAPM.bs.BSsFUNM(A,"DoMaIn",BSDOMAIN),F) ;--//--
+ i A'="^%" q @A
+ q A
+onLOAD(A,F) ;
+ N Q S Q="<HTML><HEAD>"_$$meta^%ZAPM.bs.BSC4_BK
+ S Q=Q_"<script LANGUAGE=""JavaScript""><!--"_BK
+ S Q=Q_"function ReSet() {"_BK
+ ;S Q=Q_"alert('"_A_"');"_BK
+ S Q=Q_"parent."_F_".location='"_A_"';"_BK
+ S Q=Q_"}"_BK
+ S Q=Q_"// --></script>"_BK
+ S Q=Q_"</HEAD>"_BK
+ S Q=Q_"<BODY onload='ReSet();'>"_BK
+ S Q=Q_"</BODY></HTML>"_BK
+ Q Q
+href(C) ;СГЕНЕРИТЬ CGI ПЕРЕМЕННЫЕ В ФОРМАТЕ GET
+ Q $$add^%ZAPM.bs.BSC4rou_C
+GetTabProp(P,T,NF) //ВОЗВРАТИТЬ ЗНАЧЕНИЕ СВОЙСТВ ПОЛЯ
+ Q "ПОКА ТАК!"
+GetDirTabFile(P,T,Key,NF,FILE) //ВОЗВРАТИТЬ ПУТЬ И ИМЯ ФАЙЛА ЛЕЖАЩЕЕ В ПОЛЕ, ЕСЛИ ПОЛЕ - FILESTREAM
+ N FF,FN1,FN2,PTab
+ S FF=$$GetDirectTab(P,T,.Key,NF) I FF="" Q ""
+ S FN2=$$GETOPT^%ZAPM.bs.BSC4cfgP($NA(@PTab@("Parms")),"DF"),FN1=$$GETOPT^%ZAPM.bs.BSC4cfgP($NA(@PTab@("ParmsCell",NF)),"xSubDir")
+ S FN2=##class(%File).NormalizeDirectory(FN2_FN1)_FF
+ I $D(FILE) S FILE(1)=FN2
+ I $ZU(140,4,FN2)'=0 Q ""
+ I $D(FILE) S FILE(2)=$$GETOPT^%ZAPM.bs.BSC4cfgP($NA(@PTab@("Parms")),"WF")_FN1_FF
+ Q FN2
+GetDirectTabN1(P,T,A,NF)
+ N Key
+ S Key=1,Key(1)=A
+ Q $$GetDirectTab(P,T,.Key,NF)
+GetDirectTabN2(P,T,A1,A2,NF)
+ N Key
+ S Key=2,Key(1)=A1,Key(2)=A2
+ Q $$GetDirectTab(P,T,.Key,NF)
+GetDirectTabN3(P,T,A1,A2,A3,NF)
+ N Key
+ S Key=3,Key(1)=A1,Key(2)=A2,Key(3)=A3
+ Q $$GetDirectTab(P,T,.Key,NF)
+GetDirectTabN4(P,T,A1,A2,A3,A4,NF)
+ N Key
+ S Key=4,Key(1)=A1,Key(2)=A2,Key(3)=A3,Key(4)=A4
+ Q $$GetDirectTab(P,T,.Key,NF)
+GetDirectTabN5(P,T,A1,A2,A3,A4,A5,NF)
+ N Key
+ S Key=5,Key(1)=A1,Key(2)=A2,Key(3)=A3,Key(4)=A4,Key(5)=A5
+ Q $$GetDirectTab(P,T,.Key,NF)
+GetDirectTabN6(P,T,A1,A2,A3,A4,A5,A6,NF)
+ N Key
+ S Key=6,Key(1)=A1,Key(2)=A2,Key(3)=A3,Key(4)=A4,Key(5)=A5,Key(6)=A6
+ Q $$GetDirectTab(P,T,.Key,NF)
+GetDirectTab(P,T,Key,NF) //ВОЗВРАТИТЬ ЗНАЧЕНИЕ ПОЛЯ КОНКРЕТНОЙ ЗАПИСИ
+ N GL,K,KK,G
+ i NF="" ZT "SUBSC"
+ D GL
+ //i GL["%" ZT "%Prot"
+ ;W pin,0,G,1 ZW Key
+ F K=1:1:Key Q:'$D(Key(K))  I Key(K)'="" S G=$NA(@G@(Key(K)))
+ ;ZW Key
+ S KK=$G(@G@(NF))
+ Q KK
+GL I $E(P,1)="^" S PTab=$NA(@P@(T)),G=$$KBD^%ZAPM.bs.BSF12(PTab) Q
+ I '$D(%ZName) S GL="^"_P_"."_T,PTab=$NA(@("^"_P)@(T))
+ E  S GL="^"_$P($P(%ZName,"."),"^",2)_"."_P_"."_T,PTab=$NA(@("^"_$P($P(%ZName,"."),"^",2)_"."_P)@(T)) i GL["%" ZT "%Prot"
+ S G=GL
+ Q
+KillDirectTab(P,T,Key)
+ N GL,K,KK,G
+ D GL
+ //i GL["%" ZT "%Prot"
+ F K=1:1:Key Q:'$D(Key(K))  I Key(K)'="" S G=$NA(@G@(Key(K)))
+ K @G
+SetDirectTab(P,T,Key,NF,VAL)
+ N GL,K,KK,G
+ i NF="" ZT "SUBSC"
+ D GL
+ //i GL["%" ZT "%Prot"
+ F K=1:1:Key Q:'$D(Key(K))  I Key(K)'="" S G=$NA(@G@(Key(K)))
+ S @G@(NF)=VAL
+ Q 1
+ORDEr(P,T,Key,Node,Nap)
+ N GL,K,KK,G
+ D GL
+ //i GL["%" ZT "%Prot"
+ F K=1:1:Key-1 Q:'$D(Key(K))  I Key(K)'="" S G=$NA(@G@(Key(K)))
+ S KK=$O(@G@(Node),Nap)
+ ;I KK="" Q Node
+ Q KK
+RO(R,L) //ЗАПУСК ПРОГРАММ
+ D @(L_"^"_R)
+    Q
+DoRou(P,R,L)
+ N GL
+ S GL=$P($P(%ZName,"."),"^",2)_"."_P_"."_R //это только в B4Y
+ i GL["%" q
+ D @(L_"^"_GL)
+    Q
+DDATA(S) ;$D
+ I S["^" ZT "^Prot"
+ I S["@" ZT "@Prot"
+ Q $D(@S)
+DGET(S) ;$G
+ I S["^" ZT "^Prot"
+ I S["@" ZT "@Prot"
+ Q $G(@S)
+DSET(S,V) ;SET @S=V
+ ;w S," ",V," "
+ I S["^" ZT "^Prot"
+ I S["@" ZT "@Prot"
+ S @S=V Q
+DKILL(S) ;kill @S        ;w S," ",V," "
+ I S["^" ZT "^Prot"
+ I S["@" ZT "@Prot"
+ k @S Q
+DynSQLprep(SQL,%qHandle)        n %st S %st=##class(%DynamicQuery).SQLPrepare(.%qHandle,SQL) q:+%st'=1 %st      S %st=##class(%DynamicQuery).SQLExecute(.%qHandle) q %st
+DynSQLfetch(%qHandle,%row,%stop)   D ##class(%DynamicQuery).SQLFetch(.%qHandle,.%row,.%stop) Q %stop
+DynSQLColInfo(%COL,%qHandle)    D ##class(%DynamicQuery).SQLGetInfo(.%COL,.%PAR,.%IDI,.%qHandle) Q ""
+DynSQLcol(%COL,%num)            Q $L($LI(%COL,%num),1)
+DynSQLrow(%row,%num)            Q $LI(%row,%num)
+DynSQLclose(%qHandle)            d ##class(%DynamicQuery).SQLClose(.%qHandle) Q ""
+ 
+beg(tit) q "<html><HEAD>"_BK_$$STYLE^%ZAPM.bs.BSC4_BK_"</HEAD><title>"_tit_"</title>"
+NumADD W $$beg(""_$$LNG^%ZAPM.bs.BSC4("Текст программы на языке",165)_" Cache'ObjectScript") I BSTMP["|" S BSTMP=$TR(BSTMP,"|",$C(34))
+ N S,K,I,L,LA,LAB,Z0,Z1,Z2,Z3,Z4
+ S S=$G(@BSTMP),K=$L(S,BK)
+ S Z1="<strong title='"_$$LNG^%ZAPM.bs.BSC4("Коментарий программы",324)_"'>",Z0="</strong>"
+ S Z2="<strong title='"_$$LNG^%ZAPM.bs.BSC4("SQL - утверждение COS программы",325)_"'>"
+ S Z3="<strong title='"_$$LNG^%ZAPM.bs.BSC4("Метка программы",326)_"'>"
+ S Z4="<strong title='"_$$LNG^%ZAPM.bs.BSC4("Макрос HTML кода",327)_"'>"
+ W "<TT>" S BL=0,LA=0,LAB=""
+  F I=1:1:K S L=$$TR^%ZAPM.bs.BSsFUNM($$TR^%ZAPM.bs.BSsFUNM($P(S,BK,I),"<","&lt;"),">","&gt;") D  S L(I+1)=L,LA=LA+1,L(I+1,0)=$G(LAB)_"+"_LA
+  .I L["&html" S L=BLUE_Z4_L_Z0_EF S BL=1 Q
+  .I L="&gt;" S L=BLUE_Z4_L_Z0_EF S BL=0 Q
+  .I BL S L=BLUE_Z4_L_Z0_EF Q
+  .I $E(L,1)=" " S L="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"_L
+  .E  S LAB=$P(L," ",1),L=RED_Z3_$P(L," ",1)_Z0_EF_" "_$P(L," ",2,999),LA=-1
+  .I L[" ;" S L=$P(L," ;",1)_GREEN_Z1_" ;"_$P(L," ;",2,999)_Z0_EF
+  .I L[" //" S L=$P(L," //",1)_GREEN_Z1_" //"_$P(L," //",2,999)_Z0_EF
+  .I L["&sql" S L=$P(L,"&sql",1)_MAROON_Z2_"&sql"_$P(L,"&sql",2,999)_Z0_EF
+  s I="" f  s I=$o(L(I)) q:I=""  W "<NOBR><a title='"_$G(L(I,0))_"'>",I,") </a>",L(I),"</NOBR><BR>",BK
+  W "</TT></html>"
+ Q
+KeyWord W $$beg(""_$$LNG^%ZAPM.bs.BSC4("вывод списка ЗАРЕЗЕРВИРОВАННЫХ СЛОВ",166)_"")
+ N S,K,I S S=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""Keywords"")")
+  w "<h3>"_$$LNG^%ZAPM.bs.BSC4("Список зарезервированных системой слов",167)_"</H3>",BBK,BBK
+  s I="" f K=1:1 s I=$o(@S@(I)) q:I=""  W "<LI> ",RED,I,EF," ",GREEN,$G(@S@(I,"Description")),EF,"</LI>",BBK
+  W "</html>"
+  Q
+Protect W $$beg(""_$$LNG^%ZAPM.bs.BSC4("вывод списка запрещенных команд",168)_"")
+ N S,K,I S S=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""SafeCode"")")
+  w "<h3>"_$$LNG^%ZAPM.bs.BSC4("Запрещены следующие команды и символы",169)_"</H3>",BBK,BBK
+  s I="" f K=1:1 s I=$o(@S@(I)) q:I=""  W "<LI>  ",RED,I,EF," ",GREEN,$G(@S@(I,"Description")),EF,"</LI>",BBK
+  W "</html>"
+  Q
+Security(S) ;проверка на небезопастный код COS
+ N B,i,I,K
+ S BDSC=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""SafeCode"")"),S=$$LITL^%ZAPM.bs.BSsFUNM(S)
+ s K=$L(S,BK)
+ F I=1:1:K S S(I)=$P(S,BK,I)
+ S S(0)=K K Sec
+ s i="" f  s i=$o(@BDSC@(i)) q:i=""  I S[i F I=1:1:K I S(I)[i S Sec(I)=$$TR^%ZAPM.bs.BSsFUNM($$TR^%ZAPM.bs.BSsFUNM(S(I),"<","&lt;"),">","&gt;"),Sec(I)=$$TR^%ZAPM.bs.BSsFUNM(Sec(I),i,RED_i_EF)
+ I $D(Sec) D  Q 0
+ .s i="" f  s i=$o(Sec(i)) q:i=""  W i+1,") ",Sec(i),BBK
+ Q 1
+%R ;entery points
+ ; #; This function currently assumes the calling parameters are valid.
+ ; #; parameters:
+ ; #;   rou - name.ext.ver of the routine to compile
+ ; #;   .array - array of source code; array(0)=lines, array(1-n)=source
+ ; #;   .err - errors detected ($LIST format, call $$FMTERR to display)
+ ; #;   options:
+ ; #;     L - Load saved routine into 'array' parameter
+ ; #;     C - Compile
+ ; #;     D - Delete source
+ ; #;     S - Save
+ ; #;     B - create Backup copy when saving MAC,INC routines
+ ; #;     M - generate routine map (INTERNAL OPTION ONLY)
+ ; #;     I - Bypass <PROTECT> errors (INTERNAL OPTION ONLY)
+ ; #;   langmode - language mode, 0-9 (optional)
+ ; #;   filedate - datestamp to be used (optional)
+ ; #;   nsp - desired namespace (optional)
+ ; #; return:
+ ; #;   1 for success; 0 for failure if any of the specified options do not succeed
+ ; #;     The return value also concatenates the status of each specified option.
+ ; #;     The format of the return value is: 0/1 ^ , status1, status2, status3...
+ROUTINE(rou,array,err,options,langmode,filedate,nsp)
+ ;
+ ; ...
+ ; #; This function syntax checks INT source code
+ ; #;   src - source (INT) code;
+ ; #;         either a single line stored in a variable, or
+ ; #;         an array where: array(0)=#lines, array(1-n)=source
+ ; #;   .err - errors detected ($LIST format, call $$FMTERR to display)
+ ; #;   langmode - language mode, 0-9 (optional)
+ ; #; return:
+ ; #;   1 for success; 0 for failure (syntax errors found)
+CHECK(src,err,langmode) ;
+ ;
+ ; ...
+ ; #; Get save date/time
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine to fetch date for
+ ; #;   fmt - $ZDateTime format of date/time returned (0-12, optional);
+ ; #;          0 58142,34718 [default]
+ ; #;          1 03/09/2000 09:37:35
+ ; #;          2 09 Mar 2000 09:37:35
+ ; #;          3 2000-03-09 09:37:35
+ ; #;          4 09/03/2000 09:37:35
+ ; #;          5 Mar 9, 2000 09:37:35
+ ; #;          6 Mar 9 2000 09:37:35
+ ; #;          7 Mar 09 2000 09:37:35
+ ; #;          8 20000309 09:37:35
+ ; #;          9 March 9, 2000 09:37:35
+ ; #;          10 4 09:37:35
+ ; #;          11 Thu 09:37:35
+ ; #;          12 Thursday 09:37:35
+ ; #;   nsp - namespace (optional)
+ ; #; return: routine save date/time
+DATE(rou,fmt,nsp)
+ ;
+ ; ...
+ ; #; Delete a routine
+ ; #; parameters:
+ ; #;   rou - name.ext[.ver] of the routine to delete;
+ ; #;         name.* will delete all types of routine code
+ ; #;   nsp - namespace (optional)
+ ; #; return: none
+DEL(rou,nsp)
+ ; ...
+ ; #; Determine whether routine exists
+ ; #; parameters:
+ ; #;   rou - name.ext[.ver] of the routine to fetch language mode
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: 0/1
+EXIST(rou,nsp)
+ ; ...
+ ; #; Return language mode
+ ; #; parameters:
+ ; #;   rou - name.ext[.ver] of the routine to fetch language mode
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: 0 = Cache ObjectScript
+ ; #;         1 = DSM-11
+ ; #;         2 = DTM
+ ; #;         3 = Ipsum
+ ; #;         4 = Cobra
+ ; #;         5 = DSM-VMS
+ ; #;         6 = DSM-J
+ ; #;         7 = DTM-J
+ ; #;         8 = MSM
+ ; #;         9 = Cache Basic
+LANG(rou,nsp)
+ ; ...
+ ; #; Set language mode
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine to set language mode
+ ; #;   lang - language mode
+ ; #; return: 1/0 (success/fail)
+LANGSET(rou,lang)
+ ; ...
+ ; #; Get # of routine lines
+ ; #; parameters:
+ ; #;   rou - name.ext[.ver] of the routine to fetch language mode
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: # of lines
+LENGTH(rou,nsp)
+ ; ...
+ ; #; Get a single routine line
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine
+ ; #;   lnum - number of line to fetch
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: routine line
+LINE(rou,lnum,nsp)
+ ; ...
+ ; #; Set a routine line
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine
+ ; #;   lnum - number of line to fetch
+ ; #;   line - line to set
+ ; #; return: 1/0 (sucess/failure)
+LINESET(rou,lnum,line)
+ ; ...
+ ; #; Get a bunch of routine names and, optionally, routine info
+ ; #; parameters:
+ ; #;   mask - routine wildcard.extension selection mask
+ ; #;          valid extensions:
+ ; #;              SRC = MAC/INT,INC source code (default)
+ ; #;              COS = MAC/INT source code
+ ; #;              BAS = BASIC source code
+ ; #;              MAC = MACRO source code
+ ; #;              INT = INTERMEDIATE source code
+ ; #;              INC = INCLUDE source code
+ ; #;              OBJ = OBJECT code
+ ; #;              * = ALL code
+ ; #;          (e.g. A*.INT;B*.MAC;'C*;D*.*;E*.COS;F*.SRC)
+ ; #;   size - # of routines to fetch
+ ; #;   detail - return detailed data in data buffer (0/1)
+ ; #;   .data - routine information ($LIST format)
+ ; #;           if detail=0: data = $LIST(routine1.ext,routine2.ext,...)
+ ; #;           if detail=1: data = $LIST($LIST(routine1.ext,date,size,lang),...)
+ ; #;   .ctx - context information for subsequent call to $$LIST,
+ ; #;           (i.e. set ctx=0 for first call, ctx=1 for subsequent calls)
+ ; #;   nsp - namespace (optional)
+ ; #; return: 1 if more routines can be fetched; 0 if no more routines
+LIST(mask,size,detail,data,ctx,nsp)
+ ; ...
+ ; #; Lock a routine
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine to lock
+ ; #;   timeout - lock timeout, optional (default=2 seconds)
+ ; #; return: lock status (1 - locked; 0 - not locked)
+LOCK(rou,timeout)
+ ; ...
+ ; #; Unlock a routine
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine to lock
+ ; #; return: none
+UNLOCK(rou)
+ ; ...
+ ; #; Get next routine (i.e. $Order)
+ ; #; parameters:
+ ; #;   from - starting point
+ ; #;           (i.e. "" for first call, rtn.ext for subsequent calls)
+ ; #;   nsp - namespace (optional)
+ ; #; return: next routine.exe[.ver]; "" if no more routines
+NEXT(from,nsp)
+ ; ...
+ ; #; Get routine size
+ ; #; parameters:
+ ; #;   rou - name.ext[.ver] of the routine to fetch size (version is optional)
+ ; #;   nsp - namespace to check (optional)
+ ; #; routine = routine size (# characters)
+SIZE(rou,nsp)
+ ; ...
+ ; #; Get the maximum # of versions to keep (backups + master)
+ ; #; parameters:
+ ; #;   type - routine type (MAC,INC,BAS,etc)
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: max # versions
+VERMAX(type,nsp)
+ ; ...
+ ; #; Set the maximum # of versions to keep (backups + master)
+ ; #; parameters:
+ ; #;   type - MAC or INC
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: none
+VERMAXSET(type,max,nsp)
+ ; ...
+ ; #; Get a backup version # from a relative version #
+ ; #; parameters:
+ ; #;   rou - name.ext[.ver] of the routine to fetch language mode (version is optional)
+ ; #;         The version # can be a relative #.  For example, routine.MAC.-1 will
+ ; #;         return the most recent backup version #.
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: version #
+VERSION(rou,nsp)
+ ; ...
+ ; #; Get the first (oldest) backup version #
+ ; #; parameters:
+ ; #;   rou - name.ext of the routine to fetch language mode
+ ; #;   nsp - namespace to check (optional)
+ ; #; return: oldest backup version #
+VERSION1(rou,nsp)
+ ; ...
+ ; #; Format an error list:
+ ; #; This function will format an error for display by converting it
+ ; #; from $LIST($LIST) format to either a string, delimited by $c(13,10),
+ ; #; or a local array to be passed back in the 'out' parameter.  If 'out'
+ ; #; is defined it populates the array, otherwise it creates a string
+ ; #; which is passed back as the return value.
+ ; #; parameters:
+ ; #;   e - $LIST($LIST) errors
+ ; #;   .src - source code array, if this is defined it will show the line
+ ; #;          of source code where the error occurred.
+ ; #;   .out - return detailed data in out() array instead of the function
+ ; #;          return value
+ ; #; return: error text, if .out parameter is undefined
+FMTERR(e,src,out)
+ Q
+ /*
+ Set rtn=$$ParseRoutineHeader^%R(rtn,.type) Set:type="" type="INT"
+ Set:m["." m=$$ParseRoutineName^%R(m,.e),e=$s(e="*":"",e="SRC":".INC.MAC.INT.BAS",e="":"",1:"."_e)
+ If $e(ROU)="%" && ($e($zu(5),1,2)'="^^") && ('$$CheckPercentRoutineChange^%R(ROU,EXT))
+ */

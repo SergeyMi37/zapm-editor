@@ -1,0 +1,114 @@
+ROUTINE %ZAPM.bs.BSChMGW
+%mgw3 ;(CM) Cache WebLink Application Launch Routine ; 10:51   23.01.2001
+ ; Version 4.20.491
+ ;
+ ; +--------------------------------------------------------+
+ ; | Copyright 1986-1999 by InterSystems Corporation,       |
+ ; | Cambridge, Massachusetts, U.S.A.                       |
+ ; | All rights reserved.                                   |
+ ; |                                                        |
+ ; | Confidential, unpublished property of InterSystems.    |
+ ; |                                                        |
+ ; | This media contains an authorized copy or copies       |
+ ; | of material copyrighted by InterSystems and is the     |
+ ; | confidential, unpublished property of InterSystems.    |
+ ; | This copyright notice and any other copyright notices  |
+ ; | included in machine readable copies must be reproduced |
+ ; | on all authorized copies.                              |
+ ; +--------------------------------------------------------+
+ ;
+A0 ; *** Do not edit this routine ***
+ 
+ ;
+ ; Copy this routine to %ZMGW2 (or %MGW2) and edit that copy.
+ ; User's of Cache 3.x should launch their application code
+ ; from %ZMGW2.  This routine will be protected when Cache is
+ ; upgraded.
+ ;
+HTML ; Process incoming HTML form data
+ ;
+ ;--------------------------------------------------------------------------------------------
+ ;  Эти строки вставлены Михайленко С.В. для подключения комплекса %BS-Portal
+ I $G(%KEY("BSG"))'="" D BSG^%ZAPM.bs.BSCh0(%KEY("BSG")) Q  //новый вызов
+ I $D(%KEY("BSROU")) D RUN^%ZAPM.bs.BSCh0 Q                 //старый вызов
+ ;I $G(%KEY("UZN"))'="" I $$ZU^%ZAPM.bs.BSF4(%KEY("UZN")) D ^dispatcher Q  //это приблуда А.Миренбурга
+ ;--------------------------------------------------------------------------------------------    
+ D TEST
+ Q
+ ;
+JAVA ; Process in-form Cache/M Method (Invoked by Java Applet)
+ ; Receive request in %REQUEST
+ ;    Associated parameters in %REQUEST(1->n)
+ ;
+ ; Send each line of response as sendline^%mgwj(<Data>)
+ ;    Finally, quit from this code module
+ ;
+ D TESTJ
+ Q
+ ;
+TIMEOUT ; General (default) timeout procedure for private sessions
+ W "ВАШЕ ВРЕМЯ ИСТЕКЛО...<BR>!!!"
+ ; This procedure won't be called if the application elects
+ ; to deal with this event.
+ Q
+ ;
+TEST ; Simple test page
+ N CRLF,KEY,SYSNAME
+ S CRLF=$C(13,10)
+ ;
+ ;W "HTTP/1.0 200 OK",CRLF
+ ;W "Content-type: text/html",CRLF
+ ;W "Set-Cookie: cookie_name=cookie_value; path=/;",CRLF
+ ;W "Window-target: main_window",CRLF
+ ;W CRLF
+ ;
+ S SYSNAME="Cach&eacute; WebLink"
+ ;
+ W "<HTML>",CRLF
+ W "<HEAD><TITLE>",SYSNAME," Test Page</TITLE></HEAD>",CRLF
+ W "<BODY>",CRLF
+ W "<H2>",SYSNAME," Test Page</H2>",CRLF
+ W "<HR><B> You are connected to the Server</B>",CRLF
+ D flush^%mgw
+ W "<P>Server Job Number <B>",$J,"</B> on Server <B>",$G(%KEY("MGWLPN")),"</B>, TCP Port: <B>",$G(%ZCS("PORT")),"</B>",CRLF
+ W "<BR>Form returned by routine <B>",$ZN,"</B>",CRLF
+ W "<BR>User-defined variables passed to this routine in the"
+ I '$G(%ZCS("GLO")) W " local array: <B>%KEY</B>",CRLF
+ I $G(%ZCS("GLO")) W " global: <B>^MGW(""%KEY"",$J,</B>",CRLF
+ W "<HR>",CRLF
+ W "<TABLE BORDER>",CRLF
+ W "<CAPTION><B><I>User-defined variables passed to your Server</I></B></CAPTION>",CRLF
+ W "<TR><TH>Variable Name</TH><TH>Value</TH></TR>",CRLF
+ D flush^%mgw
+ S KEY=""
+ I '$G(%ZCS("GLO")) F  S KEY=$O(%KEY(KEY)) Q:KEY=""  W "<TR><TD>",KEY,"</TD><TD>",$G(%KEY(KEY)),"</TD></TR>",CRLF D flush^%mgw
+ I $G(%ZCS("GLO")) F  S KEY=$O(^MGW("%KEY",$J,KEY)) Q:KEY=""  W "<TR><TD>",KEY,"</TD><TD>",$G(^MGW("%KEY",$J,KEY)),"</TD></TR>",CRLF D flush^%mgw
+ W "</TABLE>",CRLF
+ W "<HR>",CRLF
+ W "<TABLE BORDER>",CRLF
+ W "<CAPTION><B><I>CGI Environment variables passed to your Server</I></B></CAPTION>",CRLF
+ W "<TR><TH>Variable Name</TH><TH>Value</TH></TR>",CRLF
+ D flush^%mgw
+ S KEY=""  F  S KEY=$O(%CGIEVAR(KEY)) Q:KEY=""  W "<TR><TD>",KEY,"</TD><TD>",%CGIEVAR(KEY) D CGI W "</TD></TR>",CRLF D flush^%mgw
+ W "</TABLE>",CRLF
+ W "<HR>",CRLF
+ W "</BODY>",CRLF
+ W "</HTML>",CRLF
+ Q
+ ;
+CGI ; Additional CGI Environment Variable content
+ N I
+ F I=1:1 Q:'$D(%CGIEVAR(KEY,I))  W "<BR>",$G(%CGIEVAR(KEY,I))
+ Q
+ ;
+TESTJ ; Simple response to client-side Java Applet
+ D sendline^%mgwj("This is the response to '"_%REQUEST_"' from the Cache System")
+ Q
+ ;
+VERS ; Return the version number
+ D VERS^%mgw
+ Q
+ ;
+VER() ; Return the version for this module
+ Q "4.20.491"
+ ;

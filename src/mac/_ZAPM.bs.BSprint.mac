@@ -1,0 +1,63 @@
+ROUTINE %ZAPM.bs.BSprint
+%BSprint(UStro) ;РЕЗИДЕНТ ПРИНТ-СЕРВЕР ; 15:25 15-JUL-98
+0 D S("A",1),S("D",0) D KI D S("S",$S),S("T",$$h^%ZAPM.bs.BS3()),S("E","")
+R F  H $$PAR(4) Q:$$U("C")'=""
+ I $$U("C")="D" G EXIT
+ I $$U("C")="S" C:$D(US) US G EEE
+ I $$U("C")["u" D S("O",$$U("C")),S("C","") G R
+ I $$U("C")="!" G R:$$PRN D KI G WAIT
+ I $$U("C")="?" D S("C",""),S("O","?") G R
+ I $$U("C")="P" G PRINT:$$U("B")'="" D E("ЗАПРОСА НЕТ") G R
+ I $$U("C")="R" G PRINT:$$U("B")'="" D E("ЗАПРОСА НЕТ") G R
+ G R
+E(E) D S("E",E) Q
+ER I $ZE["PROT>" D E("БУФЕР НЕ ДОСТУПЕН")
+ D E($ZE) S $ZT=$G(%zT) D BEL G WAIT
+BEL Q  Q
+PRINT ;САМ ПРОЦЕСС
+ S %zT=$ZT,$ZT="ER^%ZAPM.bs.BSprint"
+ D S("C",""),S("D",1) D CTRL S BU=$$U("B") I BU="" D E("НЕТ БУФЕРА") G WAIT
+ S Z=$$U("Z"),BU="^["""_$P(Z,",")_""","""_$P(Z,",",2)_"""]"_$P(BU,"^",2,99)
+ I '$D(@BU) D E("БУФЕР ПУСТОЙ") G WAIT
+ D L^%ZAPM.bs.BS3(BU,1) I 'LOC D E("БУФЕР ЛОКИРОВАН") G WAIT
+REST S PRO=$O(@BU@(""),-1) I 'PRO D E("НЕТ СТРОК") G WAIT
+ S (EXE,EX)=1 I $$U("EXE") S (EXE,EX)=$$U("EXE")
+ ;
+PRI S i="",qz="" F  S i=$O(@BU@(i)) Q:i=""  D  Q:qz'=""  I '(i#3) S VST=(EX-1)*PRO+i D S("P",(100-(VST*100\(PRO*EXE)))),S("N",VST)
+ .I $$U("RP")=2&($E($G(@BU@(i)),1,5)="'~'~'") S i=i+1 W # Q
+ .U US W !,$J("",$$U("OT")),$G(@BU@(i)) I $$U("C")'="" D
+ ..I $$U("C")="?" D S("C",""),S("O","?") Q
+ ..I $$U("C")="D" D S("C","") S qz="D" Q
+ ..I $$U("C")="S" D S("C","") S qz="S" Q
+ ..I $$U("C")="R" D S("C","") S qz="R" Q
+ ..I $$U("C")="I" D S("C","") S qz="I" Q
+ U US W !
+ I qz="",EX>1 S EX=EX-1 D S("EX",(EX_" из "_EXE)) W ! G PRI
+ W $$SBROS^%ZAPM.bs.BSJPRN(US) I qz="I" D S("P",""),S("N",""),S("D",2) G R
+ I qz="R" D S("P",""),S("N","") G REST
+ C US I "S"[qz G EEE
+ I qz="D" G EXIT
+EEE D U^%ZAPM.bs.BS3(BU),S("D",0) D KI D S("S",$S),S("E","") ;ЗАКОНЧИЛИ ПЕЧАТАТЬ
+ G WAIT
+CTRL N Z ;Инициализация принтера
+ U US I $$PR(15)'="" W $C($$PR(15)) ;СБРОС
+ F Z="US","UL","UK" I $$U(Z)'="" W $C($$U(Z))
+ Q
+WAIT D KI ;ЗАКОНЧИЛИ
+ I $D(BU) D U^%ZAPM.bs.BS3(BU)
+ I $$PAR(5)'="Y" D S("D",0) G R
+ G EXIT
+PAR(N) ;ПАРАМЕТРЫ СЕРВЕРА
+ Q $P($G(^%ZAPM.bs.BSETUP("PARPRN",N,2)),"@",15)
+PRN() S US=$$PR(17) I 'US D S("O",0),E("УСТ.ПЕЧ "_US_"?") Q 0
+ O US:$$MAX^%ZAPM.bs.BSJPRN(US):1 E  D S("O",1),E("УСТ.ПЕЧ ЗАНЯТО") Q 0
+ D S("O","OK") Q 1
+PR(P) Q $G(@UStro@((P_",2")))
+KI N I F I="O","T","S","EX","EXE","N","P","Z","B","US","UL","UK","OT","RP" D K(I)
+  Q
+EXIT N I D KI F I="C","A","D" D K(I)
+ Q
+K(U) K @UStro@(U) Q
+S(U,S) I S="" K @UStro@(U) Q
+ S @UStro@(U)=S Q
+U(U) Q $G(@UStro@(U))

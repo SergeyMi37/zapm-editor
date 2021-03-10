@@ -1,0 +1,28 @@
+ROUTINE %ZAPM.bs.BSddr0
+%BSddr0 ;ввод инф. в буфер ПО  (А.Тимофеев) ; 10:26   14.03.99
+ 
+EXPORT ;считывание DOS-ФАЙЛА
+ K %BS("Tmp","DosFiles")
+ N %zT,STOP,%FN,%DEV
+REST D DOSREAD^%ZAPM.bs.BSS1 I '$D(%FN) Q
+ I $D(%BS("Tmp","DosFiles")) S XN="" F  S XN=$O(%BS("Tmp","DosFiles",XN)) G:XN="" XNE D XNOPN I $D(%FN) D XN
+XN U 0 S %I=$I,%zT=$ZT,$ZT="ER^%ZAPM.bs.BSddr0" S FR=%DEV U %DEV R %IN   ;G:$ZC'=0 CLO^%ZAPM.bs.BSBL1
+RES ;D SCAN^%ZAPM.bs.BSF11(%FN)
+ I %IN["---" K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u"_%BS(15)) G I
+ U 0 D ErrMsg^%ZAPM.bs.BSXfun("У ФАЙЛА "_%FN_" Не тот ФОРМАТ !!!") D CLO^%ZAPM.bs.BSBL1 S Ipr1=1 G Wpro
+I U 0 S ls="ВВОД ИНФОРМАЦИИ..." D WAITS^%ZAPM.bs.BSF2 S (OBR,STOP,EF)="",s=1,s1=0
+ D  Q:STOP=1  F s=2:1 U %DEV R %IN D  Q:STOP=1  Q:$ZC'=0
+ .S INF=$E(%IN,1) I INF="" S STOP=1 Q
+ .S PREK=0,s1=s1+1 D PR I PREK=0 S ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u"_%BS(15),s1)=%IN,%IN1=%IN Q
+ .S s1=s1-1,%IN1=%IN1_%IN2 Q
+QQ S $ZT=$G(%zT) U 0 D OkMsg^%ZAPM.bs.BSXfun("ФАЙЛ "_%FN_" СЧИТАН",2) D CLO^%ZAPM.bs.BSBL1 S Ipr1=0 D Wpro G ZAP^%ZAPM.bs.BSDDR2
+ 
+ER U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G ERE
+ I $ZE["<ENDOFFILE" G QQ
+ I $ZE["<MXSTR" S ls=" Слишком длинная строка считана " G ERE
+ S ls=$ZE
+ERE S $ZT=$G(%zT) D O^%ZAPM.bs.BSF7,CLO^%ZAPM.bs.BSBL1 K:$E($G(BST),1)="@" @(BSR_"(BST)") G END^%ZAPM.bs.BSF
+ 
+XNOPN N DOS K %DEV,%FN S DOS=$$OpenDOS^%ZAPM.bs.BSXdos() Q:DOS<0
+ Q:$$Open^%ZAPM.bs.BSXdos(XN,"R")<0  S %DEV=DOS,%FN=XN Q
+XNE K %BS("Tmp","DosFiles") Q

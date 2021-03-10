@@ -1,0 +1,178 @@
+ROUTINE %ZAPM.bs.BSDDR3
+%BSDDR3 ;ОБРАБОТКА БПО;;[ 27/09/93 17:55 ] ; 10:03   28.11.1999
+DDR ;ПОСЛЕДОВАТЕЛЬНАЯ ОБРАБОТКА БПО
+ ;S %zT=$ZT,$ZT="ERR"
+ ;I $G(ONE)="" S ONE=0 
+ S %I=$I,B=1 ;D TIP+1^%ZAPM.bs.BST ;U 0
+ S bufO=$$GETkey^%ZAPM.bs.BSDDR()
+ ;D ErrMsg^%ZAPM.bs.BSXfun("Буфер "_BP_" не Доступен")
+ S OBR=1,PO=1 F  S PO=$O(@bufO@(PO)) Q:PO=""  D
+ .S Kp="" F  S Kp=$O(@bufO@(PO,Kp)) Q:Kp=""  S STOP="" D
+ ..I $G(@bufO@(PO,Kp,"2,1"))'=1 Q
+ ..S NF=PO S ls=" Заносится форма "_NF S (PNK,PNK2,NIK,PKL,KOr)=""
+ ..D WAITS^%ZAPM.bs.BSF2,OBR01^%ZAPM.bs.BSDDR2,IF,BL1,DDR1 S (PNK,PNK2,NIK,PKL,KOr)=""
+ ..I mtBD'="" S ls="По личной части" D WAITS^%ZAPM.bs.BSF2 D OBR011^%ZAPM.bs.BSDDR2,IF1,BL1,DDR1
+ ..D DDR2,^%ZAPM.bs.BSDDR1 K ^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P)),mtBD
+ ..K t,t1,iN,pG,STOP,KON,PKL,PPI,NIK,PIN,PNK,PNK1,PNK2,PNK3,IKE,KPL1,pz,pzi,zi,zi1,%NAmN
+ D:$D(BSD) U^%ZAPM.bs.BS3(BSD) D OkMsg^%ZAPM.bs.BSXfun("ОТРАБОТАНО !",1) Q
+ 
+IF ;СОЗДАНИЕ ИНВ.ФАЙЛА
+ 
+ I $D(^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST)) Q
+ 
+IF1 K ^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15))
+ S ls=" СОЗДАНИЕ ИНВЕРТОРА " D WAITS^%ZAPM.bs.BSF2 S i="",i11=0,i12=0
+ F  S i=$O(@(BSR_"(BST,i)")) Q:'i  X $G(WA) D
+ .S j="" F  S j=$O(@(BSR_"(BST,i,j)")) Q:'j  D
+ ..S BOS=@(BSR_"(BST,i,j)"),BOS1=$P(BOS,"@",18) D SinK
+ ..I BOS1'="" S BOS2=$P(BOS1,"#",2) I BOS2'="" D IBD S i11=i11+1 D
+ ...I $D(PG) I BOS2=PG S i12=i11-1,^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i11,PG)=$P(BOS,"@",15)_"#"_i12
+ ...S ^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i11)=BOS2_"#"_$S(IBD'="":IBD,IBD="":i_","_j)_"#"_$G(SinK)_"#"_$P(BOS,"@",9)
+e Q
+IBD ;ЕСЛИ СИМВОЛЬНОЕ ИМЯ ХРАНЕНИЯ В БД
+ S IBD="",BOS11=$P(BOS1,"#") I BOS11'="" S IBD=BOS11
+ Q
+ 
+SinK ;ВЫБОР ФОРМУЛЫ СИНТ. КОНТР.
+ I $P(BOS,"@",16)="" S SinK="" Q
+ I '$P(BOS,"@",16) S SinK=$G(@BSR@(BST,"RTR",i,j)) Q
+ S SinK=$G(@(BSR_"(BST,""RTR"","_$P(BOS,"@",16)_")")) Q
+ 
+BL1 ;ОБРАБОТКА ДОКУМЕНТА БПО
+ ;S ls=" ЗАПИСЬ В БУФЕР " D WAITS^%ZAPM.bs.BSF2
+ K ^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P))
+ S t=0 F  S t=$O(@bufO@(PO,Kp,t)) Q:'t  S ^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,+t)=@bufO@(PO,Kp,t) ;X $G(WA)
+ D BL0
+ S BSD=@(BSR_"(BST,""KEY"")"),IMQ1=BSR_","_BST D L^%ZAPM.bs.BS3(BSD)
+ 
+ZS ;ФОРМИРОВАНИЕ КЛЮЧЕЙ
+ K %KEYS
+ S TR=$C(220,221,222,223,224,225,226,227,228,229,230,231)
+ S (IKE,STOP)="",l="" F l=0:1:l1 I $G(IK(l))'="" S i0=IK(l) D  Q:STOP=1
+ .D FUN^%ZAPM.bs.BSFT G:'YES SKEY^%ZAPM.bs.BSDDR3 D:i0["#" PKL^%ZAPM.bs.BSDDR3 S IKE=$TR(i0,"}",")") D
+ ..S fs="" F  Q:IKE'["{"  S IKE=$P(IKE,"{")_TR_$P(IKE,"{",2,999)
+ .S IKE=$TR(IKE,TR,"$$BB^%ZAPM.bs.BSDDR(") X "S %KEYS(l)="_IKE S li=%KEYS(l),key=l
+ .D:l=NIK KPL1 D RKEY Q
+  
+QIF ;ПРЕРЫВАНИЕ ОБРАБОТКИ ПО ОШИБКЕ
+ S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSDDR3"
+ I STOP=1 D   S $ZT=$G(%zT),d=li Q
+ .K ^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P))
+ .D L^%ZAPM.bs.BS3(bufO)
+ .S @bufO@(PO)=" ЕСТЬ ОШИБКИ "
+ .S @bufO@(PO,Kp,"2,1")=2,ls="#"_Kp_" ОШИБКА КЛЮЧА " D U^%ZAPM.bs.BS3(bufO)
+ .D O^%ZAPM.bs.BSF7 K ^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp) Q
+ S %KEYS=l1 D %NAm^%ZAPM.bs.BST1
+ S STOP=0 D IF^%ZAPM.bs.BSDDR1 I STOP=1 G QIF
+ I $D(@(BSD_$G(%KEYS(0))))[0 D  S $ZT=$G(%zT),d=li
+ .S:$G(@(BSD))'="" @(BSD_$G(%KEYS(0)))=@(BSD)
+ .S:$G(@(BSD))="" @(BSD_$G(%KEYS(0)))="BSD - MSW@"_BSR_"@"_BST,@(BSD)=@(BSD_$G(%KEYS(0)))
+ .D CP^%ZAPM.bs.BSGCH($NA(@(BSD_$G(%KEYS(0)))),$P(%BS(22),",",3))
+ .S Tmp=$P(BSD,"]")_"]BSdirddp",@Tmp@($NA(@(BSD_$G(%KEYS(0)))))=""
+ S $ZT=$G(%zT),d=li Q
+ 
+BL0 ;ПРЕДВАРИТЕЛЬНАЯ ОБРАБОТКА БПО
+ ;S ls=" ПРЕДВАРИТЕЛЬНАЯ ОБРАБОТКА " D WAITS^%ZAPM.bs.BSF2
+ S %I=$I,(i,KON,PK1)="",t=1
+ F  S t=$O(^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t)) Q:'t  S DAT=^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t) S:DAT["---=" DAT=$P(DAT,"---=",2) D  X $G(WA)
+ .S (POK,IM,t1)="" F t1=2:1 S POK=$P(DAT,"=",t1) Q:POK["+++"!(POK="")  S IM=$E(POK,1,3),PK=$E(POK,4,$L(POK)) D BL01
+ Q
+BL01 S (STOP,i)="" F  S i=$O(^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i)) Q:'i  S DATT=^(i),DAT1=$P(DATT,"#") I DAT1=IM S:IM=KOR KOr=PK S STOP=1 Q
+ D:$G(IGN)[IM
+ .D REDIM1 S t1=t1-1
+ I STOP="" S ls="НЕОПОЗНАННОЕ ИМЯ" D O^%ZAPM.bs.BSF7,REDIM G:STOP="" BL01
+ Q
+ 
+ ;БЛОК ПРОВЕРОК КЛЮЧЕЙ
+ 
+RKEY ;ПРОВЕРКА КЛЮЧЕЙ
+ I l=0 D:%KEYS(0)'="" SK0^%ZAPM.bs.BSDDR1 S:YES=1 %KEYS(0)=li S:YES=0 STOP=1 Q
+ D SK1^%ZAPM.bs.BSDDR1 I YES=1 S %KEYS(l)=li Q
+ S STOP=1
+ Q
+PKL ;ПОВТОРЯЮЩИЕСЯ КЛЮЧИ
+ S IK(l)=$E(IK(l),1,$L(IK(l))-1),i0=IK(l),NIK=l,PKL=$P($P(IK(l),"{",2),"}",1),PKL=$E(PKL,2,$L(PKL)-1)
+ Q
+KPL1 S PNK=PNK_","_%KEYS(l) Q
+ 
+DDR1 ;ЗАПИСЬ В БУФЕР
+ Q:STOP=1  ;S ls=" ЗАНЕСЕНИЕ В БД " D WAITS^%ZAPM.bs.BSF2
+ S %I=$I,(i,KON,PK1)="",t=1 F  S t=$O(^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t)) Q:'t  D
+ .S DAT=^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t) S:DAT["---=" DAT=$P(DAT,"---=",2) D  ;X $G(WA)
+ ..S (POK,IM,PK)="" F t1=2:1 S POK=$P(DAT,"=",t1) Q:POK["+++"!(POK="")  D
+ ...S IM=$E(POK,1,3),PK=$E(POK,4,$L(POK)),PNK2=PNK S PIN=""     ;D:PK["@" RED S PIN=""
+ ...D:IM=PKL PPI D:PIN=1 ZS S:PIN=1 i="" D:$G(PG)'="" PG D:$G(PG)="" ZS1
+ Q
+ 
+PPI ;ПРОВЕРКА ПОВТОРЯЮЩИХСЯ ИНДЕКСОВ
+ I IM'=PKL S PIN=1 Q
+ I PNK2'[PK S PIN=1 Q
+ S PIN=1,PNK3="" F PPI=2:1 S PNK3=$P(PNK2,",",PPI) Q:PNK3=""  S:PNK3[PK&($L(PNK3)=$L(PK)) PIN=0
+ Q
+ 
+PG ;ОПРЕДЕЛЕНИЕ ПОВТОРЯЮЩИХСЯ ГРУПП
+ I IM'=PG G ZS2
+ S (pG,i)="" F  S i=$O(^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i)) Q:'i  D  Q:pG=1
+ .I $G(^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i,PG))'="" S DATT=^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i,PG),DAT1=$P(DATT,"#"),DAT2=$P(DATT,"#",2) I DAT1=PK S i=DAT2 D ZS2 S pG=1 Q
+ I pG="" S ls="#"_Kp_" НЕОПОЗНАННАЯ ГРУППА "_IM_PK D O^%ZAPM.bs.BSF7,RED D:YES=1 PG
+ Q
+ 
+ZS1 ;ЗАПИСЬ БЕЗ ПОВТОРЯЮЩИХСЯ ГРУПП
+ S STOP="" F  S i=$O(^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,i)) Q:'i  S DATT=^(i),DAT1=$P(DATT,"#"),DAT2=$P(DATT,"#",2) I DAT1=IM D  S STOP=1
+ .I PK["@" S ls="СИМВОЛ @ ЗАПРЕЩЕН" D O^%ZAPM.bs.BSF7 D RED
+ .S SinK="" D REDsin I SinK=2 Q
+ .I $P(DATT,"#",4)=1 Q
+ .S pzi=$P(%NAm,"(",2),^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P),pzi,DAT2)=PK
+ I STOP="" S ls="#"_Kp_" НЕОПОЗНАННОЕ ИМЯ" D O^%ZAPM.bs.BSF7,REDIM G:STOP="" ZS1
+ Q
+ 
+ZS2 ;ЗАПИСЬ ЕСЛИ ПОВТОРЯЮЩИЕСЯ ГРУППЫ
+ S (STOP,KON,RED)="",iN=i F  S iN=$O(^%ZAPM.bs.BSbufB("p"_$G(%BS(3),$P)_"u"_%BS(15),BST,iN)) Q:'iN  D  Q:KON
+ .S DATT=^(iN),DAT1=$P(DATT,"#"),DAT2=$P(DATT,"#",2) I DAT1=IM D  S STOP=1
+ ..I PK["@" S ls="СИМВОЛ @ ЗАПРЕЩЕН" D O^%ZAPM.bs.BSF7,RED
+ ..S SinK="" D REDsin I SinK=2 S KON=1 Q
+ ..I $P(DATT,"#",4)=1 Q
+ ..S pzi=$P(%NAm,"(",2) S ^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P),pzi,DAT2)=PK,KON=1
+ I STOP="" S ls="НЕОПОЗНАННОЕ ИМЯ" D O^%ZAPM.bs.BSF7,REDIM G:STOP="" PG
+ Q
+ 
+ ;БЛОК ПРОВЕРОК ИМЕН И ПОКАЗАТЕЛЕЙ
+ 
+RED ;РЕДАКТОР ПОКАЗАТЕЛЯ (ЕСЛИ "@")
+ S li=IM_PK,ls="#"_Kp_" ОШИБКА В"_DAT D LE^%ZAPM.bs.BSTT I li["@"!($L(li)<4) G RED
+ S PK=$P(li,IM,2),POK=li,$P(DAT,"=",t1)=POK,^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t)=DAT Q
+ 
+REDsin ;ПРОВЕРКА НА СИНТАКСИС
+ I $P(DATT,"#",3)="" S SinK=1 Q
+ S YES=1,(d0,d)=PK K ls D  S:YES PK=$G(%0,PK)
+ .X $P(DATT,"#",3) S $ZT=$G(%zT) Q
+ I YES S SinK=1 Q
+ S ls="#"_Kp_" "_$G(ls,"СИНТАКСИЧЕСКАЯ ОШИБКА ") D O^%ZAPM.bs.BSF7
+ S li=PK,ls="#"_Kp_" ОШИБКА "_DAT D LE^%ZAPM.bs.BSTT I YES=1 S PK=li,POK=IM_PK,$P(DAT,"=",t1)=POK,^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t)=DAT,SinK="" G REDsin
+ S SinK=2 Q
+ 
+REDIM ;РЕДАКТОР ИМЕНИ
+ S li=IM,OS="",ls="#"_Kp_" ОШИБКА "_DAT D LE^%ZAPM.bs.BSTT I YES=1 D  S IM=li,POK=IM_OS_PK,$P(DAT,"=",t1)=POK,^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t)=DAT S:IM=PG RED=1 Q
+ .I $L(li)>3 S OS=$E(li,4,$L(li)),li=$E(li,1,3)
+REDIM1 S $P(DAT,"=",t1)="" S:$P(DAT,"==",2)'="" DAT=$P(DAT,"==")_"="_$P(DAT,"==",2) S ^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp,t)=DAT,STOP=1
+ Q
+ 
+DDR2 ;ЗАПИСЬ ИЗ БУФЕРА В БД
+ ;S %zT=$ZT,$ZT="ERR"
+ S zi="" F  S zi=$O(^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P),zi)) Q:zi=""  D
+ .S %NAmN=$P(%NAm,"(")_"("_zi,ls="#"_Kp_" Заносим "_%NAmN D L^%ZAPM.bs.BS3($P(%NAmN,"(")),WAITS^%ZAPM.bs.BSF2 D  D U^%ZAPM.bs.BS3($P(%NAmN,"("))
+ ..S tIm=$P($G(@($E(%NAmN,1,($L(%NAmN)-1))_")")),",",5,6),@($E(%NAmN,1,($L(%NAmN)-1))_")")=$$h^%ZAPM.bs.BS3()_","_$G(%BS(12))_",2"_tIm,zi1=""
+ ..F  S zi1=$O(^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P),zi,zi1)) Q:zi1=""  D
+ ...S @(%NAmN_$S(zi1'=+zi1:""""_zi1_"""",1:zi1)_")")=^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P),zi,zi1)
+ I $G(@bufO@(PO,Kp,"2,1"))'=2 D L^%ZAPM.bs.BS3(bufO) S @bufO@(PO,Kp,"2,1")=4 D U^%ZAPM.bs.BS3(bufO) K ^%ZAPM.bs.BSbufB("PU"_$G(%BS(3),$P),Kp)
+ D:$D(BSD) U^%ZAPM.bs.BS3(BSD)
+ S $ZT=$G(%zT),d=li Q
+ 
+SKEY ;
+ ;D ErrMsg^%ZAPM.bs.BSXfun(" "_bufO_" ")
+ Q
+ 
+ERR ;D ErrMsg^%ZAPM.bs.BSXfun($ZE_"ТЕКСТ ОШИБКИ") S $ZT=%zT,STOP=1 Q
+ I $ZE'["PROT" S ls="Прерывание оработки" S $ZT=$G(%zT),STOP=1 G QIF
+ S ls="Нельзя создать массив БД под ddp" D O^%ZAPM.bs.BSF7 X "I 0" S YES=0,$ZT=$G(%zT),STOP=1 G QIF
+ 

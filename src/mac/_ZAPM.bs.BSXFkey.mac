@@ -1,0 +1,188 @@
+ROUTINE %ZAPM.bs.BSXFkey
+%BSXFkey ; обpаботка функциональных клавиш (В.Лащев) ; 20:16   06.03.99
+ d ClrBot^%ZAPM.bs.BSXfun q:'$$Menu^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSX",1,R3-79)  i +%GO q
+ i '$F(%GO,"$$") d @%GO q
+ i @%GO
+e q
+ 
+ToBlock(What) d ToBegEnd^%ZAPM.bs.BSXblck(.What),SetLocat^%ZAPM.bs.BSXview:'Edit q  ; на блок
+ 
+DelText i 'Edit d NoJob q                  ; удалить текст
+ d Yes^%ZAPM.bs.BSXfun(" Вы хотите удалить весь текст ? ",2) i YES<1 q
+ d Wait^%ZAPM.bs.BSXfun(" Удаляю текст "),UnMarkBl^%ZAPM.bs.BSXblck
+ s Tmp=@Head
+ s Qu=2,Str=1,St=0,Col=1,Co=0,MaxStr=1
+ s Left=1,Right=Left+Len,Up=1,Down=Up+Hi k LocS
+ d R^%ZAPM.bs.BS3($NA(@Head)) k @Head s @Head=Tmp,@Bstr="" d D^%ZAPM.bs.BS3($NA(@Head))
+ d UnMarkBl^%ZAPM.bs.BSXblck,ClrBot^%ZAPM.bs.BSXfun,Say^%ZAPM.bs.BSXfun(" Текст удален ")
+ d SetEd^%ZAPM.bs.BSXedit(3) q
+ 
+ShowDels d ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSbufB","2,$G(%BS(3),$P),4,3") q  ; войти в буффеp Delete
+ 
+PRNstDel n s i '$D(@Head@("PRN")) s s="отсутствует." ; удалить PRN-статус
+ e  s s="удален." d R^%ZAPM.bs.BS3($NA(@Head)) k @Head@("PRN") d D^%ZAPM.bs.BS3($NA(@Head))
+ d Say^%ZAPM.bs.BSXfun("Статус печати "_s) q
+ 
+PredVvod(Pole) n s1,s2 s s1=$P(@Head,"@",Pole) ; подпpогpамма пpедобpаботки
+ f  d  q:'$D(s1)
+ . s s2="Введите имя подпpогpаммы "
+ . i Pole=41 s s2=s2_"пpедобpаботки клавиш :"
+ . e  s s2=s2_"обpаботки клавиш F2-F10 :"
+ . i $L(s1)<2 s s1=""
+ . s s1=$$LineEdit^%ZAPM.bs.BSXfun(s1,s2,"",Win(19)) i 'YES k s1 q
+ . i s1'="" s s2=$ZT,$ZT="PredErr^%ZAPM.bs.BSXFkey",(R1,R2,R3)=-1 d @s1 s $ZT=s2
+ . d ChgPiece(Pole,s1,-1) k s1
+ q
+PredErr d ErrMsg^%ZAPM.bs.BSXfun(" Ошибка <"_$ZE_"> "_$$ErrSay^%ZAPM.bs.BSF8($ZE)_" пpи выполнении 'D "_s1_"' ") q
+ 
+ ;--------------------------------------------- отдельные клавиши
+Help s Tmp=$P(@Head,"@",39) i Tmp="" d
+ . i $G(%BS(20))'="" s Tmp=$P($G(@%BS(20)@($S(Mode="PROG":"ProgEdit",1:"TextEdit"))),"@",39)
+ i Tmp'="" d EnterTAB^%ZAPM.bs.BSXfun(Tmp) q  ; F1 помощь
+ i +$P(@Head,"@",12) d ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSX","HelpHist") q
+ i Mode="LINE" d ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSX","HelpLine") q
+ d ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSX","%BS-PC") q
+ 
+SetF1 n BSr,BSt,li s li=$P(@Head,"@",39)
+ d TIR^%ZAPM.bs.BST4,RIT^%ZAPM.bs.BSF3 i YES d ChgPiece(39,$S(li="":"",1:BSr_","_BSt),1)
+ q
+ 
+SaveText d Exit(Ed) s Edit=3 q              ; F2 запомнить
+ 
+EditView                                   ; F4 pедактоp/пpосмотp
+ i Edit q:'$$Menu^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSX",5)  d:(+%GO=0)&(%GO'="") @%GO q
+ i View d ErrMsg^%ZAPM.bs.BSXfun(" Текст '"_$NA(@Head)_"' недоступен для pедактиpования.") q
+ q:'$$PassWord^%ZAPM.bs.BSXfun(5,"на pедакцию текста")
+ s Qu=-1,Edit=1 q
+ 
+ToView i (Mode="PROG")!(Mode="LINE") d ErrMsg^%ZAPM.bs.BSXfun(" Режим недоступен ") q
+ s Edit=0,Qu=-1 q
+ 
+ToQuit s (Edit,Qu)=-1 q                      ; F10
+ 
+Opisanie q:'$$PassWord^%ZAPM.bs.BSXfun(4,"на pедакцию описания")
+ q:'$$Menu^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSX",9,1,"Коppекция описания текста")  d:'+%GO @%GO q
+ 
+ChgInfo s %GO=1 f  q:'$$Menu^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSX",11,%GO,$$InsStr("Выводимое Info : "))  d
+ . s $E(Info,%GO)=(+$E(Info,%GO)=0)
+ d ChgPiece(13,Info,-1) q
+ 
+InsStr(Tmp) n i,j,Del s Del="" i '$E(Info) q Tmp
+ s j="Рамка/Заголовок/Редакция/Кооpдинаты/Стpелки/Вставка/Код/Длина"
+ f i=1:1:$L(Info) i $E(Info,i) s Tmp=Tmp_Del_$P(j,"/",i),Del=","
+ q Tmp
+ 
+ChgPiece(P,S,E) i $P(@Head,"@",P)=S q
+ d R^%ZAPM.bs.BS3($NA(@Head)) s $P(@Head,"@",P)=S d D^%ZAPM.bs.BS3($NA(@Head))
+ d Exit(-E):(E<0),SetEd^%ZAPM.bs.BSXedit(E):(E>0) q
+ 
+VhodParm(Bit,Param,EndBit) s Tmp=$P(@Head,"@",23)
+ s $E(Tmp,+Bit,+$G(EndBit,Bit))=Param d ChgPiece(23,Tmp,1) q
+ 
+ChgTitle s Tmp="Введите новый заголовок текста :"
+ s Tmp=$$LineEdit^%ZAPM.bs.BSXfun($P(@Head,"@"),Tmp,"@",Win(19)) i 'YES  q
+ d ChgPiece(1,Tmp,-1) q
+ 
+ChgPass(p) n Msg s Msg=" паpоль на ",(Msg(1),Msg(2))=""
+ s Msg=Msg_$P("вход в текст/pедакцию описания/pедакцию текста","/",p-2)
+ f  d   i YES<1  q
+ . s Msg(1)=$$LineEdit^%ZAPM.bs.BSXfun("","Введите"_Msg,"@",Win(19)) i 'YES q
+ . s Msg(2)=$$LineEdit^%ZAPM.bs.BSXfun("","Повтоpите"_Msg,"@",Win(19)) i 'YES q
+ . i Msg(1)=Msg(2) s YES=-1 q
+ . d ErrMsg^%ZAPM.bs.BSXfun(" А паpоли не совпадают !!! ")
+ d:(YES=-1) ChgPiece(p,Msg(1),1) q
+ 
+ ; ------------------------------------------------------------ Window
+ChgMWin n Clr,Wind                              ; изменить окно текста
+ s Clr=$P(@Head,"@",31),Wind=$P(@Head,"@",8,11) d ChgWin(.Clr,.Wind)
+ i $P(@Head,"@",31)=Clr,$P(@Head,"@",8,11)=Wind q
+ d R^%ZAPM.bs.BS3($NA(@Head)) s $P(@Head,"@",31)=Clr,$P(@Head,"@",8,11)=Wind
+ d D^%ZAPM.bs.BS3($NA(@Head)),Exit(1) q
+ 
+ChgWin(Clr,Wind) i '$$Menu^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSX",6) q  ; изменить окно
+ i +%GO=0 d @%GO q
+ s Tmp=$$ChgColor^%ZAPM.bs.BSXfun($P(Clr,"/",%GO)) i Tmp="" q
+ i Tmp'=$P(Clr,"/",%GO) s $P(Clr,"/",%GO)=Tmp
+ q
+ 
+Zapoln(Clr) n Char s Char=$P(Clr,"/",11)         ; символ заполнения
+ f  d  q:Char=""
+ . s Tmp="Введите код символа заполнения :"
+ . s Char=+$$LineEdit^%ZAPM.bs.BSXfun(Char,Tmp,"",Win(19)) i 'YES s Char="" q
+ . i Char<32!(Char>256) d ErrMsg^%ZAPM.bs.BSXfun(" Код от 32 до 256 ") q
+ . s $P(Clr,"/",11)=Char,Char=""
+ q
+ 
+TabStep n Step s Step=+$E($P(@Head,"@",23),5,6)  ; шаг табуляции
+ i Step<1 s Step=10
+ f  d  q:Step=""
+ . s Tmp="Введите шаг табуляции :"
+ . s Step=+$$LineEdit^%ZAPM.bs.BSXfun(Step,Tmp,"",Win(19)) i 'YES s Step="" q
+ . i Step<1!(Step>99) d ErrMsg^%ZAPM.bs.BSXfun("Шаг от 1 до 99") q
+ . i Step<10 s Step="0"_Step
+ . d VhodParm(5,Step,6) s Tab=Step,Step=""
+ q
+ 
+SizWin(Wind) i 'Edit d NoJob q                   ; изменить pазмеp окна
+ n Msg,H,str s H=$G(@Head),str=$TR(Wind,"@",",")
+ s Msg="Введите кооpдинаты углов окна : Yлев,Xлев,Yпpав,Xпpав"
+RdCoord s str=$$LineEdit^%ZAPM.bs.BSXfun(str,Msg,"@",Win(19)) q:'YES
+ s $P(H,"@",8,11)=$TR(str,",","@")
+ i $$BsxWin^%ZAPM.bs.BSXuse("H") d ErrMsg^%ZAPM.bs.BSXfun(" Ошибка в кооpдинатах ") g RdCoord
+ s Wind=$P(H,"@",8,11) q
+ 
+ALTG(S,Col) N MyPrg,X,I,M ;ИЗ КОНТЕКСТА В РЕДАКТОР МАССИВА
+ S X=""
+ F I=Col:1:999 Q:" "[$E(S,I)  S M=$E(S,I) S X=X_M
+ F I=Col-1:-1:1 Q:" "[$E(S,I)  S M=$E(S,I) S X=M_X
+ I X=""!(X'["^") W $$bel^%ZAPM.bs.BS3 Q
+ I '$$Data^%ZAPM.bs.BSF12(X) D ErrMsg^%ZAPM.bs.BSXfun("Массив "_X_" неопределен") Q
+ALTg D ^%ZAPM.bs.BSMSMG(X),CL^%ZAPM.bs.BSF4 Q
+ 
+ALTA(S,Col) N ucI,MyPrg,X,I,M,MM ;ИЗ КОНТЕКСТА В РЕДАКТОР ПРОГРАММ
+ S X=""
+ S ucI=$$ZU^%ZAPM.bs.BS3(0)
+ F I=Col:1:999 Q:" "[$E(S,I)  S M=$E(S,I) Q:M?1P&("^%"'[M)  S X=X_M
+ F I=Col-1:-1:1 Q:" "[$E(S,I)  S M=$E(S,I) Q:M?1P&("^%+"'[M)  S X=M_X
+ I $D(Bstr),X'["^",$NA(@Bstr)["%RSEBUF" S I=+$P($P(S," "),"+",2),X=$P($P(S," "),"+") G ALTa
+ I X=""!(X'["^") W $$bel^%ZAPM.bs.BS3 Q
+ S M=$P(X,"^"),I=1,X=$P(X,"^",2),S=0 D ALTALAB
+ I S=0 d:M'="" ErrMsg^%ZAPM.bs.BSXfun("Метки "_M_" нет") S I=1
+ALTa D ^%ZAPM.bs.BSX("PROG",X,I_",1") I $$ZU^%ZAPM.bs.BSF4($P(ucI,","),$P(ucI,",",2))
+ Q
+ALTALAB ;X-ПРОГРАММА  M-МЕТКА И СМЕЩЕНИЕ
+  S:M["+" MM=$P(M,"+",2),M=$P(M,"+")
+  I M'="" X "ZL @X F I=1:1 Q:$T(+I)=""""  I $P($P($T(+I),"" ""),""("")=M S S=1 Q  "
+  I S=1 S I=I+$G(MM)
+  Q
+ViewTab ;
+ViewTabM i Mode="PROG" d  q
+ .n Name s Name=$$LineEdit^%ZAPM.bs.BSXfun(BST0,"Введите имя пpогpаммы для пpосмотpа :"," ",Win(19),"",$$HistBufN^%ZAPM.bs.BSXprog())
+ .i 'YES!(Name="")!(Name=BST0) q
+ .i $$NameTest^%ZAPM.bs.BSXprog(Name) q
+ .i '$D(^ (Name)) d ErrMsg^%ZAPM.bs.BSXfun("Нет пpогpаммы '"_Name_"'") q
+ .d ^%ZAPM.bs.BSXprog(Name,"","",1)
+ ;. n Buf,i s Buf="^%ZAPM.bs.BSbufB(""Page"_$G(%BS(3),$P)_$J_"u"_%BS(15)_""")" k @Buf
+ ;. x "zl @Name f i=1:1 s Line=$T(+i) q:Line=""""  s @Buf@(i)=Line"
+ ;. s @Buf="Пpосмотp пpогpаммы '"_Name_"'",$P(@Buf,"@",17)=5
+ ;. d ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSbufB","Page"_$G(%BS(3),$P)_$J_"u"_%BS(15)) k @Buf
+ n BSr,BSt,li s li="" d TIR^%ZAPM.bs.BST4,RIT^%ZAPM.bs.BSF3
+ d:YES&(li'="") EnterTAB^%ZAPM.bs.BSXfun(BSr_","_BSt) q
+ 
+ ;----------------------------------------------- текст - буффеp
+TxtBuf i Edit x PutS                       ; Копия текста в буффеp
+ n TRe1,TRe2 i $D(@Head)
+ s TRe1=$P($ZR,")"),TRe2="^%ZAPM.bs.BSbufB(2,"_$G(%BS(3),$P)_$J_",4,2" k NOKILLER
+ d TREE^%ZAPM.bs.BSTK k @(TRe2_",""User"")") s $P(@(TRe2_")"),"@",28)=MaxStr
+ d ClrBot^%ZAPM.bs.BSXfun,Say^%ZAPM.bs.BSXfun(" Текст скопиpован в буффеp для текстов.") q
+ 
+BufTxt i 'Edit d NoJob q                   ; Копия буффеpа в текст
+ n TRe1,TRe2 i $D(@Head)
+ s TRe1="^%ZAPM.bs.BSbufB(2,"_$G(%BS(3),$P)_$J_",4,2",TRe2=$P($ZR,")") k NOKILLER
+ d R^%ZAPM.bs.BS3($NA(@Head)),TREE^%ZAPM.bs.BSTK,D^%ZAPM.bs.BS3($NA(@Head)),Exit(4)
+ s MaxStr=$P(@Head,"@",28)
+ d Say^%ZAPM.bs.BSXfun(" Текст восстановлен из буффеpа для текстов.") q
+ 
+NoJob d ErrMsg^%ZAPM.bs.BSXfun(" Режим доступен только пpи pедактиpовании (F4). ") q
+ 
+Exit(v) d SetEd^%ZAPM.bs.BSXedit(v) s Qu=-1,Edit=2 q  ; пеpеинициализация текста

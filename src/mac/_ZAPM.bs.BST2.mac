@@ -1,0 +1,94 @@
+ROUTINE %ZAPM.bs.BST2
+%BST2 ;КЛЮЧИ И ЗАПРОСЫ СПИСКОВ И СВОДОК ; 16:37   11.09.2000
+ S Bsr=BSR,Bst=BST D KCHO^%ZAPM.bs.BSsFUNM K %DIA,CALCFONs
+ I $P($G(@(BSR_"(BST,""KEY"")")),"@",2)="" S ls=" НЕТ КЛЮЧЕЙ ",YES=0 D O^%ZAPM.bs.BSF7 G NO
+ S (BSdd,zr)=@$ZR,YES=1,%zT=$ZT,$ZT="ERRNO^%ZAPM.bs.BST2" F I=1:1 Q:$P(zr,"!",I)=""  S BSt=$P($P(zr,"!",I),"@",2),BSr=$P(BSt,",",1,$L(BSt,",")-1),BSt=$P(BSt,",",$L(BSt,",")) D  G:'YES NO
+ .I '$D(@(BSr_"(BSt,""KEY"")")) S ls=" НЕТ КЛЮЧЕЙ,или недоступна "_BSr_","_BSt_" ",YES=0 D O^%ZAPM.bs.BSF7
+ I TIP=3,'$D(@(BSR_"(BST,""TSP"")")) S ls=" СПИСОК НЕ ПРОШЕЛ ТРАНСЛЯЦИЮ ",YES=0 D O^%ZAPM.bs.BSF7
+ S $ZT=$G(%zT) I TIP=4,'$D(@(BSR_"(BST,""TSV"")")) S ls=" СВОДКА НЕ ПРОШЛА ТРАНСЛЯЦИЮ ",YES=0 D O^%ZAPM.bs.BSF7
+NO I 'YES D KEY^%ZAPM.bs.BST K @(BSR_"(BST,""STA"")") G TEND
+ S IMQ=$$BSR^%ZAPM.bs.BSA(BSR)_","_BST,TIp=TIP,Ii=$P(B,"@") K F4
+TS ;ВЫБОР
+ S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.bs.BS3(4),"" <Enter>-ВЫБОР <СТРЕЛКИ>-ДВИЖЕНИЕ <Esc>-ОТМЕНА <F4>-БЕЗ КЛЮЧА <F8>-УДАЛИТЬ """
+ S (%OLDII,%TAB)=$$TNAME^%ZAPM.bs.BSF13(BSR,BST)_".",%nAM=$$cB^%ZAPM.bs.BSSV,BSR="^%ZAPM.bs.BSbufB",BST="TS"_$G(%BS(3),$P)_$J_"u"_%BS(15) I $D(^%ZAPM.bs.BSbufB("TS"_$G(%BS(3),$P)_$J_"u"_%BS(15),"STA")) D STA^%ZAPM.bs.BST G TSBE
+ K ^%ZAPM.bs.BSbufB("TS"_$G(%BS(3),$P)_$J_"u"_%BS(15)),NOKEY,CALCFON,OLDT,SRAVN
+ S i=3,TS=$ZR
+ S @TS@(2,1)="@@0@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ "_$$F^%ZAPM.bs.BSF11(IMQ)
+ S @TS@(3,1)="@@1@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ ЗАПРОСОВ="_$$ZCount(IMQ)
+ ;            MSW          !
+ S @TS@(1,1)="@@1@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ "_$$H^%ZAPM.bs.BSF11(IMQ)_" ;"_Ii
+ S i=4,@TS@(4,1)="@@1@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ НАСЧЕТ НА (MSM-DDP) СЕРВЕРЕ"
+ I $ZV["Cach"||($ZV["IRIS") S $P(@TS@(2,1),"@",3)=0,$P(@TS@(4,1),"@",3)=0
+ F  S %TAB=$O(@(%nAM_"(%TAB)")) Q:%TAB=""  Q:%TAB'[%OLDII  I %TAB'["@"&(%TAB'["&") S i=i+1 D
+ .S @TS@(i,1)="@@1@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ "_$P(%TAB,"!",3)_$J("",13-$L($P(%TAB,"!",3)))_$S($P(@(%nAM_"(%TAB)"),"@",30)="":".....",1:$E($P(@$ZR,"@",30),1,5))_";LOCKAL;"_$P(@$ZR,"@")
+ I IMQ["]" D R^%ZAPM.bs.BSF11(IMQ)
+ S @TS="@@@@@@@1@1@22@80@@X MRMR@@%FKT^%ZAPM.bs.BST2@1@1",se=i,ke=1,$P(@$ZR,"@",41)="F8DEL^%ZAPM.bs.BST2"
+ D TAB^%ZAPM.bs.BSF1,^%ZAPM.bs.BST I $D(END) G TEND
+TSBE I R1=27,$D(NOKEY) S BSR=$P(IMQ,",",1,$L(IMQ,",")-1),BST=$P(IMQ,",",$L(IMQ,",")) D KEY^%ZAPM.bs.BST K @(BSR_"(BST,""STA"")") G TS
+ I R1=27 G TEND
+ I ny=3 D ZP^%ZAPM.bs.BSZPS S R1=27 G TEND
+ I d'[";LOCKAL;",d'[";REMOTE;" S:ny=2 CALCFON=1 S:ny=4 CALCFON=2 D KEY S R1=27 G TEND
+ I d[";LOCKAL;" S BSR=%nAM,BST=$P(%OLDII,"!",1,2)_"!"_$P(d," ",2)
+ I d[";REMOTE;" S BSR=UU,BST=$P(%OLDII,"!",1)_"!1!"_$P(d," ",2)
+ I $P($P(@(BSR_"(BST)"),"@"),";",2)'["ГОТОВ" S ls=" ВОЙТИ НЕЛЬЗЯ..." D O^%ZAPM.bs.BSF7 G TEND
+ I $D(@(BSR_"(BST,""STA"")")) D STA^%ZAPM.bs.BST G TEND
+ D ^%ZAPM.bs.BST
+TEND K ^%ZAPM.bs.BSbufB("TS"_$G(%BS(3),$P)_$J_"u"_%BS(15)) S SPSV=1 G ZF^%ZAPM.bs.BST1
+ ;
+KEY L ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15)) ;ДЛЯ ВЫБОРКИ ПРИ НАСЧЕТЕ
+ K NOKEY,%KEYS,NAZAD,^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15)) F key=0:1:13 I $D(@(BSr_"(BSt,""KEY"",key)")) S endkey=key
+ F key=0:1:endkey K ^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15))
+ F key=0:1:endkey I $D(@(BSr_"(BSt,""KEY"",key)")) D KE G:$D(NAZAD)&('$D(NOKEY)) END^%ZAPM.bs.BSF I key=endkey!($D(NOKEY)) D SPSVD G END^%ZAPM.bs.BSF:$D(CALCFONs)!('$D(key)) S key=key-1 I $D(NOKEY) S BSR=$P(IMQ,",",1,$L(IMQ,",")-1),BST=$P(IMQ,",",$L(IMQ,",")) G KEY^%ZAPM.bs.BST Q
+ Q
+F8DEL ;ПРЕДОБРАБОТКА ДЛЯ СПИСКА ОТЧЕТОВ
+ I $E(%BS(1),17),R1=127 S R1=27,R2=79,R3=87
+ Q
+SPSVD I TIp=4 S %B=2,ls=" Определим еще один уровень СРАВНЕНИЯ " D YES^%ZAPM.bs.BSF I YES S key=0,COMP=COMP+1,SRAVN=+$G(CALCFON,$G(SRAVN)) K CALCFON Q
+ I '$D(NOKEY) S ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15))=IMQ_"##"_BSdd_"####"_COMP I '$D(OTLUP) G ^%ZAPM.bs.BSSP:TIp=3  G ^%ZAPM.bs.BSSV
+e Q
+KE ;ОПРЕДЕЛЕНИЕ КЛЮЧА
+ N KMAX,KK,KML,zr
+ F i=1,2,4,5,6,9,10,12,13,15,16 S @("k"_i)=$P(^(key),"@",i)
+ K KK S zr=$ZR,KK=0 F i=10:1 Q:'$D(^(key,i))  S KK(i)=^(i),KK(i,1)=^(i,1) S:KK<$L(KK(i)) KK=$L(KK(i)) I @zr
+ I '$D(Report),$D(@Bsr@(Bst,"Key",key)) D  ;СПЕЦИАЛЬНАЯ ВЫБОРКА
+ .F i=1,2,4,5,6,9,10,12,13,15,16 I $P(^(key),"@",i)'="" S @("k"_i)=$P(^(key),"@",i)
+ .S zr=$ZR,KMAX=0,KML=$O(^(key,""),-1) I @zr
+ .F i=10:1:KML I $D(^(key,i)) S KK(i)=^(i),KK(i,1)=^(i,1) S:KMAX<$L(KK(i)) KMAX=$L(KK(i)) I @zr
+ S KMAX=$S($G(KK)>$G(KMAX):$G(KK),1:$G(KMAX)),MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.bs.BS3(4),"" <Enter>-ВЫБОР <СТРЕЛКИ>-ДВИЖЕНИЕ <Esc>-ОТМЕНА ,Можете корректировать ВЫБОРКУ """
+ S II="KCH"_$S(key=0:0,1:1) I '$D(COMP) S COMP=1
+ S l=$S($P(^%ZAPM.bs.BSS(II,1,2),"@",4)<$G(KMAX,0):KMAX,1:$P(@$ZR,"@",4)),BSr1="^%ZAPM.bs.BSS",BSt1=II
+ I l>45 S l=45
+ S (BSr2,BSR)="^%ZAPM.bs.BSbufB",(BSt2,BST)=key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15) D COPY^%ZAPM.bs.BSTK
+ F i=1:1:$S(key:4,1:3) D  S $P(@$ZR,"@",4)=l
+ .F j=1,3,2 S ^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)=^%ZAPM.bs.BSS(II,i,j) D
+ ..I i=3,j=3 S $P(@$ZR,"@",15)=k1 ;```$S($$LASTHIS^%ZAPM.bs.BSF11(key,i):$$INSERT^%ZAPM.bs.BSF11(key,i),1:k1)
+ ..I i=4,j=3 S $P(@$ZR,"@",15)=k4 ;```$S($$LASTHIS^%ZAPM.bs.BSF11(key,i):$$INSERT^%ZAPM.bs.BSF11(key,i),1:k4)
+ I $D(^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,1)) S II=$S(@$ZR=""&(k1'=""):k1,1:@$ZR) S $P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),3,3),"@",15)=II
+ I key,$D(^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,2)) S II=$S(@$ZR=""&(k4'=""):k4,1:@$ZR) S $P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),4,3),"@",15)=II
+ S ^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,3)=$P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,3),"@",1,14)_"@"_$S(TIp=3:"",1:"Ср:"_COMP)_" Кл:"_key_"                              "_k9
+ I $D(KK) S i=4 F ii=10:1 Q:'$D(KK(ii))  S i=i+1 D  S $P(@$ZR,"@",15)=KK(ii),$P(@$ZR,"@",4)=l,$P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,3),"@",15)=" <---",^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"COL",i,3)=KK(ii,1)
+ .F j=1,3,2 S ^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)=^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,j),$P(@$ZR,"@",3)=1,$P(@$ZR,"@",15)=""
+ K KK S ^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15))=^%ZAPM.bs.BSS("KCH1")
+ D TAB^%ZAPM.bs.BSF1,^%ZAPM.bs.BST
+NAMKE I R1=27 K ^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15)),^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key) D:'$D(%KNAM(key-1))  S key=key-2 Q
+ .S NAZAD=1 K ZPNEW,^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15)),COMP,CALCFON,%KNAM,II
+SET S %KNAM(key)=k6,^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,1)=$P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),3,3),"@",15),^(4)=k2_"#"_k12 Q:'key
+ S ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,2)=$P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),4,3),"@",15)
+ I ny>4 S ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,3)=$G(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"COL",ny,3),"I 1") S ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,4)="TXTC#"_$P(^%ZAPM.bs.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),ny,2),"@",15) I d'=" <---" D SETEMP^%ZAPM.bs.BSF11
+ Q
+25 W /CUP(25,1),$$atr^%ZAPM.bs.BS3(0),/EL(0),ls Q
+D G 0^%ZAPM.bs.BSTM
+ERR D O^%ZAPM.bs.BSF7 X "I 0" S YES=0 Q
+ERRNO I $ZE["<PROT"!($ZE["<NOSYS")!($ZE["<NOUCI")!($ZE["<NAMESPACE") S ls=" НЕТ КЛЮЧЕЙ,или недоступна "_BSr_","_BSt_" " G RNO
+ S ls=$ZE
+RNO D O^%ZAPM.bs.BSF7 X "I 0" S YES=0,$ZT=$G(%zT) G NO
+%FKT D R^%ZAPM.bs.BSF I R3=89 ZT "F10"
+ I R3=83 S NOKEY=1,R1=27 Q  ;БЕЗ КЛЮЧЕЙ F4
+ I R3=87 K AllWAY D DEL^%ZAPM.bs.BSF11 Q:R1=27  ;УДАЛИТЬ ТАБЛИЦУ
+%F4 G D
+OLD S ls=" НОВОЙ СВОДКОЙ ЗАМЕСТИМ СТАРУЮ ? " D YES^%ZAPM.bs.BSF S:YES OLDT=1 Q
+v(N) Q $G(%BS("v",N))
+ZCount(IMQ) //ПОСЧИТАТЬ СКОЛЬКО ЗАПРОСОВ
+ N I,II,BSR,BST S I="",II=0,BSR=$P(IMQ,",",1,$L(IMQ,",")-1),BST=$P(IMQ,",",$L(IMQ,","))
+ F  S I=$O(@BSR@(BST,"ZPr",I)) Q:I=""  S II=II+1
+ Q II

@@ -1,0 +1,21 @@
+ROUTINE %ZAPM.bs.BSChh
+%BSChh ; пpогpамма ВАЖНЫХ ФУНКЦИЙ ; 17:53   03.03.2001
+ Q
+CheckPass(U,P,APP) ;ПРОВЕРКА
+ Q $$CheckPass^%ZAPM.bs.BSCp(U,P,APP)
+CRC(P) ;ГЕНЕРАЦИЯ КОНТРОЛЬНОЙ СУММЫ
+ N U,C,A,B,D,J D SET
+ Q D
+PASS(APP) ;ПРОВЕКА УЖЕ СУЩЕСТВУЮЩЕГО ПАРОЛЯ И КОНТРОЛЬНОЙ СУММЫ
+ N U,C,A,B,D,J D SET
+ I $$GETMP^%ZAPM.bs.BSCp(J,APP)="" Q 0
+ I C'=D Q 0 ;ПОКА ПРИМИТИВ=НОМЕР ДНЯ ДОЛЖЕН СОВПАДАТЬ !!!!!!!!!
+ Q 1
+SET S U=$P(%KEY("BSUSER"),",",1),C=$P(%KEY("BSUSER"),",",2),J=$P(%KEY("BSUSER"),",",3)
+ S A=$$ADDRIP^%ZAPM.bs.BSC4
+ S B=$P($P($P($G(%CGIEVAR("HTTP_USER_AGENT"),"?"),"(",2),")"),";",2,3)
+ S D=$P($$h^%ZAPM.bs.BS3,",",1) ;НОМЕР ДНЯ
+ Q
+MGWAPP ;OCX КОМПОНЕНТА BsWebLink
+ W "ОТВЕТ",$C(13,10),!
+ Q

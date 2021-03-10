@@ -1,0 +1,105 @@
+ROUTINE %ZAPM.bs.BSDDR1
+%BSDDR1 ;ДИСПЕТЧЕР DDR (СЕРВИС);;[ 23/09/93 14:34 ] ; 13:44   30.11.1999
+ 
+1 ;ИЗМЕНЕНИЕ ПРИЗНАКА ОБРАБОТКИ БПО
+ D L^%ZAPM.bs.BS3(bufO)
+ S z="" F  S z=$O(@bufO@(z)) Q:z=""  S P=1 D  S @bufO@(z)=$S(P=0:"НЕ ОБРАБАТЫВАЛАСЬ",P>1:"ЕСТЬ ОШИБКИ",P=1:"ЗАНЕСЕНО В БД",1:"")
+ .S (Pk,z1)="" F  S z1=$O(@bufO@(z,z1)) Q:z1=""  S Pk=$G(@bufO@(z,z1,"2,1")),Pk=$S(Pk=1:0,Pk=2:2,Pk=4:1,Pk="":1,1:1),P=P*Pk I P>10 S P=10
+ K z,z1,Pk,P D U^%ZAPM.bs.BS3(bufO) Q
+ 
+ ;БЛОК ПОВЕРОК КЛЮЧЕЙ
+ 
+SKEY0 ;ПРОВЕРКА ИМЕННОГО КЛЮЧА
+ 
+ S ls="#"_Kp_" КОРРЕКЦИЯ: ИМЕННОЙ КЛЮЧ",ll="@" D QQ,LE^%ZAPM.bs.BSTT I 'YES S YES=0 Q
+ I li="" X "I 0" S YES=0 Q
+SK0 S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSDDR1"
+ D KEYLOG I 'YES G SKEY0
+e Q
+ 
+SKEY1 ;ПРОВЕРКА ИНДЕКСНОГО КЛЮЧА
+ 
+ S ls="#"_Kp_" КОРРЕКЦИЯ:"_key_" ИНДЕКСНЫЙ КЛЮЧ",ll="@" D QQ,LE^%ZAPM.bs.BSTT I 'YES S YES=0 Q
+ I li="" X "I 0" S YES=0 Q
+SK1 ;S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSDDR1"
+ D KEYLOG G:'YES SKEY1
+ S $ZT=$G(%zT),d=li Q
+ 
+KEYLOG ;ПРОВЕРКА ЛОГИКИ
+ 
+ ;S BSr="^"_$P(IMQ,",",1,$L(IMQ,",")-1),BSt=$P(IMQ,",",$L(IMQ,",")) Q:$P(@(BSr_"(BSt,""KEY"",key)"),"@",16)=""  S lo=$G(^(key,1)),(d,d0,d1)=li S:d="" d0=0 K %0,YES X lo S:'$D(YES) YES=$T S:YES li=$G(%0,li)
+ S BSr=$P(IMQ1,",",1,$L(IMQ1,",")-1),BSt=$P(IMQ1,",",$L(IMQ1,","))
+ Q:$P(@(BSr_"(BSt,""KEY"",key)"),"@",16)=""  S lo=$G(^(key,1)),(d,d0,d1)=li S:d="" d0=0 K %0,YES X lo S:'$D(YES) YES=$T S:YES li=$G(%0,li)
+ Q
+ERR D O^%ZAPM.bs.BSF7 X "I 0" S YES=0,$ZT=$G(%zT) Q
+ Q
+QQ D A25^%ZAPM.bs.BSF1 Q
+ 
+IF ;ПРОВЕРКА НА НАЛИЧИЕ В БД
+ 
+ I $G(KORP)'="" Q
+ I '$D(@($E(%NAm,1,($L(%NAm)-1))_")")) D  Q
+ .I $G(KOr)=""  Q
+ .I $G(KORE)'="" I KORE=$G(KOr) Q
+ .D OkMsg^%ZAPM.bs.BSXfun("ПЕРВИЧНОГО ДОКУМЕНТА С ТАКИМИ КЛЮЧАМИ ВОВСЕ НЕТ",2) S STOP=1 Q
+ I $G(KORE)="" I $G(KOr)'="" Q
+ S kr="" D  Q:$G(kr)=1
+ .I $G(KORE)'="" S:$G(KORE)'[$G(KOr) kr=1 Q
+ .I $G(KOr)=1 S kr=1 Q
+ D OkMsg^%ZAPM.bs.BSXfun("#"_Kp_" А ТАКОЙ КЛЮЧ УЖЕ ЕСТЬ В БД",2) D
+ .I $G(KOr)'="" D OkMsg^%ZAPM.bs.BSXfun("НЕДОЗВОЛЕННАЯ КОРРЕКЦИЯ",2) Q
+ S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSDDR1"
+ S ls="#"_Kp_" ИСПРАВЛЯЙ КЛЮЧИ",ll="@",li=%NAm D QQ,LE^%ZAPM.bs.BSTT I 'YES S YES=0,STOP=1 Q
+ S %NAm=li S $ZT=$G(%zT) G IF
+ 
+ ;БЛОК РАБОТЫ ПО ALT+F2 В БПО
+ 
+SZS ;ОБРАБОТКА БПО ИЗ ТАБЛИЦЫ
+ 
+ D 333^%ZAPM.bs.BSF
+ S %I=$I,B=1,BSRz=BSR,BSTz=BST,BSDz=BSD N %KEYS D TIP+1^%ZAPM.bs.BST
+ S bufO=$$GETkey^%ZAPM.bs.BSDDR()
+ S OBR=1,(NF,PO)=k1,(PNK,PNK2,NIK,PKL,KOr)="" S Kp=k2
+ I @bufO@(PO,Kp,"2,1")'=1 D OkMsg^%ZAPM.bs.BSXfun(" СМЕНИ ПРИЗНАК ОБРАБОТКИ !! "_k1_" "_k2,2) S BSR=BSRz,BST=BSTz,BSD=BSDz Q
+ D
+ .;S ls=" Заносится в БД из БПО " D WAITS^%ZAPM.bs.BSF2
+ .D OBR01^%ZAPM.bs.BSDDR2,IF^%ZAPM.bs.BSDDR3,BL1^%ZAPM.bs.BSDDR3,DDR1^%ZAPM.bs.BSDDR3 S (PNK,PNK2,NIK,PKL,KOr)=""
+ .I mtBD'="" S ls="По личной части" D WAITS^%ZAPM.bs.BSF2 D OBR011^%ZAPM.bs.BSDDR2,IF1^%ZAPM.bs.BSDDR3,BL1^%ZAPM.bs.BSDDR3,DDR1^%ZAPM.bs.BSDDR3
+ .D DDR2^%ZAPM.bs.BSDDR3,1  K ^%ZAPM.bs.BSbufB("pz"_$G(%BS(3),$P)),mtBD
+ .K t,t1,iN,pG,STOP,KON,PKL,PPI,NIK,PIN,PNK,PNK1,PNK2,PNK3,IKE,KPL1,pz,pzi,zi,zi1
+ D OkMsg^%ZAPM.bs.BSXfun(" ОТРАБОТАНО !"_k1_" "_k2,2) S BSR=BSRz,BST=BSTz,BSD=BSDz Q
+ 
+SR ;КОНТЕКСТНАЯ ЗАМЕНА
+ 
+ S li="",ls=" ЧТО МЕНЯЕМ ? " D LE^%ZAPM.bs.BSTT S VH=li Q:li=""  S li=VH,ls=" ЧТО ВЗАМЕН ? " D LE^%ZAPM.bs.BSTT S ISH=li I ISH="" S YES=1 D  I YES="" Q
+ .S ls=" МЕНЯЕМ НА 'ПУСТО' ? " D YES^%ZAPM.bs.BSF Q
+ S STR=0 F  S STR=$O(^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),STR)) Q:'STR  D
+ .S QS=^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),STR,2),QS=$$TR^%ZAPM.bs.BSsFUNM(QS,VH,ISH),^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),STR,2)=QS
+ S $P(^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15)),"@",2)=1 D W^%ZAPM.bs.BST Q
+ 
+PSI ;ПЕРЕВОД
+ 
+ I PER=1 D RS,CS S VH=RSI,ISH=CSI G PROM
+ I PER=2 D CS,LS S VH=LSI,ISH=CSI G PROM
+ I PER=3 D RS,CS S VH=CSI,ISH=RSI G PROM
+ D RS,LS S VH=LSI,ISH=RSI G PROM
+RS S RSI="АБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗЧ" Q
+CS S CSI="-?:#3ЭШЩ8Ю().,9014_57=276+4" Q
+LS S LSI="ABCDEFGHIJKLMNOPQRSTUVWXYZ" Q
+PROM S li=ny-1,ls=" В КАКОЙ СТРОКЕ " D LE^%ZAPM.bs.BSTT S STR=li+1 S li=$G(^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),STR,2))
+ I li'="" S NS=li S ls=" ОПРЕДЕЛИТЕ ФРАГМЕНТ ДЛЯ ПЕРЕВОДА " D LE^%ZAPM.bs.BSTT I YES=1 D ZSS D
+ .S QS=$TR(li,VH,ISH)
+ .S QS=NS1_QS_NS2 S ^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),STR,2)=QS Q
+ S $P(^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15)),"@",2)=1 D W^%ZAPM.bs.BST Q
+ZSS S NS1=$P(NS,li),NS2=$E(NS,$L(NS1)+$L(li)+1,$L(NS)) Q
+ 
+SPO ;СМЕНА ПРИЗНАКА ОБРАБОТКИ
+ 
+ S bufO=$$GETkey^%ZAPM.bs.BSDDR() D L^%ZAPM.bs.BS3(bufO)
+ S li=$G(^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),2,1)),ls="Меняем пpизнак обpаботки ? (1-не обpаб., 4-занесно) " D LE^%ZAPM.bs.BSTT
+ I "1,4"'[li S ls="А вот и невеpно, жми любую кнопку ! " D O^%ZAPM.bs.BSF7 R *R G SPO
+ S ls=$S(li=1:"Не обpаботано ",li=4:"Занесено в БД ","":1) D WAITS^%ZAPM.bs.BSF2
+ S ^%ZAPM.bs.BSbufB("BB"_$J_"u"_%BS(15),2,1)=li,PO=k1,Kp=k2,@bufO@(PO,Kp,"2,1")=li
+ S:li=1 @bufO@(PO)="НЕ ОБРАБОТАНО" D U^%ZAPM.bs.BS3(bufO)
+ D WAITS^%ZAPM.bs.BSF2
+ Q

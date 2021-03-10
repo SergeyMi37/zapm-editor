@@ -1,0 +1,102 @@
+ROUTINE %ZAPM.bs.BSH
+%BSH ;РЕКОНФИГУРАЦИЯ MSM и :%BS,РАБОТА с HFS ; 16:17   01.04.2001
+ Q
+CONF I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ D MGR^%ZAPM.bs.BS I $P($ZV,"Version ",2)<4,'$D(^ ("SGDDBNS")) W !!," В системе нет оптционального пакета NAMESPACE ! ",*7 S STOPBS=1 Q
+ N MODIF X "ZL %GR S:$T(ASK+4)'[""Overw"" MODIF=1 ZL %BSH" I $G(MODIF) D
+ .W !!!,"Модификация системмных и библиотечных утилит "
+ .I $P($ZV,"Version ",2)<4 D  ;ДЛЯ 3
+ ..S DB="ZL DBMAINT3 X:$T(HNAME)=""HNAME ;"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""HNAME""):HNAME ZR HNAME ZS DBMAINT3" X DB
+ ..S DB="ZL %SP X:$T(INT)'[""%SPDBNA"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""INT^%SP""):INT ZR INT ZS %SP" X DB
+ ..S DB="ZL DBMAINT3 X:$T(ADDV)="""" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""HADDV""):VGSLOT ZS DBMAINT3" X DB
+ ..S DB="ZL %GSEL X:$T(GS1)'[""%BS"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""%GSEL""):GS1 ZR GS1 ZS %GSEL" X DB
+ .I $P($ZV,"Version ",2)'<4 D  ;ДЛЯ 4
+ ..S DB="ZL DBMAINT8 X:$T(HNAME)=""HNAME ;"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""HNAME""):HNAME ZR HNAME ZS DBMAINT8" X DB
+ ..S DB="ZL %SP X:$T(INT)'[""VOLDBNA"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""INT^%SPmsm4""):INT ZR INT ZS %SP" X DB
+ ..S DB="ZL %GSEL X:$T(GS1+2)'[""%BS"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""%GSEL4""):GS1+2 ZR GS1+2 ZS %GSEL" X DB
+ ..S DB="ZL MOUNTRVG X:$T(RCIR+1)'[""?"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""RVG8""):RCIR+1 ZR RCIR+1 ZS MOUNTRVG" X DB
+ ..S DB="ZL MOUNTRVG X:$T(RVGN+1)'[""%BSvgT"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""RVG18""):RVGN+1 ZR RVGN+1 ZS MOUNTRVG" X DB
+ .S DB="ZL %RSEL X:$T(L0+1)'[""%BS"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""%RSEL""):L0+1 ZR L0+1 ZS %RSEL" X DB
+ .S DB="ZL %SDEV X:$T(HFS1+1)'[""FILE^%ZAPM.bs.BSDOS2"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""HFILE""):HFS1+1 ZR HFS1+1 ZS %SDEV" X DB
+ .S DB="ZL SGDDB X:$T(PROMPT)["";"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""SGDDB""):PROMPT ZR PROMPT ZS SGDDB" X DB
+ .S DB="ZL %RR X:$T(R0+2)'[""already exist"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""%RR""):R0+2 ZR R0+2 ZS %RR" X DB
+ .S DB="ZL %GR X:$T(ASK+4)'[""already exist"" DB1 ZL %BSH",DB1="W $ZN,"" "" ZI ^%ZAPM.bs.BS(""%GR""):ASK+4 ZR ASK+4 ZS %GR" X DB
+ .W !,"Для продолжения нажмите любую клавишу" R *R1
+ K ^%ZAPM.bs.BS("LPT"),^("NS"),^("COM") S C=$P(^SYS("CONFIG"),";"),C=$P(^SYS("CONFIG",C),";") D NAS F I=1:1:90 I $D(^SYS(C,"DDB",I)) D
+ .I $P(@$ZR,",",2)?1"LPT"1N S ^%ZAPM.bs.BS("LPT",I)=$P(@$ZR,",",5) Q
+ .I $P(^SYS(C,"DDB",I),",",12) S ^%ZAPM.bs.BS("NS",I)=$G(NS($P(@$ZR,",",12)))
+ .I $P(^SYS(C,"DDB",I),",",2)["COM" S ^%ZAPM.bs.BS("COM",$E($P(^SYS(C,"DDB",I),",",2),4))=I_","_+$E($P(^SYS(C,"DDB",I),",",3),2,3)
+ I $G(^%ZAPM.bs.BSbufB("CLR","FTR",1,1))["/YX" K ^%ZAPM.bs.BSbufB("CLR") S BSr1="^%ZAPM.bs.BSS",BSr2="^%ZAPM.bs.BSbufB",(BSt1,BSt2)="CLR" D COPY^%ZAPM.bs.BSTK S ^%ZAPM.bs.BSbufB="БУФЕР"
+ D BUFERS
+ I $ZV["3.0.1",$G(%BS(23)),$D(^ ("DDPSRV")) X "ZL DDPSRV I $T(ZUSE)[""%BSddp""" E  S I=$ZT,$ZT="DDPJOB^%ZAPM.bs.BSH" D  S $ZT=I
+ .I $P($ZV,"Version ",2)="3.0.10",$D(^ ("DDPSRV10")) X "ZL DDPSRV10 ZS DDPSRV"
+ .I $P($ZV,"Version ",2)="3.0.12",$D(^ ("DDPSRV12")) X "ZL DDPSRV12 ZS DDPSRV"
+NS I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) S %BS(13)="%BS-PC" U $I::%BS(32) D  Q
+ .I $ZV["Cach"||($ZV["IRIS") D %BS3^%ZAPM.bs.BSCp
+ I $P($ZV,"Version ",2)<4,'$D(^ ("SGDDBNS")) W !!," В системе нет оптционального пакета NAMESPACE ! ",*7 H
+ N BDTRM S %BS(3)=$I,BDTRM=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSVOL(""TRM"")") I $$Data^%ZAPM.bs.BSF12($NA(@BDTRM@($I))) D  Q
+ .U $I::$G(%BS(32),"X3.64-1979")
+ .S %BS(13)=$G(@BDTRM@($I,"NSP")),%BS(14)=$G(@BDTRM@($I,"FLG"))
+ .S %BS(14,1)=$G(^("OpenLPT")),%BS(14,2)=$G(^("CloseLPT"))
+ .S %BS(3)=$G(^("Principal"),$I)
+ I $I'=1 W !,"Комплекс не настроен для устройства "_$P R *R H
+ S %BS(13)="%BS-PC" U $I::$G(%BS(32),"X3.64-1979")
+ Q
+ I %BS(3)'=+%BS(3) S %BS(3)=$J
+ Q
+BUFERS I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSbufB"),2,3)'="44" S ^%ZAPM.bs.BSbufB="Буфер %BS" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSbufB","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSbufP"),2,3)'="44" S ^%ZAPM.bs.BSbufP="BaSe MsW @БУФЕРА ПРИНТ-СЕРВЕРОВ" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSbufP","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSETUP"),2,3)'="44" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSETUP","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSHLP"),2,3)'="44" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSHLP","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BS"),2,3)'="44" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BS","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSdel"),2,3)'="44" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BS","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSJPRN"),2,3)'="44" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSJPRN","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH($G(%BS(20),"^%ZAPM.bs.BSDFLT")),2,3)'="44" D CP^%ZAPM.bs.BSGCH($G(%BS(20),"^%ZAPM.bs.BSDFLT"),"0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSbufS"),2,3)'="44" S ^%ZAPM.bs.BSbufS="BaSe MsW @РАЗДЕЛ НАСЧИТАННЫХ СВОДОК И СПИСКОВ" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSbufS","0440")
+ I $E($$RP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSDDR"),2,3)'="44" S $P(^%ZAPM.bs.BSDDR,"@",5)="" D CP^%ZAPM.bs.BSGCH("^%ZAPM.bs.BSDDR","0440")
+ Q
+NAS S I="" F  S I=$O(^SYS("namespace",I)) Q:I=""  I $E(I,1,4)="%BS-" S NS(I)=""
+e Q
+NASL D NAS S I="" F  S I=$O(NS(I)) Q:I=""  W !,I
+ W !,"КАКУЮ NAMESPASE ПРИКРЕПИТЬ К УСТРОЙСТВУ #",$P R "  <%BS-PC>  :",I S:I="" I="%BS-PC" Q:"^."[I  I '$D(NS(I)) G NASL
+ S ^%ZAPM.bs.BS("NS",$G(%BS(3),$P))=I Q
+VOLNEW ;ПЕРЕАДРЕСАЦИЯ ПУТИ К ТОМУ
+ S (HNAME,VOLNA(I))=%BShNAME(2)_"\"_$P(HNAME,"\",$L(HNAME,"\")) D CHKNAME^DBMAINT3 Q
+VOL(vol,%VGI) S YES=1 ;ПРОВЕРКА ТОМА
+ I $D(^%ZAPM.bs.BSbufB("VOLu"_$G(%BS(3),$P),vol)),$G(%BS(4))[$P(@$ZR,"/") D CHE(@$ZR) I 'YES G END
+ I '$D(^%ZAPM.bs.BSbufB("VOLu"_$G(%BS(3),$P),vol)) ZF  D INT^%SP S ^%ZAPM.bs.BSbufB("VOLu"_$G(%BS(3),$P),vol)=$S($$ver^%ZAPM.bs.BSF7()="]":%SPDBNA,1:VOLDBNA),YES=1 G END
+ Q
+UCI(vol,%VGI) S YES=1 I $D(^%ZAPM.bs.BSbufB("VOLu"_$G(%BS(3),$P),vol)),$G(%BS(4))[$P(@$ZR,"/") S %FN=@$ZR D CHE(%FN) G:'YES END S %BS(9)=%FN
+ Q
+CHKSUM(%R) ;ВЫЧИСЛЕНИЕ КОНТРОЛЬНОЙ СУММЫ У ПРОГРАММЫ
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q -1
+ I '$ZBN(^ (%R)) Q -1
+ N %T,%J,%K
+ S %T=0 X "ZL @%R F %J=1:1 S %K=$T(+%J) Q:%K=""""  S %T=%T+$ZCRC(%K,1)"
+ Q %T
+CHECK ;ПРОВЕРКА HFS
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ S YES=1 Q:'$D(@(BSR_"(BST,""HVL"")"))  S MR="" F  S MR=$O(@(BSR_"(BST,""HVL"",MR)")) Q:MR=""  S %FN=@(BSR_"(BST,""HVL"",MR)") I %FN'="" S vv=0 D CHE(%FN) Q:'YES
+ I $D(%FN) S %BS(9)=%FN
+END K %FN,%DEV Q
+CHE(%FN) ;
+CH S YES=$$CHECKHFS(%FN) I YES Q
+ S ls=" ОШИБКА ЧТЕНИЯ БАЗЫ ДАННЫХ "_%FN_" !!!.ПОВТОРИТЬ ? " W $$bel^%ZAPM.bs.BS3 D YES^%ZAPM.bs.BSF I 'YES S ls=" ОШИБКА ДОСТУПА К "_%FN_" !!! " Q
+ G CH
+CHECKHFS(%FN) G E:%FN="" F %DEV=51:1:54 O %DEV::0 Q:$T
+ G:'$T E O %DEV:%FN U %DEV I $ZA=-1 G E
+U O %DEV:(%FN:"R") U %DEV I $ZA<0 G E
+ C %DEV U $P Q 1
+E C %DEV U $P Q 0
+DDPJOB I $ZE["LOBR>" W !,"   Остановите Сервер DDP и выполните D CONF^%ZAPM.bs.BSH",$$bel^%ZAPM.bs.BS3 H 2 Q
+ Q
+TABVAR I $$VAR(1) D ErrMsg^%ZAPM.bs.BSXfun("НЕ ОПРЕДЕЛЕНЫ")
+ Q
+VAR(A) ;ПРОЛЬЗОВАТЕЛЬСКИЕ ПЕРЕМЕННЫЕ
+ N DI,BSR,BST,VA,D,ER,BX,WA
+ S DI=$P($G(^%ZAPM.bs.BSETUP("SERVER",12,4)),"@",15) Q:DI="" 4 I '$$Data^%ZAPM.bs.BSF12(DI) S DI=$NA(@%BS(20)@("Variables")) I '$D(@DI) Q 3
+ S BSR=$P(DI,"("),BST=$TR($P($P(DI,"(",2),")"),$C(34),"") I $G(A) D ^%ZAPM.bs.BST Q ""
+ D CALC^%ZAPM.bs.BSF3,U^%ZAPM.bs.BS3($NA(@BSR@(BST)))
+ Q 1
+C123 ;

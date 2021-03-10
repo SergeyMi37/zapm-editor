@@ -1,0 +1,240 @@
+ROUTINE %ZAPM.bs.BSCGH
+%BSCGH ; пpогpамма SQL-Gate HTML ; 14:56   06.11.2001
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+ ;         !!! НЕ ЗАБУДЬТЕ СДЕЛАТЬ !..
+ ;ОПРЕДЕЛИТЕ  DSN В CONTROL PANEL -- ODBC DRIVERS
+ ;
+ ;ВЫЗОВ /scripts/mgwms32.dll?BSG=SQL
+ ;
+HELP d InfoSess^%ZAPM.bs.BSC4rout Q
+TITLE W "<TITLE>%BS++SQL - Менеджер</TITLE>" Q
+ //N FN S FN="C:\CacheSys\Docs\sqr\SQLReference.html"
+ //I $$OpenFile^%ZAPM.bs.BSCF1(FN,"R") W "<H7><A HREF=""C:\CacheSys\Docs\sqr\SQLReference.html"">© 2001 Документация по Cache'SQL</H7>"
+ //W "<BR><BR><A HREF=""/BS/DEVELOPER.htmL"">" D END^%ZAPM.bs.BSCh("") W "</A>"
+ Q
+MAINVAR ;ОСНОВНЫЕ ПЕРЕМЕННЫЕ
+ I '$D(%BS(1)) D %BS1^%ZAPM.bs.BSF4
+ I '$D(GREEN) D VAR^%ZAPM.bs.BSCh
+ S MainRef="MAIN^~BSCGH" ;ОСНОВНОЙ ВХОД <---------------------
+ S MainTabl="^%ZAPM.bs.BSC(""HTML"")" ;ТАБЛИЦА ОСНОВНЫХ ПАРАМЕТРОВ
+ //S CurUS=$$ADDRIP^%ZAPM.bs.BSC4
+ //S %BS(CurUS)=$P($G(%KEY("BSUSER"),"?"),",")
+ Q
+SQLJ S BSLABEL="MAIN^~BSCGH" N BSDSN
+ W "<table border=0 width=100%><tr><td align='center' width=10% class=s1><a class=u1 href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"' ><img border=no src='"_$G(BSDOMAIN,"/b4y")_"/img/bssql.jpg' ALT='"_$$LNG^%ZAPM.bs.BSC4("Загрузить SQL менеджер")_"'></a>"
+ W "</td><td width=90% align='center' class=s1 wi><h3>Менеджер SQL запросов</h3>формируемых к DSN (ODBC Data sources name) сервера '"_RED_$ZU(110)_EF_"'"
+ w "</td></tr></table>"
+ Q
+IFNODSN() S DSN=$S($G(BSDSN)="":$G(LDSN),1:$G(BSDSN))  
+ I $G(BSdsn)'="" S DSN=BSdsn
+  I $G(DSN)="" D FORMDSN Q 1
+ Q 0
+MAIN ;ОСНОВНОЙ ВХОД <---------------------
+ D MAINVAR
+ ;РЕГИСТРАЦИЯ ОБЯЗАТЕЛЬНА
+ ;I $G(%KEY("BSUSER"),"GUEST")="GUEST" D REGIST Q
+ ;I '$$PASS^%ZAPM.bs.BSChh() D REGIST Q
+ //S %BS(CurUS)=$P($G(%KEY("BSUSER"),"?"),",")
+MAINR ;ДАЛЬШЕ
+ D MGR^%ZAPM.bs.BS ;ПЕРЕЙТИ В СИСТЕМНУЮ ОБЛАСТЬ
+ //S %KEY("BSG")="SQL"
+ //I $D(%KEY("BSLABEL")) S ROU=$$%^%ZAPM.bs.BSCh(%KEY("BSLABEL")) D @ROU Q
+ N I,II,NS,P1,P9,BUFG,nI,BDSN
+ I $$IFNODSN Q
+ D BEG1^%ZAPM.bs.BSC4,TITLE
+ D WDSN
+ D SQLJ
+ D 
+ .N BSDSN S BSLABEL="MAIN^~BSCGH"
+ .w "<A href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"'>Назад, определить DSN</A>"_BBK
+ N WEBSQL,I,II,i,ii,WEBSQL1
+ S WEBSQL=DSN D iDSN^%ZAPM.bs.BSCG(DSN,$G(BSuser),$G(BSpass)) //открыть DSN
+ ;S I="" F  S I=$O(WEBSQL(I)) Q:I=""  I $G(WEBSQL(I,2))="TABLE" S WEBSQL1(I,1)=1
+ ;S I="" F  S I=$O(WEBSQ(I)) Q:I=""  I $G(WEBSQ(I,2))="TABLE_NAME" S WEBSQL1(I,1)=1
+ i $O(WEBSQL(""))="" w RED,"<br>DSN:"_DSN_" - пуст или не существует!",EF,"<BR>" D HELP Q
+ ;D TAB("WEBSQL","WEBSQL1")
+ ;ZW WEBSQ
+ D TAB("WEBSQ","WEBSQL1")
+ S BDSN=$$KBDG("^%ZAPM.bs.BSC(""BSQLDSN"")") I BDSN'="" D
+ .I $D(WEBSQL),$O(WEBSQL(""))'="" S @BDSN@($G(CurUS,"DSN"),DSN)="" Q
+ .K @BDSN@($G(CurUS,"DSN"),DSN)
+ ;W "<PRE>" W WEBSQ W "</PRE>"
+ D HELP Q
+SQLGO ;ВОЗВРАТИТЬ ТАБЛИЦУ
+ I $$IFNODSN Q
+ D BEG1^%ZAPM.bs.BSC4,TITLE
+ D WDSN
+ D SQLJ
+ S SQL=$G(mBSQL1)
+ S TABLE=$G(TABLE)
+ D
+ .N BSDSN S BSLABEL="MAIN^~BSCGH"
+ .w "<A href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"'>Назад, определить DSN</A> "_BBK
+ S BSLABEL="MAIN^~BSCGH"
+ w "<A href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"&BSDSN="_DSN_"'>Назад, в список таблиц DSN:"_DSN_"</A>"_BBK
+ S BSLABEL="SQL^~BSCGH"
+ w "<A href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"&TABLE="_TABLE_"&BSDSN="_DSN_"'>Назад, в конструктор SQL-запросов</A> "_BBK
+ I SQL="" W "SQL - ЗАПРОС ПУСТОЙ !" Q
+ W "Результат SQL - запроса: "_RED_SQL_EF_"<BR>",BK
+ N I,II,i,ii,WEBSQL1,IF,TG,Break,BSDN
+ S TG=$G(BSTG1,"WEBSQL") K @TG
+ S STR=$G(BSTR1,10)
+ S IF="1 S Break=(ii>"_STR_")"
+ D Read^%ZAPM.bs.BSCG(DSN,SQL,$G(IF),,TG) ;ЧТЕНИЕ ТАБЛИЦЫ В МАССИВ TG
+ D TAB(TG)
+ S BDSN=$$KBDG("^%ZAPM.bs.BSC(""BSQLDSN"")") I BDSN'="" D
+ .S I=$O(@BDSN@("SQL",""),-1)+1,@BDSN@("SQL",I,"SQL1")=SQL
+ .I I>$$0^%ZAPM.bs.BSCh(30) S I=$O(@BDSN@("SQL","")) K @BDSN@("SQL",I)
+ D HELP
+ Q
+WDSN     W "<h3>Информация по DSN: "_DSN_"</H3>" 
+	Q
+sample() n q s q="<HR>Пример ODBC доступа из СУБД Cache' на языке Cache Object Script:<PRE>"_BK
+	s q=q_RED_"D Read^%ZAPM.bs.BSCG("""_DSN_""","""_sQL_""",1,,""^mtemple"")"_EF_" ;ЧТЕНИЕ ТАБЛИЦЫ В МАССИВ ^mtemple"_BK
+	S q=q_"где: """_DSN_""" - имя DSN источник данных ODBC"_BK
+	S q=q_""""_sQL_""" - SQL утверждение"_BK
+	S q=q_"^mtemle(0,1...n) - имена полей результат выполнения SQL утверждение. n - количество колонок"_BK
+	S q=q_"^mtemle(r,1...n) - значения данных в полях. r - номер записи"_BK
+	q q_"</PRE>"_BK
+SQL ;ОПРЕДЕЛИТЬ ЗАПРОС
+ I $$IFNODSN Q
+ I $G(TABLE)="" D FORMDSN Q
+ N I,II,NS,P1,P9,BUFG,nI
+ D BEG1^%ZAPM.bs.BSC4,TITLE D WDSN D SQLJ
+ S BSLABEL="MAIN^~BSCGH"
+ w "<A href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"&BSDSN="_DSN_"'>Назад, в список таблиц</A> "
+ W "<form NAME='FORMSQL' action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"" TARGET='sqlresult'>"
+ N mBSQL1,BSTG1,BSTR1
+ S BSLABEL="SQLGO^~BSCGH"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ W "<P>"
+ w "<input type=""submit"" value="" Выполнить SQL-запрос "" name=""FIND1"">",BK
+ ;W "<input type=""reset"" value="" Очистить "" name=""FIND2"">",BK
+ //w "<input type=""hidden"" name=""BSROU"" value=""MAIN^~BSCGH"">",BK
+ //w "<input type=""hidden"" name=""BSLABEL"" value=""SQLGO^~BSCGH"">",BK
+ //w "<input type=""hidden"" name=""BSG"" value=""SQL""></P>",BK
+ w "<input type=""hidden"" name=""DSN"" value="""_DSN_"""></P>",BK
+ w "<input type=""hidden"" name=""TABLE"" value="""_$G(%KEY("TABLE"))_"""></P>",BK
+ w BK,"<table border=""0"">",BK
+ w "<tr>",BK
+   w "<td align=""right""><strong>Текст SQL-запроса </strong></td>",BK
+   w "<td><textarea rows=""4"" name=mBSQL1 cols=""70"">" D  W "</textarea>"
+   .S sQL="SELECT * FROM "_$S($G(%KEY("BSOWNER"))'="":$G(%KEY("BSOWNER"))_".",1:"")_$G(%KEY("TABLE")) W sQL
+   W "</td>",BK
+ w "</tr>"
+ w "<tr>",BK
+  w "<td align=""right"">История запросов" 
+  //W "<INPUT TYPE=""button"" VALUE=""'History' Запросов"" onClick=""SetHistory();"">"
+  W "</td>",BK
+  w "<td>"
+  W "<p><select name=""HSQL"" onchange=""javascript:mBSQL1.value=HSQL.value; T1.focus();"" size=""1"">",BK
+  W "<option value="""" SELECTED > </option>",BK
+ S BDSN=$$KBDG("^%ZAPM.bs.BSC(""BSQLDSN"")") I BDSN'="" D
+ .S I="" F  S I=$O(@BDSN@("SQL",I),-1) Q:I=""  S II=$G(@BDSN@("SQL",I,"SQL1")) W "<option " W " value="""_II_""">"_II_"</option>",BK
+ W "</select></td>",BK
+ W "</tr>"
+ w "<tr>",BK
+   w "<td align=right><strong>Пользователь</strong></td>"_BK
+   w "<td><input type=text name=BSUsEr size=13 VALUE='"_$g(BSuser)_"'></td>"_BK
+ w "</tr>"
+ w "<tr>",BK
+   w "<td align=right><strong>Пароль</strong></td>"_BK
+   w "<td><input type=text name=BSPsWrD size=7 VALUE='"_$g(BSpass)_"'></td>"_BK
+ w "</tr>"
+ w "<tr>",BK
+   w "<td align=""right""><strong>Сколько строк<BR>вывести</strong></td>",BK
+   w "<td><input type=""text"" name=""BSTR1"" size=""7"" VALUE=100></td>",BK
+ w "</tr>"
+ w "<tr>",BK
+   w "<td align=""right""><strong>Имя временного<BR>массива</strong></td>",BK
+   w "<td><input type=""text"" name=""BSTG1"" size=""12"" VALUE='WEBSQL'></td>",BK
+ w "</tr>"
+ w "<tr>",BK
+   w "<td align=""right""><strong>Выводить результат<BR>в браузер</strong></td>",BK
+   w "<td><input type=""checkbox"" name=""BSCBX"" CHECKED VALUE='1'></td>",BK
+ w "</tr>"
+ w "</table>",BK
+ W "</FORM>"
+ W BK,"<SCRIPT LANGUAGE=""JavaScript""><!--"_BK
+ W "function SetHistory() {"_BK
+ //W "alert(111);"_BK
+ W "FORMSQL.mBSQL1.value=FORMSQL.HSQL.value;",BK
+ W "}//--></SCRIPT>",BK
+ W $$sample_BK
+ D HELP Q
+KBDG(A) ;ВОЗВРАТИТИТЬ ССЫЛКУ
+ N BDSN S BDSN=$$KBD^%ZAPM.bs.BSF12(A) I BDSN'="" I $$Data^%ZAPM.bs.BSF12(BDSN) Q BDSN
+ Q ""
+FORMDSN ;ПЕРВАЯ СТРАНИЦА
+ N I
+ D BEG1^%ZAPM.bs.BSC4,TITLE,SQLJ
+ W "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+ S BSLABEL="MAIN^~BSCGH"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ W "<P>"
+ w "<input type=""submit"" value="" Затребовать информацию по DSN "" name=""FIND1"">",BK
+ W "<input type=""reset"" value="" Очистить "" name=""FIND2"">",BK
+ //w "<input type=""hidden"" name=""BSROU"" value=""MAIN^~BSCGH"">",BK
+ //w "<input type=""hidden"" name=""BSG"" value=""SQL""></P>",BK
+ w BK,"<table border=""0"">",BK
+ /*w "<tr>",BK
+   w "<td align=""right""><strong>Новый 'Data Source Name'</strong></td>",BK
+   w "<td><input type=""text"" name=""BSDSN"" size=""17""></td>",BK
+ w "</tr>" */
+ N LD,svc //СПИСКИ DSN
+ D DSNLIST1
+ i '$D(LD) S BDSN=$$KBDG("^%ZAPM.bs.BSC(""BSQLDSN"")") I BDSN'="",$O(@BDSN@(""))'="" S I="" F  S I=$O(@BDSN@($G(CurUS,"DSN"),I)) Q:I=""  S LD(I)="" 
+ D
+ .w "<tr>",BK
+ .w "<td align=""right""><strong>Выберите источник ODBC</strong></td>",BK
+ .w "<td>"
+ .W "<p><select name=""LDSN"" size=""1"">",BK
+ .S I="" F  S I=$O(LD(I)) Q:I=""  W "<option " W " value="""_I_""">"_I_"</option>",BK
+ .W "<option value="""" SELECTED > </option>",BK
+ .W "</select></TD></TR>"
+ .W "<TR><TD align=""right"">или DSN:</TD><TD><INPUT type=""text"" name=""BSdsn"" size=""17""></TD></TR>"
+ .W "<TR><TD align=""right"">Имя пользователя</TD><TD><INPUT type=""text"" name=""BSuser"" size=17 ></TD></TR>"
+ .W "<TR><TD align=""right"">а также пароль, если нужно:</TD><TD><INPUT type=""text"" name=""BSpass"" size=17 ></TD></TR>"
+ .w BK
+ w "</table>",BK
+ W "</FORM>"
+ D HELP Q
+DSNLIST1 D DSNLIST
+ i $D(svc) S I="" D  I 1
+ .F  S I=$O(svc(I)) Q:I=""  I "/ODBC Data Sources/ODBC File DSN/"'[("/"_I_"/") S LD(I)=""
+ Q
+DSNLIST    S $ZT="DNSPerr"
+    I $ZV'["Windows" Q
+    d GetKeyNames^%zekreg("HKLM","SOFTWARE\ODBC\ODBC.INI",$na(svc))
+ Q
+DNSPerr Q
+testODBC() N LD,svc,I D DSNLIST1 S I="" F  S I=$O(LD(I)) Q:I=""  I I["Samples" Q
+ q "http://"_$P($$ADDSN^%ZAPM.bs.BSC4,":")_":81/test/testODBC.php?resourceName="_I
+TAB(TK,SK) ;ЗАСВЕТИТЬ ТАБЛИЦУ
+ N I,II,AAA,BSOWNER
+ D TABL1
+ S BSLABEL="SQL^~BSCGH" 
+ S I="-1" F  S I=$O(@TK@(I)) Q:I=""  D
+ .w "<tr>",BK
+ .S II="" F  S II=$O(@TK@(I,II)) Q:II=""  D
+ ..w "<td class=s"_$S(I=0:4,1:2)_">" D
+ ...I I=0 D  w $G(@TK@(I,II)) Q
+ ....I $ZCONVERT($G(@TK@(I,II)),"U")="TABLE_NAME" S AAA(II)=1
+ ....I $ZCONVERT($G(@TK@(I,II)),"U")="TABLE_OWNER" S AAA(II)=2
+ ....I $ZCONVERT($G(@TK@(I,II)),"U")="TABLE_TYPE" S AAA=II
+ ...I I'=0 D
+ ....I $G(AAA(II))=2 S BSOWNER=$G(@TK@(I,II))
+ ....I $G(AAA(II))=1,$ZCONVERT($G(@TK@(I,AAA)),"U")="TABLE" w "<A href='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"&TABLE="_$G(@TK@(I,II))_"&BSDSN="_DSN_"'>"_$G(@TK@(I,II)),"</A>" Q
+ ....w $G(@TK@(I,II)) I $D(@TK@(I,II,1)) S i="" F  S i=$O(@TK@(I,II,i)) Q:i=""  W $G(@TK@(I,II,i))
+ ..w "</td>"
+ .w "</tr>"
+ D TABL2
+ Q
+TABL1 ;НАЧАТЬ ТАБЛИЦУ
+ w BK,"<table border=0 >",BK Q
+TABL2 ;ЗАКОНЧИТЬ
+ w "</table>",BK Q

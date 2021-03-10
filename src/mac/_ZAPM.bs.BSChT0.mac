@@ -1,0 +1,112 @@
+ROUTINE %ZAPM.bs.BSChT0
+%BSChT0 ; пpогpамма НАВИГАЦИИ ПО ТАБЛИЦЕ ; 12:01   09.02.2000
+ Q
+QQ(Q) S $P(CFG,",",4)=Q,$P(CFG,",",5)=Q,$P(CFG,",",6)=Q
+ Q
+Q ;ПРОВЕРКА КАРТИНКИ РОЗЫ ВЕТРОВ
+ I TY<$P(CFG,",",9),TX<$P(CFG,",",10),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(0) Q  ;-Ж-
+ I TY'<$P(CFG,",",9),TX'<$P(CFG,",",10),$P(@BS,"@",28)=$P(CFG,",",11),$P(@BS,"@",29)=$P(CFG,",",12) D QQ(9) Q
+ I TY'<$P(CFG,",",9) D  Q  ;-.-
+ .I TX'<$P(CFG,",",10),$P(@BS,"@",28)=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(5) Q
+ .I TX'<$P(CFG,",",10),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(578) Q
+ .I TX'<$P(CFG,",",10),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)=$P(CFG,",",12) D QQ(7) Q
+ .I TX<$P(CFG,",",10),$P(@BS,"@",28)=$P(CFG,",",11),$P(@BS,"@",29)=$P(CFG,",",12) D QQ(4) Q
+ .I TX<$P(CFG,",",10),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)=$P(CFG,",",12) D QQ(467) Q
+ .I TX<$P(CFG,",",10),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(45678) Q
+ .I TX<$P(CFG,",",10),$P(@BS,"@",28)=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(45) Q
+ I TX'<$P(CFG,",",10) D  Q  ;K-
+ .I TY<$P(CFG,",",9),$P(@BS,"@",28)=$P(CFG,",",11),$P(@BS,"@",29)=$P(CFG,",",12) D QQ(2) Q
+ .I TY<$P(CFG,",",9),$P(@BS,"@",28)=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(235) Q
+ .I TY<$P(CFG,",",9),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(23578) Q
+ .I TY<$P(CFG,",",9),$P(@BS,"@",28)'=$P(CFG,",",11),$P(@BS,"@",29)=$P(CFG,",",12) D QQ(27) Q
+ I $P(@BS,"@",29)=$P(CFG,",",12) D  Q  ;-I
+ .I TX<$P(CFG,",",10),TY<$P(CFG,",",9),$P(@BS,"@",28)=$P(CFG,",",11) D QQ(124) Q
+ .I TX<$P(CFG,",",10),TY<$P(CFG,",",9),$P(@BS,"@",28)'=$P(CFG,",",11) D QQ(12467) Q
+ I $P(@BS,"@",28)=$P(CFG,",",11) D  Q  ;_._
+ .I TY<$P(CFG,",",9),TX<$P(CFG,",",10),$P(@BS,"@",29)'=$P(CFG,",",12) D QQ(12345) Q
+ Q
+2C ;^
+ I TY'<$P(CFG,",",9) Q
+ S $P(CFG,",",9)=$P(CFG,",",9)-1
+ Q
+4C ;<--
+ I TX'<$P(CFG,",",10) Q
+ S $P(CFG,",",10)=$P(CFG,",",10)-1
+ Q
+5C ;-->
+ I $P(@BS,"@",29)=$P(CFG,",",12) Q
+ S $P(CFG,",",10)=$P(CFG,",",10)+1
+ Q
+7C ;V
+ I $P(@BS,"@",28)=$P(CFG,",",11) Q
+ S $P(CFG,",",9)=$P(CFG,",",9)+1
+ Q
+6C D 4C,7C Q
+3C D 2C,5C Q
+1C D 2C,4C Q
+8C D 5C,7C Q
+ Q
+3CELL(OT,SH,LONG) ;НА КАКОЙ КЛЕТКЕ ОСТАНОВИМСЯ
+ N I,H,Limi,KolX,KolP S H=0,KolStr=0,KolX=$P(@BS,"@",29),KolP=$$0^%ZAPM.bs.BSCh(30)
+ I TY'=1 F I=1:1:TY-1 Q:'$D(@BS@(I,1))  S H=H+$P(@BS@(I,1),"@",3)
+ F I=OT:SH Q:H'<LONG  Q:'$D(@BS@(I,1))  S H=H+$P(@BS@(I,1),"@",3) I '$P(CFG,",",2) D  Q:$D(Limi)
+ .S KolStr=KolStr+1 I KolP,(KolStr*KolX)>KolP S Limi=1
+ Q I-SH
+4CELL(OT,SH,LONG) ;НА КАКОЙ КЛЕТКЕ ОСТАНОВИМСЯ
+ N I,H S H=0
+ I TX'=1 F I=1:1:TX-1 Q:'$D(@BS@(1,I))  S H=H+$P(@BS@(1,I),"@",4)
+ F I=OT:SH Q:H'<LONG  Q:'$D(@BS@(1,I))  S H=H+$P(@BS@(1,I),"@",4)
+ Q I-SH
+2P ;^
+ I TY'<$P(CFG,",",9) Q
+ S $P(CFG,",",9)=$$3CELL($P(CFG,",",9),"-1",$P(CFG,",",2))
+ I TY'<$P(CFG,",",9) S $P(CFG,",",9)=TY
+ Q
+4P ;<--
+ I TX'<$P(CFG,",",10) Q
+ S $P(CFG,",",10)=$$4CELL($P(CFG,",",10),"-1",$P(CFG,",",3))
+ I TX'<$P(CFG,",",10) S $P(CFG,",",10)=TX
+ Q
+5P ;-->
+ I $P(@BS,"@",29)=$P(CFG,",",12) Q
+ S $P(CFG,",",10)=$P(CFG,",",12)
+ I $P(@BS,"@",29)<$P(CFG,",",10) S $P(CFG,",",10)=$$4CELL($P(@BS,"@",29),"-1",$P(CFG,",",3))
+ Q
+7P ;V
+ I $P(@BS,"@",28)=$P(CFG,",",11) Q
+ S Tmp=$P(CFG,",",11)-$P(CFG,",",9)
+ S $P(CFG,",",9)=$P(CFG,",",11)
+ I $P(@BS,"@",28)<$P(CFG,",",9) S $P(CFG,",",9)=$$3CELL($P(@BS,"@",28),"-1",$P(CFG,",",2))
+ Q
+8P D 5P,7P Q
+6P D 4P,7P Q
+1P D 2P,4P Q
+3P D 2P,5P Q
+5T ;-->
+ I $P(@BS,"@",29)=$P(CFG,",",12) Q
+ S $P(CFG,",",10)=$$4CELL($P(@BS,"@",29),"-1",$P(CFG,",",3))+1
+ Q
+7T ;V
+ I $P(@BS,"@",28)=$P(CFG,",",11) Q
+ S $P(CFG,",",9)=$$3CELL($P(@BS,"@",28),"-1",$P(CFG,",",2))+1
+ Q
+2T ;^
+ I TY'<$P(CFG,",",9) Q
+ S $P(CFG,",",9)=TY
+ Q
+4T ;<--
+ I TX'<$P(CFG,",",10) Q
+ S $P(CFG,",",10)=TX
+ Q
+8T D 5T,7T Q
+3T D 2T,5T Q
+1T D 2T,4T Q
+6T D 4T,7T Q
+1N S $P(CFG,",",9)=TY,$P(CFG,",",10)=TX
+ Q
+3N S $P(CFG,",",9)=$P(CFG,",",11)-1,$P(CFG,",",10)=TX
+ Q
+2N S $P(CFG,",",9)=$$3CELL($P(CFG,",",9),"-1",99999),$P(CFG,",",10)=TX
+ Q
+4N S $P(CFG,",",9)=$P(@BS,"@",28)-2,$P(CFG,",",10)=TX
+ Q

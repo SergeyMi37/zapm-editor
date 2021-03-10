@@ -1,0 +1,61 @@
+ROUTINE %ZAPM.bs.BSpgWEB
+TKWEB	;PG&A,TK-WEB,1.1,INTRO;;;;26DEC97  09:07
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	;
+ W ! G:$D(^%ZAPM.bs.BSpgWEBC) CONT
+	F D=1:1 S A=$T(D+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	D INIT
+	G CONT
+D	;
+	;Congratulations on purchasing TK-WEB!
+	;
+	;In order to run TK-WEB, you need the following:
+	;
+	;    1. Microsoft Windows, Unix or VMS with a TCP/IP stack running. (Note: If you
+	;       are planning to run this on only one computer to test, you don't need
+	;       to have a network installed, but you do need to have TCP running on your
+	;       computer.)
+	;
+	;    2. M operating system with TCP/IP connectivity.
+	;
+ ;    3. ^%ZAPM.bs.BSpgWEBC running in the background.  This program will start it
+	;       in a second.  You can run this program anytime you want to start it
+ ;       again, although you can just JOB ^%ZAPM.bs.BSpgWEBC yourself or add it to the system
+	;       startup table so that it starts up automatically when you reboot.
+	;
+	;    4. A browser such as Netscape or Microsoft Internet Explorer.  You can
+	;       run this on the same computer, or if a network is installed, you can
+	;       run it on any other computer on the same network.
+	;
+	;;
+CONT L ^%ZAPM.bs.BSpgWEBC:0 E  W "The TK-WEB web server is already running",!! G CONT1
+	L  R "Do you want to start the TK-WEB web server? (Y/N)-",A#1,!
+ I A="Y"!(A="y") J ^%ZAPM.bs.BSpgWEBC
+	E  W !,"TK-WEB not started - you can run this program later to start it.",! Q
+	;
+CONT1	W ! F D=1:1 S A=$T(D1+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	Q
+D1	;
+	;In order to access your TK-WEB server you will need to type the URL in the
+	;location text field of your browser.  To start with, you just need to enter
+	;the URL of the machine.  An introduction page will appear.  Later, when you
+	;have published some content you can enter a URL to that specific page.  Your
+	;web server can be reached in one of the following URL formats:
+	;
+	;  1. Domain name - If you have a DNS server running on your network then
+	;     you can enter the domain name of the machine that is running TK-WEB.
+	;     Example:  http://www.mycompany.com
+	;
+	;  2. Machine name - You can optionally enter the network name of the computer
+	;     running TK-WEB.  Example:  http://alpha
+	;
+	;  3. IP address - If neither of the above two work, then you can try using
+	;     the IP address of the machine.  Example:  http://192.154.0.12
+	;     (If this works and the other two don't, then you will need to check
+	;     how your name server is set up on your network.)
+	;;
+INIT S ^%ZAPM.bs.BSpgWEBC("Control")="ON,,ON,,,5,80"
+ I '$D(^%ZAPM.bs.BSpg("OS")) S B=$ZV,^%ZAPM.bs.BSpg("OS")=$S(B["DSM-1":"DSM",B["DSM":"DSM4",B["MSM":"MSM",B["M/S":"M11",B["DTM":"DTM",B["V1.":"PSM",B["ISM":"M11",B["Cache":"M11",B["Open M":"M11",1:"?")
+ S OS=$G(^%ZAPM.bs.BSpg("OS"))
+	Q

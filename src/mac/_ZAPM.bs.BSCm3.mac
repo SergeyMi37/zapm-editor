@@ -1,0 +1,74 @@
+ROUTINE %ZAPM.bs.BSCm3
+%BSCm3 ;МОДУЛЬ UFD (ЗАГОТОВКА ДЛЯ ПРОГРАММ БЕЗ ПОДДЕРЖАНИЯ СЕССИИ)
+ ;
+ ;    Copyright (C) Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ Q
+T //MAIN //W V1," ",V2
+ D VAR
+ W "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+ S BSLABEL="Act^~BSCm3"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ //W "<form name='EE1'><input type='hidden' name='k0' value=''>"_BK
+ W 1,CurNode,2
+ W "<table>"
+ W "<tr><td><INPUT name=b1u1 title='на первый ключ' TYPE='submit' VALUE='&lt;&lt;' >"_BK
+ W "<INPUT name=b2u1 title='на предыдущий ключ' TYPE='submit' VALUE='&lt;' ></td>"_BK
+ //W "<INPUT title='Поле текущего ключа' name='k1' TYPE='text' SIZE=10 VALUE='' >"_BK
+ w "<td><select name='Act0' size=1>"_BK
+ F ind=1:1:100 S GLO=$$O(GLO,KY,1) Q:GLO=""  Q:$QL(GLO)="0"  W "<option value='"_ind_"' " D  W ">"_GLO_"</option>"_BK
+ .I CurNode="",ind=1 S CurNode=GLO
+ .I GLO=CurNode W "selected "
+ I ind=100,GLO'="" W "<option value=''>...дальше</option>"_BK
+ w "</select></td>"_BK
+ W "<td><INPUT name=b3u1 title='на последущий ключ' TYPE='submit' VALUE='&gt;' >"_BK
+ W "<INPUT name=b4u1 title='на последний ключ' TYPE='submit' VALUE='&gt;&gt;'></td>"_BK
+ W "<td><INPUT name=b5u1 title='сохранить' TYPE='submit' VALUE='save' ><td>"_BK
+ W "<td><INPUT name=b6u1 title='вставить' TYPE='submit' VALUE='new insert' ><td>"_BK
+ W "<td><INPUT name=b7u1 title='удалить ключ' TYPE='submit' VALUE='delete' ><td>"_BK
+ W "</tr></table>"
+ W "</form>"_BK
+ I $$SetVar^%ZAPM.bs.BSC4(BSwinID_"QQ",QQ)
+ I $$SetVar^%ZAPM.bs.BSC4(BSwinID_"GGG",GGG)
+ D SetVar^%ZAPM.bs.BSC4(BSwinID_"CurNode",CurNode)
+ D END^%ZAPM.bs.BSC4
+ Q
+Act W 111
+ Q       
+ /*
+ W "<PRE>"
+ ZW  W " ",KY
+ W "</PRE>"
+ */
+ 
+VAR //ПЕРЕМЕННЫЕ КОМПЛЕКСА
+ S BStyle="MONITOR"
+ W "<HTML><HEAD>"_BK_$$STYLE^%ZAPM.bs.BSC4
+ S PT=$NA(@("^"_V1)@(V2))
+ S BSwinID=$G(V3,"w123")
+ W "<TITLE>"_PT_"</TITLE>"_BK
+ M BD=@PT@("KEY")
+ S KY=$O(BD(""),-1)
+ S GLO=BD
+ //GGG,QQ - СКВОЗНЫЕ ПЕРЕМЕННЫЕ
+ S QQ=$$GetVar^%ZAPM.bs.BSC4(BSwinID_"QQ",$C(0))
+ S GGG=$$GetVar^%ZAPM.bs.BSC4(BSwinID_"GGG","")
+ S CurNode=$$GetVar^%ZAPM.bs.BSC4(BSwinID_"CurNode","")
+ Q       
+O(G,K,N) //$ORDER 
+ N GG S GG=G
+ S KK=$C(0)
+ I G'["(",N=-1 S GG=$ZO(@(G_"("""")"),-1) I $$C Q $$Q
+ F  S GG=$ZO(@GG,N) Q:GG=""  I $$C Q
+ Q $$Q
+C() //КОНТРОЛЬ
+ I $QL(GG)>K Q 0
+ I GG[KK Q 0
+ S KK=$P(GG,",",1,K)
+ I $P(GG,",",1,K)["(" S GGG=$S(GG'[")":$P(GG,",",1,K)_")",1:GG)
+ E  S GGG=""
+ Q 1
+Q() I QQ=GGG Q ""
+ S QQ=GGG
+ Q GGG

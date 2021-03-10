@@ -1,0 +1,71 @@
+ROUTINE %ZAPM.bs.BSMSM
+%BSMSM ;MUMPS-ИНТЕРФЕЙС ; 13:38 18-DEC-98
+ D 0 G D
+0 I '$$AccesMSM^%ZAPM.bs.BSDOS2(1) G PROT
+ S OO=29,OOO="^%ZAPM.bs.BS" K %JB D 24^%ZAPM.bs.BSTM,^%ZAPM.bs.BSB,ZA^%ZAPM.bs.BSF Q:R1=27  I %B=1 S IYI="^%ZAPM.bs.BSS(UTILITY" D ENTER^%ZAPM.bs.BSN Q
+ I %B=3!(%B=4) S Br=BSR,Bt=BST,FIL=1 S:%B=4 FIL="d[""%BS""" D  S BST=Bt,BSR=Br K Br,Bt G 0
+ .D D^%ZAPM.bs.BSDIR("","",FIL,"S d=$O(^ (d))","S t1=d_$J("""",9-$L(d)) S d1=$S ZL @d S t1=t1_$J(d1-$S,5)_"" ;""_$P($T(+1),"";"",2,99)","^%ZAPM.bs.BSbufB","RDIR"_$G(%BS(3),$P)_$J_"u","ПРОГРАММЫ",2,"D ROLI^%ZAPM.bs.BSMSM","ROFK^%ZAPM.bs.BSMSM","  новая пpогpамма","DelF8^%ZAPM.bs.BSDOS")
+ .S IYI=BSr_","_BSt
+RR .D ENTER^%ZAPM.bs.BSN I R1=27 Q
+ .I R1=13 S IntGO=$P(@BSR@(BST),"@",15) I IntGO["^" S R3=83 D @IntGO
+ .G RR
+ I %B=6 S FIL="$P($G(@d),""@"")=""BSD - MSW""",ls="БАЗЫ ДАННЫХ" G G
+ I %B=7 S FIL="$P($G(@d),""@"")[""%BS-invert-""!(d[""in"")",ls="КОДИФИКАТОРЫ" G G
+ I %B=8 S FIL="$P($G(@d),""@"")[""%BS-dinam""",ls="ДИНАМИЧЕСКИЕ БОКОВИНЫ СВОДКИ" G G
+ I %B=5 S FIL="$P($G(@d),""@"")=""BaSe MsW """,ls="РАЗДЕЛЫ ПОЛЬЗОВАТЕЛЯ" G G
+ I %B=2 S FIL=1,ls="КАТАЛОГ МАССИВОВ" G G
+ I %B=9 I $$PROTFUN D ^%ZAPM.bs.BSMSMF G 0
+ G 0
+G S Br=BSR,Bt=BST D   S BST=Bt,BSR=Br K Br,Bt G 0
+ .D D^%ZAPM.bs.BSDIR("^","^",FIL,"S d=""^""_$O(@d)","S t1=d_$J("""",10-$L(d))_"";""_$$HEADGLO^%ZAPM.bs.BSMSM(d)","^%ZAPM.bs.BSbufB","GDIR"_$G(%BS(3),$P)_$J_"u"_$G(%BS(3),$P),ls,2,"D GLOLI^%ZAPM.bs.BSMSM","GLOFK^%ZAPM.bs.BSMSM","  новый массив","DelF8^%ZAPM.bs.BSDOS")
+ .S IYI=BSr_","_BSt
+GG .D ENTER^%ZAPM.bs.BSN I R1=27 Q
+ .I R1=13 S IntGO=$P(@BSR@(BST),"@",15) I IntGO["^" S R3=83 D @IntGO
+ .G GG
+D D TIT^%ZAPM.bs.BST,W^%ZAPM.bs.BST Q
+HEADGLO(d) I d="^BSrecord" Q "%BS-pазделение доступа в кип"
+ I d="^BShigh" Q "%BS-самоповышение веpсии"
+ I $E(d,$L(d)-1,$L(d))="in",$P($G(@$P(d,"in")),"@")["%BS-invert-" Q "%BS-Инвеpтиpованный к "_$P(d,"in")
+ I $D(@d)["0" Q "?"
+ S d=@d I $P(d,"@")="BSD - MSW" Q "%BS-База данных PART="_$P(d,"@",2)_" TABL="_$P(d,"@",3)
+ I $P(d,"@")="BaSe MsW " Q "%BS-Раздел ;"_$P(d,"@",2)
+ I $P(d,"@")["%BS-invert-" Q "%BS-Кодификатоp из PART="_$P($P($P(d,"@"),"-",3),",",1,2)_" TABL="_$P($P($P(d,"@"),"-",3),",",3)_" ;"_$P(d,"@",2)
+ I $P(d,"@")["%BS-dinam" Q "%BS-М/Запросы PART="_$P($P($P(d,"@"),"-",3),",",1,2)_" TABL="_$P($P($P(d,"@"),"-",3),",",3)_" ;"_$P(d,"@",2)
+ Q $$DELCTL^%ZAPM.bs.BSsFUNM(d)
+e Q
+GLOFK S %NAM=$P(d," ")
+ I R3=83 S ^%ZAPM.bs.BSbufB(2,$G(%BS(3),$P),7)=%NAM D S,^%ZAPM.bs.BSMSMG(),CL^%ZAPM.bs.BSF4,R I $D(IntGO) K IntGO Q
+ I R3=85 D  I %NAM["^" S %GLB=%NAM K %PAROL D ^%ZAPM.bs.BSGCH,PROTALL^%ZAPM.bs.BSF9
+ .I '$$RP^%ZAPM.bs.BSGCH("^BSdirddp") S %NAM="" D ERRRVG^%ZAPM.bs.BS2 Q
+ I R3=87 G DD:ny<2 D  K AllWAY Q:R1=27
+ .I '$$AccesMSM^%ZAPM.bs.BSDOS2(3) D PROT^%ZAPM.bs.BSMSM Q
+ .K AllWAY I $D(%DIA) S do="I i>1 S %NAM=$P($P(^(j),""@"",15),"" "") I %NAM'="""" D DelG^%ZAPM.bs.BSMSM(%NAM)" D BLOK^%ZAPM.bs.BSF1 Q
+ .D DelG^%ZAPM.bs.BSMSM(%NAM) Q
+ G DD
+DelG(G) Q:G=""  D L^%ZAPM.bs.BS3($NA(@G)) Q:'LOC  D  D U^%ZAPM.bs.BS3($NA(@G)) Q
+ .D YEG Q:'YES  K @G S R1=27 Q
+ Q
+YEG I '$D(%DIA) S ls=" УДАЛЯЕМ МАССИВ "_G_", ВЫ УВЕРЕНЫ ? ",%B=2 W $$bel^%ZAPM.bs.BS3 D YES^%ZAPM.bs.BSF Q
+ I $D(%DIA),'$G(AllWAY) D Yes^%ZAPM.bs.BSXfun("УДАЛЯЕМ МАССИВ "_G_". Удалять С ПОДТВЕРЖДЕНИЕМ !!!",1) Q:YES<0  I 'YES D Yes^%ZAPM.bs.BSXfun(" ВЫ УВЕРЕНЫ ? Удалять ВСЕ ПОМЕЧЕННЫЕ МАССИВЫ БЕЗ ПОДТВЕРЖДЕНИЯ !",1) Q:YES<1  S AllWAY=1
+ Q
+DelR(G) Q:G=""  D YER Q:'YES  X "ZR  ZS @G ZL %BSMSM" S R1=27,ny=1
+ Q
+YER I '$D(%DIA) S ls=" УДАЛЯЕМ ПРОГРАММУ "_G_", ВЫ УВЕРЕНЫ ? ",%B=2 W $$bel^%ZAPM.bs.BS3 D YES^%ZAPM.bs.BSF Q
+ I $D(%DIA),'$G(AllWAY) D Yes^%ZAPM.bs.BSXfun("УДАЛЯЕМ ПРОГРАММЫ "_G_". Удалять С ПОДТВЕРЖДЕНИЕМ !!!",1) Q:YES<0  I 'YES D Yes^%ZAPM.bs.BSXfun(" ВЫ УВЕРЕНЫ ? Удалять ВСЕ ПОМЕЧЕННЫЕ ПРОГРАММЫ БЕЗ ПОДТВЕРЖДЕНИЯ !",1) Q:YES<1  S AllWAY=1
+ Q
+ROFK S %NAM=$P(d," ")
+ I R3=83 S ^%ZAPM.bs.BSbufB(2,$G(%BS(3),$P),4,4)=%NAM D S,^%ZAPM.bs.BSXprog(),CL^%ZAPM.bs.BSF4,R I $D(IntGO) K IntGO Q
+ I R3=87 G DD:ny<2 D  K AllWAY Q:R1=27
+ .I '$$AccesMSM^%ZAPM.bs.BSDOS2(3) D PROT^%ZAPM.bs.BSMSM Q
+ .K AllWAY I $D(%DIA) S do="I i>1 S %NAM=$P($P(^(j),""@"",15),"" "") I %NAM'="""" D DelR^%ZAPM.bs.BSMSM(%NAM)" D BLOK^%ZAPM.bs.BSF1 Q
+ .D DelR^%ZAPM.bs.BSMSM(%NAM) Q
+DD G D^%ZAPM.bs.BS
+TEST D OP^%ZAPM.bs.BSF4,SA^%ZAPM.bs.BSsBUF,^%ZAPM.bs.BSMSMV,RE^%ZAPM.bs.BSsBUF Q
+S D SA^%ZAPM.bs.BSsBUF Q
+R D RE^%ZAPM.bs.BSsBUF Q
+PROTFUN() I $P($$ZU^%ZAPM.bs.BS3(0),",")'=$P($$ZU^%ZAPM.bs.BS3(1,0),",") D ErrMsg^%ZAPM.bs.BSXfun("Вы находитесь не в системном КИПе") Q 0
+ I '$$AccesMSM^%ZAPM.bs.BSDOS2(2) D PROT^%ZAPM.bs.BSMSM Q 0
+ Q 1
+PROT D ErrMsg^%ZAPM.bs.BSXfun("Нарушение прав доступа для пользователя '"_$G(%BS(12))_"'") Q
+ROLI W /CUP(23,1),$$clr^%ZAPM.bs.BS3(4),/EL(0),"    <Esc> - ОТМЕНА      <F4> - РЕДАКТИРОВАТЬ      <F8> - УДАЛИТЬ  ",$$atr^%ZAPM.bs.BS3(0) Q
+GLOLI W /CUP(23,1),$$clr^%ZAPM.bs.BS3(4),/EL(0)," <Esc> - ОТМЕНА <F4> - РЕДАКТИРОВАТЬ <F6> - ХАРАКТЕРРИСТИКИ <F8> - УДАЛИТЬ ",$$atr^%ZAPM.bs.BS3(0) Q

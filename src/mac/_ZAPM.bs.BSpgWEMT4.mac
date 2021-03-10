@@ -1,0 +1,66 @@
+ROUTINE %ZAPM.bs.BSpgWEMT4
+TKWEMT4	;PG&A,TK-IMAIL,1.1,WEB TOOLS;03OCT97  18:07 [ 12/09/97   2:10 PM ];;;19FEB98  00:01
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+D0	;
+	;RD;;<b><FONT COLOR="#FFFFFF">Configuration Menu;;;;;;bgcolor="#884433" WIDTH=50%"
+	;D;R;<b><FONT COLOR="#FFFFFF">TK-IMAIL;;;;;;bgcolor="#884433" WIDTH=50%
+	;RD;;</TABLE><CENTER><TABLE WIDTH=80%><TR><TD><a href="?MCONFIG1">IMAIL Server Settings</a>
+	;RD;;</TABLE><CENTER><TABLE WIDTH=80%><TR><TD><a href="?MCONFIG2">User Options</a>
+	;
+D1	; SERVER
+	;RD;;<b><FONT COLOR="#FFFFFF">IMAIL Server Settings;;;;;;bgcolor="#884433" width=50%
+	;D;R;<b><FONT COLOR="#FFFFFF">TK-IMAIL;;;;;;bgcolor="#884433" width=50%
+	;RD;R;Mail Host Name (Server Name)
+	;D;;;T;*;$G(@TKWEM@("HOST"));35
+	;H;;Enter the name of the machine that your TK-IMAIL is running on.
+	;RD;R;SMTP Port:
+	;D;;;T;*;$P($G(@TKWEM@("Control")),",",1);5
+	;H;;The port # that this mail server listens on for client requests for SMTP services.  Generally set to port 25.  If this is set to another port, then the client's need to be set accordingly.
+	;RD;R;POP3 Port:
+	;D;;;T;*;$P($G(@TKWEM@("Control")),",",2);5
+	;H;;The port # that this mail server listens on for client requests for POP3 services.  Generally set to port 110.  If this is set to another port, then the client's need to be set accordingly.
+	;RD;R;Logging On:
+	;D;;;C;*;$P($G(@TKWEM@("Control")),",",3)
+	;H;;Enables the activity logging and statistics
+	;RD;R;Log Lifetime (Days):
+	;D;;;T;*;$P($G(@TKWEM@("Control")),",",4);4
+	;H;;# of days to keep log
+	;RD;R;Suspend POP3 Access:
+	;D;;;C;*;$P($G(@TKWEM@("Control")),",",5)
+	;H;;Prevents Client's from reading mail temporarily
+	;
+D2	; USERS
+	;RD;;<b><FONT COLOR="#FFFFFF">User Definition;;;;;;bgcolor="#884433"
+	;D;C;<font color="#884433">*;;;;;;bgcolor="#884433"
+	;D;R;<b><FONT COLOR="#FFFFFF">TK-IMAIL;;;;;;bgcolor="#884433"
+	;RD;R;Current Users:
+	;D;;;M;SUSER;@TKWEM@("USER",X);W X,$S($D(^(X))=1:" (alias for "_^(X)_")",1:"")
+ ;D;;;S;*;"Delete Selected User";;;;D D23^%ZAPM.bs.BSpgWEMT4
+	;RD;R;Add Alias:
+ ;D;;;T;*;"";20;;;D D22^%ZAPM.bs.BSpgWEMT4
+	;RD;R;Change Password:
+ ;D;;;T;*;"";20;;;D D25^%ZAPM.bs.BSpgWEMT4
+	;H;colspan=2;To add an alias or change the password, select the user from the list and enter alias and/or password.
+	;RD;;<TD><HR>
+	;RD;R;New User:
+ ;D;;;T;*;"";20;;;D D20^%ZAPM.bs.BSpgWEMT4
+	;H;colspan=2;Enter the name of a new user that you want to create
+	;RD;R;Password:
+ ;D;;;T;*;"";20;;;D D21^%ZAPM.bs.BSpgWEMT4
+	;H;colspan=2;Password that the user is required to present to receive e-mail from the POP3 server.  
+	;
+D20	S USER=$TR(B," /","--") Q
+	;
+D21	S PASS=$TR(B," /","--") Q:PASS=""  Q:$G(USER)=""
+	S @TKWEM@("USER",USER)=USER,^(USER,"PWD")=PASS Q
+	;
+D22	S ALIAS=$TR(B," /","--") Q:ALIAS=""  I $D(@TKWEM@("USER",ALIAS)) Q
+	D D24 Q:USER=""
+	S @TKWEM@("USER",ALIAS)=USER Q
+	;
+D23	Q:$TR(B,"-")=""  D D24 Q:USER=""
+	K @TKWEM@("USER",USER) Q
+D24	S USER=$TR($P($G(%("FORM","SUSER"))," (")," /","--") Q
+	;
+D25	D D24 G D21

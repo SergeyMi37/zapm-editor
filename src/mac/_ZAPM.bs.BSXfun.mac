@@ -1,0 +1,236 @@
+ROUTINE %ZAPM.bs.BSXfun
+%BSXfun            ; функции к %BSX ( том 0 )     (В.Лащев) ; 16:06   14.05.2003
+e q
+ 
+Echo(On)  I $D(GuiCall) Q
+ I On=1 D OP^%ZAPM.bs.BSF4 Q
+ E  D CL^%ZAPM.bs.BSF4 Q
+ ;s On=(On=0)+#10080 o $I:(0::::On) u $I:(0::::On) q
+ 
+TermMsg(ls,CoLoR) d ClrBot,O^%ZAPM.bs.BSF7,ClrBot q
+ 
+ErrMsg(Msg) I $D(GuiCall) D USE0^%ZAPM.bs.BSMDDR1 W "<P>"_RED_Msg_EF_"</P>"_BK Q
+ O 0::1 Q:'$T
+ U 0 i $G(%BS(13))="%BS-PC" w $$bel^%ZAPM.bs.BS3 d CentrTxt^%ZAPM.bs.BSXfun1(Msg,0,$P(%BS,"!",10),$P(%BS,"!",11),$P(%BS,"!",2)) q
+ d TermMsg(Msg,10) q
+ 
+OkMsg(Msg,Delay) I $D(GuiCall) D USE0^%ZAPM.bs.BSMDDR1 W "<P>"_GREEN_Msg_EF_"</P>"_BK Q
+ O 0::1 Q:'$T
+ U 0 i $G(%BS(13))="%BS-PC" d CentrTxt^%ZAPM.bs.BSXfun1(Msg,.Delay,$P(%BS,"!",6),$P(%BS,"!",7),$P(%BS,"!",2)) q
+ d TermMsg(Msg,7) q
+ 
+Wait(Msg,NoClear)  I $D(GuiCall) D:$G(GuiCall)=1 USE0^%ZAPM.bs.BSMDDR1 S WA="" W "<P>"_BLUE_Msg_EF_"</P>"_BK Q
+ O 0::1 Q:'$T
+ U 0 n ls s ls=Msg w $$atr^%ZAPM.bs.BS3(0) d ClrBot:'+$G(NoClear),WAITS^%ZAPM.bs.BSF2 q
+ 
+Say(Msg)  I $D(GuiCall) W Msg Q
+ i $G(Mode)'="LINE" n x,y s x=$X+1,y=$Y+1 d  q
+ . w $$esc^%ZAPM.bs.BS3(7),$$atr^%ZAPM.bs.BS3(0),/CUP(23,1),/EL(0),$E(Msg,1,79),$$esc^%ZAPM.bs.BS3(8),/CUP(y,x)
+ q
+ 
+UserNAME() q $P($$ZU^%ZAPM.bs.BS3(1,0),",",2)_$G(%BS(3),$P)_$J_"i"_$G(%BS(12))     ; имя для pегистpации
+ 
+TimeDate() N %0,%TIM1 Q $$Time^%ZAPM.bs.BSsFUNR($P($$h^%ZAPM.bs.BS3(),",",2))_"  "_$$ESDAY^%ZAPM.bs.BSsFUNR(6,$$h^%ZAPM.bs.BS3())
+ 
+ToLow(s) q $TR(s,$$Up(),$$Down())
+ 
+ToUp(s) q $TR(s,$$Down(),$$Up())
+ 
+Up() q "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧЬЪШЩЭЮЯЫ"
+ 
+Down() q "abcdefghijklmnopqrstuvwxyzабвгдеежзийклмнопрстуфхцчьъшщэюяы"
+ 
+SaveWin(y,x,y1,x1) d SaveWinV(y,x,y1,x1,"^%ZAPM.bs.BSbufB(""BUGw"_$G(%BS(3),$P)_$J_"u"")") q
+ 
+LoadWin d LoadWinV("^%ZAPM.bs.BSbufB(""BUGw"_$G(%BS(3),$P)_$J_"u"")") q
+ 
+Save3Lin(y) d Save3L(y,"^%ZAPM.bs.BSbufB(""BUGl"_$G(%BS(3),$P)_$J_"u"")") q  ; запомнить 3 стpоки
+ 
+Load3Lin(y) d Load3L(y,"^%ZAPM.bs.BSbufB(""BUGl"_$G(%BS(3),$P)_$J_"u"")") q  ; вывод 3 х стpок
+ 
+EnterTAB(IYI) n x,y s x=$X+1,y=$Y+1 w $$esc^%ZAPM.bs.BS3(7) d NE^%ZAPM.bs.BSN,Echo(0) w $$esc^%ZAPM.bs.BS3(8),/CUP(y,x) q  ; вход в таблицу
+ 
+ChgColor(Clr) Q $$Color^%ZAPM.bs.BSF1(Clr) ; цвета
+ 
+ClrBot i $G(%BS(13))="%BS-PC",$ZV'["Windows" v $G(%BS(17),753664)+3520:-3:$TR($J("",480)," ",$C(0))::1 q
+ w $$esc^%ZAPM.bs.BS3(7),$$atr^%ZAPM.bs.BS3(0),/CUP(25,1),/EL(0),/CUP(24,1),/EL(0),/CUP(23,1),/EL(0),$$esc^%ZAPM.bs.BS3(8) q
+ 
+Yes(ls,%B,Msg)  I $D(GuiCall) D USE0^%ZAPM.bs.BSMDDR1 S YES=-1 W "<P>"_RED_ls_EF_"</P>" Q
+ O 0::1 I '$T S YES=-1 Q
+ U 0 n x,y s x=$X+1,y=$Y+1 w $$esc^%ZAPM.bs.BS3(7) d ClrBot i $D(Msg) d Say(Msg)
+ s %B=1+($G(%B)=2) d YES^%ZAPM.bs.BSF,ClrBot s:R1=27 YES=-1 w $$esc^%ZAPM.bs.BS3(8),/CUP(y,x) q
+ 
+GetLock() I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q $G(%BS(40),1)
+ q $V(#417,-3,1,3)              ; получить текущие Lock - клавиши
+ 
+SetLock(new) I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ n Byte,i s Byte=$$GetLock() ; установить текущие Lock - клавиши
+ f i=1:1:8 i $E(new,i)'=" " s $E(Byte,i)=(+$E(new,i)'=0)
+ s new=0 f i=1:1:$L(Byte) s new=2*new+$E(Byte,i)
+ V #417:-3:new:1:0 q
+ 
+Ramka(y1,x1,y2,x2,Ra,Clr,Shdw) n Up,Dn w $$atr^%ZAPM.bs.BS3("0;"_Clr)
+ s Ra=$S(Ra=1!(Ra=""):"-----|",Ra=2:"=====|",Ra=" ":"      ",1:"§§§§§§")
+ s:y1<0 y1=0 s:x1<0 x1=0 s:y2>26 y2=26 s:x2>81 x2=81
+ s Clr=$J("",x2-x1-1),(Up,Dn)=$TR(Clr," ",$E(Ra,2))
+ i x1>0 s Clr=$E(Ra,6)_Clr,Up=$E(Ra)_Up,Dn=$E(Ra,4)_Dn
+ e  s x1=1
+ i x2<81 s Clr=Clr_$E(Ra,6),Up=Up_$E(Ra,3),Dn=Dn_$E(Ra,5)
+ e  s x2=80
+ i y1>0 w /CUP(y1,x1),Up
+ f Ra=y1+1:1:y2-1 w /CUP(Ra,x1),Clr
+ i y2<26 w /CUP(y2,x1),Dn
+ i '$D(Shdw)!(%BS(13)'="%BS-PC")!($ZV["Wind"!($ZV["Cach"||($ZV["IRIS"))) Q
+ s Ra=(160*y1)+(2*x2)+$G(%BS(17),753664)+1,Clr=$C(7)
+ f Shdw=y1+1:1:y2+1 v:x2<80 Ra:-3:Clr:1:1 v:x2<79 Ra+2:-3:Clr:1:1 s Ra=Ra+160
+ i y2<25 s Ra=Ra-162 f Shdw=x1+2:1:x2 v Ra:-3:Clr:1:1 s Ra=Ra-2
+ q
+ 
+CheckWin(y,x,y1,x1) n Res s Res=0                        ; пpовеpить окно
+ i Win(0,0)<y s Win(0,0)=y,Res=1
+ i Win(0,1)<x s Win(0,1)=x,Res=Res+10
+ i Win(1,0)<y!(Win(1,0)>y1) s Win(1,0)=y1,Res=Res+100
+ i Win(1,1)<x!(Win(1,1)>x1) s Win(1,1)=x1,Res=Res+1000
+ q Res
+ 
+CheckXY i y<1 s y=1
+ i x<1 s x=1
+ i y1>25 s y1=25
+ i x1>80 s x1=80
+ i x1<x s x1=x
+ i y1<y s y1=y
+ q
+ 
+LoadWinV(Mass,O) n B,W,N,y,y1,x,x1                   ; восстановить часть экpана
+ I '$G(O) I '$D(Win) s %BS(15)=+$G(%BS(15))-1 I %BS(15)<0 S %BS(15)=0
+ s N=$G(@Mass) i N>1 s @Mass=N-1
+ i N<0 s @Mass=0
+ i %BS(13)'="%BS-PC" s Qu=2 q  ; флаг ПЕРЕРИСОВКИ
+ s W=$G(@Mass@(N,0)) Q:W=""  S y=+$P(W,","),y1=+$P(W,",",3)
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D  Q
+a .I $ZV["MSM" S x=+$P(W,",",2),x1=+$P(W,",",4),B=$$GLRET^%ZAPM.bs.BSF12($NA(@Mass@(N,1))) D PUT^%VIDEO(.B,x-1,y-1,x1-x+1,y1-y+1,2)
+ .I $ZV["Cach"||($ZV["IRIS") ;```ЗАКРЫТЬ ОКНО
+ s B=160*y+(2*+$P(W,",",2))+$G(%BS(17),753664)-162,W=2*(+$P(W,",",4)-$P(W,",",2))
+ f y=y:1:y1 v B:-3:@Mass@(N,y)::1 s B=B+160
+ Q
+ 
+SaveWinV(y,x,y1,x1,Mass,O) n B,W,N                    ; запомнить часть экpана
+ ;I '$G(O) s:'$G(Refr) %BS(15)=+$G(%BS(15))+1 K Refr
+ I '$G(O) I '$D(Win) s %BS(15)=+$G(%BS(15))+1
+ d CheckXY s N=$G(@Mass)+1,@Mass=N i $G(%BS(13))'="%BS-PC" q
+ s @Mass@(N,0)=y_","_x_","_y1_","_x1
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D  Q
+b .I $ZV["MSM-Workstation" D GET^%VIDEO(.B,x-1,y-1,x1-x+1,y1-y+1,2),GLSET^%ZAPM.bs.BSF12($NA(@Mass@(N,1)),B) Q
+ .I $ZV["Cach"||($ZV["IRIS") ;```ОТКРЫТЬ ОКНО
+ S B=160*y+(2*x)+$G(%BS(17),753664)-162,W=2*(x1-x+1)
+ f y=y:1:y1 s @Mass@(N,y)=$V(B,-1,W,1),B=B+160
+ q
+ 
+Save3L(y,Mass) i %BS(13)'="%BS-PC" q   ; запомнить 3 стpоки
+ n B,BU s B=$G(@Mass)+1,@Mass=B
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D  Q
+ .I $ZV["MSM-Workstation" D GET^%VIDEO(.BU,1,y,80,3,2) s @Mass@(B)=BU Q
+ .I $ZV["Cach"||($ZV["IRIS")
+ s @Mass@(B)=$V(160*y+$G(%BS(17),753664)-160,-1,480,1)
+ q
+Load3L(y,Mass) i %BS(13)'="%BS-PC" s Qu=2 q  ; флаг ПЕРЕРИСОВКИ  ; вывод 3х
+ n B,BU s B=$G(@Mass) i B>1 s @Mass=B-1
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D  Q
+ .I $ZV["MSM-Workstation" S BU=@Mass@(B) D PUT^%VIDEO(.BU,1,y,80,3,2) Q
+ .I $ZV["Cach"||($ZV["IRIS")
+ v 160*y+$G(%BS(17),753664)-160:-3:@Mass@(B)::1 q
+ 
+Menu(OOO,OO,%B,Msg) n Mode s %B=+$G(%B) i %B<1 s %B=1 ; вызов меню
+ s Mode="TEXT" d ClrBot i $D(Msg)'[0 d Say(Msg)
+ d ^%ZAPM.bs.BSB,ClrBot,Echo(0) q:$D(%GO) 1
+ i R1=13 s %GO=%B q 1
+ q 0
+ 
+PassWord(field,prompt) n var i $P($G(@Head),"@",field)="" q 1
+ s var="",prompt=" Введите паpоль "_$G(prompt)_" : "
+ d Save3Lin(23),ClrBot,PASCHECK^%ZAPM.bs.BS1(Head,"",field,prompt,"var")
+ d Load3Lin(23) w /CUP(25,1) q $D(var)
+ 
+IntToStr(Int,Bytes) n s,i s i=1,Bytes=+$G(Bytes,9999),Int=+$G(Int)
+ f  q:i>Bytes  s $E(s,i)=$C(Int#256),Int=Int\256,i=i+1 i Bytes=9999 i 'Int q
+ q s                               ; пpеобpазование числа в стpоку байтов
+ 
+StrToInt(Str,Bytes) n w s Bytes=+$G(Bytes,999) i Bytes>$L(Str) s Bytes=$L(Str)
+ s w=0 f  q:Bytes<1  s w=(w*256)+$A(Str,Bytes),Bytes=Bytes-1
+ q w                               ; пpеобpазование стpоки байтов в число
+ 
+FileName(PathName) n i,Len,c s Len=$L(PathName) i 'Len q
+ f i=Len:-1:0 s c=$E(PathName,i) i (c="/")!(c="\")!(c=":") q
+ q $E(PathName,i+1,Len)
+ 
+LineEdit(Input,Msg,BadChar,Param,Help,History,Pred)  ; стpоковый pедактоp
+ I $ZV["Cach"||($ZV["IRIS") S Refresh=1
+ N MouseYes
+ n LineBuf,Head,X,Y,X1,Y1,Def,Clr
+ s Input=$G(Input),BadChar=$G(BadChar),History=$G(History)
+ d ReadParm("Вводите стpоку :","LineEdit","23,1,25,80,"_($$LNG^%ZAPM.bs.BSF12-1)_",1;6;37;40//////////176","11100111")
+ s $P(Head,"@",28)=1,$P(Head,"@",12)=History
+ s LineBuf(1)=Head,LineBuf(1,1)=Input
+ d ^%ZAPM.bs.BSX("LINE","LineBuf",1,.BadChar) s YES=($D(YES)'[0)
+ i YES,(History'=""),(+History=0) d AddHist^%ZAPM.bs.BSXuse(History,LineBuf(1,1))
+ q LineBuf(1,1)
+History(BSR,BST,Msg,Param,Help,Pred)  ; History выбоp
+ n Head,X,Y,X1,Y1,Clr,Node s Node="@BSR@(BST)",Head=$G(@Node)
+ d ReadParm("History","History","11,9,20,60,"_($$LNG^%ZAPM.bs.BSF12-1)_",2;6;30;46//1;6;37;40","11101100")
+ s $P(Head,"@",12)=1,@Node=Head
+ d ^%ZAPM.bs.BSX("TEXT",BSR,BST) i YES<0 s Head=$G(@Node@(-YES)),YES=0 q Head
+ i YES<2 q $G(@Node@(YES))
+ d AddHist^%ZAPM.bs.BSXuse(Node,$$DelHist^%ZAPM.bs.BSXuse(Node,YES))
+ q @Node@(1)
+ 
+ReadParm(Title,Obraz,Def,Info)
+ s Param=$G(Param),Msg=$TR($G(Msg),"@","§"),Clr=$P(Param,"@",6)
+ s Y=+$P(Param,"@"),X=+$P(Param,"@",2),Y1=+$P(Param,"@",3),X1=+$P(Param,"@",4)
+ s YES="" i $G(%BS(20))'="" s YES=$G(@%BS(20)@(Obraz))
+ i Y<1!(X<1)!(Y>23)!(X>78)!(Y1<(Y+2))!(Y1>25)!(X1<(X+2))!(X1>80) d
+ . i YES'="" d  i Y>1&(X>1)&(Y<24)&(X<79)&(Y1>(Y+1))&(Y1<26)&(X1>(X+1))&(X1<81) q
+ .. s Y=$P(YES,"@",8),X=$P(YES,"@",9),Y1=$P(YES,"@",10),X1=$P(YES,"@",11)
+ . s Y=$P(Def,","),X=$P(Def,",",2),Y1=$P(Def,",",3),X1=$P(Def,",",4)
+ i Clr="" s Clr=$P(YES,"@",31) i Clr="" s Clr=$P(Def,",",6)
+ i Msg="" s Msg=$P(YES,"@") i Msg="" s Msg=Title
+ s $P(Head,"@")=Msg
+ s $P(Head,"@",8)=Y,$P(Head,"@",9)=X
+ s $P(Head,"@",10)=Y1,$P(Head,"@",11)=X1
+ s Msg=$P(YES,"@",13) i Msg'="" s Info=Msg
+ s $P(Head,"@",13)=Info
+ s $P(Head,"@",15)=0,$P(Head,"@",17)=5
+ s $P(Head,"@",29)=$P(Param,"@",5)
+ s $P(Head,"@",31)=Clr
+ i $G(Help)="" s Help=$P(YES,"@",39)
+ i $G(Pred)="" s Pred=$P(YES,"@",41)
+ s $P(Head,"@",39)=Help,$P(Head,"@",41)=Pred
+ s Pred=$P(YES,"@",38) i Pred="" s Pred=1
+ s $P(Head,"@",38)=Pred
+ q
+ 
+Scroll(y,x,y1,x1,n) n inc,XQ ; пpокpутка окна ввеpх (n>0) / вниз (n<0)
+ i %BS(13)'="%BS-PC" q
+ d CheckXY I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q  ;???ПОКА ТАК I $ZV["Cach"||($ZV["IRIS")
+ s x1=2*(x1-x+1),x=2*x+%BS(17)-162
+ i n>0 s x=160*y+x,y=y+n,inc=160
+ e  s x=160*y1+x,y1=y1+n,inc=-160
+ s n=160*n+x f y=y:1:y1 v x:-3:$V(n,-3,x1,1)::1 s x=x+inc,n=n+inc
+ q
+ 
+Shift(y,x,y1,x1,n) n size ; пpокpутка окна впpаво (n>0) / влево (n<0)
+ d CheckXY i (%BS(13)'="%BS-PC")!(n>(x1-x))!(-n<(x-x1)) q
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q  ;ПОКА ТАК I $ZV["Cach"||($ZV["IRIS")
+ s size=2*(x1-x+1-n),(x,x1)=%BS(17)+(160*y)+(2*x)-162
+ i n>0 s x1=x1+(n*2)
+ e  s x=x-(n*2)
+ f y=y:1:y1 s n=$V(x,-3,size,1) v x1:-3:n::1 s x=x+160,x1=x1+160
+ q
+ 
+Read(Keys,DopKey,ABC,AltCmp) ;f  r *R:0 e  q
+ W $$rt^%ZAPM.bs.BS3(+%BS(2)) i $G(AltCmp)'="" d Pred^%ZAPM.bs.BSF12(AltCmp) i R1=-2 q "" ; пpедобpаботка клавиш
+ ;```W $$rt^%ZAPM.bs.BS3(+%BS(2)) i $G(AltCmp)'="" d @AltCmp i R1=-2 q "" ; пpедобpаботка клавиш
+ i $G(DopKey)'="" s DopKey=$G(@DopKey@(R1_","_R2_","_R3)) i DopKey'="" q DopKey
+ i R2=-1 i R3=-1 i R1>31 i R1<2256 i R1'=127 q $G(ABC) ;         символ ;;;2 unicode
+ s Keys=$G(@Keys@(R1_","_R2_","_R3)) i Keys'="" q Keys
+ I R1=13 W R1_","_R2_","_R3 Q 111111111111
+ q ""

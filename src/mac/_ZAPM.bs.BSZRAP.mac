@@ -1,0 +1,89 @@
+ROUTINE %ZAPM.bs.BSZRAP
+%BSZRAP ;ИНСТАЛЛЯЦИЯ ПРИЛОЖЕНИЯ ; 14:32 17-JUN-97
+ S $ZT="ERROR^%ZAPM.bs.BSZRAP" D L^%ZAPM.bs.BS3("^BStranS")
+ K ^BStranS,OOOkey
+ U %DEV R %RN I %RN=";TRANSLATE;" D Wait^%ZAPM.bs.BSXfun("Восстановление ^BStranS") S (GLO,GL)="" F i=1:1 U %DEV R %G,%V Q:%G=";ROUTINES;"  S GL=$P(%G,"(") D GRES(%G,%V,1) I '(i#10) U 0 X WA
+ S Device=%DEV
+ U 0 S Buf="^%ZAPM.bs.BSbufB(""Install_Gen"")"
+ D Copy^%ZAPM.bs.BSF8("^%ZAPM.bs.BSS(""APPLIC"")",Buf)
+TAB S BSR="^%ZAPM.bs.BSbufB",BST="Install_Gen" D ^%ZAPM.bs.BST
+TABE I R1=27 D Yes^%ZAPM.bs.BSXfun("Отказываемся делать инсталляцию приложения ?",1) I YES G EXIT
+ S UciSys=$$DataCell^%ZAPM.bs.BSF8(BSR,BST,5,4) I UciSys'=$$ZU^%ZAPM.bs.BS3(0) D ErrMsg^%ZAPM.bs.BSXfun(" ВНИМАНИЕ !!! ПЕРЕЙДИТЕ В КИП "_UciSys_" И СНОВА ПОВТОРИТЕ ИНСТАЛЛЯЦИЮ") G EXIT
+ S ii="" F i=7:2:11 S ii=$O(^BStranS("App","Tra",ii)) Q:ii=""  I $$DataCell^%ZAPM.bs.BSF8(BSR,BST,i,4)="" D Yes^%ZAPM.bs.BSXfun(" ВНИМАНИЕ !!! "_$G(^BStranS("App","Tra",ii,1),"???")_" ! ОПРЕДЕЛИМ ?",1) G:YES TAB S R1=27 G TABE
+ D CHECK G @END
+NO ;ПРОДОЛЖИТЬ ИНСТАЛЛЯЦИЮ
+START D Yes^%ZAPM.bs.BSXfun("Начнем инсталляцию приложения ?",1) I 'YES G EXIT
+ U 0 D Wait^%ZAPM.bs.BSXfun("Восстановление программ") S %DEV=Device
+ F  U %DEV R %RN Q:%RN=";GLOBALS;"  D LOAD U 0 X WA
+ U 0 D Wait^%ZAPM.bs.BSXfun("Восстановление массивов") K KillYes
+ S (GLO,GL)="" F i=1:1 U %DEV R %G,%V Q:%G=""  S GL=$P(%G,"(") D GRES(%G,%V) I '(i#50) U 0 X WA
+ C %DEV U 0 D TRANS,CHAR,INSTALL
+ I $D(EST) D ErrMsg^%ZAPM.bs.BSXfun(" ВНИМАНИЕ !!! ИНСТАЛЛЯЦИЯ НЕУДАЧНАЯ ! В ВАШЕЙ СИСТЕМЕ НЕ ВЫСТАВЛЕН ФЛАГ, РАЗРЕШАЮЩИЙ ДАННЫЕ В ГЛОБАЛАХ ИМЕТЬ ДЛИНЕЕ 256 СИМВОЛОВ") G EXIT
+ D OkMsg^%ZAPM.bs.BSXfun("Инсталляция Приложения Завершена успешно") S OOOkey=1
+EXIT K ^BStranS,^%ZAPM.bs.BSbufB("Install_Gen") D U^%ZAPM.bs.BS3("^BStranS") Q
+GRES(%G,%V,%n) I GLO'=GL S GLO=GL D:'$D(KillYes)  K:'$G(KillYes) @GLO
+ .Q:$G(%n)  D Yes^%ZAPM.bs.BSXfun("Если Встретим Уже Существующие массивы,то УДАЛЯЕМ ?",1) S KillYes=YES
+ I $L(%V)<256 S @%G=%V Q
+ I '$D(NOMXTR) S @%G=%V Q
+ S EST=1 Q
+ERROR D ErrMsg^%ZAPM.bs.BSXfun("ВНИМАНИЕ !!! ОШИБКА ПРИ ИНСТАЛЛЯЦИИ"_$ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) Q
+LOAD X "ZL  ZS @%RN" Q
+QUE(MA,IIpr,PRO) 
+ W $$bel^%ZAPM.bs.BS3
+ N M,GLZ,%B S GLZ=$ZR
+ S M(0,1)=" ВНИМАНИЕ !!! "_MA_" Уже Существует !!! ",M(0,3)=" Определите свои дальнейшие действия",M(0,2)="  "_IIpr
+ S M(1,1)=" ПЕРЕЗАПИШЕМ ",M(1,2)=" ВСЕ,ПЕРЕЗАПИШЕМ ",M(1,3)=" ПРЕРВЁМ ",M(1,4)=" "_MA_" "
+ S M="/"_$P(%BS,"!",8),M(0)=$P(%BS,"!",8),M(1)=$P(%BS,"!",8)_"/"_$P(%BS,"!",3)
+QU S %B=$$TxtPanel^%ZAPM.bs.BSXfun1("M",0,0,1) I YES<1 W $$bel^%ZAPM.bs.BS3 G QU
+ I %B=4 D @PRO G QU
+ I %B=2 S END="NO"
+ I %B=3 S END="EXIT"
+ I GLZ'[$C(34),$D(@GLZ)
+ Q
+CHECK ;ПРОВЕРКА НА СУЩЕСТВОВАНИЕ
+ S END="START" U 0 D Wait^%ZAPM.bs.BSXfun("ПРОВЕРКА НА СУЩЕСТВОВАНИЕ")
+ S I="" F  S I=$O(^BStranS("Glo",I)) Q:I=""  X WA S IIpr="^"_I I $D(@IIpr) D QUE("Массив",IIpr,"^%ZAPM.bs.BSMSMG(IIpr)") I END'["S" Q
+ S I="",END="START" F  S I=$O(^BStranS("Rou",I)) Q:I=""  X WA S IIpr=I I $D(^ (IIpr)) D QUE("Программа",IIpr,"^%ZAPM.bs.BSXprog(IIpr)") I END'["S" Q
+ Q
+INSTALL ;Выполнение программ
+ I $D(^BStranS("App","Cmd")) U 0 D Wait^%ZAPM.bs.BSXfun("Выполнение программы") S %RN=$G(^BStranS("App","Cmd")) X %RN
+ Q
+CHAR ;Восстановление Характерристик
+ I $G(^BStranS("App","Right"))="Y" U 0 D Wait^%ZAPM.bs.BSXfun("Восстановление Характерристик массивов") S %RN="" F  S %RN=$O(^BStranS("Glo",%RN)) Q:%RN=""  S PRO=^BStranS("Glo",%RN) I PRO'="4114",PRO>0 D CP^%ZAPM.bs.BSGCH(%RN,PRO) U 0 X WA
+ Q
+TRANS ;ТрансляциЯ ссылок на КИП и ТОМ
+ Q:'$D(^BStranS)
+ K TRA S I=0 I $D(^BStranS("App","Tr0"))  S TRA(I)="",TRA(I,1)=$P(@$ZR,","),TRA(I,2)=$P(@$ZR,",",2)
+ F I=1:1:3 I $D(^BStranS("App","Tra",I)) S TRA(I)=^(I,1),TRA(I,1)=$P(^(2),","),TRA(I,2)=$P(^(2),",",2)
+ S ni=7,i="" F  S i=$O(TRA(i)) Q:i=""  D
+ .D SETT
+ .I i=0 D SETTRA($$ZU^%ZAPM.bs.BS3(0)) Q
+ .I $$DataCell^%ZAPM.bs.BSF8(BSR,BST,ni,4)="" K TRA(i) Q
+ .S COM=$$DataCell^%ZAPM.bs.BSF8(BSR,BST,ni,4),ni=ni+2
+ .D SETTRA(COM) Q
+ I $D(TRA) U 0 D Wait^%ZAPM.bs.BSXfun("Трансляция ссылок в массивах") S I="" F  S I=$O(^BStranS("Glo",I)) Q:I=""  I '$D(^BStranS("NoTrGlo",I)) S II="^"_I D
+ .I $D(@II)'["0" D TRA(II)
+ .F ii=1:1 S II=$ZO(@II) Q:II=""  D TRA(II) I '(ii#50) U 0 X WA
+ Q
+TRA(G) Q:@G'["["
+ N gg S (g1,gg)=@G,gg=$$TRAnfer(gg) I gg'=g1 S @G=gg
+ Q
+TRAnfer(g) S iii="" F  S iii=$O(TRA(iii)) Q:iii=""  D
+ .I g[TRA(iii,3)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,3),TRA(iii,4))
+ .I g[TRA(iii,5)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,5),TRA(iii,4))
+ .I g[TRA(iii,6)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,6),TRA(iii,8))
+ .I g[TRA(iii,7)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,7),TRA(iii,8))
+ .I g[TRA(iii,11)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,11),TRA(iii,9))
+ .I g[TRA(iii,12)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,12),TRA(iii,10))
+ .I g[TRA(iii,14)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,13),TRA(iii,10))
+ .I g[TRA(iii,13)  S g=$$TR^%ZAPM.bs.BSsFUNM(g,TRA(iii,11),TRA(iii,9))
+ Q g
+ver(V) ;4.;i $P($ZV,"Version ",2)'<4 Q "|"
+ Q $S(V=1:"[",1:"]")
+SETTRA(COM) S TRA(i,4)=$$ver(1)_""""_$P(COM,",")_""","""_$P(COM,",",2)_""""_$$ver(2),TRA(i,8)=$$ver(1)_""""""_$P(COM,",")_""""","""""_$P(COM,",",2)_""""""_$$ver(2)
+ S TRA(i,9)=$$ver(1)_""""""""_$P(COM,",")_""""""","""""""_$P(COM,",",2)_""""""""_$$ver(2),TRA(i,10)=$$ver(1)_""""""""""_$P(COM,",")_""""""""","""""""""_$P(COM,",",2)_""""""""""_$$ver(2)
+ Q
+SETT S TRA(i,3)="["""_TRA(i,1)_""","""_TRA(i,2)_"""]",TRA(i,5)="["""_TRA(i,1)_"""]",TRA(i,6)="["""""_TRA(i,1)_"""""]",TRA(i,7)="["""""_TRA(i,1)_""""","""""_TRA(i,2)_"""""]"
+ S TRA(i,11)="["""""""_TRA(i,1)_""""""","""""""_TRA(i,2)_"""""""]",TRA(i,12)="["""""""""_TRA(i,1)_""""""""","""""""""_TRA(i,2)_"""""""""]"
+ S TRA(i,13)="["""""""_TRA(i,1)_"""""""]",TRA(i,14)="["""""""""_TRA(i,1)_"""""""""]"
+ Q

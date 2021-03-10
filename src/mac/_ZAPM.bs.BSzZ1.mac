@@ -1,0 +1,49 @@
+ROUTINE %ZAPM.bs.BSzZ1
+%BSzZ1 ;Пакетный вывод на устройство  (А.Тимофеев) ; 20:26   03.07.99
+ N pacetF,pacetG,pacetU,pacetD,pacetO,Tbsr,Tbst,tab,i,A,tab1
+ S pacetF=1,%zT=$ZT,$ZT="ERROR" N i
+ F  D 1 Q:$G(tab)=27
+ Q
+1 S A=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(Sz4)",2,2,"#","PRESET^%ZAPM.bs.BSzZ1") Q:A=""
+ S tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S $ZT=%zT Q
+ S tab=$P(A,"#"),pacetG=$P(A,"#",2),pacetU=$P(A,"#",3),pacetD=$P(A,"#",4),pacetO=1
+ I tab="" D ErrMsg^%ZAPM.bs.BSXfun("Не выбраны таблицы !!") S $ZT=%zT Q
+ I tab["ПАКЕТ '" D ErrMsg^%ZAPM.bs.BSXfun(tab) S $ZT=%zT Q
+ I pacetU=""  D ErrMsg^%ZAPM.bs.BSXfun("Не определено устройство вывода !!") S $ZT=%zT Q
+ I 'pacetD S pacetD=""
+ F i=1:1 S tab1=$P(tab,"~",i) Q:tab1=""  D
+ .S Tbsr=$S($P(tab1,",",3)'="":"["""_$P(tab1,",",3)_""","""_$P(tab1,",",4)_"""]",1:"")_$P(tab1,",",2)
+ .S Tbst=$P(tab1,",") I $E(Tbsr)'="^" S Tbsr="^"_Tbsr
+ .D Kout^%ZAPM.bs.BSout0(pacetU,Tbsr,Tbst) I $P($G(bok),"~",3)="" K in
+ D:$G(pacetD)="" OkMsg^%ZAPM.bs.BSXfun("Вывод ВСЕГО ПАКЕТА завершен !",6)
+ S $ZT=%zT
+ Q
+PRESET ;ПРЕДВАРИТЕЛЬНОЕ ПРИСВОЕНИЕ
+ N %HIS D HIS^%ZAPM.bs.BSF1("PackO")
+ I ($L(@BSR@(BST,2,4))+$L($TR($G(@%HIS@(1)),"@","")))>($$LNG^%ZAPM.bs.BSF12-1) D ErrMsg^%ZAPM.bs.BSXfun("ПЕРЕЧЕНЬ ТАБЛИЦ НАСЧИТАННОГО ПОСЛЕДНЕГО ПАКЕТА ПРЕВЫШАЕТ ДОПУСТИМУЮ ДЛИНУ !") Q
+ S $P(@BSR@(BST,2,4),"@",15)=$TR($G(@%HIS@(1)),"@","")
+ S $P(^%ZAPM.bs.BSZ("Sz5",2,1),"@",15)=$P(@BSR@(BST,2,4),"@",15)
+ Q
+ERROR D ErrMsg^%ZAPM.bs.BSXfun("ГЛЯ - !!"_$ZE)
+Q S $ZT=%zT Q
+ ;D ErrMsg^%ZAPM.bs.BSXfun("ОТКАЗ ОТ ЗАПРОСА !!") S $ZT=%zT Q
+ 
+Z ;Таблица с заголовком для пакета списков
+ S %zT=$ZT,$ZT="ERROR"
+ G:bok=""!(bok'["~") Q
+ N nameTP,nameP,nameFP S nameTP=$P(bok,"~"),nameP=$P(bok,"~",2),nameFP=$P(bok,"~",3)
+ G:nameTP=""!(nameP="") Q
+ S nameTP=$$NamePack^%ZAPM.bs.BSzZ()_nameTP
+ I tabYES=0 K ^%ZAPM.bs.BSbufS(nameTP) G Q
+ S nameP=$$Data^%ZAPM.bs.BSsFUNS_" "_nameP
+ S BSr1="^%ZAPM.bs.BSZ",BSt1="Sz6",BSr2="^%ZAPM.bs.BSbufS",BSt2=nameTP D COPY^%ZAPM.bs.BSTK
+ S $P(^%ZAPM.bs.BSbufS(nameTP,1,1),"@",15)=nameP,$P(^%ZAPM.bs.BSbufS(nameTP,"HFS"),"#")=nameFP
+ S ListPack=nameTP_",%BSbufS~"_(ListPack)
+ ;S $P(^%ZAPM.bs.BSZ("Sz5",2,1),"@",15)=nameTP_",%BSbufS~"_$P(^%ZAPM.bs.BSZ("Sz5",2,1),"@",15)
+ ;S $P(^%ZAPM.bs.BSZ("Sz4",2,4),"@",15)=nameTP_",%BSbufS~"_$P(^%ZAPM.bs.BSZ("Sz4",2,4),"@",15)
+ G Q
+SINX ;ПРОГРАММА РАБОТЫ С ПАНЕЛЬЮ ПАКЕТА ВЫВОДА
+ I d'=2 S $P(@BSR@(BST,8,4),"@",5)=1 Q
+ S $P(@BSR@(BST,8,4),"@",5)=""
+ Q

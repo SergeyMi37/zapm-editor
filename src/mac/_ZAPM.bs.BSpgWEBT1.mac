@@ -1,0 +1,32 @@
+ROUTINE %ZAPM.bs.BSpgWEBT1
+TKWEBT1	;PG&A,TK-WEB,1.1,WEB TOOLS;22JUL97  15:48 [ 10/15/97   8:12 AM ];;;12SEP99  17:58
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	Q
+GETSRC N A,J S TKWPD="^mtempBSpgTWEB($J)" K @TKWPD S A=0,J=1 F  S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",TDIR,TOBJ,A)) Q:A=""  D EXP^%ZAPM.bs.BSpgWEBE
+ S jj=0 f  s jj=$o(^mtempBSpgTWEB($J,jj)) Q:jj=""  S a=^(jj) W $S($TR(a,LC,UP)'["</TEXTAREA>":a,1:""),*10
+	Q
+	;
+PUBLISH(X) S FILE=$G(^%ZAPM.bs.BSpgWEBC("PUBLISH-DIR")) I FILE="",OS'="M3" Q
+	G MSM:OS="MSM",M3:OS="M3" Q
+M3	S FILE=$TR(FILE,"/","\")
+MSM	S FILE=FILE_$S("/\"[$E(FILE,$l(FILE)):"",1:"\")_X
+	I $ZOS(8,FILE)=""  S:0 DR=$ZOS(14)_":",DIR=$ZOS(11,DR) S TO=0 F  D DIR1 Q:TO=""  w "<option>",TX
+	W ! Q
+DIR1	S TX="" S:TO=0 TO="" S:TO="" S=$ZOS(12,"*.*",63) S:TO'="" S=$ZOS(13,TO) S TO=S Q:TO=""  I S<0 S TO="" Q
+	S (TO1,TO2,TO3,TO4)=""
+	S TO3=$P(TO,"^"),TO2=$P(TO3,".",2),TO3=$P(TO3,"."),T=$P(TO,"^",2,9)
+	I OS="MSM" D  G:TO4="" DIR1
+	. I $ZB($A(T,22),16,1) Q:$P(TO,"^")=".."  S TO2="",TO1="<"_$S(TO3]"":"DIR",1:"back")_">  "
+	. E  S TO1=$J($FN($A(T,30)*256+$A(T,29)*256+$A(T,28)*256+$A(T,27),","),11)
+	. S %F=$A(T,26)*256+$A(T,25),%D=%F#32,%F=%F\32,%E=%F#16,%F=%F\16,%F=%F+1980
+	. S TO4=$E("  ",1,2-$L(%E))_%E_"-"_$E(%D+100,2,3)_"-"_%F_" "
+	. S TO4=TO4_$E("  ",1,2-$L(%B))_%B_":"_$E("00",1,2-$L(%E))_%E_$S(%A:"p",1:"a")
+	I OS="M3" D   G:TO4="" DIR1
+	. Q:T/16#2=1  S TO1=$FN($P(T,"^",2),","),TO4=$P(T,"^",4)
+	S TO3=TO3_$S(TO2]"":"."_TO2,1:""),TO3=$TR(TO3,LC,UP)
+ S TX=TO3_" "_$S(TO3="":"",$D(^%ZAPM.bs.BSpgWEBF("PAGES",X,TO3)):"* ",1:"")_TO1_" "_TO4 Q
+	;
+DBASE	S LL(1)="FORM STORED"
+	S T=$G(%("FORM","TYPE")),D=$G(%("FORM","FILE")),H=$G(%("FORM","INDEX"))
+	Q

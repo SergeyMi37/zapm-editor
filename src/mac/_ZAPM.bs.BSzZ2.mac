@@ -1,0 +1,56 @@
+ROUTINE %ZAPM.bs.BSzZ2
+%BSzZ2 ;Доплнительный сервис (А.Тимофеев) ; 13:45   30.11.1999
+ ;Загрузка условий
+ K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u")
+ ;mas- БД условий, mas3 - буфер (^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u"))
+ N i,i1,i2,i3,i4,i5,c,c1,uslk,uslO,uslL,uslK,uslF,STOP
+ S mas=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVm2"))),mas3="^%ZAPM.bs.BSbufB(""PO""_$G(%BS(3),$P)_$J_""u"")",mas4="^%ZAPM.bs.BSbufB(""fTS""_$G(%BS(3),$P)_$J_""u"")",mas5="^%ZAPM.bs.BSZ(""SzZ"")"     ;Буфера
+ S %zT=$ZT,$ZT="ERROR" S @mas3="Буфер условий на сводку"
+ S i=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SVa1)","1#2#2",2)
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S $ZT=%zT Q
+ 
+1 ;Загрузка общих условий
+ S na=$P(i,"~") I na="" D ErrMsg^%ZAPM.bs.BSXfun("НЕ ВЫБРАНА АНАЛИТИЧЕСКАЯ ФОРМА !!") S $ZT=%zT Q
+ S nf=$E(na,1,3)
+ I '$D(@mas@(nf,na))!('$D(@mas@(nf,na,0))) D ErrMsg^%ZAPM.bs.BSXfun("НЕТ УСЛОВИЙ НА ФОРМУ !! "_$NA(@mas@(nf,na))) S $ZT=%zT Q
+ S zp=$G(@mas@(nf,na,"0","5,4")) I zp="" D ErrMsg^%ZAPM.bs.BSXfun("НЕТ УСЛОВИЯ НА ЗАПРОС !!") S $ZT=%zT Q
+ S ls="Понеслись !!" D WAITS^%ZAPM.bs.BSF2
+ K @mas5 S @mas5="Условия на колонки сводки@@@@@@@1@1@22@80@@@@1@@5@@@1@@@ 1@@@@@4@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ 
+2 ;Сброс условий в буфер
+ S i1=0 F  S i1=$O(@mas@(nf,na,i1)) Q:i1=""  D
+ .S i2=0,(uslO,uslL)="" F  S i2=$O(@mas@(nf,na,i1,i2)) Q:i2=""  D  X $G(WA)
+ ..I i2["A" S uslO=uslO_$S($G(@mas@(nf,na,i1,i2,"2,4"))'="":"I "_$G(@mas@(nf,na,i1,i2,"2,4")),1:"")_" "
+ ..I i2["B" S uslL=uslL_$S($G(@mas@(nf,na,i1,i2,"2,4"))'="":"I "_$G(@mas@(nf,na,i1,i2,"2,4")),1:"")_" "
+ ..I i2["C"!(i2["D") D
+ ...S c=$G(@mas@(nf,na,i1,i2,"4,4")) X "F c1="_c_" S @mas3@(""O"",i1,""K""_c1)=$S($G(@mas@(nf,na,i1,i2,""2,4""))'="""":""I ""_^(""2,4"")_"" "",1:"""")"
+ ..I i2["K" D
+ ...S i3=$G(@mas@(nf,na,i1,i2,"4,4")),uslK=$G(^("8,4")),uslk=$G(^("2,4")),uslF=$G(^("10,4"))
+ ...S @mas3@(i3,i2)=" *"_i1_"* "_$S(uslK=1:uslO,1:uslL)_$G(@mas3@("O",i1,i2))_$S(uslk'="":"I "_uslk_" ",1:"")_"S D("_i3_")="_$S(uslF'="":uslF,1:1)
+ ..I i2["k" Q
+ 
+3 ;Текст
+ S i1="",i3=1 F  S i1=$O(@mas3@(i1)) Q:i1=""  Q:i1="O"  D
+ .S i2="" F  S i2=$O(@mas3@(i1,i2)) Q:i2=""  D
+ ..S @mas5@(i3)=i1_$G(@mas3@(i1,i2)),i3=i3+1
+ D ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSZ","SzZ","")
+ Q
+P(O) ;ТРАНСЛАЦИЯ P -> ^
+ I O=2 I d["P(" D Yes^%ZAPM.bs.BSXfun("В ФОРМУЛАХ НА ЛИЧНУЮ ЧАСТЬ P(...) СТАВИТЬ НЕЛЬЗЯ !") S YES=0 X "I 0" Q
+ I O=1 I d["P(" D Yes^%ZAPM.bs.BSXfun("ПРОИЗВЕСТИ ТРАНСЛЯЦИЮ P(...) В ^(...) .ВЫ УВЕРЕНЫ ?") I YES D  S YES=1 I 1 Q
+ .S d=$$TR^%ZAPM.bs.BSsFUNM(d,"P(","^(")
+ S YES=1 I 1 Q
+SYN(%1,%2) ;Синтаксический контроль
+ N G1,G2,C,k1,k0,k2,k3,k4,k5,k6,k7,k8,k9
+ S (G1,G2,C,k1,k0,k2,k3,k4,k5,k6,k7,k8,k9)=1,(G1(1),G2(1))=1
+ S %0="" I %1=""!(%2="") Q %1
+ N %zT,str S %zT=$ZT,$ZT="SYNER^%ZAPM.bs.BSzZ2"
+ I %1["$G(^(" D ErrMsg^%ZAPM.bs.BSXfun("Нельзя использовать $G(^(  !!") S $ZT=%zT,%0="" Q %0
+ S str=$S(%2="I":"I "_%1,1:%2_" LOCAL="_%1)
+ X str
+ S $ZT=%zT Q %1
+SYNER ;
+ I $ZE["UNDEF" S $ZT=%zT Q %1
+ I $ZE["SYNT" D ErrMsg^%ZAPM.bs.BSXfun("Найдена синтаксическая ошибка !!") S $ZT=%zT,%0="" Q %0
+ Q %1

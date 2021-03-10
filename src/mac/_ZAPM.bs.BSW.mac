@@ -1,0 +1,10 @@
+ROUTINE %ZAPM.bs.BSW
+%BSW ;ДЛЯ MSM-WORKSTATION OR CACHE' - ДИСПЕТЧЕР ; 10:09 19-JAN-99
+ N Pddp,%NAM,IntBS S %NAM="^%ZAPM.bs.BSS",IntBS=1 D TAB^%ZAPM.bs.BS
+ Q
+ ;L  S $ZT="ALLERR^%ZAPM.bs.BS1" D  L  Q
+ ;.D START
+ ;START ;НОВЫЙ ПРОЦЕСС
+ ;N  D CLr^%ZAPM.bs.BSF4 F  R *R:0 E  Q
+ ;I $$VAR^%ZAPM.bs.BSH ;ПОКА НЕ ДО НИХ -----ПЕРЕМЕННЫЕ
+ Q

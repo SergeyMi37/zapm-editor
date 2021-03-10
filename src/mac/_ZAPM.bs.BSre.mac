@@ -1,0 +1,240 @@
+ROUTINE %ZAPM.bs.BSre
+%BSre ; пpогpамма ПЕРЕКОДИРОВОК ; 13:43   15.04.2003
+ Q
+CTRL(S) ;УДАЛЕНИЕ УПРАВЛЯЮЩИХ СИМВОЛОВ
+ Q $TR(S,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31),"")
+Ansi2Asc D DOSREAD^%ZAPM.bs.BSS1 Q:'$D(%FN)
+ D ANS(%FN)
+ Q
+Ascii2An N %FN
+ D DOSREAD^%ZAPM.bs.BSS1 Q:'$D(%FN)
+ D AS(%FN)
+ Q
+DBFREAD(Say1,%Fn,Say2,GL,NOSCHET) N YES,D ;ЗАКАЧКА ИЗ ДБФ В МАССИВ С ВЫБОРОМ
+ I $G(AUTO)=1 S %FN=%Fn D D Q $G(D,-1)
+ D DBF Q $G(D,-1)
+DB(%FN,GL,NOSCHET) ;ЗАКАЧКА ИЗ ДБФ В МАССИВ
+ N %DEV,End,li,D D D Q $G(D,-1)
+DBF ;СЧИТАТЬ dbf В МАССИВ
+ N %FN,%DEV,End,li
+ I $D(Say1) W /CUP(22,1),/EL(0),Say1
+ D DOSREAD^%ZAPM.bs.BSS1 I $D(Say1) W /CUP(22,1),/EL(0)
+ Q:'$D(%FN)  ;%Fn - файл по-умолчанию
+ S li=$G(GL,"^ZZZ") I $D(Say2) W /CUP(22,1),/EL(0),Say2
+ D GLO^%ZAPM.bs.BSF3 I $D(Say2) W /CUP(22,1),/EL(0)
+ Q:YES<1  I '$D(NOSCHET) S NOSCHET=1  ;GL - массив по - умолчанию
+D K @GL I $$Open^%ZAPM.bs.BSXdbf(%FN,GL)'=0 Q
+ S End=@GL@("Head","RecNum")
+ S D=$$ReadRec^%ZAPM.bs.BSXdbf(%FN,GL,1,End)
+ Q
+%BS35 ;ТАБЛИЦА ТРАНСЛЯЦИИ КОДОВ
+ K %BS(35) N MN,F,SK,K
+ S MN=$G(%BS(13),"???") ;NSP - ТЕРМИНАЛА
+ I $ZV["MSM-Workstation" S MN="KEY-WS"
+ I $ZV["Cach"||($ZV["IRIS") S MN="KEY-CACHE",%BS(32)="^%ZAPM.bs.BS364" ;,%BS(32)="^%CHARWIN"
+  F F=0,"ALT","SFT","CRL" S K="" F  S K=$O(^%ZAPM.bs.BSR(MN,F,K)) Q:K=""  D
+  .S SK=^%ZAPM.bs.BSR(MN,F,K) Q:"-1"[SK  I '$D(^%ZAPM.bs.BSR("KEY-PC",F,K)) Q
+  .Q:SK=^%ZAPM.bs.BSR("KEY-PC",F,K)  ;СОВПАДАЕТ
+  .S %BS(35,SK)=^%ZAPM.bs.BSR("KEY-PC",F,K)
+ Q
+KEYS ;СОЗДАТЬ МАССИВ ТРАНСЛЯЦИИ СКАН-КОДОВ КЛАВИТУРЫ
+ Q
+ N P,K,F,R1,R2,R3,R4,R5,iV,iiV
+ ;S P="KEY-PC" ;КОНСОЛЬ
+ ;S P="PCTT" ;ТЕРМИНАЛ
+ I $ZV["MSM-Workstation" S P="KEY-WS"
+ I $ZV["Cach"||($ZV["IRIS") S P="KEY-CACHE" ;Cache' from InterSystems
+ F F=0,"ALT","SFT","CRL" D
+ .F K=1:1:12 D READ($NA(^%ZAPM.bs.BSR(P,F,K)),"ВВЕДИТЕ "_F_"-F"_K)
+ .F K="IN","DL","HM","EN","PU","PD" D READ($NA(^%ZAPM.bs.BSR(P,F,K)),"ВВЕДИТЕ "_F_" - "_K)
+ .S K="BCSP" D READ($NA(^%ZAPM.bs.BSR(P,F,K)),"ВВЕДИТЕ "_F_"- "_K)
+ .F K="UP","DN","RT","LT" D READ($NA(^%ZAPM.bs.BSR(P,F,K)),"ВВЕДИТЕ "_F_"-СТРЕЛКИ "_K)
+ .F K=65:1:90 D READ($NA(^%ZAPM.bs.BSR(P,F,K)),"ВВЕДИТЕ "_F_"-"_$C(K))
+ Q
+READ(G,S) N iV,iiV,R1,R2,R3,R4,R5 W !,S," "
+ I $ZV["Cach"||($ZV["IRIS") D READC ;Cache' from InterSystems
+ I $ZV["PC/PLUS" D READT ;MSM-PC/PLUS
+ I iiV'="13,-1,-1,-1,-1" S @G=iiV
+ Q
+READT N r,o,d,t,i r *o s d=o d  i t f  s d=d_","_o d  q:t=0
+ .f i=1:1:30 r *o:0 s t=$t q:t
+ S iiV=$P(d_",-1,-1,-1,-1",",",1,5) G REA
+READM R *R1,*R2:0,*R3:0,*R4:0,*R5:0 S iiV=R1_","_R2_","_R3_","_R4_","_R5 G REA
+READC R *R1 S R2=$ZB S iiV="" F iV=1:1:5 S iiV=iiV_$A($E(R2,iV)) I iV'=5 S iiV=iiV_","
+REA W " --> ",iiV
+ Q
+S S BST="CMD",BSR="^%ZAPM.bs.BSS" D ^%ZAPM.bs.BST
+ Q
+s1(a) d INIT(a) q S1
+s2(a) d INIT(a) q S2
+INIT(A) ;трансляциЯ из ASCII в ANSI ; 14:21 26-SEP-97
+ N B,I,L1,L2,D,D1,P,b,i,l1,l2,d,d1,p
+ S B="",b="" F I=128:1:159 S B=B_$C(I),b=b_$C(I+64)
+ S L1="",l1="" F I=160:1:175 S L1=L1_$C(I),l1=l1_$C(I+64)
+ S L2="",l2="" F I=224:1:239 S L2=L2_$C(I),l2=l2_$C(I+16)
+ S D="" F I=240:1:255 S D=D_$C(I)
+ S d=$C(168,184,170,186,175,191,161,162,176,173,183,172,185,164,167,182)
+ I A D
+ .S D1=$C(176,177,178,219,220,221,222,223)
+ .S d1=$C(183,173,177,182,95,91,93,174)
+ .; P="||||||--|+||==||=-==-=--==-====-=---==--"
+ .S P=$C(179,180,181,182,185,186,193,194,195,197,198,199,202,203,204,206,207,208,209,210,215,216,218,211,212,213,214,200,201,187,188,189,190,191,192,183,184,205,196,217)
+ .S p="||||||--|+||==||=-==-=--==-====-=---==--"
+ .I A=2 S p=$C(148,154,178,179,180,161,156,155,153,159,175,176,188,146,177,191,186,187,181,183,190,189,149,170,169,162,163,171,164,167,174,173,172,150,151,166,165,160,147,152)
+ S S1=B_L1_L2_D_$G(D1)_$G(P),S2=b_l1_l2_d_$G(d1)_$G(p)
+ Q
+AS(V,EXT) ;V-ДОС ФАЙЛ ТРАНСЛЯЦИЯ  из ASCII ("_FNO_") в ANSI ("_FN_")")
+ S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSre"
+ S DOS=51,FNO=V I $$Open^%ZAPM.bs.BSXdos(FNO,"R")
+ S DOS1=DOS,FN=$L(V,".")-1 S:($L(FN,".")-1)<1 FN=1
+ S DOS=52,FN=$P(V,".",1,FN)_"."_$G(EXT,"ANS") I $$Open^%ZAPM.bs.BSXdos(FN,"W")
+ d Wait^%ZAPM.bs.BSXfun("ТРАНСЛЯЦИЯ  из ASCII ("_FNO_") в ANSI ("_FN_")")
+ I $G(EXT)["HTM" U DOS W "<HTML><TITLE>"_$P(V,".")_"</TITLE><BODY><PRE>"
+ F v=1:1 U DOS1 R S Q:$ZC'=0  D  I '(v#50) U 0 X $G(WA)
+ .U DOS W $$HTm($$ANSI(S)),!
+ I $G(EXT)["HTM" U DOS W "</PRE></BODY></HTML>"
+Vi C DOS1,DOS U 0
+ Q
+HTm(S) I $G(EXT)'["HTM" Q S
+ Q $$TEGS(S) ;_"<BR>"
+TEGS(S) I S["<" S S=$$TR^%ZAPM.bs.BSsFUNM(S,"<","&lt;")
+ I S[">" S S=$$TR^%ZAPM.bs.BSsFUNM(S,">","&gt;")
+ ;I S[" " S S=$$TR^%ZAPM.bs.BSsFUNM(S," ","&nbsp;")
+ ;I S["%" S S=$$TR^%ZAPM.bs.BSsFUNM(S,"%","%25")
+ ;I S["\" S S=$$TR^%ZAPM.bs.BSsFUNM(S,"\","%5C")
+ ;I S[":" S S=$$TR^%ZAPM.bs.BSsFUNM(S,":","%3A")
+ Q $TR(S,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,26,28,29,30,31),"")
+ERFILE U 0 I $ZE["<ENDOFFILE" G Vi
+ D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) G Vi
+ACTIONS(F,XEC) G ACTION ;Action - ДЕЙСТВИЕ СО СТРОКАМИ ФАЙЛА  str
+REPLACE(F,P1,P2) ;МОДУЛЬ ПАКЕТНОГО РЕДАКТИРОВАНИЯ ФАЙЛОВ
+ N XEC
+ S XEC="I str["""_P1_""" S str=$$TR^%ZAPM.bs.BSsFUNM(str,P1,P2)"
+ACTION S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSre"
+ N v,DOS,DOS1,FNO,FN
+ S DOS=51,FNO=F I $$Open^%ZAPM.bs.BSXdos(FNO,"R")
+ S DOS1=DOS,FN=$L(F,".")-1 S:($L(FN,".")-1)<1 FN=1
+ S DOS=52,FN=$P(F,".",1,FN)_".$!$" I $$Open^%ZAPM.bs.BSXdos(FN,"W")
+ d Wait^%ZAPM.bs.BSXfun("ТРАНСЛЯЦИЯ ("_FNO_")")
+ F v=1:1 U DOS1 R str Q:$ZC'=0  D  I '(v#50) U 0 X $G(WA)
+ .U 0 X XEC U DOS W str,!
+ I str'="" U 0 X XEC U DOS W str,!
+ C DOS1,DOS,63 U 0
+ I $$ZOS3^%ZAPM.bs.BSDOS(FN,FNO)<0 ;D ErrMsg^%ZAPM.bs.BSXfun("НЕ МОГУ ПЕРЕИМЕНОВАТЬ "_FN_" В "_FNO) ;Rename a File
+ ;I $$ZOS2^%ZAPM.bs.BSDOS(FNO)<0 D ErrMsg^%ZAPM.bs.BSXfun("НЕ МОГУ УДАЛИТЬ "_FNO)
+ ;D EXE^%ZAPM.bs.BSDOS("XCOPY.EXE "_FN_" "_FNO,1)
+ ;I $$ZOS2^%ZAPM.bs.BSDOS(FN)<0 D ErrMsg^%ZAPM.bs.BSXfun("НЕ МОГУ УДАЛИТЬ "_FN)
+ Q
+ANSI(S) I '$D(S1) D INIT(1)
+ Q $TR(S,S1,S2)
+ASCII(S) I '$D(S1) D INIT(0)
+ Q $TR(S,S2,S1)
+ANS(V) ;V-ДОС ФАЙЛ
+ S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSre"
+ S DOS=51,FNO=V I $$Open^%ZAPM.bs.BSXdos(FNO,"R")
+ S DOS1=DOS,FN=$L(V,".")-1 S:($L(FN,".")-1)<1 FN=1
+ S DOS=52,FN=$P(V,".",1,FN)_".ASC" I $$Open^%ZAPM.bs.BSXdos(FN,"W")
+ d Wait^%ZAPM.bs.BSXfun("ТРАНСЛЯЦИЯ  из ANSI ("_FNO_") в ASCII ("_FN_")")
+ F v=1:1 U DOS1 R S Q:$ZC'=0  D  I '(v#50) U 0 X $G(WA)
+ .U DOS W $$ASCII(S),!
+ C DOS1,DOS U 0 Q
+ALTS ;ПЕРЕКОДИРОВКА ТЕКУЩЕГО ТЕКСТА ИЗ ANSI --> ASCII
+ I $G(@BSR@(BST,"ASCII"))="ASCII" Q
+ N S,S1,S2,I
+ F I=1:1 Q:'$D(@BSR@(BST,I))  S @BSR@(BST,I)=$$ASCII(@BSR@(BST,I))
+ S @BSR@(BST,"ASCII")="ASCII",$P(@BSR@(BST),"@",6)=1
+ Q
+ALTE ;ПЕРЕКОДИРОВКА ТЕКУЩЕГО ТЕКСТА ИЗ ASCII --> ANSI
+ I $G(@BSR@(BST,"ASCII"))="ANSI" Q
+ N S,S1,S2,I
+ F I=1:1 Q:'$D(@BSR@(BST,I))  S @BSR@(BST,I)=$$ANSI(@BSR@(BST,I))
+ S @BSR@(BST,"ASCII")="ANSI",$P(@BSR@(BST),"@",6)=1
+ Q
+NODATE I '$D(^%ZAPM.bs.BSETUP("YEAR",1)) D OkMsg^%ZAPM.bs.BSXfun("А ПОДМЕНА И НЕ ПРОИЗВОДИЛАСЬ") Q
+ I $D(^%ZAPM.bs.BSETUP("YEAR",1)) D OkMsg^%ZAPM.bs.BSXfun("ПОДМЕНА ОТМЕНЕНА") K ^%ZAPM.bs.BSETUP("YEAR",1),%BS(36)
+ Q
+SYSDATE N li,H S li=$$LineEdit^%ZAPM.bs.BSXfun("","ТОГДА КАКАЯ СЕЙЧАС ДАТА ? (ГГММДД)") Q:li<1
+ S H=$$DATHR^%ZAPM.bs.BSsFUNR(6,li) D Yes^%ZAPM.bs.BSXfun("Я ПРАВИЛЬНО ВАС ПОНЯЛА ? "_$$ESDAY^%ZAPM.bs.BSsFUNR(6,H)) I YES<0 G SYSDATE
+ I +H=+$H D OkMsg^%ZAPM.bs.BSXfun("ПОДМЕНА НЕ НУЖНА ! СИСТЕМНАЯ ДАТА И РЕАЛЬНАЯ СОВПАДАТ") G NODATE
+ S ^%ZAPM.bs.BSETUP("YEAR",1)=H-$H,%BS(36)=$H+$G(^%ZAPM.bs.BSETUP("YEAR",1))
+ Q
+SAVE ;СОХРАНИТЬ ССЫЛКУ НА КОМАНДУ СОХРАНЕНИЯ В ТАБЛИЦЕ
+ N li S li=$G(@BSR@(BST,"SVM"))
+ S li=$$LineEdit^%ZAPM.bs.BSXfun(li,"ВВОДИТЕ ССЫЛКУ НА КОМАНДУ СОХРАНЕНИЯ В ТАБЛИЦЕ") Q:YES<0
+ I li="" K @BSR@(BST,"SVM") Q
+ S @BSR@(BST,"SVM")=li
+ Q
+REST ;СОХРАНИТЬ ССЫЛКУ НА КОМАНДУ ВОССТАНОВЛЕНИЯ В ТАБЛИЦЕ
+ N li S li=$G(@BSR@(BST,"RSM"))
+ S li=$$LineEdit^%ZAPM.bs.BSXfun(li,"ВВОДИТЕ ССЫЛКУ НА КОМАНДУ ВОССТАНОВЛЕНИЯ В ТАБЛИЦЕ") Q:YES<0
+ I li="" K @BSR@(BST,"RSM") Q
+ S @BSR@(BST,"RSM")=li
+ Q
+XM(C) ;ВЫПОЛНИТЬ КОМАНДУ
+ S %zT=$ZT,$ZT="ERXM^%ZAPM.bs.BSre" X C S $ZT=$G(%zT)
+ Q
+ERXM D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) Q
+ Q
+CloseCLC ;МОДУЛЬ ПРЕДОБРАБОТКИ - ВЫКЛ ВЫЧИСЛЕНИЯ ПОСЛЕ ПЕРВОГО РАЗА
+ I R1=333,BSR["%BSbufS" K @BSR@(BST,"FCL")
+ Q
+CacheGR ;Restore Globals in Cache' Object
+ D NaSET^%ZAPM.bs.BSZRO S NewG="" K ^BStempERROR
+ F I=1:1 Q:'$D(@G@("ROU",I))  F II=1:2 Q:'$D(@G@("ROU",I,II))  D
+ .S S=@G@("ROU",I,II),SS=$G(@G@("ROU",I,II+1))
+ .I NewG'=$P(S,"(") S NewG=$P(S,"(") I $E(NewG,1,4)="^%ZAPM.bs.BS"&($E(NewG,1,7)'="^%ZAPM.bs.BSbuf") K @NewG
+ .D CacheSET(S,SS)
+ K @G I $D(^BStempERROR) S ^BStempERROR=$$ESDAY^%ZAPM.bs.BSsFUNR(6,$H) ;Date for Cache'
+ D NaGET^%ZAPM.bs.BSZRO
+ Q
+CacheSET(S,SS) S $ZT="CacheERS^%ZAPM.bs.BSre" S @S=SS
+ Q
+CacheERS S ^BStempERROR(S)=SS
+ Q
+INHTML(BSR,BST,FILE) ;!!!!!
+ Q
+OUTHTMLT N OUThtml ;ВЫВОД ТАБЛИЦЫ В HTML В ВИДЕ ТАБЛИЦЫ
+ ;```S OUThtml=1
+OUTHTML ;ВЫВОД ТАБЛИЦЫ В HTML
+ N S1,S2,BUF,BUF1,BUF2,%DEV,%FN,S,DOS,FNO,PR1
+ S PR1=$TR(BST,"[]!.?_:-",""),PR1=$$NETDIR^%ZAPM.bs.BSHTML1()_$E(PR1,$L(PR1)-7,$L(PR1))_".HTM" D DOSOPN^%ZAPM.bs.BSBL1 Q:'$D(%FN)
+ I '$D(S1) D INIT(1)
+ I $ZV["Cach"||($ZV["IRIS") S (S1,S2)=""
+ D HTML^%ZAPM.bs.BSHTML($NA(@BSR@(BST)))
+ C %DEV U 0 D OkMsg^%ZAPM.bs.BSXfun("Вывод Завершен")
+ Q
+TXT2HTML ;ВЫВОД ТЕКСТА В HTML
+ N S1,S2,BUF,BUF1,BUF2,%DEV,%FN,S,DOS,FNO,PR1,EXT,v,PR1
+ S PR1=$TR(BST,"[]!.?_:-",""),PR1=$$NETDIR^%ZAPM.bs.BSHTML1()_$E(PR1,$L(PR1)-7,$L(PR1))_".HTM" D DOSOPN^%ZAPM.bs.BSBL1 Q:'$D(%FN)
+ I '$D(S1) D INIT(1)
+ I $ZV["Cach"||($ZV["IRIS") S (S1,S2)=""
+ d Wait^%ZAPM.bs.BSXfun("вывод HTML") S EXT="HTM"
+ U %DEV W "<HTML><TITLE>"_BST_"</TITLE><BODY><PRE>",!
+ F v=1:1 Q:'$D(@BSR@(BST,v))  D  U 0 X $G(WA)
+ .U %DEV W $$HTm($TR(@BSR@(BST,v),S1,S2)),!
+ U %DEV W "</PRE></BODY></HTML>"
+ C %DEV U 0 D OkMsg^%ZAPM.bs.BSXfun("Вывод Завершен")
+ Q
+COPY(F) ;КОПИРОВАНИЕ ФАЙЛОВ ПОД НОВЫМ ИМЕНЕМ С ПРЕФИКСОМ ИЗ ИМЕНИ ДИРЕКТОРИИ
+ N P,N,E,D
+ S P=$P(FILE,"\",1,$L(FILE,"\")-2)
+ S D=$P(FILE,"\",$L(FILE,"\")-1)
+ S N=$P(FILE,"\",$L(FILE,"\"))
+ S EXE=$$JOB^%HOSTCMD("COPY "_F_" "_P_"\"_D_"\"_D_N)
+ Q
+nbsp2(F) ;ЗАМЕНИТЬ НА ПРОБЕЛ
+ N F1 S F1=$E(F,1,$L(F)-1)_"1"
+ S EXE=$$JOB^%HOSTCMD("COPY "_F_" "_F1)
+ S EXE=$$JOB^%HOSTCMD("DEL "_F)
+ S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSre"
+ S DOS=51,FNO=F1 I $$Open^%ZAPM.bs.BSXdos(FNO,"R")
+ S DOS1=DOS,FN=F
+ S DOS=52 I $$Open^%ZAPM.bs.BSXdos(FN,"W")
+ d Wait^%ZAPM.bs.BSXfun(F)
+ F v=1:1 U DOS1 R S Q:$ZC'=0  D  I '(v#50) U 0 X $G(WA)
+ .U DOS W $$TR^%ZAPM.bs.BSsFUNM(S,"&nbsp;"," "),!
+ C DOS1,DOS U 0
+ S EXE=$$JOB^%HOSTCMD("DEL "_F1)
+ Q
+ 
+ Q

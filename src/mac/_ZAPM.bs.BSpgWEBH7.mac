@@ -1,0 +1,61 @@
+ROUTINE %ZAPM.bs.BSpgWEBH7
+TKWEBH7	;PG&A;TK-WEB;1.1;M3 INTRO SCREENS;17MAR2000  18:45
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+P	S L=3,B=%("FORM","DATA") W "<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=9 BORDER=0>"
+	W "<TR><TD WIDTH=90 BGCOLOR=""#5555ff""><font face=""arial"" color=""#ffffff"" size=2>"_$p($zv," ")_"<br>Web Server</TD><TD align=right><img src=""/?m3intro?gif""><hr>"
+ S B="A=$T("_B_"+D^%ZAPM.bs.BSpgWEBH"_$S(B]"M3INTRO":7,B]"M3INTRO2":7,1:7)_")"
+	F D=1:1 S @B Q:A=""  S A=$P(A,";",2,9) Q:A=";"  S:A="" A="<P>" S:$E(A,1,4)="-F-T" A=$$PT(A) S:$E(A)="&" A=$S(D>1:"<hr>",1:"")_"</TD></TR><TR VALIGN=""TOP""><TD><font color=""#ff0000"" size=3>"_$E(A,2,255)_"</TD><TD>" W A_" "_CR
+	W "</TABLE>" Q
+	;
+PT(A) Q $S($E(A,5)="H":$$TH^%ZAPM.bs.BSpgWEBL($P(A,";",2,99)),1:$$TD^%ZAPM.bs.BSpgWEBL($P(A,";",2,99)))
+	;
+M3INTRO	;
+	;&Introduction
+	;
+	; <font color=red size=4><dir>New in Version 2.05e >> <a href="/m3control">M3Control Panel</a> The Password is "M3".</font><p></dir>
+	;Welcome to the M3 Web Server.  The following few pages of introduction should give you a brief overview of how to use the built-in web server with M3 and where you can find additional resources.
+	;
+	;(Note - this introduction page is displayed as a default page until you publish a new "home" page on your M3 WEB server.  Thereafter you will need to use the URL "http://mycomputer?m3intro" to get this page.)
+	;
+	;As a background note, it should be stated that M3 serves up these pages by a special connection to the TK-WEB software that resides in the system namespace (#1).  The
+	;TK-WEB sofware is a PG&A product in itself and you will see its name used often in these pages.  TK-WEB is written in standard M code and therefore the applications written using TK-WEB are not limited to
+	;M3 and can easily be moved to other M implementations that support TCP/IP.  However, be aware that not all implementations will provide the same level of TCP/IP performance.
+	;
+	;&Uses
+	;M3 comes "out-of-the-box" with some web functions already built-in to call M3 system utilities for configuration, control and maintenance.  Functions such as system status, kill job, routine and global directories, and printer
+	;status can be called up remotely by using a browser.
+	;
+	;Other built-in web functions allow for the control, maintenance and documenation of the web server, internet mail server and SQL server.  With these functions you can publish your own web pages, create virtual web servers and
+	;share your database information with others via the Internet/intranet through the use of web browsers, Excel spreadsheets, and ODBC connections.
+	;
+	;Then the rest is up to you.  The real strength of M3's Web Server is it ease of use and performance.  Building your own web pages with dynamic content couldn't be easier.
+	;
+	;&Getting Started
+	;To help you get started we have provided some simple examples so that you can see some of the ways that you can integrate web technology with your applications:
+	;
+	;<menu><a href="var^samplew">Simple 2 line program that dumps the variables</a><br>
+	;<a href="web^samplew">Example of writing Legacy M code out to the browser</a><br>
+	;<a href="amort^samplew">Web form that does amortization calculations</a><br>
+	;<a href="query^tksql1">SQL Query from the web</a></menu>
+	;
+	;
+	;There is also quite a bit of documentation that comes built-in with the M3 system.  You can use the following links from your browser to access this information:
+	;
+	;<menu><a href="/?intro">TK-WEB Documentation</a><BR>
+	;<a href="p^samplew">Listing of the SAMPLEW routine used above</a></menu>
+	;
+	;
+	;You can also find some additional information at our web site:
+	;
+	;<menu><a href="http://www.pattersongray.com/pga/html.htm">Sandia Labs HTML reference (Dec 1995)</a><BR>
+	;<a href="http://www.pattersongray.com/pga/m3web.htm">Programming for the Web</a><BR>
+	;</menu>
+	;;
+	;Thirdly, you may need to make some changes to the various defaults and security options listed in the configuration screens so that TK-WEB operates the way that you would like.
+	;The configuration screens can be accessed by typing in the URL of your machine followed by <a href="?config">?config</a>
+	;
+	;<a href="/?help2">next</a><BR>
+	;;
+HELP2	;
+	;

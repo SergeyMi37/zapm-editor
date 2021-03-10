@@ -1,0 +1,205 @@
+ROUTINE %ZAPM.bs.BSpgBS
+%BSpgBS ;TKWEB //ЭМУЛЯЦИЯ WEBLINK
+ I $D(%("WEBPUT")) S %("BSUPLOAD")=$NA(^mtempBSpgWEBPUT(CON,CNT))
+ N (%) ;,STL) 
+ S I=$P($P(%("COMMAND"),"/?BSTKWEB ?",2)," HTTP/1")  //GET
+ F i=1:1 Q:$P(I,"&",i,i+1)=""  I $P(I,"&",i)'="" S %KEY($P($P(I,"&",i),"="))=$P($P(I,"&",i),"=",2)
+ I $D(%("FORM")) S i="" F  S i=$O(%("FORM",i)) Q:i=""  D
+ .S %KEY(i)=$G(%("FORM",i))
+ .I $D(%("FORM",i))>1,$e(i,1,2)'="BS" n z S z="" F  S z=$O(%("FORM",i,z)) Q:z=""  S %KEY(i)=%KEY(i)_$C(13,10)_$G(%("FORM",i,z))
+ .I $D(%("FORM",i))>1,$e(i,1,2)="BS" n z S z="",z=$O(%("FORM",i,z),-1) Q:z=""  S %KEY(i)=$G(%("FORM",i,z)) //!!!! почему раньше работало!!!^
+ I $P(%("COMMAND")," ")["POST" d
+ .S I=$G(%("BODY"))
+ .i $g(%("CONTENT-TYPE:"))'["multipart/form-data;"  D  q  //POST
+ ..D PARSE(I)
+ .i $g(%("CONTENT-TYPE:"))["multipart/form-data;",'$D(%("WEBPUT")) D
+ ..S I(1)=I D STR2MAS^%ZAPM.bs.BSCmail(.I,.A,$C(13,10)) S %("BSUPLOAD")="A"
+ 
+ I $G(%("BSUPLOAD"))'="" D  //РАЗБОР multipart/form-data
+ .N FN,N,KOL,I,i,DEL,v,vv,SIZE,ct,J,S
+ .K ^mtempBSpgWEBPU("MPC",$J) S vv=$ZR,KOL=0,v=%("BSUPLOAD")
+ .F I=1:1 Q:'$D(@v@(I))  S i=$G(@v@(I)) D
+ ..I i'="",i["-----",'$D(DEL) S DEL=i   //НАШЛИ РАЗДЕЛИТЕЛЬ ПАРАМЕТРОВ
+ ..I $G(%("CONTENT-TYPE:"))'["multipart/form-data;" D PARSE(i) Q
+ ..I i["Content-Disposition: form-data;" S N=$P($P(i,"name=",2),$C(34),2) I N'="" D  
+ ...I i["filename" D  Q
+ ....S FN=$P($P(i,"filename=",2),$C(34),2),SIZE=0
+ ....S KOL=KOL+1,ct=$G(@v@(I+1)),ct=$tr($p(ct,"Content-Type: ",2),$c(13,10))
+ ....F J=I+3:1 Q:$G(@v@(J))=DEL  S S=$G(@v@(J)),SIZE=SIZE+$L(S),@vv@(KOL,J)=S
+ ....I $L(@vv@(KOL,J-1))'=$G(^%ZAPM.bs.BSpgWEBC("MAXSTRING")) S @vv@(KOL,J-1)=$E(@vv@(KOL,J-1),1,$L(@vv@(KOL,J-1))-2),SIZE=SIZE-2
+ ....S %KEY(N)=$NA(@vv@(KOL))_"~~"_SIZE_"~"_ct_"~"_FN,@vv@(KOL)=%KEY(N),I=J
+ ...E  S %KEY(N)=$TR($G(@v@(I+2)),$c(13,10)) S I=I+2
+ .K @v
+ 
+ I $G(%("ADDRESS"))'="" S %CGIEVAR("REMOTE_ADDR")=%("ADDRESS")
+ I $D(%("COMMAND")) S %CGIEVAR("HTTP_REFERER")=$G(%("COMMAND"))
+ I $D(%("USER-AGENT:")) S %CGIEVAR("HTTP_USER_AGENT")=$G(%("USER-AGENT:"))
+ S %CGIEVAR("SERVER_SOFTWARE")=$$SN^%ZAPM.bs.BSpgWEBH() 
+ S %CGIEVAR("SERVER_NAME")=$G(%("HOST:"))
+ S (%KEY("MGWLIB"),MGWLIB)="/?BSTKWEB%20"
+ k i,I ;,STL,A
+ ;W "<PRE>" W  W "</PRE>" q
+ D BSG($G(%KEY("BSG"),"B4I"))
+ Q
+BSG(bsg) ;ДИСПЕТЧЕР ПРОГРАММ %BS+++CACHE WEB-LINK
+ n bsd,BSROU,BSPACE s $zt="ErrBSG^%ZAPM.bs.BSCh0"
+ ;S bsd="^%ZAPM.bs.BScARM" 
+ S bsd=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC(""BSG"")") //TRIGGERED BD
+ I '$D(@bsd@(bsg)) W $$CRP("ССЫЛКА '"_bsg_"' ПУСТАЯ !") Q
+ S BSROU=$G(@bsd@(bsg,"ROU")),NSPACE=$G(@bsd@(bsg,"NSP")) ;,ROU=$P(BSROU,"^",2) /////
+ I $G(MGWLIB)["mgwms32.dll" I $G(@bsd@(bsg,"MGWSTO")) S MGWSTO=+@$ZR I MGWSTO<120 S MGWSTO=120
+ I $G(@bsd@(bsg,"BSdebug"))'="" S BSdebug=@$ZR //ОТЛАДЧИК ВКЛЮЧЕН
+ I $G(NSPACE)'="",'$$ZU(NSPACE) W $$CRP("Нет NameSpace='"_NSPACE_"' !") Q
+ I '$$EXIST^%R($P(BSROU,"^",2)_".INT") W $$CRP("В NameSpace='"_$zu(5)_"' НЕТ ПРОГРАММЫ '"_BSROU_"' !") Q
+ S %KEY("BSNSPACE")=NSPACE,%KEY("BSROU")=BSROU
+ D @BSROU
+ Q
+ZU(NS) ;ИЗМЕНИТЬ NS
+ S $ZT="ERCNS^%ZAPM.bs.BSCp"
+ I NS'="" D  I $ZU(5)'=NS Q ""
+ .i $zu(5,NS)
+ Q 1
+CRP(S) Q "<H2>"_S_"</H2>"
+ Q
+CHECKPASS(USER,PASS)  I '$$EXIST^%R("%BSCmdapi.INT") q 1 ;если программы %BSCmdapi нет, то пройдет любой пароль
+ Q $$CHECK^%ZAPM.bs.BSCmdapi(USER,PASS)
+ 
+TEMPDIR() ;ВОЗВРАТИТЬ ДИРЕКТОРИЮ ДЛЯ ВРЕМЕННЫХ ФАЙЛОВ
+ N T ;S T=$TR($$GETOPT^%ZAPM.bs.BSC4cfg($$MainOpt^%ZAPM.bs.BSC4,"TempDir2"),"/","\") ;УСТАРЕЛО
+ ;I T'="",$E(T,$L(T))'="\" S T=T_"\"
+ ;I T'[":" S T="" ;TEMP
+ ;I '$$exists^%ZAPM.bs.BSCEXE($E(T,1,$L(T)-1)) 
+ s T=$$CacheSysDir^%ZAPM.bs.BSCp("\dev\")
+ Q T
+PARSE(I) N i,A ;I $D(vv) S @vv=I
+ F i=1:1 Q:$P(I,"&",i,i+1)=""  I $P($P(I,"&",i),"=")'="",$P($P(I,"&",i),"=")'[$C(13),$P($P(I,"&",i),"=")'="",'$D(%KEY($P($P(I,"&",i),"="))) D
+ .S A=$P($P(I,"&",i),"=",2) I A["%" S:A["+" A=$$TR^%ZAPM.bs.BSsFUNM(A,"+"," ") S A=$$DECODING^%ZAPM.bs.BSpgBS(A)
+ .S %KEY($P($P(I,"&",i),"="))=A
+ Q
+ //ЗАРЕЗЕРВИРОВАННЫЕ ДЛЯ tk-web ПЕРМЕННЫЕ. В ПЕРЕМЕННЫХ ФОРМЫ НЕ ПРИМЕНЯТЬ НИ В КАКОМ РЕГИСТРЕ ! 
+ //%("FORM", ... "SUSER" "HELP" "TYP" "TO" "FROM" "DIR" "DIRECTORY" "FAX" "MESSAGE" "DATA" "ROU" "ROUTINE" "TDIR" "FILE" "FILEX" "TOBJ" 
+ //"TEST" "OBJECT" "publish" "TOOLM" "NEW" "NEWNAME"
+ //
+HTML(URI,FLN,DIR) //ЗАСУНУТЬ ФАЙЛ В ГЛОБАЛЬ, ЕСЛИ ВИРТУАЛЬНЫЙ КАТАЛОГ ОПРЕДЕЛЕН
+ N IO,I,G,FN,M,i S ST=404
+ Q:DIR=""  i DIR="infoteca"  S GLB=$NA(@("^mtempTKTWEB")@($J)) K @GLB,M d DC^%ZAPM.bs.BSCp($p($p(URI,"id(",2),")"),.M) g HTML2 //Инфотека
+ S G="^%ZAPM.bs.BSpgWEBC(""VirtualDir"")" I $G(@G@(DIR))="" Q
+ ;S FN=$ZCONVERT($G(@G@(DIR)),"U")_$P(URI,DIR_"/",2,99) I $ZU(140,4,FN)'=0 Q
+ S FN=$G(@G@(DIR))_$P(URI,DIR_"/",2,99) ;S ^mtempZ(FN)=DIR
+ I $ZU(140,4,FN)'=0 Q
+ S GLB=$NA(@("^mtempTKTWEB")@($J)) K @GLB 
+ ;S IO=$I 
+ D File2Arr^%ZAPM.bs.BSCEXE(FN,.M) ;U IO Q  I '$D(M) Q
+HTML2 S I="" F i=1:1 S I=$O(M(I)) Q:I=""  S @GLB@(i)=M(I),FL=$G(FL)+$L(M(I))
+ ;S @GLB@(1)=CMD
+ S $P(@GLB,"`",3)=FL,ST=200 
+ Q
+DECODE ;ДЕКОДИРОВАНИЕ КИРИЛЛИЦЫ
+ N S1,S2,I S S1="%D0%99,%D0%A6,%D0%A3,%D0%9A,%D0%95,%D0%9D,%D0%93,%D0%A8,%D0%A9,%D0%97,%D0%A5,%D0%AA,%D0%A4,%D0%AB,%D0%92,%D0%90,%D0%9F,%D0%A0,%D0%9E,%D0%9B,%D0%94,%D0%96,%D0%AD,%D0%AF,%D0%A7,%D0%A1,%D0%9C,%D0%98,%D0%A2,%D0%AC,%D0%91,%D0%AE,%D0%B9,%D1%86,%D1%83,%D0%BA,%D0%B5,%D0%BD,%D0%B3,%D1%88,%D1%89,%D0%B7,%D1%85,%D1%8A,%D1%84,%D1%8B,%D0%B2,%D0%B0,%D0%BF,%D1%80,%D0%BE,%D0%BB,%D0%B4,%D0%B6,%D1%8D,%D1%8F,%D1%87,%D1%81,%D0%BC,%D0%B8,%D1%82,%D1%8C,%D0%B1,%D1%8E"
+ S S2="ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮйцукенгшщзхъфывапролджэячсмитьбю"
+ F I=1:1 Q:$P(S1,",",I,I+1)=""  S Deco($P(S1,",",I))=$E(S2,I)
+ Q
+RUSD(S,D) I '$D(Deco) D DECODE
+ I $D(Deco("%D"_D_S)) Q Deco("%D"_D_S)
+ Q "ъ"
+DECODING(X)
+   I X["%D0" S B=X,X=$P(B,"%D0") F J=2:1:$L(B,"%D0") S X=X_$$RUSD($E($P(B,"%D0",J),1,3),0)_$E($P(B,"%D0",J),4,9999)
+  I X["%D1" S B=X,X=$P(B,"%D1") F J=2:1:$L(B,"%D1") S X=X_$$RUSD($E($P(B,"%D1",J),1,3),1)_$E($P(B,"%D1",J),4,9999)
+  I X["%" S B=X,X=$P(B,"%") F J=2:1:$L(B,"%") S X=X_$C(+$$ZH^%ZAPM.bs.BSpgWEBH1($E($P(B,"%",J),1,2)))_$E($P(B,"%",J),3,9999)
+  Q X
+TEST 
+ //D BEG1^%ZAPM.bs.BSC4 d OpisChoce^BSarmSPF D END^%ZAPM.bs.BSC4 q  //
+ //D BEG1^%ZAPM.bs.BSC4 d 0^BSarmWI D END^%ZAPM.bs.BSC4 q  //
+ //D BEG1^%ZAPM.bs.BSC4 d JS^BSshTEST D END^%ZAPM.bs.BSC4 q  // редактируемый комбобокс
+ //s a=$$CbaseNS^%ZAPM.bs.BSCp D BEG1^%ZAPM.bs.BSC4 d UR^BSarmB D END^%ZAPM.bs.BSC4 q  //обновление и запуск проги
+ //D BEG1^%ZAPM.bs.BSC4 d WorkChDec^BSarmWI D END^%ZAPM.bs.BSC4 q  //редактор выбора работ и децномеров
+ D MAINVAR^%ZAPM.bs.BSC4 s BStyleOver="GKVVBLUE" ;,BK=$C(13,10) ;,
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("ТЕСТОВАЯ СТРАНИЦА 1"),$$B27^%ZAPM.bs.BSCGIS(1)
+ d bsp
+ W "<H2>Программный комплекс %BS-Portal версии: "_RED_$$ver^%ZAPM.bs.BSC_EF_"</H2><hr>"
+ W "<H3>Cтраница сформирована программой: TEST^"_$zn_"</H3><hr>"
+ W "<H4>CУБД : "_$ZV_"</H4><hr>"
+ W "<H5>Задание : "_RED_$J_EF_" Доступно памяти : "_RED_$S_EF_" Теущее устройство : "_RED_$I_EF_"</H5><hr>"
+ N BSROU,BSDOMAIN D TEST2 
+ w "<HR><A HREF='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"TELEPAT^~BSpgBS")_"' >Загрузить тест на телепатию</A>"
+ d symbol
+ w "<hr>"
+ ;ВСЕ ОПРЕДЕЛЕННЫЕ ПЕРЕМЕННЫЕ НАЧИНАЮЩИЕСЯ НА 'BS' БУДУТ СОБРАНЫ В URL ФУНКЦИЕЙ $$ADDBSGET^%ZAPM.bs.BSC4
+ S BSLABEL="TEST1^~BSpgBS" D AN W "<HR>" 
+ D LOC
+ D END^%ZAPM.bs.BSC4
+ Q
+TEST1 D MAINVAR^%ZAPM.bs.BSC4 D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("ТЕСТОВАЯ СТРАНИЦА 2"),$$B27^%ZAPM.bs.BSCGIS(1)
+ d bsp
+ W "<H2>Программный комплекс %BS-Portal версии: "_RED_$$ver^%ZAPM.bs.BSC_EF_"</H2><hr>"
+ W "<H3>Cтраница сформирована программой: TEST1^"_$zn_"</H3><hr>"
+ W "<H4>CУБД : "_$ZV_"</H4><hr>"
+ W "<H5>Задание : "_RED_$J_EF_" Доступно памяти : "_RED_$S_EF_" Теущее устройство : "_RED_$I_EF_"</H5><hr>"
+ D TEST2
+ S BSLABEL="TEST^~BSpgBS" D AN W "<HR>" 
+ D BUTT^%ZAPM.bs.BSCGIS
+ D LOC
+ D END^%ZAPM.bs.BSC4
+ Q 
+symbol W !,"<li><a href='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"SYMBOL^%ZAPM.bs.BSCp2")_"' title='Символы для оформления HTML' target='_new6'>Символы</a>  для оформления HTML",BBK,BBK
+ q
+AN w "<A HREF='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"' >Перейти на другую страницу, которую сформирует программа "_RED_BSLABEL_EF_"</A>"
+ Q
+TEST2 S BSCON=$G(BSCON)+1 W "Cчетчик "_RED_BSCON_EF_" определенный переменной "_RED_"BSCON"_EF_"<HR>"
+ Q
+LOC W "<H3>Cписок локальных переменных, определенных на момент выполнения программы</H3>"
+ D locvar^%ZAPM.bs.BSCh0("")
+ Q 
+bsp w "<A HREF='http://"_$$ADDSN^%ZAPM.bs.BSC4_$$ADDLIB^%ZAPM.bs.BSC4_"BSG=B4I&BSLABEL=RUNTIME' >Зайти в bs-портал</A>"
+ Q
+TK ; TKWEB ;ПРОГРАММНАЯ ССЫЛКА TKWEB
+ ;http://iportal:1962/TK^ZSTU?A=123&VVVV=3333&UU=2222
+ M %KEY=%("FORM") ;ЭМУЛЯЦИЯ WEBLINK
+ W "<PRE>" W  W "</PRE>" 
+ Q
+TELEPAT D MAINVAR^%ZAPM.bs.BSC4 D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("ТЕСТ НА ТЕЛЕПАТИЮ"),$$B27^%ZAPM.bs.BSCGIS(1)
+ w "<BODY>"
+ w "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+ S BSLABEL="TELEPAT1^~BSpgBS"
+ s BSKk=30,BSm="^zzz"
+ s BSs="171,168,162,85,117" 
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ W "В тесте принимают 2 участника. Цель = определить, существует ли между ними телепатическая связь. Первый за компьютером, посылает другому мыслено образы увиденных символов. В каждый показ будет выведено "_BSKk_" раз случайным образом появляющихся символов."
+ f i=1:1 q:$p(BSs,",",i,i+1)=""  w $$S^%ZAPM.bs.BSCp2("",$p(BSs,",",i),7)
+ w BBK_"Второй в это время на листочке (в идеале бы на другом компьютере) записывает: номер показа, порядковый номер, и сам символ, который 'УВИДЕЛ'. Потом они меняются. В конце проверяют что у них получилось. "
+ w "<hr><input type=submit name=sNEW value='Новый показ' title=''>"_BK
+ w "<hr>Проверить. <input type=textbox name=BSsPOK value='"_$o(@BSm@(""),-1)_"' title='введите номер показа'> <input type=submit name=sPOK value='Показ.Посмотреть' title=''>"_BK
+ w "</form>"
+ ;G BACK^%ZAPM.bs.BSCh //кнопка 'назад'"
+ D END^%ZAPM.bs.BSC4
+ Q
+TELEPAT1
+ i $d(sNEW) d
+ . D JS^%ZAPM.bs.BSCp s BSp=$o(@BSm@(""),-1)+1 
+ .W "open("""_$$ADDBSGET^%ZAPM.bs.BSC4(,"TELENEW^~BSpgBS")_""",""xxx"",""toolbar=no,menubar=no,scrollbars=no,width=500,height=200,status=1,resizable=1"");"_BK
+ .D JSE^%ZAPM.bs.BSCp
+ i $d(sPOK) d
+ .w "Показ №"_BSsPOK_" " s i="" f I=1:1 s i=$o(@BSm@(BSsPOK,i)) q:i=""  w "<hr>"_I_". "_$$S^%ZAPM.bs.BSCp2("",$p(BSs,",",$G(@BSm@(BSsPOK,i))))
+ Q 
+TELENEW D MAINVAR^%ZAPM.bs.BSC4 D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("ТЕСТ НА ТЕЛЕПАТИЮ. Новый показ"),$$B27^%ZAPM.bs.BSCGIS(1)
+ w "<BODY>"
+ w "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+  S BSLABEL="TELENEW^~BSpgBS"
+ s BSk=$G(BSk)+1 
+ i BSk>$g(BSKk,30) w "все, показ № "_BSp_" закончился. Меняйтесь местами" g end
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ w "Показ номер:"_BSp_", "_BSk_" <hr>" 
+ s nom=($r(5)+1)
+ w $$S^%ZAPM.bs.BSCp2("",$p(BSs,",",nom),7) s @BSm@(BSp,BSk)=nom
+ w "<hr><input type=submit name=sNEW value='Следующий' title=''>"_BK
+end D END^%ZAPM.bs.BSC4
+ q
+stop(port) //остановить сервер TK-WEB
+ d STOPS^%ZAPM.bs.BSpgWEBC(port)
+ q
+start(p) //запустить сервер TK-WEB
+ j Start(p)
+ q
+Start(p) S (port,type)=80,TRACE=1,LOG=1,port=p,conTrol="ON,5,ON,6,,9,"_p
+ g startup^%ZAPM.bs.BSpgWEBC
+ q

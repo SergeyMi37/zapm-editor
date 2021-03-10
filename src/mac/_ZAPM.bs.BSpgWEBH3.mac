@@ -1,0 +1,115 @@
+ROUTINE %ZAPM.bs.BSpgWEBH3
+TKWEBH3	;PG&A;TK-WEB;1.1;HELP SCREENS;06JUL99  14:12
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+P	S B=%("FORM","DATA") W "<TABLE WIDTH=100% CELLSPACING=0 CELLPADDING=9 BORDER=0>"
+	W "<TR><TD WIDTH=90 BGCOLOR=""YELLOW""><font face=""arial"" color=""#ffffff"" size=2><a href=""/?help"">Web Server<br>Documentation</A><TD align=right><img src=""/?intro?gif""><hr>"
+ S B="A=$T("_B_"+D^%ZAPM.bs.BSpgWEBH"_$S(B]"HELP9":6,B]"HELP7":5,B]"HELP3":4,1:3)_")"
+	F D=1:1 S @B Q:A=""  S A=$P(A,";",2,9) Q:A=";"  S:A="" A="<P>" S:$E(A,1,4)="-F-T" A=$$PT(A) S:$E(A)="&" A=$S(D>1:"<hr>",1:"")_"<TR VALIGN=""TOP""><TD><font color=""#ff0000"" size=3>"_$E(A,2,255)_"<TD>" W A_" "_CR
+	W "</TABLE>" Q
+	;
+PT(A) Q $S($E(A,5)="H":$$TH^%ZAPM.bs.BSpgWEBL($P(A,";",2,99)),1:$$TD^%ZAPM.bs.BSpgWEBL($P(A,";",2,99)))
+	;
+HELP	;
+	;&Help<BR>Information
+	;The user documentation for TK-WEB is found on-line through the links in
+	;this page as well as additional information that can be found at our web site.
+	;
+	;Information concerning building static web content is readily available in book stores and libraries and is too numerous to list here.
+	;
+	;A quick reference on how to use TK-WEB with your applications is available through the PROGRAMMING GUIDE below, but more specific information and examples on how to incorporate dynamic data that comes from your M database is available at our web site.
+	;
+	;This local online help provides information on the following topics:
+	;
+	;<menu><a href="/?help1">Getting Started</a><BR>
+	;<a href="/?help2">Web content and Publishing</a><BR>
+	;<a href="/?help5">Naming Conventions</a><BR>
+	;<a href="/?help3">Directories</a><BR>
+	;<a href="/?help21">Using URL references</a><BR>
+	;<a href="/?help4">Virtual Servers</a><BR>
+	;<a href="/?help6">Publishing Using MS Internet Explorer</a><BR>
+	;<a href="/?help7">Publishing Using Netscape</a><BR>
+	;<a href="/?help9">Publishing Using Import Tool</a><BR>
+	;<a href="/?help8">Webmaster Info</a><BR>
+	;<a href="/?helpa">Programming Guide</a><BR>
+	;;
+HELP1	;
+	;&Getting<BR>Started
+ ;Running and maintaining the TK-WEB server is quite simple.  First you must have a background copy of ^%ZAPM.bs.BSpgWEBC running in order for the web server to be able to respond to client requests.  If you reboot the M system,
+	;you need to make sure that TKWEBC is restarted also.
+	;
+	;Secondly, you should go through the various help screens here to discover how you can publish new web content on your web server.
+	;
+	;Thirdly, you may need to make some changes to the various defaults and security options listed in the configuration screens so that TK-WEB operates the way that you would like.
+	;The configuration screens can be accessed by typing in the URL of your machine followed by <a href="?config">?config</a>
+	;
+	;<a href="/?help2">next</a><BR>
+	;;
+HELP2	;
+	;&TK-WEB<BR>Content
+	;A web server is limited to responding to client's requests for content consisting mainly of a HTML text, plain text, images, and sound files.
+	;Content that is simply retrieved and sent out unmodified is considered static.  If the page is modified before it is sent out, it then becomes dynamic.
+	;
+	;The static portion of the content resides either in M files (globals) or in host files on the hard drive.  We recommend that the M file structure be used since it generally has performance advantages over the host based files.
+	;
+	;&Publishing
+	;In order to use your web server you first need to "publish" the web pages that you intend to make available on the network.  Publishing involves the following steps:
+	;
+	;<menu><li>Creating the individual web pages with an editor
+	;<li>Identifying the appropriate <a href="/?help2">directories</a> that these pages will be stored in
+	;<li>Sending these pages up to TK-WEB by using the publishing capabilities of either <a href="/?help5">Netscape</a> or <a href="/?help6">Internet Explorer</a> or by using a <a href="/?help9">Import Tool</a> provided by TK-WEB
+	;<li>Testing each page for correct operation</menu>
+	;
+	;<a href="/?help5">next</a><BR>
+	;;
+HELP21	;
+	;&<a name="references">References</a>
+	;As in every web server, you do need to be aware of how your web pages reference each other and how they reference images.  The incorrent use of references will result in missing images or pages that cannot be found.
+	;
+	;There are a number of different ways to specify references.  This depends upon where you store your pages and images and how the client initially accesses the site.   Below is list of possible methods that can be used within TK-WEB:
+	;
+	;<menu><li><u>Absolute addressing.</u>  This means that you specify the entire address of the link or image, such as <b>http:://www.mycompany.com/sales/image3.jpg</b>.
+	;
+	;<li><u>Relative Addressing with directory.</u>  A shorter form of addressing is called relative addressing.  It is relative to the URL that the user specified to access this main page.  An example would be <b>/sales/image3.jpg</b>
+	;
+	;<li><u>Relative Addressing without directory.</u>  Just the name of page or image such as <b>image3.jpg</b>. 
+	;
+	;<li><u>Relative Addressing with BASE.</u>  This is relative addressing but a single HTML BASE REFERENCE command has been added to the main page of the directory.</menu>
+	;
+	;So why the different types of addresses?  Well there are advantages and disadvanteges to each.
+	;
+	;<ol><li>Absolute addressing is the most fool proof, but it does make for larger web pages and it makes it difficult to move pages from one directory to another without redoing all of the links.
+	;<li>Relative addressing is the shortest and most portable method, but it must be accompanied with either the directory name or a base reference if default pages are used.
+	;<li>You must use absolute addressing if you are referencing another webserver.
+	;<li>You must use either absolute addressing or relative with a directory if you need to reference content stored in another directory.</ol>
+	;
+	;If you are using a HTML editor, you will probably notice that there are options in the editor on how the references are to be handled when you publish the pages.  If you are using a text editor, then you will have to type the references in yourself.
+	;
+	;<B>Note: <BLOCKQUOTE>It is usually easiest to use relative addressing throughout, but make sure that you include the following HTML text on you first (home) page right after your BODY HTML statement and
+	; before any references to other pages or graphics:<p> &#60;base href="http://your_server/directory/"&#62;<p>
+	;The trailing "/" is important.  YOUR_SERVER is your host URL and the DIRECTORY is the virtual directory name.</BLOCKQUOTE>
+	;
+	;<a href="/?help4">next</a><BR>
+	;;
+HELP3	;
+	;&Directories
+	;Web pages and associated resources that might reside within the web
+	;page are stored in "directories".  There is no limit to the number of
+	;pages that you might store in a directory, and there is no limit to
+	;the number of directories that you might configure for this web site.
+	;Usually a directory would contain a number of related pages.  They can
+	;be referenced by either of four different methods:
+	;<PRE>
+	;         host/directory      such as    alpha/sales<BR>
+	;         host                such as    alpha<BR>
+	;         DNS name/directory  such as    www.mycompany.com/sales<BR>
+	;         DNS name            such as    www.mycompany.com
+	;</PRE>
+	;The host/directory method is easy to use and requires no special
+	;setup.  You can add another directory in a matter of seconds, and
+	;you are up and running on another area in which you can publish.
+	;The down side is that other users need to reference the entire name
+	;including the directory in order to call up the pages.
+	;
+	;<a href="/?help21">next</a><BR>
+	;;

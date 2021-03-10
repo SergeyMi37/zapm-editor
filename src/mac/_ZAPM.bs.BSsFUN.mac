@@ -1,0 +1,131 @@
+ROUTINE %ZAPM.bs.BSsFUN
+%BSsFUN ;ФУНКЦИИ ОБЩЕГО НАЗНАЧЕНИЯ ; 15:54   05.05.2000
+ Q  ;%1-{ОТ}  %2-ШАГ  %3-{ДО}  %4-УСЛОВИЕ
+%1 I %1["{" S %1=$TR(%1,"{}",""),%3=$TR(%3,"{}","")
+ S jb=$P(%1,",",2),ib=$P(%1,","),BStf=BST,BSrf=BSR
+ S je=$P(%3,",",2),ie=$P(%3,",")
+ I 'jb X "S jb="_jb
+ I 'ib X "S ib="_ib
+ I 'ie X "S ie="_ie
+ I 'je X "S je="_je
+ I '(%1["ny"!(%3["ny")) S ie=ie+$G(%Co,0),ib=ib+$G(%Co,0)
+ S %4=$G(%4,1)
+ Q
+SUM(%1,%2,%3,%4,%5) ;СУММА КЛЕТОК
+ N BSrf,BStf,s,k,i3
+ D %1
+ S %0=0 F s=ib:$G(%2,1):ie F k=jb:$G(%2,1):je X "I "_%4 I  D  S %0=%0+i3
+ .I $P($G(@(BSrf_"(BStf,s,k)"),"@@@@@@@@1"),"@",9)=1 S i3=$P($G(@$ZR),"@",15) Q
+ .E  I BST=BStf S i3=$G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),s,k)) Q
+ .E  S i3=""
+ Q $S(%0'=0:%0,1:$S($G(%5):0,1:""))
+SUMSPPI(%1,%2,%3,%4) ;СУММА ДЛЯ ПРОМЕЖУТОЧНОГО ИТОГА %1-КОЛОНКА
+ K Pi S k=%1,%0=0 S:%4="" %4=1 F s=ny-1:-1:1 I $G(@(BSR_"(BST,s)")) D  Q:$G(Pi)="END"
+ .I '$D(Pi) S Pi=@$ZR
+ .I Pi'=@$ZR S Pi="END" Q
+ .X "I "_%4 I  S %0=%0+$P(@(BSR_"(BST,s,k)"),"@",15)
+ K Pi Q %0
+SUMSPI(%1,%2,%3,%4) ;СУММА ИТОГА СПИСКА %4-УСЛОВИЕ
+ S k=%1,%0=0 S:%4="" %4=1 F s=ny-1:-1:1 I $G(@(BSR_"(BST,s)")) D
+ .X "I "_%4 I  S %0=%0+$P(@(BSR_"(BST,s,k)"),"@",15)
+ Q %0
+PLU(%1,%2,%3,%4) ;ПЛЮСОВАНИЕ
+ D %1 S %0=0 F s=ib:%2:ie F k=jb:%2:je X "I "_%4 I  S %0=%0+1
+ Q %0
+MAX(%1,%2,%3,%4) ;МАКСИМУМ
+ D %1 S %0=-999999999 F s=ib:%2:ie F k=jb:%2:je X "I "_%4 I  D  S:%0<i3 %0=i3
+ .I $P($G(@(BSrf_"(BStf,s,k)"),"@@@@@@@@1"),"@",9)=1 S i3=$P($G(@$ZR),"@",15) Q
+ .E  I BST=BStf S i3=$G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),s,k)) Q
+ .E  S i3=0
+ Q %0
+MIN(%1,%2,%3,%4) ;МИНИМУМ
+ D %1 S %0=999999999 F s=ib:%2:ie F k=jb:%2:je X "I "_%4 I  D  S:%0>i3 %0=i3
+ .I $P($G(@(BSrf_"(BStf,s,k)")),"@",9)'=2 S i3=$P($G(@$ZR),"@",15) Q
+ .E  I BST=BStf S i3=$G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),s,k)) Q
+ .E  S i3=0
+ Q %0
+STEP(%1,%2) ;
+ ;ВОЗВЕДЕНИЕ %1 В СТЕПЕНЬ %2 РЕЗУЛЬТАТ В %0
+ S %0=%1 F I=2:1:%2 S %0=%0*%1
+STEPE K I Q %0
+ABS(%1) ;
+ ;МОДУЛЬ ЧИСЛА %1
+ I %1<0 S %1=%1*-1
+ABSE S %0=%1 Q %0
+DEL(%1,%2) ;
+ ;ДЕЛЕНИЕ %1 НА %2=%0 ,ЕСЛИ %2=0 ,ТО %0="<DIVER>"
+ I +%2=0 S %0="<DIVER>" Q %0
+DELE S %0=%1/%2 Q %0
+DEN(%1,%2) ;
+ ;ДЕЛЕНИЕ НАЦЕЛО %1 НА %2=%0 ,ЕСЛИ %2=0 ,ТО %0="<DIVER>"
+ I %2=0 S %0="<DIVER>" Q %0
+DENE S %0=%1\%2 Q %0
+PROC(%1,%2,%3,%4,%5) 
+ ;ВЗЯТИЕ ПРОЦЕНТА ЧИСЛА %1 К ЧИСЛУ %2 ,ЕСЛИ %2=0 ,ТО %0="<DIVER>" при %3=1
+ ;%4 -СКОЛЬКО ЗНАКОВ ПОСЛЕ ТОЧКИ
+ ;%5 =1 ПИСАТЬ СИМВОЛ %
+ I +%2=0 S %0=$S($G(%3):"<DIVER>",1:"") Q %0
+ I +%1=0 S %0=$S($G(%3):"<DIVER>",1:"") Q %0
+%E S %0=%1*100/%2 I $D(%4) S %0=$FN(%0,"",%4)
+ Q %0_$S($G(%5):"%",1:"")
+OST(%1,%2) ;
+ ;ОСТАТОК ОТ ДЕЛЕНИЯ %1 НА %2 ,ЕСЛИ %2=0 ,ТО %0="<DIVER>"
+ I %2=0 S %0="<DIVER>" Q %0
+ S %0=%1/%2 I %0["." S %0=$P(%0,".",2) Q %0
+OSTE E  S %0=0 Q %0
+SIN(%1) ;
+ ;ВЫЧИСЛЕНИЕ SIN(%1)=%0
+ I %1>180 S %1=%1-180*-1
+ S %1=%1*.017453277
+ S %1=%1-(%1*%1*%1/6)+(%1*%1*%1*%1*%1/120)-(%1*%1*%1*%1*%1*%1*%1/5040)
+SINE S %0=%1 Q %0
+COS(%1) ;
+ ;ВЫЧИСЛЕНИЕ COS(%1)=%0
+ S SOC=1 I %1>180 S %1=%1-180,SOC=-1
+ S %1=%1*.017453277
+ S %1=1-(%1*%1/2)+(%1*%1*%1*%1/24)-(%1*%1*%1*%1*%1*%1/720)+(%1*%1*%1*%1*%1*%1*%1*%1/40320),%1=%1*SOC
+COSE S %0=%1 Q %0
+SQR(%1) ;
+SQ ;ИЗВЛЕЧЕНИЕ КВАДРАТНОГО КОРНЯ SQRT(%1)=%0
+ S KONS=.00000000001 S VX0=0,VX1=%1+1 S:%1>1 KONS=%1*KONS*%1
+VX S VIX=VX0+VX1/2,KONTR=VIX*VIX I %1+KONS'<KONTR&((%1-KONS)'>KONTR) S %0=VIX K VIX,VX0,VX1,KONS,KONTR,CC Q %0
+ I KONTR>%1 S VX1=VIX G VX
+ I KONTR<%1 S VX0=VIX G VX
+ATAN G ARG:(CC*CC-.01)<0 S %1=CC*CC+1 D SQ S CC=CC/(1+VIX) D ATAN S CC=2*CC Q
+ARG S CC=CC-(CC*CC*CC/3)+(CC*CC*CC*CC*CC/5)-(CC*CC*CC*CC*CC*CC*CC/7)
+SQRTE Q
+SPSTR(%1) ;НУМЕРАЦИЯ СТРАНИЦ СПИСКА ПРИ НАЛИЧИЯ ПРОМ.ИТОГА
+ S %0="" F s=ny:1 Q:'$D(@(BSR_"(BST,s)"))  I $G(@$ZR) S %0="стp."_@$ZR
+ Q %0
+ ;
+ ;МОДУЛЬ ИЗ %BSA
+ ;
+A(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16) S pp=$P($G(BSR),"^",2),ps=$S(pp'[",":$P($$ZU^%ZAPM.bs.BS3(0),",",2),1:$P(pp,$C(34),4))
+ S pu=$S(pp'["[":$P($$ZU^%ZAPM.bs.BS3(0),","),1:$P(pp,$C(34),2)),pt=$G(BST) I $E(pp,1)="[" S pp=$P(pp,"]",2)
+ S %zT=$ZT,$ZT="TRAP^%ZAPM.bs.BSA"
+ I $D(p4) S pp=p4 I pp["^" S pp=$P(pp,"^",2)
+ I $G(p3)'="" S pt=p3
+ I $G(p5)'="" S pu=$TR(p5,"[]|""","") I pu["," S ps=$P(pu,",",2),pu=$P(pu,",")
+ I $G(p6)'="" S ps=$TR(p6,"[]|""","") I ps["," S pu=$P(ps,","),ps=$P(ps,",",2)
+ ;I $E(pp,1)="%" S pp="^"_pp ;`BSA
+ S pp="^["""_pu_""","""_ps_"""]"_pp
+ I $D(@(pp_"(pt,p1,p2)"))
+ S bS=$ZR I $P(@(pp_"(pt,p1,p2)"),"@",9)=1 Q $P($G(@$ZR),"@",15)
+ I '$D(p8),BST=pt,$$BSR(BSR)=pp Q $G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),p1,p2))
+ S pb=$$KBD^%ZAPM.bs.BSF12($NA(@pp@(pt))),pb=$$BSD(pb,$G(p7))
+ F pi=1:1:9 Q:'$D(^(pi))  Q:'$D(@("p"_(pi+7)))  S pb=pb_$S(@("p"_(pi+7))=+@("p"_(pi+7)):@("p"_(pi+7)),1:$C(34)_@("p"_(pi+7))_$C(34))_","
+ S pij=p1_","_p2 I $P($G(@pp@(pt,"KEY",pi-1)),"@",6)="HiddenLastKey",$P($P(@(pp_"(pt,p1,p2)"),"@",18),"#",2)'="" D  Q $G(@$ZR,"<NO_VALUE>")
+ .S pij=$P($P(@$ZR,"@",18),"#",2) I $D(@(pb_$C(34)_pij_""")"))
+ I $P($P(@(pp_"(pt,p1,p2)"),"@",18),"#")'="" S pij=$P($P(@$ZR,"@",18),"#")
+ I $D(@(pb_$C(34)_pij_""")")) Q @$ZR
+ Q "<NO_VAL>"  ;$ZR
+BSD(BSD,%NAm) ;ССЫЛКА НА УЗЕЛ БАЗЫ ДАННЫХ
+ S %NAm=BSD_$G(%NAm)_$S(BSD["(":"",1:"(") I $E(%NAm,$L(%NAm))=")" S %NAm=$E(%NAm,1,$L(%NAm)-1)_","
+ Q %NAm
+BSR(bsr) N bs ;ПОЛНАЯ ССЫЛКА
+ I $E(bsr,1,2)="^%" Q $$%^%ZAPM.bs.BSF12(bsr)
+ ;4.;I $P($ZV,"Version ",2)'<4,bsr'["|" Q "^|"""_$P($$ZU^%ZAPM.bs.BS3(0),",")_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""|"_$P(bsr,"^",2)
+ ;4.;I $P($ZV,"Version ",2)'<4,$P(bsr,"|",2)'["," S bs=$P($P(bsr,"|",2),$C(34),2) Q "^|"""_bs_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""|"_$P(bsr,"|",2)
+ I bsr'["]" Q "^["""_$P($$ZU^%ZAPM.bs.BS3(0),",")_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""]"_$P(bsr,"^",2)
+ I $P($P(bsr,"]"),"[",2)'["," S bs=$P($P($P(bsr,"]"),"[",2),$C(34),2) Q "^["""_bs_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""]"_$P(bsr,"]",2)
+ Q bsr

@@ -1,0 +1,69 @@
+ROUTINE %ZAPM.bs.BSpgWEBIS
+TKWEBIS	;PG&A,TK-WEB,1.1;SELECT A DIRECTORY;17NOV94 2:49P;;15OCT97  08:13
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;Copyright (C) 1984, Patterson, Gray & Associates, Inc.
+	S %R=1,%C=21,DIR="",Y=$S('$D(TK(9)):"D I R E C T O R Y   S E L E C T I O N\Dir\Description\Created\No Directories have been defined - Press\RETURN\to continue\Selected Directory\Password",1:@TK(9)@(7))
+	S L=$S('$D(TK(9)):"Function Keys\EXIT  HELP\NEXT SCREEN\FIND\PREVIOUS SCREEN  1ST SCREEN",1:@TK(9)@(29))
+	W @TKP,$J("",40) S %C=84-$L($P(Y,"\"))\2 W @TKP,TK("HI"),$P(Y,"\")
+	S %R=4,%C=7 W @TKP,TK("CS"),$P(Y,"\",2) S %C=13 W @TKP,$P(Y,"\",3) S %C=46 W @TKP,$P(Y,"\",4)
+ D:$D(^%ZAPM.bs.BSpgWEBF(98))=0 INIT I $D(^%ZAPM.bs.BSpgWEBF(98))=0 S %R=24,%C=10 W @TKP,TK("LO"),"(",$P(Y,"\",5)," ",TK("HI"),$P(Y,"\",6),TK("LO")," ",$P(Y,"\",7),")" X "F I=0:0 R *X Q:X=13!(X=27)" Q
+	;
+TOP	S I=999,PP=0,TG=" " K FIND
+LEV	K IA S %R=22,%C=5,X=$S('$D(TK(9)):"Type *Letter(s)* or use *ARROWS* to move selector, *RETURN* to make selection",1:@TK(9)@(8))
+	W @TKP,TK("LO") F J=1:2:$L(X,"*") W $P(X,"*",J),TK("HI"),$P(X,"*",J+1),TK("LO")
+	S TH=" ",CN=0,%C=1,%R=6 W @TKP,TK("LO"),*13 S PAGE(PP)=I
+LEV1 S I=$O(^%ZAPM.bs.BSpgWEBF(98,I)) G FK:I="" S CN=CN+1
+	S X=$S($D(^(I))#2:^(I),1:"UNNAMED DIRECTORY"),%C=7,%R=CN+5 W @TKP,I,$J("",5-$L(I)),$P(X,"\") S %C=43 W @TKP,$J($P(X,"\",2),11)
+ S TH=TH_I_"\ ",IA(I)=CN G LEV1:CN<15 S CN=16 S:$O(^%ZAPM.bs.BSpgWEBF(98,I))="" CN=15 G FK
+	;
+ASK	S J=1,%C=4,N=CN S:CN=16 N=15 X TK("ECHO-OFF") I $D(FIND) S J=IA(FIND) K FIND
+A1	S %R=J+5 W @TKP,TK("HI"),"==>",TK("LO")
+A2	R C#1 X TK("T") I C'="" G @$S(C=" ":"B",C="~":"SEL",C'?1A:"ERR",1:"SEL")
+	S TG=" ",C=$E(XX,$F(XX,ZF)) I C]"",$T(@C)'="" G @C
+	W *7 G A1
+	;
+A	W *8,*8,*8,"   " S J=$S(J>1:J-1,1:N) G A1
+B	W *8,*8,*8,"   " S J=$S(J<N:J+1,1:1) G A1
+O	G:CN'=16 ERR D CLEAR S PP=PP+1,I=$P(TH,"\ ",15) G LEV
+P	G:'PP ERR D CLEAR S PP=PP-1,I=PAGE(PP) G LEV
+Q	I PP D CLEAR G TOP
+	G A1
+F	G FOUND
+	;
+ERR	W *7 G A1
+CLEAR	S %R=5,%C=1 W @TKP,TK("LO"),TK("CS") Q
+	;
+FK	I CN<1 W !!?5,$P(Y,"\",8),! G 6
+	S A="[ "_$P(L,"\")_":  "_TK("HI")_$P(L,"\",2) S:CN=16 A=A_"  "_$P(L,"\",3) S:CN=16!PP A=A_"  "_$P(L,"\",4) S:PP A=A_"  "_$P(L,"\",5) S A=A_TK("LO")_" ]"
+	S %R=24,%C=($L(TK("HI"))*2+80-$L(A)\2) W @TKP,A G ASK
+	;
+SEL	W *8,*8,*8,"   " S TG=TG_C,TJ=$F(TH,TG) I TJ S J=$L($E(TH,1,TJ-1),"\") G A1
+ I TG](" "_I)!(" "_PAGE(PP)]TG) S X=$E(TG,2,29) I $D(^%ZAPM.bs.BSpgWEBF(98,X)) G F1
+	E  I $L(TG)>2 S TG=" " G SEL
+	G A1
+FOUND S A=$E($P(TH,"\",J),2,29) G A1:'$D(^%ZAPM.bs.BSpgWEBF("PAGES",A)) S X=$G(^(A)),DES=$P(X,"\",1),PWD=$P(X,"\",3)
+PWD	G SET:PWD="" S %R=24,%C=1 W @TKP,TK("LO"),$P(Y,"\",8)," [",TK("HI"),A,TK("LO"),"] ",TK("HI"),DES,TK("CL") S %R=24,%C=68-$L($P(Y,"\",9)) W @TKP,TK("LO"),$P(Y,"\",9),":",TK("HI"),TK("CL")
+P1	S %C=70,X="" W @TKP  F I=0:0 R *C Q:C=27!(C=13)  I $L(X)<20 S X=X_$C(C)
+	I X=""!(C=27) S DIR="" G E
+	I X'=PWD W *7 G P1
+	S DIR=A G E
+SET S DIR=A S ^%ZAPM.bs.BSpgWEBF("LDIR",dI)=A
+	;
+E	K C,DES,IA,PWD,SEL,TH,PAGE,PP,CN,DAT,TKWPOPT S:DIR="~G" TKWPOPT="OT" X TK("ECHO-ON") Q
+HEAD	W TK("F") S %R=1,%C=2 W TK("LO"),@TKP,TK("RON")," P ",TK("RT")," G ",TK("RT")," & ",TK("RT")," A " S %C=69 W @TKP," TK-WRITER ",TK("ROF"),!,TK("G1") S J=TK("HL"),J=J_J_J_J F I=1:1:20 W J
+	W TK("G0") Q
+	;
+INIT S A=999,B="" K ^%ZAPM.bs.BSpgWEBF(98)
+I1 S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",A)) Q:A=""  S ^%ZAPM.bs.BSpgWEBF(98,A)=$G(^(A))
+ F I=0:1 S B=$O(^%ZAPM.bs.BSpgWEBF("PAGES",A,B)) Q:B=""  I B[".H" S ^%ZAPM.bs.BSpgWEBF(98,A,B)=^(B)
+ S $P(^%ZAPM.bs.BSpgWEBF(98,A),"\",4)=I G I1
+	;
+Y S HP=7 D HELP^%ZAPM.bs.BSpgWPV9 D CLEAR G TOP
+	;
+6	W *8,*8,*8,"   "
+	S %R=22,%C=5,X=$S('$D(TK(9)):"Type Directory Letter, *A* for beginning or *z* for end:",1:@TK(9)@(9))
+	W @TKP,TK("CS"),TK("LO") F J=1:2:$L(X,"*") W $P(X,"*",J),TK("HI"),$P(X,"*",J+1),TK("LO")
+ S %C=%C+$L(X)-3,X="",LNG=2,PAT="X?.1""~""1.2A,""Az""[X!$D(^%ZAPM.bs.BSpgWEBF(X))" X ^%ZAPM.bs.BSpgREAD I "A"[X D CLEAR G TOP
+F1	F PP=0:1 Q:'$D(PAGE(PP))  I X_1]PAGE(PP) Q:X]PAGE(PP)  S PP=PP+1,J=1,%C=5 G P
+ S %R=20,%C=1 W @TKP S:'$D(PAGE(PP)) PP=PP-1 S I=PAGE(PP) F CN=2:1 S I=$O(^%ZAPM.bs.BSpgWEBF(98,I)) Q:I=""  Q:X']I  S:CN=16 CN=1,PP=PP+1,PAGE(PP)=I
+ S:$D(^%ZAPM.bs.BSpgWEBF(X)) FIND=X S I=PAGE(PP) D CLEAR G LEV

@@ -1,0 +1,50 @@
+ROUTINE %ZAPM.bs.BSout3
+%BSout3 ; Вывод данных ...   (А.Тимофеев) ; 17:17 10-JUN-98
+ 
+DTout(%1,%2,%3) ;Подготовка буфера вывода
+ ;%1 - устройство, %2 - BSR, %3 - BST
+ I %1=0 Q
+ S:$G(%2)="" %2=$G(BSR) S:$G(%3)="" %3=$G(BST) I BSR=""!(BST="") Q
+ 
+ N i,i1,i2,str,sh,d,d1,d0,st,str1,n,sh1,str2,%zT
+ S %zT=$ZT,$ZT="END^%ZAPM.bs.BSout3"
+ K ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u")
+ I '$D(%CAL) D CALC^%ZAPM.bs.BSF3
+ I %1=4,'$D(%BS(21)) D ErrMsg^%ZAPM.bs.BSXfun(" Вывод на ПФЛ не определен в SETUP") Q
+ K ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u") S ls="Формируется буфер вывода" D WAITS^%ZAPM.bs.BSF2
+ S lst=$S(%1=4:60,%1=1:79,1:80)  ;длина строки
+ S (i,str)="",sh=0,n=1 F  S i=$O(@(BSR_"(BST,i)")) Q:'i  D  X $G(WA)
+ .S i1="" F  S i1=$O(@(BSR_"(BST,i,i1)")) Q:'i1  D
+ ..I $E($P(^(i1),"@",3),1)="X"!($E($P(^(i1),"@",4),1)="X") Q
+ ..I $P($P(^(i1),"@",18),"#",2)="" Q
+ ..S st=$G(^(i1)) D DK I d="" Q
+ ..S str1=$S(sh=0:"",1:"=")_$P($P(st,"@",18),"#",2)_d D STR Q
+ I str'=""&(str'["+++") S ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",n)=str
+ 
+END ;Посылка на устройство
+ 
+ S $ZT=$G(%zT)
+ I %1=3 D  Q
+ .S ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u")="Буфер вывода @@@@@@@1@1@22@80@@@@1@@5@@@1@@@@@@@@@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ .S TXT="uP"_$G(%BS(3),$P)_$J_"u" D ^%ZAPM.bs.BSX("EDIT","^%ZAPM.bs.BSbufB",TXT) Q
+ N Pfl S Pfl=1,out=$$OUT^%ZAPM.bs.BSout2(BSR,BST,%1)
+ Q
+ 
+STR ;Формирование строки
+ S str=str_str1,sh1=0
+ F i2=1:1 D  Q:sh1=1
+ .I $L(str)<lst S sh1=1 Q
+ .S str2=$E(str,1,lst),str=$E(str,lst+1,$L(str))
+ .S ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",n)=str2,n=n+1 Q
+ I str1'["+++" S sh=1 Q
+ S ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u",n)=str,n=n+1,sh=0,str="" Q
+ 
+DK ;Обработка данных клетки
+ N BS,ny,nx,isp,Vi,Vi1  S BS=st
+ 
+ I $P(BS,"@",9)=1 S d=$P(BS,"@",15)
+ E  S d=$G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,i1))
+ Q:$P($P(BS,"@",18),"#",3)=""
+ S Vi=$P($P($P(BS,"@",18),"#",3),","),Vi1=$P($P($P(BS,"@",18),"#",3),",",2)
+ S isp=$G(@(BSR_"(BST,""FCL"",Vi,Vi1)"),"") K d1 X isp S d=$G(d1,d) Q
+ Q

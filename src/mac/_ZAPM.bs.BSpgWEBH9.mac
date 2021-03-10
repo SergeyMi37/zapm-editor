@@ -1,0 +1,26 @@
+ROUTINE %ZAPM.bs.BSpgWEBH9
+TKWEBH9	;PG&A;TK-WEB;1.1;HELP SCREENS;08DEC97  14:32
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	S F="INTRO"
+X1 S L=$P($T(X4+1),";",2,9) K ^%ZAPM.bs.BSpgWEBF("~",F) S ^(F)=L,L=$P(L,"`",3) F T=2:1 S X=$P($T(X4+T),";",2,99) Q:X=""  D X3 S ^%ZAPM.bs.BSpgWEBF("~",F,T)=A
+X2	S ^(T-1)=$E(^(T-1),1,L-1#120+1) Q
+X3	S A="" F J=1:4:$L(X) S A=A_$C($A(X,J+1)-32\16*64+$A(X,J)-32,$A(X,J+2)-32\4*16+($A(X,J+1)-32#16),$A(X,J+3)-32*4+($A(X,J+2)-32#4))
+X4	Q
+	;TKWEB4.GIF`G`1873`Mon, 8 Dec 1997 20:27:44 GMT`19971208`19971208`
+	;'921X'-8R0#( '\  +<C_T@EWTDGWTEIGTEIW\EIWUIKGUIKW]IK6]IMG]IMWUMO.]MO]MMO6]MO>]MOW]NQ.]NSW^RS.^RS>^RSG^RS_^RUWVVU6^VW>^VWG^VWW^WYWW[YG_[[O_[]_____[M\#0 F) 4 DD$4
+	; &8    CP_0 (N    $!00!     8I 4 ,0    B.      0 (E"00           !     %% 4 $!              0$ 4 ,-[O0 ; (  1  &       CP_0 @3<0 $V (0#3P5:;   # "- .F%R^?X#73"8
+	;^?O#-  ! ,  H!#__S2.<913!7113<5;I3?8E<8 T;;=E2;,N'9:F0"C]64 _R!" (0 61 . &1 /# F]1@ _R!"    &@*A@)#?.2+3#)    "A@"7]  "F_0   //M7#    #_" #5  "A@&UC^'/S7 64 $  
+	;#  "! $      (              K!!0 P !P "A@$  _R 7 /^      "   .<W:?K%! "  /- C.!"/!"C0  $    &@(420$ 0  ( ! $P "?. (      &@(P    .>#!0  $ , &@(                 
+	;            XT ( .6?7/! 7 $      />#     (, #:,7)=10'534<=9:S399L<4=K7=9B3.+G9:9    &  &L'#%&E#S7 Z[O0   &@(  #?. K]?E ,</M!W23]_K0    >$6_O@  S            YE%1
+	;  +[O0 4!   "0    M\O0 FQ_8 &"@  "Y\T)#[#/7 ^.?_""7?_O 4!   "0   "[?    @/O#(@_3 #Z@W_L %   _____P0    BP_0   !3 !0    # -0 _T         0    "DC]_A0   !F$G_O  !3
+	; !0    I4 4      !0    B.   .[_]_@_DW_L  -0 N$G]_L7&<1B9    F0   (B#  !!&C0 (N   !)^$       L     "< #(  8#_ /,"<(0L@AS@(#&*<8PLACSA?$$ 8H @#7CB=.,1@H P!UC"6#.0
+	;<)2$A'"C>/(8XH64@0"B%($RD0)0"A"C<)(<@PA #U!") >4\ ADC!!E/$B HIA0BTR 8,:*5*0@FC"C3*:T\@^DB$!E8)&6X 4H A "2 ,[\0H0!%BF2$68(0$( C@MA%2)T@0( 1 "S#Z7P $@ ]5"R#ZKD9QP
+	;!A! U9 )0YO$C7@"**^%>LW\G=0LZ;6B>-2NT)ZK3-(F>=XL 'S!DG.3% $PB26BP3BPD8U GJ:@<+ %\M3^BY2B!"(5X QDHWCXSI*; HC$P<7BNMN2%>!8QW#X?!Z,_UXX4'9@.($4W/X'7%< KZA'DLLH[Y; 
+	;(. "P< ,!FY]0Y!8$S73Y9 6@AA>U$87/:9L$A'@A-$M@O3'1(9V$O%R5@I:=(48!G K%HSF'@"C&CE0EQ $!E:(VH(D%/IL8276ZQ+]20#%)V-$:8==U[V0:$=-=11'\D(7!<Q/%0'!U*GI7?8%1UC4 %$D4TH 
+	;S)_5?R766 9$/?66$0D2JU,V!2D%] 561D%* AP!Q"\1?&4&00AE601XD6+0!Q*I8YD'M9$ <:)I(L6!A!P&E$!:2', #%]$ S6G4-4 !]>#06-*EC%9U.V?^U,J0!<*MDT) ) )6M6F6M FAW1(AO].1Q6/)0(5
+	;*2AJE+J43(Z&=T3#XTMEHLM;JH67<$8:F^14ID%(O5N(F\Z@$NY*0RAX1*"&VBY:K=KB@VC*NXLY6K:[YHZ2H #1E&K22ZI%MFY0$' 'P$)0RNHR2KM)1JH083IP[A)J4A SOS2&\FJE8BIIXC4AZ&<5A7B%TKOE
+	;%^$_X&*9K*$Q!S!]> J9!0U=D!C )$M5Q$2B.VEPE<%\8T'1,%(C<*@%I<] IC!MLD&C"%D/;,:#Y8ZW", +PUTSXA>6<U@"%<0%&>/  R*FGU<TD.BQ)Z9D-S%!@03 -,9" 6V%7$N[LI6UTEZE_R/J2,M=! H@
+	; 4J)P@L401C_TA23S6M^ L>4BV=@=D%>ZEF>X=[F0*9,E&JTNC1=6A)Y3-_>1LI<5X(PJK 2P!":4$1=34= D #U59C$*QB>;=/B0'2 XY"$@HM"ZD/!6,8<16 %,.WJ%NYK=1&X3-(D3=HK/4?UPB?QUEKI@!SF
+	;JX=:_0J'M0 W^:; (MFGF1B<&G-<&,N\D6-;3,N.7TF95 ?H/?[_* !!7$BRP23I2VF5')*( !J5%_G U0Y8DS!UG6#$H!\3KR/V+BVPR AN95F[G$-^6B0TCYG8](16/#;C9BO=MD9(F!,!2C&GVE60*)OS"2"B
+	;*FN7%R1!= N5/,M(,#8"#5!EO'C!$!KXN.O@M*&WNE6+4,CLD7XD+!1S)C!<B)#Q$%P*"=!(7*7484H: SA>Q[@8,#I0""  [ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((@ ((

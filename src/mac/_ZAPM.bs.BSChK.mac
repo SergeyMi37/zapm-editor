@@ -1,0 +1,44 @@
+ROUTINE %ZAPM.bs.BSChK
+%BSChK ;!!!!!!
+ ;
+ ;
+ ;d PCD^%MGW("ISC",7001) ;СТАРТ Cache Web Linl TP ...... EXIT1+2^STU
+ ;
+ ;
+TEST ; Simple test page
+ N CRLF,KEY,SYSNAME
+ S CRLF=$C(13,10)
+ ;
+ ;W "HTTP/1.0 200 OK",CRLF
+ ;W "Content-type: text/html",CRLF
+ ;W "Window-target: main_window",CRLF
+ ;W CRLF
+ ;
+ S SYSNAME=$S($G(%CGIEVAR("SERVER_SOFTWARE"))["Cach":"Cach&eacute; WebLink",1:"Open M/WebLink")
+ ;
+ W "<HTML>",CRLF
+ W "<HEAD><TITLE>",SYSNAME," Test !!!! Page</TITLE></HEAD>",CRLF
+ W "<BODY>",CRLF
+ W "<H2>",SYSNAME," Тестовая !!!!!!!! страница... </H2>",CRLF
+ W "<HR><B> You are connected to the M System</B>",CRLF
+ D FLUSH^%MGW
+ W "<P>M Job Number ",$J," on M System ",$G(%KEY("MGWLPN")),CRLF
+ W "<BR>Form returned by M routine ",$ZN,CRLF
+ W "<HR>",CRLF
+ W "<TABLE BORDER>",CRLF
+ W "<CAPTION><B><I>User defined variables passed to your M System</I></B></CAPTION>",CRLF
+ W "<TR><TH>Variable Name</TH><TH>Value</TH></TR>",CRLF
+ D FLUSH^%MGW
+ S KEY=""  F  S KEY=$O(%KEY(KEY)) Q:KEY=""  W "<TR><TD>",KEY,"</TD><TD>",$G(%KEY(KEY)),"</TD></TR>",CRLF D FLUSH^%MGW
+ W "</TABLE>",CRLF
+ W "<HR>",CRLF
+ W "<TABLE BORDER>",CRLF
+ W "<CAPTION><B><I>CGI Environment variables passed to your M System</I></B></CAPTION>",CRLF
+ W "<TR><TH>Variable Name</TH><TH>Value</TH></TR>",CRLF
+ D FLUSH^%MGW
+ S KEY=""  F  S KEY=$O(%CGIEVAR(KEY)) Q:KEY=""  W "<TR><TD>",KEY,"</TD><TD>",%CGIEVAR(KEY),"</TD></TR>",CRLF D FLUSH^%MGW
+ W "</TABLE>",CRLF
+ W "<HR>",CRLF
+ W "</BODY>",CRLF
+ W "</HTML>",CRLF
+ Q

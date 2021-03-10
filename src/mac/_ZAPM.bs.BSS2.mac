@@ -1,0 +1,62 @@
+ROUTINE %ZAPM.bs.BSS2
+%BSS2 ;СОРТИРОВКА ТАБЛИЦЫ;ТИПОВОЙ СПИСОК ; 15:09   01.07.99
+SORT K ^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15))
+ S Nx=nx,I=$P(B,"@",36),Ns=+$P(I,",",2),Na=$$SORTNA($P(I,",",3)),Ny=+I I $P(I,",",4) S Nx=$$SORTFOR($P(I,",",4))
+ S ls="СОРТИРОВКА ПО КОЛОНКЕ "_Nx D WAITS^%ZAPM.bs.BSF2 D:'$D(se) DEND^%ZAPM.bs.BSF2 D:'$D(ke) REND^%ZAPM.bs.BSF2
+ S Na=$S(Na:1,1:-1)
+ F i=Ny:Ns:se I $D(@BSR@(BST,i,+Nx)) S I=$$SORTDATA^%ZAPM.bs.BSS() D  X WA
+ .I I="" S I=" "
+S .I '$D(^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15),I)) D  Q
+ ..F j=1:1:ke S ^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15),I,j)=@(BSR_"(BST,i,j)")
+ .I I'=+I S I=I_" " G S
+ .S I=I+.0000000001 G S
+ I '$D(^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15))) S ls=" СОРТИРОВКА НЕ УДАЛАСЬ " D O^%ZAPM.bs.BSF7,K G D
+ S I="",kj=0 F i=Ny:Ns:se X WA D  F j=1:1:ke S @(BSR_"(BST,i,j)")=^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15),I,j)
+ .S I=$O(^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15),I),Na)
+ D K,TAB^%ZAPM.bs.BSF1,TIT^%ZAPM.bs.BST,W^%ZAPM.bs.BST G B^%ZAPM.bs.BSTM
+K K ny,Nx,Ns,I,kj,^%ZAPM.bs.BSbufB("Sort"_$G(%BS(3),$P)_$J_"u"_%BS(15)),Na Q
+SORTNA(Na) Q $S(Na:-1,1:1)
+SORTFOR(N) N NN,NNN S N=$TR(N,"!",","),NNN="" I N'["," Q +N
+ F NN=1:1 Q:'$P(N,",",NN)  S NNN=NNN_$P(N,",",NN)_$S($P(N,",",NN+1):",",1:"")
+ Q NNN
+D G 0^%ZAPM.bs.BSTM
+TIS ;ТИПОВОЙ СПИСОК\СВОДКА
+ N F,Ks,KKs,ii,i,j,BSr1,BSt1,BSr2,BSt2,CO,TI
+ S TI=%B,ls=" ВЫ ХОТИТЕ СДЕЛАТЬ "_$S(%B=1:"СПИСОК",1:"СВОДКУ")_" НА ОСНОВЕ ТАБЛИЦЫ-БАЗЫ ДАННЫХ ? "
+ I '$D(BSPART) D YES^%ZAPM.bs.BSF Q:'YES  S li="" D RIT^%ZAPM.bs.BSF3 Q:'YES  Q:'$D(BSr)  Q:'$D(BSt)  I $P(@(BSr_"(BSt)"),"@",17)'=2 S ls=" ЭТО НЕ БАЗА ДАННЫХ " D O^%ZAPM.bs.BSF7 Q
+ S BSr1=BSr,BSt1=BSt,BSr2=%NAM,BSt2=TAB D COPY^%ZAPM.bs.BSTK
+ S $P(@(BSr2_"(BSt2)"),"@",17)=1 K @(BSr2_"(BSt2,""KEY"")"),Ks S (j,i)=""
+ D Wait^%ZAPM.bs.BSXfun("Создаю")
+ F  S i=$O(@BSr2@(BSt2,i)) Q:'i  X $G(WA) F  S j=$O(@BSr2@(BSt2,i,j)) Q:'j  I $D(@BSr2@(BSt2,i,j)) D
+ .S ii=@$ZR
+ .I $P(ii,"@",9)'=1 S:'$D(Ks) Ks=i S:'$D(CO) CO=j S $P(@BSr2@(BSt2,i,j),"@",9)=1 D
+ ..I TI=1 S F="$$TSPL(""{"_i_","_j_"}"","""","""","""",""1"")" D SETF(i,j,F)
+ ..I TI'=1 S F="$$TSVL(""{"_i_","_j_"}"","""","""",1,2,1)" D SETF(i-1,j,F)
+ ..S $P(@BSr2@(BSt2,i,j),"@",15)=""
+ .S KKs=i
+ I '$D(Ks) S ls=" НЕ НАШЛА КЛЕТКИ ХРАНИМЫЕ В БАЗЕ !!! " D O^%ZAPM.bs.BSF7 Q
+ I TI=1 S F="$$TSP("""_$$TSE(BSr1)_","_BSt1_""","_Ks_",""1:1:"_(Ks-1)_""","""_(Ks+1)_":1:"_KKs_""")"  ;ОСНОВНАЯ ФУНКЦИЯ СПИСКА
+ I TI'=1 S F="$$TSV("""_$$TSE(BSr1)_","_BSt1_""","_(Ks-1)_","_(CO-2)_","""","""")"  ;ОСНОВНАЯ ФУНКЦИЯ СВОДКИ
+ D SETF(2,1,F)
+ I '$D(BSPART) I TI'=1 S F=$P($G(^["GLAVK"]MZAPROS("zzz",1),"$$TSVD(""^MZAPROS1@^MZAPROS2"",/"),"/")_(Ks+1)_","_KKs_$P($G(^["GLAVK"]MZAPROS("zzz",1),"/)"),"/",2) D SETF(Ks,CO-2,F)
+ I $D(BSPART) I TI'=1 S F=$P($G(^["FON"]AsI("MZAPROS",1),"$$TSVD(""^MZAPROS1@^MZAPROS2"",/"),"/")_(Ks-1)_","_(Ks-1)_$P($G(^["FON"]AsI("MZAPROS",3),"/)"),"/",2) D SETF(Ks,CO-2,F)
+ Q
+TSE(B) N A,I S A="" F I=1:1:$L(B) S A=A_$E(B,I) I $E(B,I)=$C(34) S A=A_$E(B,I)
+ Q A
+SETF(i,j,F) S $P(@BSr2@(BSt2,i,j),"@",7)=2,@(BSr2_"(BSt2,""FCL"",i,j)")=F,^(j,1)=F
+ Q
+E133 S ls=" УДАЛИТЬ ИЗ ТАБЛИЦЫ БЛОЧНОЕ МЕНЮ ,ВЫЗЫВАЕМОЕ ПО <ALT-F2> ? " D YES^%ZAPM.bs.BSF I YES K @(BSR_"(BST,""AF2"")")
+ G D
+E134 S ls=" УДАЛИТЬ ИЗ ТАБЛИЦЫ КЛЮЧИ !!! САМИ ПОЗАБОТЬТЕСЬ О БАЗЕ ДАННЫХ !. УДАЛЯЕМ ? " D YES^%ZAPM.bs.BSF I YES K @(BSR_"(BST,""KEY"")") D R^%ZAPM.bs.BSF4(17,1)
+ G D
+E1351 ;УДАЛЕНИЕ
+E1352 ;ФОРМУЛ
+E1353 ;
+E1354 D CH G D:'YES S ff=$S(LAB["1^":"FCL",LAB["2^":"FTR",LAB["3^":"RTR",1:"COL"),pi=$S(ff="FCL":7,ff="FTR":8,ff="RTR":16,1:13)
+ S do="I $P(^(j),""@"",pi)'="""" S $P(^(j),""@"",pi)="""" K @(BSR_""(BST,ff,i,j)"")"
+ I '$D(%DIA) D ALLT^%ZAPM.bs.BSS1 I ff="FCL",TIP=2!(TIP=3) D R^%ZAPM.bs.BSF4(17,1) S TIP=1
+ D:$D(%DIA) BLOK^%ZAPM.bs.BSF1
+ G D
+CH I '$D(%DIA) S ls=" УДАЛЯЕМ ФОРМУЛЫ ИЗ ВСЕЙ ТАБЛИЦЫ ? " D YES^%ZAPM.bs.BSF
+ E  S ls=" УДАЛЯЕМ ФОРМУЛЫ ПОМЕЧЕННЫЕ В БЛОКЕ ? " D YES^%ZAPM.bs.BSF
+e Q

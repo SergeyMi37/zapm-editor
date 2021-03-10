@@ -1,0 +1,82 @@
+ROUTINE %ZAPM.bs.BSCRGL
+%BSCRGL ;Cache Relational Gateway - Functions ; 9:04   26.06.2001
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+RUN() ;запустить из VISM.ocx
+ ;ВХОДНЫЕ ПЕРЕМЕННЫЕ
+ ;P1=Data Sours Name 
+ ;P2=Name User
+ ;P3=Password
+ ;P4=SQL
+ Q $$DSN(P1,P2,P3,P4)
+ ;ВЫХОДНЫЕ ПЕРЕМЕННЫЕ
+ ;P5=Second EXECUTIVE
+ ;P6=Error
+ ;P7=Time
+ ;P8=Colomn
+ ;P9=Rows
+TEST ;ТЕСТЫ
+ N DSN,SQL
+ ;S DSN="EXZ",SQL="SELECT EKZ_VOP.TEXT_V, EKZ_OTV.TEXT_O FROM EKZ_VOP INNER JOIN EKZ_OTV ON EKZ_VOP.N_NOM = EKZ_OTV.N_VOP"
+ ;S DSN="ISSBASE",SQL="SELECT [ConnectRazdel]![Pred] & ' ' & [STR_MENU]![HTML] & ' ' & [ConnectRazdel]![Post] AS HTML_STRING FROM (WORKGROUPS INNER JOIN (STR_MENU INNER JOIN ConnectRazdel ON STR_MENU.Kod = ConnectRazdel.PunktMenu) ON WORKGROUPS.ID_WORKGROUP = ConnectRazdel.Workgroup) INNER JOIN SOTR ON WORKGROUPS.ID_WORKGROUP = SOTR.WORKGROUP WHERE SOTR.NET_NAME='hodov' ORDER BY STR_MENU.Nomer"
+ S DSN="KSP",SQL="SELECT * FROM KNH"
+ W $$DSN(DSN,"","",SQL)
+ Q
+DSN(DSN,NAME,PASS,SQL) ;ВЫПОЛНЕНИЕ ЗАПРОСА И ФОРМИРОВАНИЕ УЗЛА ОБЕКТОВ
+ N Con,Res,Sc,Pid,i,ErrOR,COL,st ;,P5,P6,P7,P8,P9
+ s Pid=$I_","_$J ;ИДЕНТИФИКАТОР ПРОЦЕССА
+ ;ПЕРЕЙТИ В СИСТЕМНЫЙ СПЭЙС
+ I $zu(5,"%SYS")
+ ;ВЫПОЛНЕНИЕ ЗАПРОСА
+ S Con=##Class(%SQLGatewayConnection).%New()
+ S Sc=Con.Connect(DSN,NAME,PASS)
+ S Res=##Class(%ResultSet).%New("%DynamicQueryGW:SQLGW")
+ K ^["%SYS"]BStempSql(Pid)
+ S $P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),1)=SQL
+ S $P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),2)=$ZD($H,9)
+ S P5=$P($H,",",2)
+ s Sc=Res.Prepare(SQL,,Con)
+ I 'Res.QueryIsValid() S ErrOR="Недопустимый Запрос" G DSNend
+ s Sc=Res.Execute()
+ I 'Sc S ErrOR=$$Status(Sc) G DSNend
+ S COL=Res.GetColumnCount()
+ F J=1:1:COL S $P(^["%SYS"]BStempSqlist(Pid,"NAM"),$C(0),J)=Res.GetColumnName(J)
+ ;F J=1:1:COL S $P(^["%SYS"]BStempSqlist(Pid,"HDR"),$C(0),J)=Res.GetColumnHeader(J)
+ ;f i=1:1:10001 q:'Res.Next()  I i<5001 d                                               ;ОГРАНИЧЕНИЯ 
+ f i=1:1 q:'Res.Next()  D
+ .S st="" F J=1:1:COL S st=st_Res.GetData(J)_$C(0)
+ .S ^["%SYS"]BStempSqlist(Pid,i)=st
+ S P6=$P($H,",",2),P5=P6-P5
+ S $P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),3)=P5 ;КОЛ-ВО СЕКУНД
+ S (P8,$P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),7))=COL ;КОЛ-ВО КОЛОНОК
+ S (P9,$P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),8))=i-1 ;КОЛ-ВО СТРОК
+ S (P7,$P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),5))=$ZT($P($H,",",2),1)
+DSNend S (P6,$P(^["%SYS"]BStempSqlist(Pid,"SQL"),$C(0),6))=$G(ErrOR)
+ d Res.%Close()
+ d Con.Disconnect()
+ d Con.%Close()
+ Q Pid ;ИДЕНТИФИКАТОР ПРОЦЕССА
+Status(sc) ;СТАТУС
+ N err,i,st1
+ I ('sc) D  Q st1
+ .D DecomposeStatus^%apiOBJ(sc,.err)
+ .S st1="" F i=1:1:err S st1=st1_err(i)_". "
+ Q ""    
+KILL(P) ;УДАЛЕНИЕ УЗЛА
+ I $G(P)'="",$D(^["%SYS"]BStempSqlist(P)) K ^(P) Q 1
+ Q 0
+SEC(P) ;КОЛ-ВО СЕКУНД
+ I $G(P)'="" Q $P($G(^["%SYS"]BStempSqlist(P,"SQL")),$C(0),3)
+ Q ""
+ROWS(P) ;КОЛ-ВО СТРОК
+ I $G(P)'="" Q $P($G(^["%SYS"]BStempSqlist(P,"SQL")),$C(0),8)
+ Q 0
+COLS(P) ;КОЛ-ВО КОЛОНОК
+ I $G(P)'="" Q $P($G(^["%SYS"]BStempSqlist(P,"SQL")),$C(0),7)
+ Q 0     
+ERRORS(P) ;ОШИБКИ
+ I $G(P)'="" Q $P($G(^["%SYS"]BStempSqlist(P,"SQL")),$C(0),6)
+ Q 0     

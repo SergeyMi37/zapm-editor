@@ -1,0 +1,80 @@
+ROUTINE %ZAPM.bs.BSzmOL
+%BSzmOL ; пpогpамма ФУНКЦИЙ ДЛЯ АНАЛИТИЧЕСКИХ ОТЧЕТОВ ; 14:14   12.09.2000
+ Q
+HEAD(name) ;ПРИГЛАДИТЬ ЗАГОЛОВОК ДЛЯ HTML
+ N S S S=""
+ F I=1:1 Q:$P(name,"~",I,I+1)=""  S S=S_$$CutS^%ZAPM.bs.BSF10($P(name,"~",I))_" "
+ Q S
+EXT(T) ;ДОПОЛНИТЕЛЬНЫЕ ПАРАМЕТРЫ ТЕКСТА
+ I T["""_"!(T["_""") D EXTX Q T
+ Q T
+EXTX ;ВЫПОЛНИТЬ
+ S $ZT="EREXT^%ZAPM.bs.BSzmOL" X "S T="_T
+ Q
+EREXT S T="ОШИБКА ФОРМИРОВАНИЯ ЗАГОЛОВКА. "_$ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)
+ Q
+HISTPACK ;ДЛЯ ВЫБОРА НАСЧИТАННЫХ ПАКЕТОВ НА ВЫВОД
+ Q:'$D(ny)
+ I ny=2,R1=27,R2=91,R3=65 D  ;ЗАСВЕТКА СПИСКА ИСТОРИЙ
+ .N %HIS,TTT D HIS^%ZAPM.bs.BSF1("PackO") S TTT=$P($P(%HIS,"(",2),$C(34),2)
+ .s Tmp=$$History^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSbufB",TTT) I Tmp=""!(YES<1) Q
+ .S d=Tmp,R1=0,R2=18 Q
+ Q
+HISCOMP(iD) ;ДЛЯ ВЫБОРА ПЕРИОДОВ СРАВНЕНИЯ
+ Q:'$D(ny)
+ I ny>1,R1=13 D  ;ЗАПИСЬ В ИСТОРИЮ
+ .D AddHist(iD,$$HICOMP())
+ I ny=1,R1=27,R2=91,R3=65 D  ;ЗАСВЕТКА СПИСКА ИСТОРИЙ
+ .N %HIS,TTT D HIS^%ZAPM.bs.BSF1(iD) S TTT=$P($P(%HIS,"(",2),$C(34),2)
+ .s Tmp=$$History^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSbufB",TTT) I Tmp=""!(YES<1) Q
+ .N iQ F iQ=3:1:20 S $P(@BSR@(BST,iQ,4),"@",15)=""
+ .N II F II=2:1 Q:$P(Tmp," ",II-1)=""  S $P(@BSR@(BST,II,4),"@",15)=$P(Tmp," ",II-1)
+ .D:$D(%CAL) CALC^%ZAPM.bs.BSF3
+ .S R1=27,R2=91,R3=66 Q
+ Q
+HICOMP() ;СОБРАТЬ СТРОКУ
+ I '$P(@BSR@(BST,2,4),"@",15) Q ""
+ N I,II S I="" F II=2:1 Q:$P(@BSR@(BST,II,4),"@",15)=""  S I=I_$P(@BSR@(BST,II,4),"@",15)_" "
+ Q I
+HISTORY(iD) ;ДЛЯ ВЫБОРА СВОДОК ИЛИ СПИСКОВ
+ Q:'$D(ny)
+ I ny=3,R1=13 D  ;ЗАПИСЬ В ИСТОРИЮ
+ .D AddHist(iD,$P(@BSR@(BST,2,1),"@",15))
+ I ny=2,R1=27,R2=91,R3=65 D  ;ЗАСВЕТКА СПИСКА ИСТОРИЙ
+ .N %HIS,TTT D HIS^%ZAPM.bs.BSF1(iD) S TTT=$P($P(%HIS,"(",2),$C(34),2)
+ .s Tmp=$$History^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSbufB",TTT) I Tmp=""!(YES<1) Q
+ .S d=Tmp,R1=0,R2=18 Q
+ Q
+AddHist(f,d) Q:d=""  N %HIS D HIS^%ZAPM.bs.BSF1(f) D AddHist^%ZAPM.bs.BSXuse(%HIS,d) Q
+AddGet(S,S1,S2) ;ДОБАВИТЬ $G
+ N I,SS
+ S SS=$P(S,S1,1)
+ F I=2:1 Q:$P(S,S1,I,I+1)=""  S SS=SS_S2_$$SCOBKA($P(S,S1,I))
+ Q SS
+SCOBKA(S) ;ДОБАВИТЬ СКОБКУ
+ Q $P(S,")",1)_"))"_$P(S,")",2,999)
+FOR(K,S) ;ПРОВЕРКА НА ВКЛЮЧЕНИЕ S --> K
+ N I,II
+ X "F I="_K_" I I=S S II=1 Q"
+ Q $G(II)
+KOL(K) ;ПРИВЕДЕНИЕ СТРОКИ К ФОРМАТУ FOR
+ N I,II,I1,I2,STEP1,STEP2,S,SS
+ X "F I="_K_" D KOL0"
+ S I="" F  S I=$O(II(I)) Q:I=""  D KOL1
+ I '$D(STEP1) S SS=SS_S Q SS
+ S SS=SS_S_":"_I2
+ Q SS
+KOL0 S II(I)=""
+ Q
+KOL1 I '$D(I1) S I1=I,S=I,SS="" Q
+ S I2=I,STEP2=I2-I1 I '$D(STEP1) S STEP1=STEP2,S=S_":"_STEP1
+ I STEP1'=STEP2 S SS=SS_S_":"_I1_",",S=I2 K STEP1
+ S I1=I
+ Q
+NOCHANGE(U) ;НАДО ЛИ МЕНЯТЬ ПАРАМЕТРЫ СОСТИРОВКИ И ВЫДЕЛЕНИЯ
+ N B,I K vdl
+ S B=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SLsort"))) I '$D(@B@(U)) Q 0
+ F I=1:1:3 I $D(@B@(U,I)) S srt(I)=@$ZR
+ F I=1:1:3 I $G(srt(I))="" S srt(I)=0
+ F I=1:1:3 I $D(@B@(U,"V"_I)) S vdl(I)=@$ZR,vdl(I,1)=$G(@B@(U,"P"_I)),vdl(I,"F")=$G(@B@(U,"F"_I))
+ Q 1

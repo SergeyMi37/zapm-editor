@@ -1,0 +1,88 @@
+ROUTINE %ZAPM.bs.BSS1
+%BSS1 ;СОХРАНЕНИЕ,ВОССТАНОВЛЕНИЕ,СИМВОЛЬНЫЕ ИМЕНА ; 15:06   15.04.2003
+e Q
+COPY D DOSOPN^%ZAPM.bs.BSBL1 I '$D(%FN) K %DEV Q  ;СОХРАНЕНИЕ ОПИСАНИЯ ТАБЛИЦ
+ S %zT=$ZT,$ZT="ER^%ZAPM.bs.BSS1",ls="СОХРАНЕНИЕ...~"_%TAB D WAITS^%ZAPM.bs.BSF2
+ I $D(@(%NAM_"(%TAB)")) S (cc,c)=$ZR,c1=$P(@$ZR,"@"),%3=$$TIP^%ZAPM.bs.BS($P(@$ZR,"@",17)),%0=$$ESDAY^%ZAPM.bs.BSsFUNR(10,$$h^%ZAPM.bs.BS3()) U %DEV W ";TABLE@"_%NAM_"@"_%TAB_"@"_%0_"@"_%3_"@"_c1,!
+ D  F  S c=$ZO(@c) Q:c=""!(c'[($P(cc,")")_","))  D  U 0
+ .U %DEV W $P(c,",",$S(c["]"&($P(c,"]")[","):3,1:2),255),$C(1),@c,!
+ K c1,%3,%1,%2,c,cc Q
+ER U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." D O^%ZAPM.bs.BSF7 S $ZT=$G(%zT) G CLO
+ I $ZE["<ENDOFFILE" G CLO
+ S ls=$ZE,$ZT=$G(%zT) D O^%ZAPM.bs.BSF7
+CLO U 0 C:$D(%DEV) %DEV Q
+ERR U 0 I $ZE["<SYNT" S ls=" Не корректное имя раздела " D O^%ZAPM.bs.BSF7
+ W *7 S $ZT=$G(%zT),ls=$ZE D O^%ZAPM.bs.BSF7 G I
+D G 0^%ZAPM.bs.BSTM
+ALLT S i="" F  S i=$O(@(BSR_"(BST,i)")) Q:'i  F j=1:1 Q:'$D(@(BSR_"(BST,i,j)"))  X do
+ Q
+PRI S ls=" Создать для всех клеток БЛОКА уникальные СИМВОЛЬНЫЕ ИМЕНА для хранения ? " D YES^%ZAPM.bs.BSF Q:'YES
+ S ls=" Если у вас уже хранится информация в Б.Данных, то она потеряется.Вы уверены ? " D YES^%ZAPM.bs.BSF Q:'YES
+ S ls=" Уже созданные ИМЕНА ДЛЯ ХРАНЕНИЯ будем изменять ? " D YES^%ZAPM.bs.BSF S fi=YES
+ S li1=$G(@(BSR_"(BST,""XBD"")"),57)+1,^("XBD")=li1,do="I $P(^(j),""@"",9)'=1 S li=$S($P($P(^(j),""@"",18),""#"")'=""""&('fi):$P($P(^(j),""@"",18),""#""),1:i_$C(li1)_j)_""#""_$P($P(^(j),""@"",18),""#"",2),$P(^(j),""@"",18)=li" D BLOK^%ZAPM.bs.BSF1 Q
+BLK S li=$P($P(@(BSR_"(BST,ny,nx)"),"@",18),"#",2,3),do="S ix=$P(^(j),""@"",18) S ix=$P(ix,""#"")_""#""_li S $P(^(j),""@"",18)=ix" D BLOK^%ZAPM.bs.BSF1 Q
+LON S ls=" ДЛИНА ИМЕНИ БОЛЬШЕ "_ii_" СИМВОЛОВ " D O Q
+XBD1 K ^%ZAPM.bs.BSbufB("I"_$G(%BS(3),$P)_$J_"u"_%BS(15)) S ^("I"_$G(%BS(3),$P)_$J_"u"_%BS(15))=1,do="I $P($P(^(j),""@"",18),""#"")'="""" S ^%ZAPM.bs.BSbufB(""I""_$G(%BS(3),$P)_$J_""u""_%BS(15),$P($P(@(BSR_""(BST,i,j)""),""@"",18),""#""))=i_"",""_j",ls="ИДЕНТИФИКАЦИЯ ИМЕН" D WAITS^%ZAPM.bs.BSF2,ALLT Q
+XBD I $P(@(BSR_"(BST,ny,nx)"),"@",9)<2 S ls=" КЛЕТКА НЕ ХРАНИТСЯ В БАЗЕ ДАННЫХ " D O^%ZAPM.bs.BSF7 Q
+ S ls=" Корректируйте СИМВОЛНОЕ ИМЯ КЛЕТКИ для адресно-независимого хранения (до 9 c.)",li=$P($P(@(BSR_"(BST,ny,nx)"),"@",18),"#"),ll="@#" D LE^%ZAPM.bs.BSTT S ii=9 Q:'YES
+ S iii=1 G:li="" OU I $L(li)>ii D LON G XBD
+ I li["," S ls=" СИМВОЛ <,> ЗАПРЕЩЕН " D O G XBD
+ ;I li=+li S ls=" ИМЯ ДОЛЖНО БЫТЬ СИМВОЛЬНОЕ !!! " D O G XBD
+ I '$G(^%ZAPM.bs.BSbufB("I"_$G(%BS(3),$P)_$J_"u"_%BS(15))) D XBD1
+ I $D(^%ZAPM.bs.BSbufB("I"_$G(%BS(3),$P)_$J_"u"_%BS(15),li)),(^(li)'=(ny_","_nx)) S ls=" ИМЯ :"_li_" Уже имеет КЛЕТКА {"_^(li)_"} " D O^%ZAPM.bs.BSF7 Q
+ S ^%ZAPM.bs.BSbufB("I"_$G(%BS(3),$P)_$J_"u"_%BS(15),li)=ny_","_nx G OU
+OUT S ls=" Вводите / Корректируйте ИМЯ КЛЕТКИ для вывода данных ",li=$P($P(@(BSR_"(BST,ny,nx)"),"@",18),"#",2),ll="@#" D LE^%ZAPM.bs.BSTT S iii=2,ii=3 Q:'YES
+ I $L(li)>ii D LON G OUT
+OU S ix=$P(@(BSR_"(BST,ny,nx)"),"@",18) S $P(ix,"#",iii)=li S $P(@(BSR_"(BST,ny,nx)"),"@",18)=ix Q
+SSS S ls="Корректируйте ССЫЛКУ НА КЛЕТКУ ИМЕЮЩУЮ ФОРМУЛУ ВЫЧИСЛЕНИЯ ДЛЯ ДАННЫХ ВЫВОДА",li=$P($P(@(BSR_"(BST,ny,nx)"),"@",18),"#",3) D LE^%ZAPM.bs.BSTT Q:'YES  G:li="" SS
+ I li'?.N1",".N!('+li)!('+$P(li,",",2)) S ls=" ОШИБКА ШАБЛОНА ""НОМЕР_СТРОКИ,НОМЕР_КОЛОНКИ"" !!! " D O G SSS
+ I '$D(@(BSR_"(BST,"_li_")")) S ls=" НЕТ КЛЕТКИ {"_li_"}" D O G SSS
+ I '$D(@(BSR_"(BST,""FCL"","_li_")")) D Yes^%ZAPM.bs.BSXfun("НЕТ ФОРМУЛЫ ВЫЧИСЛ. У КЛЕТКИ {"_li_"} ! ЭТО ТАК НУЖНО ? ЗАПИШЕМ ?",2) I 'YES G SSS
+SS S iii=3 G OU
+ ;-----------
+O D O^%ZAPM.bs.BSF7 Q
+LE D A25^%ZAPM.bs.BSF1 W ls D 24^%ZAPM.bs.BSTM,LINE^%ZAPM.bs.BSF1 Q
+ ;-----------
+REST K %DEV,%FN D DOSREAD I '$D(%FN) K %DEV Q  ;ВОССТАНОВЛЕНИЕ ОПИСАНИЯ ТАБЛИЦ
+ ;I $D(%BS("Tmp","DosFiles")) S XN="" F  S XN=$O(%BS("Tmp","DosFiles",XN)) G:XN="" XNE D XNOPN I $D(%FN) D XN
+ S %zT=$ZT,$ZT="ER^%ZAPM.bs.BSS1" F  U %DEV R %IN G:$ZC'=0 CLO D RES G:$ZC'=0!($ZE["<ENDOFFILE") CLO
+ S $ZT=$G(%zT),ls=" В Файле "_%FN_" Описания Таблиц не найдено " D O G CLO
+RES I $E(%IN,1,6)[";TABLE" U 0 D
+ .S (S2,S1)="" I $$IFDOS^%ZAPM.bs.BSHTML1(%IN) D INIT^%ZAPM.bs.BSre(1) S %IN=$TR(%IN,S1,S2)
+ .S ls=" Восстановим:"_$P(%IN,"@",2)_","_$P(%IN,"@",3)_" ;"_$P(%IN,"@",5)_" ;"_$P(%IN,"@",6),ls=$E(ls,1,79) D YES^%ZAPM.bs.BSF I YES G I
+ Q
+I S li=$G(%NAM,$P(%IN,"@",2))_","_$P(%IN,"@",3),ls="Корректируйте имя Восстанавливаемой таблицы. <Esc>-Отмена" D LE E  Q
+ Q:li=""  S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSS1",BSt=$P(li,",",$L(li,",")),BSr=$P(li,",",1,$L(li,",")-1) S:BSr'["^" BSr="^"_BSr
+ I $D(@(BSr_"(BSt)")) S ls=" Таблица "_BSt_" В Разделе "_BSr_" Уже существует ! Замещаем ? " D YES^%ZAPM.bs.BSF G I:'YES S %NA=%NAM,%NAM=BSr,%TAB=BSt D PASE^%ZAPM.bs.BS1 S %NAM=%NA I '$D(%w(4)) G I
+ S TIp="" I $P($G(@(BSr_"(BSt)")),"@",17) S TIp=$P(@$ZR,"@",17) I TIp=3!(TIp=4) S I=BSt F  S I=$O(@(BSr_"(I)")) Q:I=""!($P(I,".")'=BSt)  K @(BSr_"(I)")
+ S BSt="@"_BSt K @(BSr_"(BSt)") S BSt=$E(BSt,2,99) K @(BSr_"(BSt)"),%w(4)
+ S $ZT=$G(%zT),ls="ВОССТАНОВЛЕНИЕ..."_BSr_","_BSt D WAITS^%ZAPM.bs.BSF2
+ F  U %DEV R %IN U 0 Q:$ZC'=0!($E(%IN,1,6)[";TABLE")!(%IN="")  D  S @(BSr_"(BSt"_$S($E(%IN,1)=$C(1):")",1:",")_$P(%IN,$C(1)))=$P(%IN,$C(1),2,999)
+ .S %IN=$TR(%IN,S1,S2)
+ .I $E(%IN,6)="]" D
+ ..I $P(%IN,")")["," S %IN=$P(%IN,",",2,999) Q
+ ..S %IN=$P(%IN,")",2,999)
+ S @BSr@(BSt,"LST")=$H_","_$G(%BS(12))_",Restory from "_%FN
+ D TRANS Q:$ZC'=0  G RES
+TRANS U 0 S ls="РЕТРАНСЛЯЦИЯ ",TIp=$P(@(BSr_"(BSt)"),"@",17) K lo D WAITS^%ZAPM.bs.BSF2 S:'TIp TIp=1
+ F f="FTR","FCL","COL","RTR" I $D(@(BSr_"(BSt,f)")) S i="" F  S i=$O(@(BSr_"(BSt,f,i)")) Q:i=""  S j="" F  S j=$O(@(BSr_"(BSt,f,i,j)")) Q:j=""  D  I YES S @(BSr_"(BSt,f,i,j)")=li1,^(j,1)=li
+ .I ^(j)'["$$TS",$E(^(j),1,2)'=$S(f="COL":"I ",1:"S ") S zT=$ZR,ls=" НАЙДЕНА ОШИБКА ТРАНСЛЯЦИИ:"_$E(^(j),1,30)_"... ИСПРАВИМ ? " D YES^%ZAPM.bs.BSF I YES,$D(@zT) S $E(^(j),1,2)=$S(f="COL":"I ",1:"S ")
+ .D  I 'YES S $P(@(BSR_"(BST,i,j)"),"@",$S(f="COL":13,f="FCL":7,f="RTR":16,1:8))="" S lo(f)=$G(lo(f))+1
+ ..S li=^(j,1) D SI^%ZAPM.bs.BSN N (%BS,vl,%zT,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,%KAT,%File,TIp,nx,ny,R1,R2,R3,li,li1,BSB,BSr,BSt,YES,f,ft,se,ke) S BSR=BSr,BST=BSt,TIP=TIp
+ ..D ^%ZAPM.bs.BSFT Q
+ I $D(lo) S ls=" РЕТРАНСЛЯЦИЯ НЕУДАЧНАЯ; ДЛЯ " D  S ls=ls_"ОШИБОК" D YES^%ZAPM.bs.BSF K lo
+ .F f="FTR","RTR","COL","FCL" I $D(lo(f)) S ls=ls_f_":"_lo(f)_"  "
+ Q
+DosRead(%Dev,%Fn) 
+DOSREAD I $D(%DEV)&($D(%FN)) G U:%DEV>50&(%DEV<55),U:$ZV["Cach"||($ZV["IRIS") ;ОТКРЫТЬ ДЛЯ ЧТЕНИЯ
+DEV I $ZV["Cach"||($ZV["IRIS") S %DEV=51 G FN
+ F %DEV=$G(%Dev,51):1:54 O %DEV::0 Q:$T
+ I '$T S %DEV=0 S ls=" Все файловые устpойства ДОС заняты ..." D O G END
+FN U 0 S %DEVTYPE="HFS" K %FN S ls=" Введите полный путь к DOS-файлу, Который будем читать (F3-Каталог)",li=$G(%Fn)
+ D ChP^%ZAPM.bs.BSF10(1)
+ S %KAT="D DOS^%ZAPM.bs.BSDOS",ll="",%HIS="^%ZAPM.bs.BSbufB(""HISFILE"_$S('$E($G(%BS(1)),12):$G(%BS(3),$P)_$G(%BS(12)),$E($G(%BS(1)),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.bs.BSTT Q:li=""!('YES)  S %FN=li G:"^."[%FN END I $G(%SDEV)="HISTORY" C %DEV Q
+ I $ZV["MSM" O %DEV:%FN U %DEV I $ZA=-1 U 0 S ls=" Файл "_%FN_" не существует " D O G FN
+U I $ZV["Cach"||($ZV["IRIS") I '$$OpenFile^%ZAPM.bs.BSCF1(%FN,"R") U 0 S ls=" Ошибка откpытия файла "_%FN D O C %DEV G FN
+ I $ZV["MSM" O %DEV:(%FN:"R") U %DEV I $ZA<0 U 0 S ls=" Ошибка откpытия файла "_%FN D O C %DEV G FN
+END S %3=250 I "^."[%FN S %4="" C %DEV K %DEV,%FN D CL^%ZAPM.bs.BSF4 Q
+ U 0 D CL^%ZAPM.bs.BSF4 Q

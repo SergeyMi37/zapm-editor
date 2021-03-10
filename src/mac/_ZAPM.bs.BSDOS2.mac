@@ -1,0 +1,109 @@
+ROUTINE %ZAPM.bs.BSDOS2
+%BSDOS2 ;ФУНКЦИАНАЛЬНЫЕ КЛАВИШИ DOS-ИНТЕРФЕЙСА ; 13:22   16.05.2000
+%FK I R3=89 S EXITout=1,R1=13 D DIA^%ZAPM.bs.BSDOS,DIF^%ZAPM.bs.BSDOS,GLKL Q
+ I R3=82,d'[" <DIR> " D DIF^%ZAPM.bs.BSDOS,VIEW("View*.*") G D
+ I R3=87 D DIA^%ZAPM.bs.BSDOS,DIF^%ZAPM.bs.BSDOS,DEL S R1=27 Q  ;УДАЛЕНИЕ
+ I R3=85,d'[" <DIR> " D DIA^%ZAPM.bs.BSDOS,DIF^%ZAPM.bs.BSDOS,ACTF6,W^%ZAPM.bs.BST G B^%ZAPM.bs.BSTM ;ГРУППОВЫЕ РАБОТЫ
+ I R3=83,d'[" <DIR> " D DIF^%ZAPM.bs.BSDOS,VIEW("Edit*.*"),OVER G D
+ G D
+D G 0^%ZAPM.bs.BSTM
+ACT6(SIZE,FILE,CMD) ;ДЕЙСТВИЯ НАД ФАЙЛОМ
+ D Wait^%ZAPM.bs.BSXfun(FILE) X CMD
+ Q
+ACTF6 ;ГРУППОВЫЕ ДЕЙСТВИЯ НАД ФАЙЛАМИ
+ N CMD,UZ,X,XX I '$$SizeFile(3) D ErrMsg^%ZAPM.bs.BSXfun("Эта команда для вас запрещена %BS-Системными установками") Q
+ S UZ=$$UZEL^%ZAPM.bs.BSVOL("ACTFILE","%BSVOL","","","ВЫБЕРИТЕ УЗЕЛ ДЛЯ ДЕЙСТВИЙ С ФАЙЛАМИ") Q:UZ=""
+ S CMD=@UZ@("NSP")
+ S %zT=$ZT,$ZT="ACTER^%ZAPM.bs.BSDOS2"
+ I $D(%DIA) S X="" D  G ACTF
+ .F  S X=$O(%BS("Tmp","DosFiles",X)) Q:X=""  S XX=%BS("Tmp","DosFiles",X) I XX'="" D ACT6(XX,X,CMD)
+ I '$D(%DIA) S X=$P(d,"-",2) I X'="" D ACT6(X,%File,CMD)
+ACTF D OkMsg^%ZAPM.bs.BSXfun("Групповая Операция Закончена Успешно")
+ G Kdf
+ACTER D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) Q
+DEL ;УДАЛЕНИЕ
+ N X,XX I '$$SizeFile(3) D ErrDe Q
+ I $D(%DIA) S X="" Q:$$YYY("Помеченные файлы")<1  D  G Kdf
+ .F  S X=$O(%BS("Tmp","DosFiles",X)) Q:X=""  S XX=$$ZOS(%BS("Tmp","DosFiles",X),X) I XX'="" D ErrDel(XX,X)
+ I '$D(%DIA) Q:$$YYY(" файл "_%File)<1  S X=$$ZOS($P(d,"-",2),%File) I X'="" D ErrDel(X,%File)
+Kdf K %BS("Tmp","DosFiles")
+ Q
+YYY(S) D Yes^%ZAPM.bs.BSXfun("Киляем "_S_", Вы уверены ?") Q YES
+ZOS(K,N) ;удаление файла
+ Q:($$SizeFile(3)<K) -1
+ I $ZV["Cach"||($ZV["IRIS") Q $$DelFile^%ZAPM.bs.BSCEXE(N)
+ Q $ZOS(2,N)
+ 
+AccesMSM(P) I $D(%BS)["0" D CLr^%ZAPM.bs.BSF4
+ I %BS(12)'="",$D(@%BS(18)@(%BS(37),0,"3,4")) Q ($P($G(@%BS(18)@(%BS(37),0,"3,4")),"/",P)="Y")
+ Q $P($G(%BS(34)),"/",P)="Y"
+ 
+SizeFile(P) I %BS(12)'="",$D(@%BS(18)@(%BS(37),0,"5,4")) Q ($P($G(@%BS(18)@(%BS(37),0,"5,4")),"/",P)*1024)
+ Q $P($G(%BS(33)),"/",P)*1024
+ 
+ErrDel(XX,X) I XX'=-1 D ErrMsg^%ZAPM.bs.BSXfun($S(XX=-2:"Не найден",XX=-3:"Не найден путь к",XX=-5:"Отказано в доступе к",1:"")_" "_X) Q
+ErrDe D ErrMsg^%ZAPM.bs.BSXfun("Удаление "_X_" для вас запрещено %BS-Системными установками") Q
+OVER ;ПЕРЕЗАПИСЬ ФАЙЛА
+ N U,X,S,%FN,%DEV,ls
+ S ls="Учтите,если в файле были управляющие символы, то они пропадут. Перезаписываем ?" D YES^%ZAPM.bs.BSF I 'YES Q
+ D DosOpn^%ZAPM.bs.BSBL1(51,%File) Q:'$D(%FN)  S U=$NA(@BSr@(BSt)),X="I g'=Head U %DEV W @g,! U 0"
+ D XGlob^%ZAPM.bs.BSF9(U,X,1) C %DEV Q
+VIEW(V) S BSr="^%ZAPM.bs.BSbufB",BSt=V_$G(%BS(3),$P)_$J_"u"_%BS(15) Q:'$$View(%File,BSr,BSt)  I V["Edit*" d ^%ZAPM.bs.BSX("EDIT",BSr,BSt) Q
+ S IYI=BSr_","_BSt D NE^%ZAPM.bs.BSN Q
+GLKL S II="" F  S II=$O(^%ZAPM.bs.BSbufB(II)) Q:II=""  I $P($P(II,"*.*",2),"u")=$I K ^%ZAPM.bs.BSbufB(II)
+e Q
+AddFile(%File) I %File'[":\" S %File=$$CurDisk^%ZAPM.bs.BSDOS()_":"_$$CurDir^%ZAPM.bs.BSDOS($$CurDisk^%ZAPM.bs.BSDOS())_$S($E(%File,1)="\":"",1:"\")_%File Q %File
+ Q %File
+ON D O^%ZAPM.bs.BSF7 Q
+FILE Q:'$D(%IN)  D SI^%ZAPM.bs.BSN N (%BS,vl,%FN,%IN) S %SDEV="HISTORY" D  S:'$D(%FN) %FN="" D OP^%ZAPM.bs.BSF4 Q
+ .I %IN=0 D DOSOPN^%ZAPM.bs.BSBL1 Q
+ .I %IN=1 D DOSREAD^%ZAPM.bs.BSS1 Q
+View(%File,BSr,BSt,P,OT,DO) N %DEV,%FN,i,UP,t1,ii ;ФАЙЛ В МАССИВ
+ S %File=$$AddFile(%File)
+ I '$G(P),BSt["View*",($P(d,"-",2)>$$SizeFile(1)) D ErrMsg^%ZAPM.bs.BSXfun("ФАЙЛ "_%File_" ДЛЯ ПРОСМОТРА СЛИШКОМ ВЕЛИК !") Q 0
+ I '$G(P),BSt["Edit*",($P(d,"-",2)>$$SizeFile(2)) D ErrMsg^%ZAPM.bs.BSXfun("ФАЙЛ "_%File_" ДЛЯ РЕДАКТИРОВАНИЯ СЛИШКОМ ВЕЛИК !") Q 0
+ S %FN=%File I $ZV["Cach"||($ZV["IRIS") Q:$$Open^%ZAPM.bs.BSCF1(%FN,"R")<0 0 S %DEV=DOS G Vi
+ F %DEV=51:1:54 O %DEV::0 Q:$T
+ I '$T S ls=" Все файловые устpойства ДОС заняты " D ON Q 0
+ O %DEV:%FN U %DEV I $ZA=-1 U 0 S ls=" Файл "_%FN_" не найден " D ON Q 0
+ O %DEV:(%FN:"R") U %DEV I $ZA<0 U 0 S ls=" Ошибка откpытия файла "_%FN D ON Q 0
+Vi S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSDOS2"
+ U 0 S UP="" F i=0:1:8,10:1:31 S UP=UP_$C(i)
+ K @(BSr_"(BSt)") S $P(@$ZR,"@")=%File,$P(@$ZR,"@",17)=5
+ S ls="ЗАГРУЗКА "_%FN D WAITS^%ZAPM.bs.BSF2 S:'$D(OT) OT=1 S:'$D(DO) DO=9999999
+ S i=0 F ii=1:1:DO U %DEV R %LINE#509 Q:$ZC  I ii'<OT D ViewIn(%LINE,UP,BSr,BSt)
+ViEND I %LINE'="" D ViewIn(%LINE,UP,BSr,BSt)
+ U 0 C %DEV S $P(@(BSr_"(BSt)"),"@",28)=i
+ Q 1
+ERFILE U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G EREFILE
+ I $ZE["<ENDOFFILE" G ViEND
+ I $ZE["<MXSTR" S ls=" Слишком длинная строка считана " G EREFILE
+EREFILE D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT) Q 0
+ 
+ViewIn(%LINE,UP,BSr,BSt) I '$D(i) S i=0
+ U 0 S i=i+1,t1=$TR(%LINE,UP,$TR($J("",$L(UP))," ","¬")) D  S @(BSr_"(BSt,i)")=t1 X $G(WA)
+ .i t1[$C(9) S t1=$E($$TR^%ZAPM.bs.BSsFUNM(t1,$C(9),"         "),1,509)
+ .I '$D(S1),$$IFDOS^%ZAPM.bs.BSHTML1(t1) D INIT^%ZAPM.bs.BSre(1)
+ .s t1=$TR(t1,$G(S1),$G(S2))
+ Q
+INITHELP ;ИНИЦИАЛИЗАЦИЯ СПРАВОЧНОЙ СИСТЕМЫ
+ Q:$D(^%ZAPM.bs.BSGER("MSMHELP"))  Q:'$D(^%ZAPM.bs.BSHLP("MSMDOC"))  N I
+ S I="" F  S I=$O(^%ZAPM.bs.BSHLP("MSMDOC",I)) Q:I=""  S ^%ZAPM.bs.BSGER("MSMHELP",$P(^%ZAPM.bs.BSHLP("MSMDOC",I)," "))=$P(^%ZAPM.bs.BSHLP("MSMDOC",I)," ",2,4)
+ S ^%ZAPM.bs.BSGER("MSMHELP")=$P($P($G(^%ZAPM.bs.BSHLP("MSMDOC")),"@"),":",2,99)
+ Q
+MSMHELP(S) ;СПРАВОЧНАЯ СИСТЕМА ПО MSM
+ Q:'$D(^%ZAPM.bs.BSGER("MSMHELP"))
+ N SS,FN,DOS,OT,DO,SSS
+ S FN=^%ZAPM.bs.BSGER("MSMHELP") Q:FN=""  S SS=S
+ I '$D(^%ZAPM.bs.BSGER("MSMHELP",S)) S (SSS,SS)=$O(^%ZAPM.bs.BSGER("MSMHELP",S)) I ("@"_SS)'[("@"_S) D ErrMsg^%ZAPM.bs.BSXfun("СПРАВКИ ПО ?"_S_" НЕТ") Q
+ S OT=$P(^%ZAPM.bs.BSGER("MSMHELP",SS)," "),DO=$P(^%ZAPM.bs.BSGER("MSMHELP",SS)," ",2)
+ I '$$View(FN,"^%ZAPM.bs.BSbufB","MsmHelp%BS*.*"_$G(%BS(3),$P),1,OT,DO) Q
+ S IYI="^%ZAPM.bs.BSbufB,MsmHelp%BS*.*"_$P D NE^%ZAPM.bs.BSN Q
+ Q
+DOSTXT(FN) I '$$View(FN,"^%ZAPM.bs.BSbufB","View%BS*.*"_$G(%BS(3),$P),1) Q
+ S IYI="^%ZAPM.bs.BSbufB,View%BS*.*"_$P D NE^%ZAPM.bs.BSN Q
+DOCBS(BS,ST) I '$$View($P($G(^%ZAPM.bs.BSETUP("PATH",ST,4),$G(^%ZAPM.bs.BSS("PATH",ST,4))),"@",15)_BS,"^%ZAPM.bs.BSbufB","Help%BS*.*"_$G(%BS(3),$P)_$J_"u1",1) Q
+ S IYI="^%ZAPM.bs.BSbufB,Help%BS*.*"_$G(%BS(3),$P)_$J_"u1" D NE^%ZAPM.bs.BSN Q
+HELPP(N) D DOCBS("BSP"_N,8) Q  ;ПОМОЩЬ ПО ОПИСАНИЮ %BS ПРИЛОЖЕНИЯ
+HELP(N) D DOCBS("BS"_$S(N?.N:"C",1:"")_N,8) Q  ;ПОМОЩЬ ПО ОПИСАНИЮ %BS
+NEW(N) D DOCBS("BS_Release_notes.txt",2) Q  ;ЧТО НОВОГО ?

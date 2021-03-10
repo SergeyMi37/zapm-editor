@@ -1,0 +1,130 @@
+ROUTINE %ZAPM.bs.BSNIK2
+%NIKTEST ;TABEL! КОНТРОЛЬ ДОКУМЕНТОВ ТАБЕЛЯ НА ПРЕДВВОДЕ (Н.Кузнецов) ; 17:44 10-JUN-98
+ ; пpогpамма ... |-МОДИФИЦИРОВАННО МНОЙ =MSW
+ N
+0 S (I1,I2,I3)="",R="@",NSUM="" ;УБРАЛ NEW - ZAS
+ ;|R !,"Введите номер формы:",NF G END:NF=""
+ S NF=14201,BUF=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSMDDR(""BPO"")"),TAB="^[""GLAVK""]DDRm(NF)"
+ S FORM=@TAB@("^","S") ;
+ S TBL=@FORM I $P(TBL,R,17)'=2 W !," - ЭТО ТАБЛИЦА НЕ ИМЕЕТ БАЗЫ ДАННЫХ !" Q
+ ;W !,"TBL=",TBL R A
+ F I=1:1 Q:'$L($G(@TAB@(I,"F")))  S I(I)=^("F") ;W !,"I",I,"=",^("F") R " ?",A
+ S KKEY=I-1,III(1)="",N3K=""
+ I KKEY=3 S N3K=$P($G(I(3)),"""",2) ;W !,"3-ИЙ КЛЮЧ:",N3K R "  НАЖМИТЕ КНОПКУ",A
+ I  S NSUM=99 ;|W !,"Введите код ",N3K,", содержащий сумму:" R NSUM S NSUM=NSUM_"" ;G:NSUM="" 1 ;
+ I  K III
+ S IN3=1 ; ПРИ 2-Х КЛЮЧАХ
+ S KS=$P(TBL,R,28),KK=$P(TBL,R,29) ; СТРОК И КОЛОНОК В ТАБЛИЦЕ
+ F I=1:1:KS F K=1:1:KK S TIP=$P(@FORM@(I,K),R,9) I TIP=2 G A1
+A1 I '$T W " - В ЭТОЙ ТАБЛИЦЕ НЕТ КЛЕТОК, ЗАПИСЫВАЕМЫХ В Б.Д.!" Q
+ S S1=I,K1=K ; УЧЕСТЬ ДАТ, КОТ НЕТ В КОЛОНКАХ
+10 S NIK=1 ;|R !,"Введите номер колонки, по которой проводить суммирование <1>:",NIK S:NIK="" NIK=1
+ I NIK<1!(NIK>(KK/2-3)) W "-НЕВЕРНО !" G 10
+ S NIK=$E("00",1,3-$L(NIK))_NIK W !,"имя показателя -<",NIK,">"
+ S PRIZN=BUF_"(NF,PN,""2,1"")" ;ПРИЗНАК ОБРАБОТКИ 1-НЕ ОБРАБОТАН,2-С ОШИБКАМИ
+ ; 4 - ЗАНЕСЕН В БД
+ S DOK=BUF_"(NF,PN," ;ПЕРВАЯ СТРОКА ДОКУМЕНТА, ДАЛЕЕ-3,2;4,2 И Т.Д.
+ S DOKS=BUF_"(NF,PN)"
+ S PROT=$E(FORM,1,14)_"NIKitog(NF)",PN="" K @PROT
+ZIKL S PN=$N(@DOKS) G END:PN<1 I 1!(@PRIZN=1) S STR="" D  D Z G ZIKL
+ .F K=2:1 S S=$G(@(DOK_""""_K_",2"")")) Q:'$L(S)  S STR=STR_S ;W !,STR R A
+ .Q:'$L(STR)  S STR=STR_"=" W *12,PN
+Z S I=1
+ F I4=2:1 S PK=$P(STR,"=",I4) Q:PK["++"  S NAM=$E(PK,1,3),PK=$E(PK,4,255) D CALC Q:NAM=NIK&(KKEY=2)  S I=I+1
+ Q
+CALC S L=" за КСП",R=" "
+ I NAM="КСП" S KSP=PK,DIV=$E(PK,1,2) S:'$D(@PROT@(DIV)) I3=$S($L(NSUM):NSUM,1:1),@PROT@(DIV,1,I3)="ОТСУТСТВУЕТ"_L_KSP Q
+ I KKEY=3 I NAM=N3K S IN3=PK,III(PK)="" ; W !,NAM," В 3 КЛЮЧЕ ",PK R A
+ I NAM=NIK S:KSP=DIV @PROT@(DIV,1,IN3)=PK_L_KSP ;_"#"_PN_R
+ I  S:$L(KSP)>2 @PROT@(DIV,KSP,IN3)=PK_L_KSP ;_"#"_PN_R
+ Q
+END R !,"Массив предввода просмотрен." S J=0
+T1 S (J1,J2,J3)=0 I NSUM="" G T31
+ S A="" ;R !,"Проверить наличие строки (строк) в документах предввода? <Enter>-Да:",A
+ I A="" G STR
+T2 S J1=J I J W !,N3K,NSUM," отсутствует в ",J," документах."
+ I NSUM="" G T31
+ W !,"Проверить правильность "_N3K_"="_NSUM R " в каждом документе? <Enter>-Да:",A
+ I A="" G IND3
+T3 S J2=J-J1 W !,"Обнаружено ",J2," ошибок."
+T31 R !,"Сравнить данные за соединения (округа) с суммой по частям? <Enter>-Да:",A
+ I A="" G M00
+T33 S J3=J-J1-J2 W !,"Обнаружено ",J3," ошибок."
+ W !,"Всего ",J," ошибок; распечатать на принтере? [Y]-Да:" R A
+T4 F I=1:1:J W !,STR(I)
+ I A="Y" O 3 U 3 S A="" W !,"Проверка сводных данных предввода по форме ",NF,! G T4
+ C 3
+EXIT W !,"КОНЕЦ РАБОТЫ ПРОГРАММЫ КОНТРОЛЯ ДОНЕСЕНИЙ ПО ТАБЕЛЮ ОТЧЕТНОСТИ"
+ Q  ;
+STR ; наличие строк
+ ;W !,"Введите значение "_N3K_" в виде: код или код1,код2,... или код1-код2"
+ ;R !,"напр. 01 или 01,99 или 01-03 :",KOD G T1:KOD=""
+ S (KD,KOD)=NSUM
+ I KOD["," F I=1:1 Q:$P(KOD,",",I)=""  S KOD=$P(KOD,",",I)_""","""_$P(KOD,",",I+1,99)
+ I KOD["-" S LK=$L($P(KOD,"-",1)),ZIKL=$P(KOD,"-",1)_":1:"_$P(KOD,"-",2)_" S I3=$E(""000000"",1,(LK-$L(I3)))_I3"
+ E  S ZIKL=""""_KOD_""""
+ S ZIKL="F I3="_ZIKL_" D NAL"
+ S I1=""
+S11 S I1=$N(@PROT@(I1)) G T2:I1<0 ;,S11:I1=81!($E(I1,1)=7)
+S12 S I2=$N(@PROT@(I1,I2)) G S11:I2<0,S12:I1=81&(I2=1)
+ X ZIKL G S12
+NAL I $D(@PROT@(I1,I2,I3)) I $P(^(I3)," ",1)'="ОТСУТСТВУЕТ" Q
+ S J=J+1,STR(J)="Для КСП "_$S(I2=1:I1,1:I2)_" нет "_N3K_I3
+ ;W !,STR(J) R A
+ Q
+ ;
+IND3 S STR="",I1="",IN3="",(SUM,SUMM)=0,L="("_N3K
+M0 S I1=$N(@PROT@(I1)) G T3:I1<1 K I3 D M01 G M0 ; ПО ДИВИЗИИ
+ ;
+M01 S I2=$N(@PROT@(I1,I2)) Q:I2<0  K SM,SUM D M1:$L(NSUM) G M01 ; ПО ЧАСТЯМ
+ ;
+M1 ; СУММАРНАЯ СТРОКА В ДОКУМЕНТЕ
+ S SM=0,IN3="",NSTR=0,SUM=0 ; ВСТАВИЛ SUM=0 - ZAS
+M11 S IN3=$N(@PROT@(I1,I2,IN3)) I IN3<0 D:SUM'=SM M12 Q  ; ПО СТРОКАМ
+ ;S III(IN3)="" ; W !,"IN3=",IN3,"-",^(IN3) R A
+ I IN3=NSUM S SUM=^(IN3)+0
+ E  S SM=SM+^(IN3)
+ I I2=1 S SUM(IN3)=^(IN3)+0
+ E  S SM(IN3)=$G(SM(IN3))+^(IN3)
+ G M11
+M12 ; КОНЕЦ ПО ОДНОМУ КСП
+ S SUM=$G(@PROT@(I1,I2,NSUM)) I 'SUM S SUM="ОТСУТСТВУЕТ ЗА КСП"_$S(I2>1:I2,1:I1)
+ S STR="*** "_$P(SUM," ",2,3)_" представлено "_N3K_NSUM_"="_$P(SUM," ",1)
+ ;S ^(NSUM)=SUM_" <>"_SM
+ S IN3="",J=J+1,STR(J)=STR_" насчитано "_SM_"="
+M13 S IN3=$N(@PROT@(I1,I2,IN3)) I IN3>0 S:IN3'=NSUM STR(J)=STR(J)_"+"_(^(IN3)+0)_L_IN3_")" G M13
+ Q
+%NIKKSP ; пpогpамма ... ПОСТРОЕНИЕ СТРУКТУРЫ ОКРУГОВ 19.08.97 ; 18:41 20-AUG-97
+ N I1,okrug,I2,K1,K2,MAS
+ S MAS=""""_"SYS"_"""",MAS="^["GLAVK"]KVCstr"
+ S I1="" K okrug
+1 S I1=$N(@MAS@(I1)) G END1:I1=-1,1:$E(I1,1)=7
+ W !,"I1=",I1
+ S I2="",K2=0,okrug(I1)=""
+2 S I2=$N(@MAS@(I1,I2)) G 1:I2=-1,2:I2=I1 S K2=K2+1
+ W "-",I2 S:$L(I2)=2 okrug(I1)=okrug(I1)_$S(K2=1:"",1:",")_I2
+ G 2
+END1 W !,"МАССИВ СФОРМИРОВАН"
+ Q ;
+M00 D %NIKKSP S I1=""
+M001 S I1=$N(@PROT@(I1)) G T33:I1<0
+ S I3=""
+M32 S I3=$N(III(I3)) G:I3<0 M001 S SM=0,I2=0,K=0,STR=""
+M31 S I2=$N(@PROT@(I1,I2)) G M33:I2<0,M31:I2=1!(I1=81) S K=K+1
+ S SM=SM+$G(@PROT@(I1,I2,I3)),STR=STR_"+"_$G(@PROT@(I1,I2,I3)) G M31
+M33 ;W !,"I1=",I1," I2=",I2," OKR=",$G(okrug(I1))," KCB=",I3,"#"
+ G M32:'K I $D(okrug(I1)) D M4
+ S S=$G(@PROT@(I1,1,I3)),SUM=$P(S," ",1) ;+***** 0
+ I SM=(SUM+0)
+ E  S J=J+1,STR(J)=$P(S," ",2,3)_" представлено "_N3K_I3_"="_S_" не равны сумме "_SM_"="_STR
+ ;W !,"SM=",SM," SUM=",SUM," S=",S,!,"STR=",STR R A
+ G M32
+ Q
+M4 ;W !,"ОКРУГ" R A;СУММИРОВАНИЕ ПО ОКРУГУ
+ S ZIKL=okrug(I1) Q:'$L(ZIKL)
+M41 S K=0
+M42 S K=K+1,I0=$P(ZIKL,",",K),I2=1 Q:'I0
+ S SM=SM+$G(@PROT@(I0,I2,I3)),STR=STR_"+"_$G(@PROT@(I0,I2,I3))
+ ;W !,"I0=",I0 R A
+ G M42
+ Q

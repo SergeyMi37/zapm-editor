@@ -1,0 +1,48 @@
+ROUTINE %ZAPM.bs.BSpgWEBU3
+TKWEBU3	;PG&A,TK-WEB,1.1,UTILITY;27JUL95 9:24A;;;27MAY97  23:10 [ 10/15/97   8:11 AM ]
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;Copyright (C) 1996,97 Patterson, Gray and Assoc., Inc.
+	;
+OTH	S TI=TO,TU=TDP*$S('TC:99,1:TC) X TQF I TA=0!(TEN'="~") F TA=0:1:TU X TQ Q:TO=""
+	S TC=$S(TC'?1.N:TA+.001,1:TC) S:0'[TO TN="`"_TC S TO=TI
+	S:TA<TU TU=TA S TD=TA/TC+.9\1 S:TD["." TD=TD+.9\1
+O1	I TN["`" S TM=$P(TN,"`",3)+1,TN(TM)=TMM_"`"_TO,$P(TN,"`",3)=TM
+O2	S TI=0,TM=TO X TQF G:TP["F" C0 K TJ F TJ=1:1:TC F TI=TI+1:1:TI+TD X TQ G:TO="" O3 X TS S TJ(TJ,80-$L(TX))=""
+O3	S TO=TM
+SET	I $O(TJ(TC\1,""))="",+TC>0 S TC=TC-1 G SET
+	S TV=82+$P(TP,"P",2) I $P(Y,"\",5)'="" F TJ=1:1:TC S TJ(TJ,80-$L($P(Y,"\",5)))=""
+COL	S TW=1,%C=TF+1 S:TS["TVL" TW=$L(TS,"TVL")-1*-2+1 F TJ=1:1:TC S TW=TW+TV-$O(TJ(TJ,"")),TC(TJ)=%C,%C=TF+TW
+	I $L($P(Y,"\",4))>TW S TW=$L($P(Y,"\",4))+4
+	G:%C<TK("C") C3 I TC=1 G C3:TF<2 S TF=TK("C")-TW-2 S:TF<1 TF=1 G COL
+	S:TN'["`" TN="`"_TC S TC=TC-1,TU=TD*TC S:$D(TN)<2 TN(1)="0`"_TO,$P(TN,"`",3)=1 G COL
+C3	S TC(TJ+1)=%C I TN["`" S TB=$P(TN,"`",5)-TW S:TB>0 TW=$P(TN,"`",5) S $P(TN,"`",5)=TW I TC>1,TB>TC S TV=TB\TC+TV G COL
+C0	G C1:'$D(TMO) S TM=TO X TQF F TJ=1:1:TC*TD X TQ Q:TO=""  I TO=TMO S TMO=TMM+TJ,TO=TM G C1
+	I TO'="",TN["`" S TMM=TMM+TJ G MNX
+	S TMO=TMM+TJ-1,TO=TM
+C1	K TJ S:TD<1 TD=1 S TL=$P(Y,"\",5)'=""+TD S:TT="" TT=$S(TP["C":%R,TP["T":1,TP["F":1,1:TK("R")-TL-1) I TK("RON")="" S TV=1,TW=TW+2,TR=$P(TK("a"),"`"),TRO=$P(TK("a"),"`",2) W $S(TP["H":TK("HI"),1:TK("LO")) G C2
+	S TV=TK($S(TP["H":"HI",1:"LO")),TRO=TV_TK("RON"),TR=TK("ROF")_TV,TV=0 S:TP'["R" TE=TRO,TRO=TR,TR=TE W TK("Z"),TRO
+C2	S %C=TF I TP["F" S %R=TT W @TKP,*13,TK("CS") G LIST
+	I TP["L" S TE=TK("VL")_$J("",TW)_TK("VL"),TM="",$P(TM,TK("HL"),TW+1)="" D:TP["T" 1,2,3 D:TP'["T" 3,4,1 G LIST
+	S TE=$J("",TW+2) I TP["T" F %R=TT:1:TT+TL+1-(TC["."*2) W @TKP,TE
+	E   F %R=TT+TL+1-(TC["."*2):-1:TT W @TKP,TE
+LIST	K TB S TB=TT-(TC["."),%R=TT I $L($P(Y,"\",4)) S %C=TW-$L($P(Y,"\",4))\2+%C+1 W:$P(Y,"\",4)["*" TR W @TKP,$TR($P(Y,"\",4),"*",""),TRO S %R=%R+1
+	I TP["F" S TL=TU+2 I TP["L" S TZ=TK("HL"),%C=1 W @TKP,TK("G1"),TZ,TZ S TZ=TZ_TZ_TZ,%R=%R+1 X "F TM=1:1:26 W TZ" W TK("G0")
+	D:$P(Y,"\",5)'="" HEAD I TP["F" S TB=%R-1
+	S TZ=$C($S(TK["DTMPC":128,1:0)),TL(0)=TZ_" "_TZ,TL(1)=TZ_TK($S(TP["H":"LO",1:"HI"))_">"_TZ S:TN["`" $P(TN,"`")=TMM S TM=TMM,TE="TY="_TKP_"_TL($D(X(TM)))",TH="",TG=255\(TD*TC+1)-1 X TQF
+	I 'TV F TJ=1:1:TC S %C=TC(TJ),%R=TB F TM=TM+1:1:TM+TD X TQ G L1:TO="" S %R=%R+1,@TE X TS S:TX'[TOV TB(TM)=TY_TX_" ",TH=TH_"\"_$E(TX,1,TG) S:TX[TOV TX=$TR(TX,TOV,""),TH=TH_"\" W TY,TX,TRO
+	I TV F TJ=1:1:TC S %C=TC(TJ),%R=TB F TM=TM+1:1:TM+TD X TQ G L1:TO="" S %R=%R+1,@TE X TS S:TX'[TOV TB(TM)=TY_" "_TX,TH=TH_"\"_$E(TX,1,TG) S:TX[TOV TX=$TR(TX,TOV,""),TH=TH_"\" W TY,TRO,TX,TRO
+L1 G ^%ZAPM.bs.BSpgWEBU4
+	;
+HEAD	S %R=TB+1 F TJ=1:1:TC S %C=TC(TJ)+1 W @TKP,TK("UO"),TRO,$P(Y,"\",5),TK("UF")
+	S TB=TB+1 W TRO Q
+	;
+1	S %R=TT W @TKP,TK("G1"),TK("TLC"),TM,TK("TRC"),TK("G0") Q
+2	W TK("G1") F %R=TT+1:1:TT+TL W @TKP,TE
+	W TK("G0") Q
+3	S %R=TT+TL+1 W @TKP,TK("G1"),TK("BLC"),TM,TK("BRC"),TK("G0") Q
+4	W TK("G1") F %R=TT+TL:-1:TT+1 W @TKP,TE
+	W TK("G0") Q
+	;
+MNX	S TC=$P(TN,"`",2),TA=TU G O1
+MFR	S $P(TN,"`",3)=2
+MPR	S TO=$P(TN,"`",3)-1,$P(TN,"`",3)=TO-1,TO=TN(TO),TMM=+TO,TO=$P(TO,"`",2),TC=$P(TN,"`",2),TA=TU G O1

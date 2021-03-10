@@ -1,0 +1,14 @@
+ROUTINE %ZAPM.bs.BSZRA
+ ;             ; 23:59 21-JUL-96
+ ;  --------------------------------------------------------------------
+ ;  |         ПРОГРАММА ЗАГРУЗКИ ПРИЛОЖЕНИЯ КОМПЛЕКСА %BS              |
+ ;  |      ПРОИЗВОДИТСЯ ИЗ %BSINST.PAC или ^%PACKAGE или из %BS        |
+ ;  --------------------------------------------------------------------
+ZV ;                           ДЛЯ MSM4.0.14C
+ ;
+ I $D(%BS)["0" D CLr^%ZAPM.bs.BSF4
+ I +$P($ZV,"Version ",2)<3 D ErrMsg^%ZAPM.bs.BSXfun("НЕСОВМЕСТИМЫЕ ВЕРСИИ !!! ВЕРСИЯ MSM ДОЛЖНА БЫТЬ НЕ НИЖЕ 3.0 !!!") Q
+ K NOMXTR,EST S $ZT="MX^BSZRAPP" D L^%ZAPM.bs.BS3("^BStranS")
+ S ^BStranS("?")=$J(1,500) D U^%ZAPM.bs.BS3("^BStranS")
+1 G ^%ZAPM.bs.BSZRAP
+MX U 0 W *7 S NOMXTR=1,$ZT="" G 1

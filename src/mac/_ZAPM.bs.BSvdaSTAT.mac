@@ -1,0 +1,294 @@
+ROUTINE %ZAPM.bs.BSvdaSTAT
+%BSvdaSTAT ;Статистика обращений к информационной системе
+ ;
+ ;    Copyright (C) 2003 Serge W. Mikhaylenko
+ ;    Copyright (C) 2002 Воронов Д.А.
+ ;    All Rights Reserved
+ ;
+ Q
+STAT(S) S BSLABEL="HOMEPAGE^~BSvdaSTAT" 
+ Q "<a href='javascript: var a=5;' onclick='open("""_$$ADDBSGET^%ZAPM.bs.BSC4()_""",""RESULT3"",""toolbar=yes,menubar=no,scrollbars=yes,status=1,resizable=1"");' TITLE=""Мониторинг системы""><img border=0 src='"_BSDOMAIN_"/img/diag.gif'>"_S_"</a>"
+mainvar      ;ФОРМИРОВАНИЕ БАЗОВЫХ ПЕРЕМЕННЫХ 
+ S BD=$$SW^%ZAPM.bs.BSF12("^[""%SYS"",""""]%BScVIS")
+ S BDS=%BS(24,1) I '$$Data^%ZAPM.bs.BSF12(BDS) W RED_" Не доступна "_BDS_EF H
+ S WAR="^mtempBSvdaSTAT"
+ S BDip=$$SW^%ZAPM.bs.BSF12("^[""%SYS"",""""]%BScIP")
+ q
+BOF ;НАЧАЛО ФАЙЛА HTML
+ D BEG1^%ZAPM.bs.BSC4
+ w "<TITLE>",$G(CAPTION)_$ZU(110)_"-Мониторинг Информационного портала</TITLE>",BK
+ q
+EOF ;ЗАВЕРШЕНИЕ ФАЙЛА HTML
+ //w "</BODY></HTML>",BK
+ D END^%ZAPM.bs.BSC4
+ q
+FUN D JS^%ZAPM.bs.BSCp
+ w "function fu1(COL1,NUM) {",BK
+ ;W "alert(NUM);"_BK
+ S BSLABEL="ADV^~BSvdaSTAT",BSCDAY=CDAY
+ W "var HREF1="""_$$ADDBSGET^%ZAPM.bs.BSC4()_"&BSCOL1=""+COL1+""&BSNUM=""+NUM;"_BK
+ W "open(HREF1,""ADV"",""toolbar=no,menubar=no,scrollbars=no,width="_$G(W,540)_",height="_$G(H,480)_",status=1,resizable=1"");"_BK
+ w "}",BK
+ D JSE^%ZAPM.bs.BSCp
+ Q
+ADV d mainvar
+ S TITL="Сделать Новый Отчет. ("_$ZD(BSCDAY,3)_","_$G(BSCOL1,"?")_","_$G(BSNUM,"?")_")"
+ D BEG1^%ZAPM.bs.BSC4  W $$TITL^%ZAPM.bs.BSCGIS(TITL),$$B27^%ZAPM.bs.BSCm4()
+ S BSnewPR=$G(@BDS@(BSCDAY,BSNUM,"U")),BSipF=$P($P($G(@BDS@(BSCDAY,BSNUM,"S")),":IP=",2)," ")
+ D REPORT("ADV",$G(@BDS@(BSCDAY,BSNUM,"S")),$G(@BDS@(BSCDAY,BSNUM,"A")))
+ D END^%ZAPM.bs.BSC4 
+ Q
+USCH(P,A) Q "<INPUT TYPE=""CHECKBOX"" NAME=BSchk"_P_" "_$S($G(A):"CHECKED",1:"")_" >"
+USERS //ПАРАМЕТРЫ ПОИСКА
+ S BDGR=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""PROTECT"")")
+ W "Сформировать отчет<FIELDSET><LEGEND>по пользователю: </LEGEND>"_$$USCH("U",1)_"<select name=BSnewPR size=1>"_BK_BK
+ W "<option value='*' >*все пользователи*</option>"
+ S G="" F  S G=$O(@BDGR@(G)) Q:G=""  W "<option value='"_G_"' " W:G=$G(BSnewPR) "SELECTED" W ">"_G_"</option>"
+ W "</SELECT>"_BK_BK_$$AccU^%ZAPM.bs.BSCm2("BSnewPR")_"</FIELDSET>"_BBK
+ W "<FIELDSET><LEGEND> по IP - адресу </LEGEND>"_$$USCH("I")_"<select name=BSipF size=1><option value='*' >*все адреса*</option>"
+ S G="" F  S G=$O(@BDip@(G)) Q:G=""  W "<option value='"_G_"' " W:G=$G(BSipF) "SELECTED" W ">"_G_"</option>"
+ W "</SELECT></FIELDSET>"_BBK
+ W "<FIELDSET><LEGEND> по сетевому имени </LEGEND>"_$$USCH("N")_"<select name=BSipFN size=1><option value='*' >*все имена*</option>"
+ S G="" F  S G=$O(@BDip@(G)) Q:G=""  W "<option value='"_G_"' " W:G=$G(BSipFN) "SELECTED" W ">"_$G(@BDip@(G,"NAM"))_"</option>"
+ W "</SELECT></FIELDSET>"_BBK
+ Q
+IPAC(I) N A
+ I I'["." S A=$P($ZU(54,13,I),",") Q A
+ ;   S NAME2=$P($zu(54,14,$zu(54,1,IP2)),",",2) 
+ S A=$zu(54,14,$zu(54,1,I)) d mainvar
+ S A=$P(A,",",2) 
+ I $$Data^%ZAPM.bs.BSF12(BDip) D
+ .I A'="" S @BDip@(I,"NAM")=A
+ .E  S Noact=$G(@BDip@(I,"NAM"))
+ Q A
+IPA D BEG1^%ZAPM.bs.BSC4  W $$TITL^%ZAPM.bs.BSCGIS($G(BSipa)),$$B27^%ZAPM.bs.BSCm4()
+ w "<BODY>"
+ w "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+ S BSLABEL="IPA^~BSvdaSTAT"
+ D
+ .N BSipa D ADDBSPOST^%ZAPM.bs.BSC4reg
+ N A,B,a,Noact S A=""
+ i $g(BSipa)'="" S A=$$IPAC(BSipa)
+ s a="Введите IP адрес, или Сетевое имя " w a
+ W "<input type=textbox name=BSipa value='"_$g(BSipa)_"' title='"_a_"'><HR>"_BBK
+ S B=A_" "_$S(A="":"(Не активно)",1:"(Активно)")
+ W "Ответ сервера DNS : "_RED_$S(B="":"???",1:B)_EF_" "_$G(Noact)_BBK
+ w "<HR><input type=submit name=sDUB value='Послать запрос к серверу DNS' title='DNS'>"_BK
+ w "</form>"
+ d END^%ZAPM.bs.BSC4
+ Q
+IP(IP) N TIT I "?"[IP Q "?"
+ I $$Data^%ZAPM.bs.BSF12(BDip),$G(@BDip@(IP,"NAM"))'="" S TIT="TITLE='"_@$ZR_"'"
+ Q "<B "_$G(TIT)_" class=U1 onclick='DNS("""_IP_""");' >"_IP_"</B>"
+REC(P1,P2,P3,Arm) //ПАРАМЕТРЫ ЗАПИСИ
+ N U,S,A,TU
+ I P1'="" D
+ .I $D(@BDUSE@(P1)) S TU=$G(@BDUSE@(P1,"FNM"))
+ D
+ .I P2[":IP" S P2=$P(P2,":IP=")_":IP="_$$IP($P($P(P2,":IP=",2)," "))_$P($P(P2,":IP=",2)," ",2,99)
+ .I $E(P3,1,9)["Error" S A=$P(P3,"=")_"="_$$ErrTxt^%ZAPM.bs.BSCh0($P(P3,"=",2,9)) Q
+ .I $E(P3,1,9)["Kill",P1'=$P($P(P2,":IP"),",",3) S A=MAROON_P3_EF Q
+ .I $E(P3,1,9)["Upd" S S=RED_$P(P2," ")_EF_$P(P2," ",2,99),A=GREEN_P3_EF Q
+ Q "<TD CLASS=S1 TITLE='"_$G(TU)_"'><A HREF='javascript:fu1(1,"""_I_""");'>"_$G(U,P1)_"</A></TD>"_"<TD CLASS=S"_$S($$REQU(CDAY,I):2,1:1)_">"_$G(S,P2)_"</TD>"_"<TD CLASS=S4>"_Arm_"</td><TD CLASS=S1><A HREF='javascript:fu1(3,"""_I_""");'>"_$G(A,P3)_"</a></TD>"
+CDAYB //ВЫВЕСТИ ОДИН ДЕНЬ
+ d mainvar 
+ I $D(BMAIL) D ADMINMAIL^%ZAPM.bs.BSvdaMAIL Q
+ I $D(BSCDAY) S CDAY=BSCDAY
+ G CDAYER:$G(CDAY)="",CDAYER:'$$Data^%ZAPM.bs.BSF12($NA(@BDS@(CDAY)))
+ S TITL=$ZU(110)_"-Отчет за "_$ZD(CDAY,3)
+ D BEG1^%ZAPM.bs.BSC4  W $$TITL^%ZAPM.bs.BSCGIS(TITL),$$B27^%ZAPM.bs.BSCm4()
+ W $$js^%ZAPM.bs.BSCp
+ w "function DNS(IPA) {"_BK
+ S BSLABEL="IPA^~BSvdaSTAT"
+ w "window.open('"_$$ADDBSGET^%ZAPM.bs.BSC4_"&BSipa='+IPA,'viewIP',""toolbar=no,menubar=no,scrollbars=yes,width=400,height=400,status=1,resizable=1"");",BK
+ W "}"_BK
+ W $$jse^%ZAPM.bs.BSCp_BK
+ W $$LR_"<TABLE WIDTH=100%>"_BK
+ w "<TR><TD CLASS=S5>Время</TD><TD CLASS=S5>Пользователь</TD><TD CLASS=S5>Параметры (<B CLASS=S2>Критерии: "_$$PAR_EF_")</TD><TD CLASS=S5>Модуль</TD><TD CLASS=S5>Действие</TD></TR>"_BK      
+ S I="" F  S I=$O(@BDS@(CDAY,I),-1) Q:I=""  w "<TR><TD CLASS=S4>"_$P(I,"..",1)_"</TD>"_$$REC($G(@BDS@(CDAY,I,"U")),$G(@BDS@(CDAY,I,"S")),$G(@BDS@(CDAY,I,"A")),$G(@BDS@(CDAY,I,"Arm")))_"</TR>"_BK
+ W "</TABLE>"_BK
+ d FUN,END^%ZAPM.bs.BSC4
+ Q
+PAR() N Q S Q="" I $D(BSchkU),$g(BSnewPR)'="*" S Q=Q_$g(BSnewPR)_", "
+ I $D(BSchkI),$g(BSipF)'="*" S Q=Q_BSipF_", "
+ I $D(BSchkN),$g(BSipFN)'="*" S Q=Q_BSipFN_", "
+ I $D(BSapp) S Q=Q_BSapp_", "
+ Q Q
+LR1(D) N BSCDAY,BSLABEL I D="" Q "------"
+ S BSCDAY=D,BSLABEL="CDAYB^~BSvdaSTAT"
+ Q "<A TITLE='перейти на дату' HREF='"_$$ADDBSGET^%ZAPM.bs.BSC4_"'>"_$ZD(D,3)_" "_$$WEEK^%ZAPM.bs.BSCp(D)_"</A>"
+LR() Q RED_"&lt;&lt;&lt;"_$$LR1($O(@BDS@(CDAY),-1))_" &lt;&lt;&lt;"_$ZD(CDAY,3)_" "_$$WEEK^%ZAPM.bs.BSCp(CDAY)_"&gt;&gt;&gt; "_$$LR1($O(@BDS@(CDAY)))_"&gt;&gt;&gt;"_EF
+CDAYER W "Данных нет"_BBK 
+ Q
+CDAY //ВСЕ ДНИ ПОКАЗАТЬ
+ W "<FIELDSET><LEGEND>Сервер "_$ZU(110)_". Мониторинг конкретного дня</LEGEND>"
+ w "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=POST name=frmCDAY target='Stat1'>"_BK
+ S BSLABEL="CDAYB^~BSvdaSTAT"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ w "<select name=CDAY>"_BK
+ S I="" F i=1:1:100  S I=$O(@BDS@(I),-1) Q:I=""  w "<option value="_I_" >"_$ZD(I,3)_"</option>"
+ w "</select>"_BK 
+ w "<input Type=submit value=Вывести name=BDAY TITLE='В новом окне протокол дня'>"
+ s a=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Admin")
+ I $ZCONVERT(BSLOGIN,"U")=$ZCONVERT($P($P(a,"@",1),"<",2),"U") D
+ .W ", или <input Type=submit value='Смотреть ВСЮ почту Администратора ="_a_"' name=BMAIL  TITLE='...Ждите, Проверять будет все сервера'>"
+ .W " <input Type=PASSWORD value='' name=BsMAILpass TITLE='Пароль нужен для удаленных серверов, и он должен быть везде одинаковый!'>"
+ W "</FORM></FIELDSET>"
+ Q
+HOMEPAGE ;Главная страница
+ d mainvar
+ d BOF W $$B27^%ZAPM.bs.BSCm4()
+ D CDAY
+ D REPORT("HOMEPAGE","","")
+ d EOF
+ q
+BEGYEAR() Q $P($ZD($H,3),"-")_"0101"
+REPORT(BS4,Par1,Act1)
+ W "<FIELDSET><LEGEND>Параметры вывода стастики</LEGEND>"
+ w "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"" name=""frmsmp"" TARGET='REPORT1'>",BK
+ S BSLABEL="TEST1^~BSvdaSTAT"    
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ D USERS
+ S D1=$$BEGYEAR //НАЧАЛО ТЕКУЩЕГО ГОДА
+ s D1=$G(@WAR@(CurUS,"OT"),D1)
+ w "<H3>За период c <input type=""text"" size=7 name='DAY1' value='"_D1_"'>",BK
+ S D2=$G(@WAR@(CurUS,"DO"),$E($ZD($H,3),1,4)_$E($ZD($H,3),6,7)_$E($ZD($H,3),9,10))
+ s BSdateNum=1
+ S BS1=BSG,BS2="111^~BSvdaSTAT"
+ W $$B(D1,"Сменить","cal2","EDITDATE^~BSC4cal")
+ w " по <input type=""text"" name=""DAY2"" size=7 value="""_D2_""">",BK
+ s BSdateNum=2
+ S BS1=BSG,BS2="222^~BSvdaSTAT"
+ W $$B(D2,"Сменить","cal2","EDITDATE^~BSC4cal")
+ w " , или</p>"
+ w "<INPUT TYPE=""radio"" NAME=""radioName"" VALUE=chec0 >за текущий день"
+ w "<INPUT TYPE=""radio"" NAME=""radioName"" VALUE=chec1 >за текущую неделю"
+ w "<INPUT TYPE=""radio"" NAME=""radioName"" VALUE=chec2 CHECKED >за текущий месяц "
+ w "<INPUT TYPE=""radio"" NAME=""radioName"" VALUE=chec3 >За текущий год","  </p>",BK
+ w "</p>События: <select name=""BSapp"">",BK
+ d GetListApp
+ w "</select>",BK
+ w "<input Type=""submit"" value=""Выполнить"" name=""execut""></p>",BK
+ w "</H3></FORM></FIELDSET>",BK
+ Q
+GetListApp
+    S I="*" w "<option "_$$Ss()_" value='"_I_"'> Все события</option>"_BK
+    S I="Term*" w "<option "_$$Ss()_" value='"_I_"'> Терминальный вход/выход</option>"_BK
+    S I="Error*" w "<option "_$$Ss()_" value='"_I_"'> Все ошибки</option>"_BK
+    S I="Error Web*" w "<option "_$$Ss()_" value='"_I_"'> WebLink-ошибки</option>"_BK
+    S I="ErrorTerm*" w "<option "_$$Ss()_" value='"_I_"'> Терминальные ошибки</option>"_BK
+    S I="Change*" w "<option "_$$Ss()_" value='"_I_"'> Изменение параметров системы</option>"_BK
+    S I="*Sess" w "<option "_$$Ss()_" value='"_I_"'> Манипуляция сессией</option>"_BK
+    S I="Kill*" w "<option "_$$Ss()_" value='"_I_"'> Удаление узлов/таблиц</option>"_BK
+    S I="Update*" w "<option "_$$Ss()_" value='"_I_"'> Повышение версии</option>"_BK
+    q
+ /*   .if I="B4Y" {w "<option value="""_I_""">",I," (Информационный портал)</option>",BK}
+    .if I="CARDS" {w "<option value="""_I_""">",I,"  (Офицерская карточка)</option>",BK}
+    .if I="ISS" {w "<option value="""_I_""">",I,"  (Информационно-справочная система)</option>",BK}
+    .if I="KOMAN" {w "<option value="""_I_""">",I,"  (Командировки)</option>",BK}
+    .if I="KVC" {w "<option value="""_I_""">",I,"  (Коды войсковых частей)</option>",BK}
+    .if I="NAV" {w "<option value="""_I_""">",I,"  (Навигатор)</option>",BK}
+    .if I="POTERY" {w "<option value="""_I_""">",I,"  (Потери)</option>",BK}
+    .if I="VG" {w "<option value="""_I_""">",I,"   (Виртуальный главкомат)</option>",BK}
+    .if (I'="ALLAPP")&(I'="B4Y")&(I'="CARDS")&(I'="ISS")&(I'="KOMAN")&(I'="KVC")&(I'="NAV")&(I'="POTERY")&(I'="VG") {w "<option value="""_I_""">",I,"   </option>",BK}
+ q */              
+Ss() I $G(Act1)="" Q ""
+ I $E(I,1,2)="*S",$E(Act1,1,12)["Sess" G Sss
+ I $E(I,1,2)="Er",I[$E(Act1,1,9) G Sss
+ I $E(I,1,2)="Ch",$E(Act1,1,12)["Chang" G Sss
+ I $E(I,1,2)="Te",$E(Act1,1,4)["Term" G Sss
+ I $E(I,1,2)="Ki",$E(Act1,1,12)["Kill" G Sss
+ I $E(I,1,2)="Up",$E(Act1,1,12)["Vers" G Sss
+ Q ""
+Sss Q "SELECTED"
+on(BSLABEL,W,H) q " onclick='open("""_$$ADDBSGET^%ZAPM.bs.BSC4()_""","""_$G(Targ,"calend")_""",""toolbar=no,menubar=no,scrollbars=no,width="_$G(W,640)_",height="_$G(H,480)_",status=1,resizable=1"");' "
+B(d,N,Targ,ROU) ;кнопка В НОВОМ ОКНЕ
+ I d="" S d=$ZD($h,8)
+ N BSLABEL,BSDATE,Q S BSLABEL=$G(ROU,"CALDATE^~BSC4cal"),BSDATE=d,Q=""
+ S Q=Q_"<BUTTON name='Calendar2' "_$$on(BSLABEL,300,350)_" ><IMG src='"_BSDOMAIN_"/img/cal.gif' alt='"_$G(N,""_$$LNG^%ZAPM.bs.BSC4("календарь",156)_"")_"'></BUTTON>"
+ Q Q
+2(m) i $l(m)=1 q "0"_m
+ e  q ""_m
+RETURN ;ВОЗВРАТ ПОСЛЕ КАЛЕНДАРЯ
+ n a,z
+ ;W "<PRE>" W  W "</PRE>"
+ i $g(BSdateNum)=1 s z="OT"
+ e  s z="DO"
+ I $D(Today) S a=$E($ZD($H,3),1,4)_$E($ZD($H,3),6,7)_$E($ZD($H,3),9,10)
+ E  s a=tbSelYear_$$2(tbSelMonth)_$$2(calSelectedDate)
+ s @WAR@(CurUS,z)=a
+ s ^a=a
+ G HOMEPAGE
+111      d mainvar
+ N D S D=$$RETURN^%ZAPM.bs.BSC4cal
+ S @WAR@(CurUS,"OT")=D
+ D JS^%ZAPM.bs.BSCp
+ S BSLABEL=$G(BS4,"HOMEPAGE")_"^~BSvdaSTAT" 
+ I D'="" W "open("""_$$ADDBSGET^%ZAPM.bs.BSC4()_""","""_$G(BS4,"HOMEPAGE")_""",""toolbar=yes,menubar=no,scrollbars=yes,width=800,height=600,status=1,resizable=1"");"_BK
+ W "window.close();"_BK
+ D JSE^%ZAPM.bs.BSCp
+ Q
+222      d mainvar
+ N D S D=$$RETURN^%ZAPM.bs.BSC4cal
+ S @WAR@(CurUS,"DO")=D
+ D JS^%ZAPM.bs.BSCp
+ S BSLABEL=$G(BS4,"HOMEPAGE")_"^~BSvdaSTAT" 
+ I D'="" W "open("""_$$ADDBSGET^%ZAPM.bs.BSC4()_""","""_$G(BS4,"HOMEPAGE")_""",""toolbar=yes,menubar=no,scrollbars=yes,width=800,height=600,status=1,resizable=1"");"_BK
+ W "window.close();"_BK
+ D JSE^%ZAPM.bs.BSCp
+ Q
+ 
+TEST1    //НОВЫЙ ОТЧЕТ
+ d mainvar
+ if $G(radioName)="chec0"  s (DAY1,DAY2)=$ZD($H) S DC1=$ZDATEH(DAY1),DC2=$ZDATEH(DAY2)
+ if $G(radioName)="chec1"  s DAY2=$ZD($H),DC2=$ZDATEH(DAY2) s DC1=DC2-7,DAY1=$ZD(DC1)
+ if $G(radioName)="chec2"  s DAY2=$ZD($H),DC2=$ZDATEH(DAY2) s DC1=DC2-30,DAY1=$ZD(DC1)
+ if $G(radioName)="chec3"  s DAY2=$ZD($H),DC2=$ZDATEH(DAY2) s DAY1=$$DATEUSA($$BEGYEAR),DC1=$ZDATEH(DAY1)
+ 
+ I '$D(DC1) S DC2=$ZDATEH($E(DAY2,5,6)_"/"_$E(DAY2,7,8)_"/"_$E(DAY2,1,4)),DC1=$ZDATEH($$DATEUSA(DAY1))
+ 
+ S TITL="Пользователь '"_$g(BSnewPR)_"' с "_$ZD(DC1,2," Января Февраля Марта Апреля Мая Июня Июля Августа Сентября Октября Ноября Декабря")_" по "_$ZD(DC2,2," Января Февраля Марта Апреля Мая Июня Июля Августа Сентября Октября Ноября Декабря")_" года"
+ D BEG1^%ZAPM.bs.BSC4  W $$TITL^%ZAPM.bs.BSCGIS(TITL),$$B27^%ZAPM.bs.BSCm4()
+    W "<table border=0 WIDTH=100%><tr>"
+    w "<td CLASS=S5 WIDTH=10%><p align=center><B>Дата</B></p></TD>"
+    w "<td CLASS=S2 WIDTH=5%><b>Событий "_RED_BSapp_EF_"</b></td>"
+    w "<td CLASS=S5><p align=center><b>ДИАГРАММА </b></p></td></tr>"
+  S Max=0 f CD=DC2:-1:DC1 S Req=$$REQ(CD) I Req>Max S Max=Req
+  f CD=DC2:-1:DC1 D WCDAY(CD)
+    w "</table>"
+ d END^%ZAPM.bs.BSC4
+ Q
+WCDAY(CD) //ВЫВЕСТИ ТЕКУЩИЙ ДЕНЬ
+ N A,R S A=$S("67"[$$WEEKEND^%ZAPM.bs.BSsFUNR(0,CD):"S3",1:"S1")
+    w "<TR><td CLASS="_A_"><p align=center><B>"_$ZD(CD,3)_"</B></p></TD>"
+    S RR="",R=$$REQ(CD) I R S BSLABEL="CDAYB^~BSvdaSTAT",BSCDAY=CD S RR="<b><A HREF='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"' target='Stat2'>"_$$REQ(CD)_"</A></b>"
+    w "<td CLASS=S3>"_RR_"</td>"
+    w "<td CLASS="_A_">"_$$DIAG()_"</td></tr>"
+ Q
+DATEUSA(DAY1) Q $E(DAY1,5,6)_"/"_$E(DAY1,7,8)_"/"_$E(DAY1,1,4)
+REQ(H) S Req=0 I '$D(@BDS@(H)) Q Req
+ S T="" F  S T=$O(@BDS@(H,T)) Q:T=""  S Req=Req+$$REQU(H,T)
+ Q Req
+REQU(H,T)        I $D(BSchkU),$g(BSnewPR)'="*",$G(@BDS@(H,T,"U"))'=$g(BSnewPR) Q 0
+ I $D(BSchkI),$g(BSipF)'="*",$G(@BDS@(H,T,"S"))'[BSipF Q 0
+ I $D(BSchkN),$g(BSipFN)'="*",$G(@BDS@(H,T,"S"))'[BSipFN Q 0
+ I '$D(BSapp) Q 1
+ I BSapp="*" Q 1
+ I $E(BSapp,1,2)="*S",$E($G(@BDS@(H,T,"A")),1,12)["Sess" Q 1
+ I $G(@BDS@(H,T,"A"))="" Q 0
+ I ("@"_$G(@BDS@(H,T,"A")))'[("@"_$P(BSapp,"*")) Q 0
+REQ1 Q 1
+ 
+DIAG() N D s nachRED=$ZHEX("11"),nachGREEN=$ZHEX("ee"),D="",step=3 //???????
+ I Req>100 S Req=100
+ f a=1:1:Req d
+  .S D=D_"<font style=background:#"_$ZHEX(nachRED)_$ZHEX(nachGREEN)_"00>&nbsp</font>"
+  .s nachRED=(nachRED+step)
+  .s nachGREEN=(nachGREEN-step)    
+ Q D
+ 
+PROK //ПРОКАЧКА
+  D mainvar
+  S II="" F  S II=$O(@BDS@(II)) Q:II=""  S I="" F  S I=$O(@BDS@(II,I)) Q:I=""  D
+  .I I'[":" M @BDS@(II,$ZT($P(I,".."),1)_".."_$P(I,"..",2))=@BDS@(II,I) K @BDS@(II,I) W "."
+ Q

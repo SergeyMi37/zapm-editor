@@ -1,0 +1,41 @@
+ROUTINE %ZAPM.bs.BSpgWEMSM
+TKWEMSM	;PG&A,TK-IMAIL,1.1,SMTP UTILITY;20AUG97  16:21 [ 12/18/97  10:29 AM ];14AUG2003  14:02;;17AUG99  11:05
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	Q
+	;
+SMAIL	; f-from,t-to,d()-data,s-subject,p-reply to
+	; optional (recall)
+	;
+ N CON S TKWEM="^%ZAPM.bs.BSpgWEMM" I $G(^%ZAPM.bs.BSpgWEMM("DATABASE"))]"" X ^("DATABASE")
+ D INIT^%ZAPM.bs.BSpgWEMM,TDATE^%ZAPM.bs.BSpgWEMM($H) S HOST=$G(@TKWEM@("HOST"))
+	L +MCONNECT S (CON,@TKWEM@("CONNECT"))=$G(@TKWEM@("CONNECT"))+1 L -MCONNECT
+	S:f'["<" f="<"_f_">" s:t'["<" t="<"_t_">" s:p'["<" p="<"_p_">"
+	S @TKWEM@("IN",-CON,1)="HELO "_HOST,^(2)="MAIL FROM: "_$TR(f,LC,UP),^(3)="RCPT TO: "_$TR(t,LC,UP),^(4)="DATA",^(5)="QUIT" I $G(recall)]"" S ^(6)=recall
+	S ^(4,"DATA",1)="From: "_f,^(2)="Reply-To: "_p,^(3)="Subject: "_s
+	S ^(4)="Date: "_DTMA,^(5)="Message-ID: <"_CON_">",^(6)="MIME-Version: 1.0"
+	S ^(7)="Content-Type: text/plain",^(8)=""
+	S a="" D
+	. I $E($G(d))="^" S a=.03 f i=9:1 s a=$o(@d@(a)) q:a=""  s @TKWEM@("IN",-CON,4,"DATA",i)=^(a)
+	. e  f i=9:1 s a=$O(d(a)) q:a=""  s ^(i)=d(a)
+	S C=CON*100+5,b=t S:b["<" b=$P($P(b,"<",2),">") S b=$TR(b,LC_$S(b'["""":" ",1:""),UP),d=$P(b,"@",2),b=$P(b,"@") S:b="" b="??" I d]"",$D(@TKWEM@("HOST",d)) S d=""
+	I d="" S:$D(@TKWEM@("USER",b)) b=^(b)
+	S SZ=0 F J=1:1:i-1 S SZ=SZ+$L($G(@TKWEM@("IN",-CON,4,"DATA",J)))
+	S @TKWEM@("IN",-CON,4,"DATA")=SZ
+	G RELAY:d]""
+	M @TKWEM@("MB",b,C)=@TKWEM@("IN",-CON,4,"DATA") S @TKWEM@("MB",b,C)=SZ
+	I $G(recall) S ERR="" X recall
+	Q
+	;
+RELAY	S:f["<" f=$P($P(f,"<",2),">")
+	S @TKWEM@("RELAY",d,b,CON)=f M @TKWEM@("RELAY",d,b,CON,"DATA")=@TKWEM@("IN",-CON,4,"DATA") S:$G(recall)]"" @TKWEM@("RELAY",d,b,CON,"recall")=recall
+ L +^%ZAPM.bs.BSpgWEMMR:3 I  J ^%ZAPM.bs.BSpgWEMMR L -^%ZAPM.bs.BSpgWEMMR
+	Q
+	;
+	;
+T	S f="<mark@laptop>"
+	S t="<support@laptop>"
+	S p="<master@laptop>"
+	S s="Just a test mail message"
+	S d(1)="This is a simple test message"
+	D SMAIL Q

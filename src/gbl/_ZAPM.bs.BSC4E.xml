@@ -1,0 +1,793 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+<Global>
+<Node><Sub>^%ZAPM.bs.BSC4E</Sub>
+<Data>BaSe MsW @ТИПОВЫЕ БАЗЫ ДАННЫХ@@</Data>
+<Node><Sub>COUNT</Sub>
+<Data>cтатистический счетчик@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@7@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@идентификатор сайта</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@1;6;33;43@@@@@1@@@IDsite@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>5@1@2@20@@@@@1@2;6;35;42@@@@@IP@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>5@21@2@53@@@@@2@1;6;33;43@@@@@2@@@ip</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>7@1@2@20@@@@@1@2;6;35;42@@@@@счетчик@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>7@21@2@53@@@@@2@1;6;33;43@@@@@3@@@count@@</Data>
+</Node>
+</Node>
+<Node><Sub>DSN</Sub>
+<Data>Создана B4I 2002-01-23</Data>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58847,80148</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^[&quot;%SYS&quot;]uCOUNT</Data>
+<Node><Sub>1</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ сайта@1,70@@@1 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ сайта@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ @1,70@@@2 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ @@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ @1,70@@@3 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ @@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ BSiD@1,70@@@4 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ BSiD@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58847,80148,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>1,1@1@1@13@-1@-1@1@1@</Data>
+</Node>
+</Node>
+<Node><Sub>CSS</Sub>
+<Data>HELP:таблица каскадных стилей@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@2@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@описание стиля</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@2;6;30;43@@@@@@@описание стиля@Styles@@@1</Data>
+</Node>
+</Node>
+<Node><Sub>B4I</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>Compile</Sub>
+<Data>OK 12:04:03 2002-04-01</Data>
+</Node>
+<Node><Sub>DSN</Sub>
+<Data>Создана B4I 2002-04-01</Data>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58896,57818</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^[&quot;%SYS&quot;]%BSC4CSS</Data>
+<Node><Sub>1</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ BSiD@1,70@@@1 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ BSiD@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58896,57818,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>1,1@1@1@27@-1@-1@1@1@</Data>
+</Node>
+</Node>
+<Node><Sub>CfgPar</Sub>
+<Data>Опции Конфигуратора параметров@@@@@1@1@1@1@22@80@1@@1@1@@1@@2,1@1@@@@@@@@3@5@@1;6;35;44@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@1@13@@@@@1@2;6;35;40@@@@@ Value (DFLT)</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@14@1@10@@@@@1@2;6;30;41@@@@@ Type@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>1@24@1@10@@@@@1@2;6;30;41@@@@@Atribute@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>1@34@1@35@@@@@1@2;6;33;40@@@@@ ОПИСАНИЕ@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>1@69@1@9@@@@@1@2;6;30;41@@@@@ name@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>2@1@1@13@@@@@1@2;6;35;40@@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>2@14@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>2@24@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>2@34@1@35@@@@@1@2;6;33;40@@@@@ Опции Конфигуратора параметров@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>2@69@1@9@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@1@13@@@@@1@2;6;35;40@@@@@1</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@14@1@10@@@@@1@2;6;32;40@@@@@checkbox@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>3@24@1@10@@@@@1@2;6;32;40@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>3@34@1@35@@@@@1@2;6;33;40@@@@@сортировка по возрастанию имен@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>3@69@1@9@@@@@1@2;6;32;40@@@@@Sort1@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58823,63629,MSW</Data>
+</Node>
+<Node><Sub>OPT</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>3,5@2@1@13@-1@-1@3@69@Sort1</Data>
+</Node>
+</Node>
+<Node><Sub>CfgPro</Sub>
+<Data>Опции Конфигуратора проектов@@1@@@1@1@1@1@22@80@1@@1@1@@1@@2,1@1@@@@@@@@4@5@@1;6;35;44@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@1@13@@@@@1@2;6;35;40@@@@@ Value (DFLT)</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@14@1@10@@@@@1@2;6;30;41@@@@@ Type@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>1@24@1@10@@@@@1@2;6;30;41@@@@@Atribute@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>1@34@1@35@@@@@1@2;6;33;40@@@@@ ОПИСАНИЕ@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>1@69@1@9@@@@@1@2;6;30;41@@@@@ name@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>2@1@1@13@@@@@1@2;6;35;40@@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>2@14@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>2@24@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>2@34@1@35@@@@@1@2;6;33;40@@@@@ Опции Конфигуратора проектов@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>2@69@1@9@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@1@13@@@@@1@2;6;35;40@@@@@1</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@14@1@10@@@@@1@2;6;32;40@@@@@checkbox@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>3@24@1@10@@@@@1@2;6;32;40@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>3@34@1@35@@@@@1@2;6;33;40@@@@@сортировка по возрастанию имен@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>3@69@1@9@@@@@1@2;6;32;40@@@@@Sort1@</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>4@1@1@13@@@@@1@2;6;35;40@@1@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>4@14@1@10@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>4@24@1@10@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>4@34@1@35@@@@@1@2;6;33;40@@1@@@@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>4@69@1@9@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58831,63268,MSW</Data>
+</Node>
+<Node><Sub>OPT</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>3,3@2@1@13@-1@-1@3@24@</Data>
+</Node>
+</Node>
+<Node><Sub>CfgRou</Sub>
+<Data>Опции Конфигуратора программ@@@@@1@1@1@1@22@80@1@@1@1@@1@@2,1@1@@@@@@@@4@5@@1;6;35;44@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@1@13@@@@@1@2;6;35;40@@@@@ Value (DFLT)</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@14@1@10@@@@@1@2;6;30;41@@@@@ Type@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>1@24@1@10@@@@@1@2;6;30;41@@@@@Atribute@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>1@34@1@35@@@@@1@2;6;33;40@@@@@ ОПИСАНИЕ@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>1@69@1@9@@@@@1@2;6;30;41@@@@@ name@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>2@1@1@13@@@@@1@2;6;35;40@@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>2@14@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>2@24@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>2@34@1@35@@@@@1@2;6;33;40@@@@@ Опции Конфигуратора программ@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>2@69@1@9@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@1@13@@@@@1@2;6;35;40@@@@@1</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@14@1@10@@@@@1@2;6;32;40@@@@@checkbox@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>3@24@1@10@@@@@1@2;6;32;40@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>3@34@1@35@@@@@1@2;6;33;40@@@@@сортировка по возрастанию имен@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>3@69@1@9@@@@@1@2;6;32;40@@@@@Sort1@</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>4@1@1@13@@@@@1@2;6;35;40@@1@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>4@14@1@10@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>4@24@1@10@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>4@34@1@35@@@@@1@2;6;33;40@@1@@@@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>4@69@1@9@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58831,63325,MSW</Data>
+</Node>
+<Node><Sub>OPT</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>4,1@2@1@13@-1@-1@4@1@</Data>
+</Node>
+</Node>
+<Node><Sub>CfgTab</Sub>
+<Data>Опции Конфигуратора таблиц@@@@@1@1@1@1@22@80@1@@1@1@@1@@2,1@1@@@@@@@@4@5@@1;6;35;44@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@1@13@@@@@1@2;6;35;40@@@@@ Value (DFLT)</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@14@1@10@@@@@1@2;6;30;41@@@@@ Type@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>1@24@1@10@@@@@1@2;6;30;41@@@@@Atribute@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>1@34@1@35@@@@@1@2;6;33;40@@@@@ ОПИСАНИЕ@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>1@69@1@9@@@@@1@2;6;30;41@@@@@ name@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>2@1@1@13@@@@@1@2;6;35;40@@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>2@14@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>2@24@1@10@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>2@34@1@35@@@@@1@2;6;33;40@@@@@ Опции Конфигуратора таблиц@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>2@69@1@9@@@@@1@2;6;30;41@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@1@13@@@@@1@2;6;35;40@@@@@1</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@14@1@10@@@@@1@2;6;32;40@@@@@checkbox@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>3@24@1@10@@@@@1@2;6;32;40@@@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>3@34@1@35@@@@@1@2;6;33;40@@@@@сортировка по возрастанию имен@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>3@69@1@9@@@@@1@2;6;32;40@@@@@Sort1@</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>4@1@1@13@@@@@1@2;6;35;40@@1@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>4@14@1@10@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>4@24@1@10@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+<Node><Sub>4</Sub>
+<Data>4@34@1@35@@@@@1@2;6;33;40@@1@@@@</Data>
+</Node>
+<Node><Sub>5</Sub>
+<Data>4@69@1@9@@@@@1@2;6;32;40@@1@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58831,63360,MSW</Data>
+</Node>
+<Node><Sub>OPT</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>4,5@2@1@13@-1@-1@4@69@</Data>
+</Node>
+</Node>
+<Node><Sub>Content</Sub>
+<Data>HELP:Содержание документации@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@6@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@краткое описание пункта меню</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@2;6;30;43@@@@@@@краткое описание пункта меню@Descr@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>5@1@1@20@@@@@1@2;6;35;42@@@@@ссылка на ^[^[&quot;%SYS&quot;]]]]]]]]]PART(TABLE):ot:do:&lt;pre&gt;</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>5@21@1@53@@@@@2@2;6;34;43@@@@@@@ссылка на ^[^[&quot;%SYS&quot;]]]]]]]]]PART(TABLE):ot:do:&lt;pre&gt;@Refer@</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>6@1@1@20@@@@@1@2;6;35;42@@@@@подробное описание пункта меню</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>6@21@1@53@@@@@2@2;6;34;43@@@@@@@подробное описание пункта меню@FDescr@</Data>
+</Node>
+</Node>
+<Node><Sub>5</Sub>
+<Node><Sub>1</Sub>
+<Data>7@1@1@20@@@@@1@2;6;35;42@@@@@сам HTML-текст</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>7@21@1@53@@@@@2@2;6;34;43@@@@@@@сам HTML-текст@Html@@@1</Data>
+</Node>
+</Node>
+<Node><Sub>6</Sub>
+<Node><Sub>1</Sub>
+<Data>8@1@1@20@@@@@1@2;6;35;42@@@@@Ключевые слова через ;</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>8@21@1@53@@@@@2@2;6;34;43@@@@@@@Ключевые слова через ;@KeyWords@</Data>
+</Node>
+</Node>
+<Node><Sub>B4I</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>Compile</Sub>
+<Data>OK 12:19:39 2002-04-01</Data>
+</Node>
+<Node><Sub>DSN</Sub>
+<Data>Создана B4I 2002-04-01</Data>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58847,80178</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^RBB.NewProj2.Content</Data>
+<Node><Sub>1</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ BSiD@1,70@@@1 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ BSiD@@@@@@0@BSiD</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58847,80178,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>6,2@1@1@27@-1@-1@8@21@</Data>
+</Node>
+</Node>
+<Node><Sub>EMPTY</Sub>
+<Data>взять за основу пустую@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@2@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@описание поля</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@2;6;30;43@@@@@@@@F1@</Data>
+</Node>
+</Node>
+<Node><Sub>Compile</Sub>
+<Data>OK 15:41:22 2002-01-27</Data>
+</Node>
+<Node><Sub>DSN</Sub>
+<Data>Создана B4I 2002-01-27</Data>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58927,53749</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^[&quot;%SYS&quot;]uEMPTY</Data>
+<Node><Sub>1</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ BSiD@1,70@@@1 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ BSiD@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58927,53749,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>2,2@1@1@13@-1@-1@3@21@</Data>
+</Node>
+</Node>
+<Node><Sub>GUESTBOOK</Sub>
+<Data>гостевая книга@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@7@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@идентификатор сайта</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@1;6;33;43@@@@@@@@NAME@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>5@1@2@20@@@@@1@2;6;35;42@@@@@IP@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>5@21@2@53@@@@@2@1;6;33;43@@@@@@@@EMAIL</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>7@1@2@20@@@@@1@2;6;35;42@@@@@счетчик@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>7@21@2@53@@@@@2@1;6;33;43@@@@@@@@PHONE@@</Data>
+</Node>
+</Node>
+<Node><Sub>5</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@1;6;33;43@@@@@@@@TEXT@</Data>
+</Node>
+</Node>
+<Node><Sub>DSN</Sub>
+<Data>Создана B4I 2002-01-23</Data>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58847,80206</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^[&quot;%SYS&quot;]uGUESTBOOK</Data>
+<Node><Sub>1</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ BSiD@1,70@@@1 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ BSiD@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58847,80206,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>1,1@1@1@13@-1@-1@1@1@</Data>
+</Node>
+</Node>
+<Node><Sub>PRO</Sub>
+<Data>проекты@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@2@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@     ОПИСАНИЕ</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@2@2;6;30;43@@@@@@@@REM@</Data>
+</Node>
+</Node>
+<Node><Sub>FTR</Sub>
+<Node><Sub>1</Sub>
+<Node><Sub>2</Sub>
+<Data>S d1=&quot; ИМЯ ПРОЕКТА: &quot;_$G(k1,&quot;?&quot;)</Data>
+<Node><Sub>1</Sub>
+<Data>&quot; ИМЯ ПРОЕКТА: &quot;_$G(k1,&quot;?&quot;)</Data>
+</Node>
+</Node>
+</Node>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58847,82418</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^[&quot;%SYS&quot;]%BSC4PRO</Data>
+<Node><Sub>1</Sub>
+<Data>49@@64@@НОВЫЙ ПАРАМЕТР@1,70@@@ 1-Й ИНДЕКСНЫЙ@2;6;30;42@@@@@Введите ИМЯ ПАРАМЕТРА@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58847,82418,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>1,1@1@1@27@-1@-1@1@1@</Data>
+</Node>
+</Node>
+<Node><Sub>ROU</Sub>
+<Data>программы@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@8@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@1@20@@@@@1@2;6;35;42@@@@@      КОМЕНТАРИЙ</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@1@53@@@@@2@2;6;34;43@@@@@@@@REM@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>4@1@3@20@@@@@1@2;6;35;42@@@@@ КЛИЕНТСКИЙ МОДУЛЬ   DHTML,JavaScript@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>4@21@3@53@@@@@2@2;6;34;43@@@@@@@@HTM@</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>7@1@1@20@@@@@1@2;6;35;42@@@@@      ПРОГРАММА@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>7@21@1@53@@@@@2@2;6;34;43@@@@@@@@ROU</Data>
+</Node>
+</Node>
+<Node><Sub>5</Sub>
+<Node><Sub>1</Sub>
+<Data>8@1@1@20@@@@@1@2;6;35;42@@@@@      СТАТУС@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>8@21@1@53@@@@@2@2;6;34;43@@@@@@@@STA</Data>
+</Node>
+</Node>
+<Node><Sub>6</Sub>
+<Node><Sub>1</Sub>
+<Data>9@1@1@20@@@@@1@2;6;35;42@@@@@       ФЛАГ@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>9@21@1@53@@@@@2@2;6;34;43@@@@@@@@FLG</Data>
+</Node>
+</Node>
+<Node><Sub>7</Sub>
+<Node><Sub>1</Sub>
+<Data>10@1@3@20@@@@@1@2;6;35;42@@@@@                     СЕРВЕРНЫЙ МОДУЛЬ     SQL, COS@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>10@21@3@53@@@@@2@2;6;34;43@@@@@@@@COS@@</Data>
+</Node>
+</Node>
+<Node><Sub>8</Sub>
+<Node><Sub>1</Sub>
+<Data>13@1@1@20@@@@@1@2;6;35;42@@@@@    ReMastering@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>13@21@1@53@@@@@2@2;6;34;43@@@@@@@@MST@@</Data>
+</Node>
+</Node>
+<Node><Sub>FTR</Sub>
+<Node><Sub>1</Sub>
+<Node><Sub>2</Sub>
+<Data>S d1=&quot; ID ПРОГРАММНОГО МОДУЛЯ: &quot;_$G(k1,&quot;?&quot;)</Data>
+<Node><Sub>1</Sub>
+<Data>&quot; ID ПРОГРАММНОГО МОДУЛЯ: &quot;_$G(k1,&quot;?&quot;)</Data>
+</Node>
+</Node>
+</Node>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58863,56770</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^[&quot;%SYS&quot;]%BSC4ROU</Data>
+<Node><Sub>1</Sub>
+<Data>49@@64@@НОВЫЙ МОДУЛЬ@1,70@@@ 1-Й ИНДЕКСНЫЙ@2;6;30;42@@@@@Введите Код МОДУЛЯ@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58863,56770,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>2,2@1@1@13@-1@-1@3@21@</Data>
+</Node>
+</Node>
+<Node><Sub>Tree</Sub>
+<Data>HELP:дерево меню@@@@@1@1@1@1@22@80@1@@1@@@2@@@1@@@@@1@@@4@2@@@@@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@2@20@@@@@1@2;6;35;42@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@21@2@53@@@@0@1@2;6;35;42@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>3@1@2@20@@@@@1@2;6;35;42@@@@@первый уровень</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>3@21@2@53@@@@@1@2;6;30;43@@@@@1@@первый уровень@U1@</Data>
+</Node>
+</Node>
+<Node><Sub>3</Sub>
+<Node><Sub>1</Sub>
+<Data>5@1@1@20@@@@@1@2;6;35;42@@@@@второй уровень</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>5@21@1@53@@@@@1@2;6;34;43@@@@@2@@второй уровень@U2@</Data>
+</Node>
+</Node>
+<Node><Sub>4</Sub>
+<Node><Sub>1</Sub>
+<Data>6@1@1@20@@@@@1@2;6;35;42@@@@@описание </Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>6@21@1@53@@@@@2@2;6;34;43@@@@@@@описание @zero@</Data>
+</Node>
+</Node>
+<Node><Sub>B4I</Sub>
+<Data>1</Data>
+</Node>
+<Node><Sub>Compile</Sub>
+<Data>OK 15:48:45 2002-03-31</Data>
+</Node>
+<Node><Sub>DSN</Sub>
+<Data>Создана B4I 2002-03-31</Data>
+</Node>
+<Node><Sub>Free</Sub>
+<Data>58847,80178</Data>
+</Node>
+<Node><Sub>KEY</Sub>
+<Data>^BSC4.Doc.Tree</Data>
+<Node><Sub>1</Sub>
+<Data><![CDATA[@@@@НОВОЕ ЗНАЧЕНИЕ первый уровень@1,70@@@1 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ первый уровень@@первый уровень@@@@@U1]]></Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data><![CDATA[@@@@НОВОЕ ЗНАЧЕНИЕ второй уровень@1,70@@@2 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ второй уровень@@второй уровень@@@@@U2]]></Data>
+</Node>
+<Node><Sub>3</Sub>
+<Data>@@@@НОВОЕ ЗНАЧЕНИЕ BSiD@1,70@@@3 ИНДЕКС@2;6;30;42@@@@@ВВЕДИТЕ НОВОЕ ЗНАЧЕНИЕ BSiD@@@@@@0@BSiD</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>58847,80178,MSW</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>1,1@1@1@27@-1@-1@1@1@</Data>
+</Node>
+</Node>
+</Node>
+</Global>
+</Export>

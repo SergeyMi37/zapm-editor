@@ -1,0 +1,132 @@
+ROUTINE %ZAPM.bs.BSzlU
+%BSzlU ;Загрузка условий для списка  (А.Тимофеев) ; 14:57   20.04.2000
+ G LOAD1
+ ;...G ^%ZAPM.bs.BSzlR ... G ^SLr12 ... G ^%ZAPM.bs.BSzlT
+LOAD(%1,%2,%3) ;Выполнение с параметрами (%1- имя списка, %2'="" - выполнение без загрузки запросов на ключи !, %3'="" - как пакет !)
+LOAD1 K ^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"ul") S PACET=0  ;Загрузка условий
+ ;mas- БД условий, mas1- БД запросов, mas2- БД боковин, mas3 - буфер (^%ZAPM.bs.BSbufB("PO"_$G(%BS(3),$P)_$J_"u"))
+ ;выходные переменные: C,G1(C),G2(C),nf,na
+ N i,i1,i2,i3,i4,i5,C1,STOP,unL,BSr,BSt,cHOSe
+ S mas=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SLm1"))),mas1=$$KBD^%ZAPM.bs.BSF12($NA(^%ZAPM.bs.BSZ("SVz1"))),mas3="^%ZAPM.bs.BSbufB(""PO""_$G(%BS(3),$P)_$J_""ul"")"
+ S mas4="^%ZAPM.bs.BSbufB(""fTS""_$G(%BS(3),$P)_$J_""u"")",mas5="^%ZAPM.bs.BSbufB(""W""_$G(%BS(3),$P)_$J_""u"")"     ;Буфера
+ S %zT=$ZT,$ZT="ERROR" S @mas3="Буфер насчета списка"
+ I $G(%1)'="" S i=%1 S:$G(%2)'="" unL=1 S:$G(%3)'="" PACET=1 G 1
+ K C,G1,G2 S i=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SLa1)","1#2#2",2)
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S $ZT=%zT Q
+ 
+1 ;Загрузка общих условий
+ S na=$P(i,"~") I na="" D ErrMsg^%ZAPM.bs.BSXfun("НЕ ВЫБРАНА АНАЛИТИЧЕСКАЯ ФОРМА !!") S $ZT=%zT Q
+ S nf=$P(na,"#")
+ I '$D(@mas@(nf,na))!('$D(@mas@(nf,0))) D ErrMsg^%ZAPM.bs.BSXfun("НЕТ УСЛОВИЙ НА ФОРМУ !! "_$NA(@mas@(nf,na))) S $ZT=%zT Q
+ S zp=$G(@mas@(nf,na,"5,4")) I zp="" D ErrMsg^%ZAPM.bs.BSXfun("НЕТ УСЛОВИЯ НА ЗАПРОС !!") S $ZT=%zT Q
+ I '$D(@mas1@(zp)) D ErrMsg^%ZAPM.bs.BSXfun("ЗАПРОСА "_zp_" НЕТ") S $ZT=%zT Q
+2 ;Загрузка запросов в буфер
+ F i1=0:1:11 S i2="k"_i1,i3=i1+2 D
+ .F i4=2:1:7 S i5=i3_","_i4 I $G(@mas1@(zp,"O",i5))'="" S @mas3@("zp",i2,i4)=$G(@mas1@(zp,"O",i5))
+ S i1="",Per="" F  S i1=$O(@mas3@("zp",i1)) Q:i1=""  D
+ .I $G(@mas3@("zp",i1,2))="Y" S Per="Y" Q
+ G:$G(unL)=1 7    ;Без загрузки запросов (!!!)
+ 
+3 ;Загрузка периодов сравнения
+ S STOP="" I Per="" G 4
+ S i=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SVz0)","4#1#20",2,"","PRED^%ZAPM.bs.BSzlU")
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S $ZT=%zT Q
+ S C=$P(i,"~",2) I C="" D ErrMsg^%ZAPM.bs.BSXfun("ОТКАЗ ОТ ЗАПРОСА !!") S $ZT=%zT Q
+ F C1=1:1:C S G1(C1)=$P(i,"~",(2*C1+1)),G2(C1)=$P(i,"~",(2*C1+2))
+ I G1(C)=""!(G2(C)="") K G1,G2
+ 
+4 ;Загрузка запросов на ключи
+ S @mas3@("zp")="Условия на ключи БД"
+ S (i,STOP)="" F  S i=$O(@mas3@("zp",i)) Q:i=""  S i1=$E(i,2,3) D  G:STOP=1 3
+ .I $G(@mas3@("zp",i,3))="Y" I $D(@mas1@(zp,i1)) D 5
+ G:STOP=1 3
+41 ;Условие на сортировку
+ S (srt(1),srt(2),srt(3))=0 I $G(@mas@(nf,na,"17,4"))'="" I $$NOCHANGE^%ZAPM.bs.BSzmOL($G(@mas@(nf,na,"17,4"))) G 7
+ S A=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SLs1)",2,2,"~","42^%ZAPM.bs.BSzlU")
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 G 7        ;Конкретно на условия по списку
+ S srt(1)=$P(A,"~") S:srt(1)="" srt(1)=0
+ S srt(2)=$P(A,"~",2) S:srt(2)="" srt(2)=0
+ S srt(3)=$P(A,"~",3) S:srt(3)="" srt(3)=0
+ G 7
+42 ;Копирование данных из БД по запросу на сортировку
+ S $P(@mas4@(4,4),"@",15)=$P($G(@mas@(nf,na,"17,4")),"!")
+ S $P(@mas4@(6,4),"@",15)=$P($G(@mas@(nf,na,"17,4")),"!",2)
+ S $P(@mas4@(8,4),"@",15)=$P($G(@mas@(nf,na,"17,4")),"!",3)
+ Q
+ 
+5 ;Загрузка стандартного запроса на ключ
+ N adr,tab,ind,ind1
+ S A=$$LOAD^%ZAPM.bs.BSscrF("^%ZAPM.bs.BSZ(SVz3)",2,1,"","6^%ZAPM.bs.BSzlU") Q:A=""
+ S adr=$P(%BS("Tmp","LastTabl"),"@"),tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S STOP=1 Q
+ I $P(adr,",")>3 S ind=$P(adr,","),ind1=$P(adr,",",2) I $D(@mas5@(ind,ind1)) D  Q
+ .S @mas3@("zp",i,1)=$G(@mas5@(ind,1))
+ .S @mas3@("zp",i,6)=$G(@mas5@(ind,2))
+ S @mas3@("zp",i,4)=$G(@mas5@(3,1))
+ S @mas3@("zp",i,5)=$G(@mas5@(3,2))
+ I $E(i,2,3)<10 S @mas3@("zp",i,6)=$$LOGIKA(i)
+ Q
+LOGIKA(I) I $G(@mas5@(3,1))=""!($G(@mas5@(3,2))="") Q "$D("_I_")"
+ Q I_"'<"_$G(@mas5@(3,1))_","_i_"'>"_$G(@mas5@(3,2))
+ 
+6 ;Копирование данных из БД по запросу на ключ
+ S $P(@mas4@(1,1),"@",15)=$G(@mas1@(zp,i1,"1,2"))
+ S $P(@mas4@(3,1),"@",15)=$G(@mas3@("zp",i,4))
+ S $P(@mas4@(3,2),"@",15)=$G(@mas3@("zp",i,5))
+ F i2=5:1:65 S i3=(i2-2)_",1",i4=(i2-2)_",2" D
+ .S $P(@mas4@(i2,1),"@",15)=$G(@mas1@(zp,i1,i3),"")
+ .S $P(@mas4@(i2,2),"@",15)=$G(@mas1@(zp,i1,i4),"")
+ Q
+ 
+7 ;Загрузка информации по шаблону
+ K @mas3@("tab") S @mas3@("tab")="Элементы шаблона"
+ F i=2,4,7:1:10,13,17:1:19 S i1=i_","_4 S @mas3@("tab",i)=$G(@mas@(nf,na,i1))
+ S:$G(srt(1))'=0 @mas3@("tab",17)=$G(srt(1))_"!"_$G(srt(2))_"!"_$G(srt(3))
+ S @mas3@("tab",3)=$G(@mas@(nf,na,"pgs"))
+ I $G(@mas3@("tab",3))=""!($G(^(4))="")!($G(^(8))="")!($G(^(13))="") G STOP
+ 
+ K @mas3@("tabE") S @mas3@("tabE")="Элементы шаблона ДОПОЛНИТЕЛЬНЫЕ (MSW)"
+ F i=1,6,12,16,21,22,29 S i1=i_","_4 I $G(@mas@(nf,na,i1))'="" S @mas3@("tabE",i)=@mas@(nf,na,i1)
+ S @mas3@("tabE",20)=$G(@mas@(nf,na,"sec"))
+ ;ПАРАМЕТРЫ ВЫДЕЛЕНИЯ
+ F i=1:1:3 I $G(vdl(i))'="" S vdl=1 D Copy^%ZAPM.bs.BSF8("vdl",$NA(@mas3@("tabE",17))) Q
+ 
+8 ;Загрузка условий на колонки
+ N masT,kol,str,dan,EROS
+ K @mas3@("bk") S @mas3@("bk")="Условия на колонки"
+ S masT=$G(@mas@(nf,na,"pgs")),str=$G(^("11,4")),kol=$G(^("13,4"))
+ ;Выбор номеров колонок по именам хранения
+ K nmk D 9 Q:$D(EROS)
+ S kol1="" F i=1:1 S kol2=$P(kol,",",i) Q:kol2=""  D 91
+ S $E(kol1,1)="" F i=1:1 S kol2=$P(kol1,",",i) Q:kol2=""  D 10 S kol=kol1,@mas3@("tab",13)=kol
+ K nmk,@mas3@("r"),@mas3@("n") S @mas3@("r")="Программа насчета"
+ G ^%ZAPM.bs.BSzlR ;... ^SLr12 ... G ^%ZAPM.bs.BSzlT
+o S EROS=1 Q
+9 ;Выбор номеров колонок по именам в БД
+ N nmk1 S nmk1="" F  S nmk1=$O(@masT@(str,nmk1)) Q:'nmk1  D  Q:$D(EROS)
+ .S dan=$P($G(@masT@(str,nmk1)),"@",15) Q:dan=""
+ .I $P(dan,"~")="" D ErrMsg^%ZAPM.bs.BSXfun("ПУСТОЕ ИМЯ~ КОЛОНКИ N "_nmk1_" !!"),o Q
+ .I $D(nmk($P(dan,"~"))) D ErrMsg^%ZAPM.bs.BSXfun("НЕДОПУСТИМОЕ ДУБЛИРОВАНИЕ ИМЕН "_$P(dan,"~")_". В КОЛОНКАХ N "_nmk1_" и "_nmk($P(dan,"~"))_" !!"),o Q
+ .S nmk($P(dan,"~"))=nmk1
+ Q
+91 I $G(nmk(kol2))="" D ErrMsg^%ZAPM.bs.BSXfun("Нет КОЛОНКИ N "_kol2_" !!") Q
+ S kol1=kol1_","_$G(nmk(kol2)) Q
+ 
+10 ;Условия на колонки
+ S dan=$P($G(@masT@(str,kol2)),"@",15) Q:dan=""
+ I $P(dan,"~",3)=2 S @mas3@("bk",0,2)=$G(@mas3@("bk",0,2))_kol2_",",@mas3@("bk",2,kol2)=$P(dan,"~",2)_"#"_$P(dan,"~",4)_"#"_$P(dan,"~",5) Q
+ I dan'["~" S @mas3@("bk",0,1)=$G(@mas3@("bk",0,1))_kol2_",",@mas3@("bk",1,kol2)=dan_"#" Q
+ S @mas3@("bk",0,1)=$G(@mas3@("bk",0,1))_kol2_",",@mas3@("bk",1,kol2)=$P(dan,"~",2)_"#"_$P(dan,"~",4)_"#"_$P(dan,"~",5) Q
+ Q
+PRED S $P(@BSR@(BST),"@",41)="HISCOMP^%ZAPM.bs.BSzmOL(""SLComp"")" Q
+ERROR ;
+ I $ZE["<INRPT" D ErrMsg^%ZAPM.bs.BSXfun("ПРЕРВАНО С ТЕРМИНАЛА !!") S STOP=1,$ZT=%zT Q
+ I $ZE["<NOSYS"!($ZE["<NAMESPACE") D ErrMsg^%ZAPM.bs.BSXfun("НЕ ДОСТУПНА БАЗА ДАННЫХ !!") S $ZT=%zT Q
+ D ErrMsg^%ZAPM.bs.BSXfun("Ошибка ! "_$ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT)
+ Q
+STOP ;
+ S $ZT=%zT D ErrMsg^%ZAPM.bs.BSXfun("Некорректно сформулированы условия !!!") Q
+ ;D ErrMsg^%ZAPM.bs.BSXfun("ОТКАЗ ОТ ЗАПРОСА !!") S $ZT=%zT Q

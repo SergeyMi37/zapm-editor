@@ -1,0 +1,179 @@
+ROUTINE %ZAPM.bs.BSF3
+%BSF3 ;ПЕРЕНАСЧЕТ,ЛОГИЧЕСКИЙ КОНТРОЛЬ,ОКНА,ТАБ&КОМ ; 13:19   09.08.2000
+ Q
+FOR S VYC=$P($G(@BSR@(BST)),"@",18) I VYC="" S VYC=1
+ S se=$P(@$ZR,"@",28),ke=$P(@$ZR,"@",29)
+ S I=$S(VYC=1:"F ny=1:1:se F nx=1:1:ke",VYC=2:"F ny=se:-1:1 F nx=1:1:ke",VYC=3:"F ny=1:1:se F nx=ke:-1:1",1:"F ny=se:-1:1 F nx=ke:-1:1")
+ Q
+ ;ВЫЧИСЛЕНИЯ
+CALC Q:'$D(@BSR@(BST,"FCL"))
+ D L^%ZAPM.bs.BS3($NA(@BSR@(BST))) I 'LOC Q
+ D FOR S WA="",ls="ВычислениЯ" D WAITS^%ZAPM.bs.BSF2
+ S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSF3" N BsD
+ I '$P(@BSR@(BST),"@",32),VYC=1 S ny="",nx="" F  S ny=$O(@(BSR_"(BST,""FCL"",ny)")) G:ny="" 6666 F  S nx=$O(@(BSR_"(BST,""FCL"",ny,nx)")) Q:nx=""  D CAL
+ X I_" D CAL"
+6666 S $ZT=$G(%zT) I '$D(BX) D U^%ZAPM.bs.BS3($NA(@BSR@(BST))) Q
+ I WAI D MED^%ZAPM.bs.BSF S:$D(BsD) $P(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)),"@",2)=1
+666 S do="I ""23""'[$P(@$ZR,""@"",7) D W^%ZAPM.bs.BSTM" D U^%ZAPM.bs.BS3($NA(@BSR@(BST)))
+66 I '$D(BX) D U^%ZAPM.bs.BS3($NA(@BSR@(BST))) Q
+ S iy=MY,ix=MX,MR=0,MY="" F  S MY=$O(BY(MY)) Q:MY=""  S MX="" F  S MX=$O(BX(MX)) Q:MX=""  I $D(@(BSR_"(BST,"_BY(MY)_","_BX(MX)_")")) X do
+ S MY=iy,MX=ix,MR=1 K iy,ix
+ Q
+CAL S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSF3" //добавил ловушку
+ Q:"2345"[$P(@(BSR_"(BST,ny,nx)"),"@",7)  X $G(WA) K d1 I $P(@$ZR,"@",7)?.N1",".N Q:'$D(@(BSR_"(BST,""FCL"","_$P(@$ZR,"@",7)_")"))  X $$TR(@$ZR,"^%ZAPM.bs.BSA","") G CAL1
+ X $$TR($G(@BSR@(BST,"FCL",ny,nx)),"^%ZAPM.bs.BSA","")
+CAL1 I $P($G(@BSR@(BST,ny,nx),"@@@@@@@@1"),"@",9)=1 S $P(^(nx),"@",15)=$S(d1["@":"<!.!ERROR!.!>",1:d1) Q
+ E  S ^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),ny,nx)=$G(d1),BsD=1
+ Q
+ERRO S ls=" Ошибка В вызванной Таблице " D O^%ZAPM.bs.BSF7 S ls=$ZE D O^%ZAPM.bs.BSF7 R *i:0,*i,*i S $ZT=$G(%zT) Q
+ERR S d1=" Ошибка: "_$S($ZE["<DIV":"DIVIDE",1:$ZE) W $$bel^%ZAPM.bs.BS3 Q:'$D(@(BSR_"(BST,ny,nx)"))
+ I $P(@$ZR,"@",9)=1,$D(d1) S $P(@$ZR,"@",15)=d1 K d1 Q
+ E  S ^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),ny,nx)=d1 K d1
+ Q
+ ;
+ ;ЛОГИКА
+COL Q:$P(B,"@",27)
+CALOGIC Q:'$D(@(BSR_"(BST,""COL"")"))  S ls="ЛОГИЧЕСКИЙ КОНТРОЛЬ "_$G(uzel)
+ D FOR,WAITS^%ZAPM.bs.BSF2 S lo=0,YES=0,Ny=ny,Nx=nx,%zT=$ZT,$ZT="PRO^%ZAPM.bs.BSF3"
+ I '$P(@(BSR_"(BST)"),"@",33) S ny="",nx="" F  S ny=$O(@(BSR_"(BST,""COL"",ny)")) G:ny="" LLLL F  S nx=$O(@(BSR_"(BST,""COL"",ny,nx)")) Q:nx=""  D LOG
+ X I_" D LOG"
+LLLL S $ZT=$G(%zT) I $D(uzel) D:lo LOGS^%ZAPM.bs.BSLOG Q  ;```D:lo LOGS^%ZAPM.bs.BSF6 Q
+ K ^%ZAPM.bs.BSbufB("LOGS"_$G(%BS(3),$P)_$J_$P($$ZU^%ZAPM.bs.BS3(1,0),",",2)_"u1")
+ I lo I '$E($P(B,"@",48),2) D LOB I YES D LOGS^%ZAPM.bs.BSLOG ;```D LOGS^%ZAPM.bs.BSF6
+ S do="I $P(@$ZR,""@"",12) D W^%ZAPM.bs.BSTM" G 66
+PRO I $ZE'["<PRO" S ls=$ZE D O^%ZAPM.bs.BSF7
+ S $ZT=$G(%zT) Q
+LOG Q:$P(@BSR@(BST,ny,nx),"@",13)=""  X WA S (d0,d,d1)=$S($P(@(BSR_"(BST,ny,nx)"),"@",9)=1:$P(^(nx),"@",15),1:$G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),ny,nx)))
+ ;```I $P(@(BSR_"(BST,ny,nx)"),"@",13) X $G(@(BSR_"(BST,""COL"","_$P(^(nx),"@",13)_")")) S:'$T lo=lo+1 S $P(@BSR@(BST,ny,nx),"@",11)=$S($T:"",1:1) Q:'$P(B,"@",48)  D:'$T VLOG($NA(@(BSR_"(BST,""COL"","_$P(^(nx),"@",13)_")"))) Q
+ ;```I $P(@(BSR_"(BST,ny,nx)"),"@",13)=0 X $G(@(BSR_"(BST,""COL"",ny,nx)")) S:'$T lo=lo+1 S $P(@BSR@(BST,ny,nx),"@",11)=$S($T:"",1:1) Q:'$P(B,"@",48)  D:'$T VLOG($NA(@(BSR_"(BST,""COL"",ny,nx)"))) Q
+ I $P(@(BSR_"(BST,ny,nx)"),"@",13) X $$TR($G(@(BSR_"(BST,""COL"","_$P(^(nx),"@",13)_")")),"^%ZAPM.bs.BSA","") S:'$T lo=lo+1 S $P(@BSR@(BST,ny,nx),"@",11)=$S($T:"",1:1) Q:'$E($P(B,"@",48),1)  D:'$T VLOG($NA(@(BSR_"(BST,""COL"","_$P(^(nx),"@",13)_")"))) Q
+ I $P(@(BSR_"(BST,ny,nx)"),"@",13)=0 X $$TR($G(@(BSR_"(BST,""COL"",ny,nx)")),"^%ZAPM.bs.BSA","") S:'$T lo=lo+1 S $P(@BSR@(BST,ny,nx),"@",11)=$S($T:"",1:1) Q:'$E($P(B,"@",48),1)  D:'$T VLOG($NA(@(BSR_"(BST,""COL"",ny,nx)"))) Q
+ Q
+LOB S ls=" Найдено "_lo_" ОШИБОК ! Будем СМОТРЕТЬ СПИСОК ЛОГИЧЕСКИХ НЕСООТВЕТСТВИЙ ? " W $$bel^%ZAPM.bs.BS3 D YESp^%ZAPM.bs.BSF Q
+VLOG(FL) ;ВЫЧИСЛЕНИЕ ДАННЫХ В КЛЕТКАХ
+ Q:'$D(@FL@(1))  N i,ii,iii,vi
+ S (iii,FL)=@$ZR
+ I FL["{" F i=2:1 Q:$P(FL,"{",i,i+1)=""  S ii=$P($P(FL,"{",i),"}") X "S vi=$$A^%ZAPM.bs.BSA("_ii_")" S iii=$$TR^%ZAPM.bs.BSsFUNM(iii,"{"_ii_"}",+vi)
+ I FL'=iii S ^%ZAPM.bs.BSbufB("VarLogS"_$G(%BS(3),$P)_$J_"u1",$NA(@BSR@(BST,ny,nx)))=iii,$P(@BSR@(BST,ny,nx),"@",11)=1
+ Q
+O S ls=" РЕЖИМ В ПРОЦЕССЕ ОТЛАДКИ " D O^%ZAPM.bs.BSF7 Q
+C R *R,*RR:0,*RR:0
+CW D RE^%ZAPM.bs.BSsBUF W $$atr^%ZAPM.bs.BS3(0) K COLO Q
+WIN1 ;ОТКРЫТИЕ ПСЕВДО-ОКНА
+WIND D SA^%ZAPM.bs.BSsBUF
+ W $$clr^%ZAPM.bs.BS3($G(COLO,3)),/ED(2) Q
+GLO S:$E($G(li))'="^" li="^" S ll="",ls=" Вводите ИМЯ Глобального МАССИВА :",%HIS="^%ZAPM.bs.BSbufB(""HISARREY"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.bs.BSTT I 'YES Q
+ I li="^" S YES=0 Q
+GL I li["~D" S GL="~D",YES=1 Q
+ S %zT=$ZT,$ZT="NGLO^%ZAPM.bs.BSF3" I '$D(@li)
+ S $ZT=$G(%zT),GL=li,YES=1 Q
+BUF D BU Q
+BU D ErrMsg^%ZAPM.bs.BSXfun("РЕЖИМ ОТМЕНЕН !!!")
+ Q
+SAVE S %Y1=1,%X1=1,%Y2=25,%X2=80 G 3^%ZAPM.bs.BSsBUF
+VB0 S $P(@(BSR_"(BST)"),"@",21)="",B=@$ZR K @(BSR_"(BST,""VST"")") Q
+VB1 D BU Q
+VS0 S $P(@(BSR_"(BST)"),"@",23)=1,B=@$ZR K @(BSR_"(BST,""STA"")") Q
+VS1 S $P(@(BSR_"(BST)"),"@",23)="",B=@$ZR Q
+ ;
+CMD S li="" I $P(BS,"@",14)=(ny_","_nx) S li=ny_","_nx,li=$G(@(BSR_"(BST,""CMD"","_li_")"),"???")
+ S ls=" Вводите / Корректируйте команду MSM (F1-Помощь)",ll="",%hlp="^%ZAPM.bs.BSHLP(H_CMD" D LE^%ZAPM.bs.BSTT I 'YES G QUIT
+ I li="" S $P(@(BSR_"(BST,ny,nx)"),"@",14)="" K @(BSR_"(BST,""CMD"",ny,nx)") G QUIT
+ E  S $P(@(BSR_"(BST,ny,nx)"),"@",14)=ny_","_nx,@(BSR_"(BST,""CMD"",ny,nx)")=li
+ S XEC=li I li?.N1",".N S XEC=@(BSR_"(BST,""CMD"","_li_")")
+ D command S $ZT=$G(%zT)
+QUIT Q
+XEC S XEC=$G(@(BSR_"(BST,""CMD"","_IYI_")")) D command S li=$G(li) Q
+command S r=$G(BSR),t=$G(BST) D SA^%ZAPM.bs.BSsBUF,ZR,OP^%ZAPM.bs.BSF4,UCIS,comm,UCIR,RE^%ZAPM.bs.BSsBUF,CL^%ZAPM.bs.BSF4 Q
+comm D SI^%ZAPM.bs.BSN,NNN^%ZAPM.bs.BSN(",r,t,nx,ny,XEC,d") S %zT=$ZT,$ZT="ERCMD" X XEC U $I::%BS(32)
+ECMD S $ZT=$G(%zT) G REBUF
+REBUF D QQQ^%ZAPM.bs.BSN(",r,t,nx,ny,li,R1") Q
+UCIS S uci=$$ZU^%ZAPM.bs.BS3(0) Q
+UCIR Q:$G(uci)=$$ZU^%ZAPM.bs.BS3(0)   q:'$d(uci)  //$G(
+  D %GU^%ZAPM.bs.BSF4 H:uci'=$$ZU^%ZAPM.bs.BS3(0)  
+  Q
+ZR Q:r=""!(t="")!('$D(ny))!('$D(nx))  I $D(@(BSR_"(BST,ny,nx)"))
+ Q
+C3 S (i,%CAL)=2 G CA
+C1 S (i,%CAL)=1 G CA
+C2 S i="" K %CAL
+CA D R^%ZAPM.bs.BSF4(20,i) Q
+TAB S l4=14
+TAB2 S li=$P(@(BSR_"(BST,ny,nx)"),"@",l4) S:li?.N1",".N li="" D TIR^%ZAPM.bs.BST4
+TAB1 D RIT I 'YES Q
+ I li="" S $P(@(BSR_"(BST,ny,nx)"),"@",l4)="" Q
+ I BSr=BSR,BSt=BST S ls=" ОСТОРОЖНО !!! Рекурсив !!! " D O^%ZAPM.bs.BSF7 G TAB1
+ S TmP=$S($D(PBD):PBD,1:$$GLOBAL^%ZAPM.bs.BSF9(BSr_","_BSt)) K PBD S $ZT=$G(%zT)
+ ;;;S $P(@(BSR_"(BST,ny,nx)"),"@",l4)=$S(BSr'["]%":BSr,1:"^"_$P(BSr,"]",2,99))_","_BSt D:$D(PBD)  K PBD S $ZT=$G(%zT) D NEW^%ZAPM.bs.BSN ;!!!I $D(%CAL) D CALC
+ ;;;.S $P(@(BSR_"(BST,ny,nx)"),"@",l4)=PBD
+ S $P(@(BSR_"(BST,ny,nx)"),"@",l4)=TmP
+ D NEW^%ZAPM.bs.BSN
+ Q
+G G D^%ZAPM.bs.BS
+SE D SA^%ZAPM.bs.BSsBUF Q
+RE D RE^%ZAPM.bs.BSsBUF Q
+RIT ;РАЗДЕЛ И ТАБЛИЦА --> BSr,BSt   NoCheck=1 - НЕ ПРОВЕРЯТЬ СУЩЕСТВОВАНИЕ
+ S YES=1,%hlp="^%ZAPM.bs.BSHLP(RIT",ls=" ВВОДИТЕ ссылку на таблицу:(TABL,PART,UCI,SYS) <F3>-КАТАЛОГ <F1>-ПОМОЩЬ",ll=" @",%KAT="D DIR^%ZAPM.bs.BSF6" D LE^%ZAPM.bs.BSTT Q:li=""  I 'YES S li="" Q
+RII S BSr=$P(li,",",2),BSt=$P(li,","),BSu=$P(li,",",3),BSs=$P(li,",",4),%zT=$ZT,$ZT="NOFILE^%ZAPM.bs.BSF3" G:$E(BSr,1,2)["%" %RIT S:BSu="" BSu=$P($$ZU^%ZAPM.bs.BS3(0),",") S:BSs="" BSs=$P($$ZU^%ZAPM.bs.BS3(0),",",2) S:BSr="" BSr=$S(BSR["]":$P(BSR,"]",2),1:$P(BSR,"^",2))
+ I '$D(@("^["""_BSu_""","""_BSs_"""]"_BSr)) G NOR
+RI S TmP=$$BSR^%ZAPM.bs.BSA($ZR) I BSt="<INV>",$G(@$ZR)["%BS-invert-" S ls=" ВЫ ХОТИТЕ ВЫЗЫВАТЬ ФОРМИРУЕМУЮ ТАБЛИЦУ КОДИФИКАТОРА ? " D YES^%ZAPM.bs.BSF G:'YES RIT S BSr=$P(TmP,"(") Q
+ I '$G(NoCheck),'$D(@TmP@(BSt)) S ls=" Таблицы "_$ZR_" не существует " D O^%ZAPM.bs.BSF7 S YES=0 Q:$D(MaS)  G RIT
+ I li["<>",$P(@$ZR,"@",17)=2 S ls=" ВЫ ХОТИТЕ ВЫЗЫВАТЬ ФОРМИРУЕМУЮ ТАБЛИЦУ ЗНАЧЕНИЙ КЛЮЧЕЙ БАЗЫ ДАННЫХ ? ",PBD=li D YES^%ZAPM.bs.BSF G:'YES RIT S BSr=$P(TmP,"(") Q
+ S BSr=$P(TmP,"("),YES=1 Q
+%RIT S:BSr'["^" BSr="^"_BSr G NOR:'$D(@BSr),RI
+NOR S ls=" Раздела "_$ZR_" не существует " D O^%ZAPM.bs.BSF7 S YES=0 Q:$D(MaS)  G RIT
+NOFILE S ls=" Ошибка В Cсылке на Раздел и Таблицу "_$ZE D O^%ZAPM.bs.BSF7 S $ZT=$G(%zT),YES=0 G RIT
+ERCMD S ls=" Ошибка:"_$ZE_$$ErrSay^%ZAPM.bs.BSF8($ZE) D O^%ZAPM.bs.BSF7 G ECMD
+ERROR ;S ls=" Ошибка В Команде "_$ZE D O^%ZAPM.bs.BSF7 S $ZT=$G(%zT) D REBUF,UCIR,RE^%ZAPM.bs.BSsBUF,CL^%ZAPM.bs.BSF4 G G
+ W $$bel^%ZAPM.bs.BS3 D REBUF,UCIR,RE^%ZAPM.bs.BSsBUF,CL^%ZAPM.bs.BSF4 G G
+CMDERR ;S ls=" Ошибка В Команде "_$ZE D O^%ZAPM.bs.BSF7 S $ZT=$G(%zT) D REBUF G CMD
+ W $$bel^%ZAPM.bs.BS3 D REBUF G CMD
+NOGLO S ls=" Ошибка В Cсылке НА МАССИВ "_$ZE D O^%ZAPM.bs.BSF7 S $ZT=$G(%zT) G BU
+NGLO S ls=" Ошибка В Cсылке НА МАССИВ "_$ZE D O^%ZAPM.bs.BSF7 S $ZT=$G(%zT),YES=0 Q
+SAVED ;СОХР ДАННЫХ В БУФЕРE
+ K ^%ZAPM.bs.BSbufB(0,$G(%BS(3),$P),3) S do="S li=$S($P(^(j),""@"",9)=1:$P(^(j),""@"",15),1:$G(^%ZAPM.bs.BSbufB(""BB""_$G(%BS(3),$P)_$J_""u""_%BS(15),i,j))) S:li'="""" ^%ZAPM.bs.BSbufB(0,$G(%BS(3),$P),3,i,j)=li",ls="СОХРАНЯЕТСЯ" D WAITS^%ZAPM.bs.BSF2,BLOK^%ZAPM.bs.BSF1 G G
+RESTO ;ВОССТ ДАННЫХ ИЗ БУФЕРА
+ S i="",ls="ВОССТАНОВЛЕНИЕ" D WAITS^%ZAPM.bs.BSF2 F  S i=$O(^%ZAPM.bs.BSbufB(0,$G(%BS(3),$P),3,i)) Q:i=""  S j="" F  S j=$O(^%ZAPM.bs.BSbufB(0,$G(%BS(3),$P),3,i,j)) Q:j=""  S li=^(j) I $D(@(BSR_"(BST,i,j)")) D
+ .I $P(^(j),"@",5)!($D(%ZAP)) Q
+ .I $P(^(j),"@",9)=1 S $P(^(j),"@",15)=li Q
+ .S $P(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)),"@",2)=1 S ^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)=li Q
+ D TIT^%ZAPM.bs.BST,W^%ZAPM.bs.BST G G
+ ;
+ ;МОДУЛЬ ИЗ %BSA
+ ;
+A(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16) S pp=$P($G(BSR),"^",2),ps=$S(pp'[",":$P($$ZU^%ZAPM.bs.BS3(0),",",2),1:$P(pp,$C(34),4))
+ S pu=$S(pp'["[":$P($$ZU^%ZAPM.bs.BS3(0),","),1:$P(pp,$C(34),2)),pt=$G(BST) I $E(pp,1)="[" S pp=$P(pp,"]",2)
+ S %zT=$ZT,$ZT="TRAP^%ZAPM.bs.BSA"
+ I $D(p4) S pp=p4 I pp["^" S pp=$P(pp,"^",2)
+ I $G(p3)'="" S pt=p3
+ I $G(p5)'="" S pu=$TR(p5,"[]|""","") I pu["," S ps=$P(pu,",",2),pu=$P(pu,",")
+ I $G(p6)'="" S ps=$TR(p6,"[]|""","") I ps["," S pu=$P(ps,","),ps=$P(ps,",",2)
+ ;I $E(pp,1)="%" S pp="^"_pp ;`BSA
+ S pp="^["""_pu_""","""_ps_"""]"_pp
+ I $D(@(pp_"(pt,p1,p2)"))
+ S bS=$ZR I $P(@pp@(pt,p1,p2),"@",9)=1 Q $P($G(@$ZR),"@",15)
+ I '$D(p8),BST=pt,$$BSR(BSR)=pp Q $G(^%ZAPM.bs.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),p1,p2))
+ S pb=$$KBD^%ZAPM.bs.BSF12($NA(@pp@(pt))),pb=$$BSD(pb,$G(p7))
+ F pi=1:1:9 Q:'$D(^(pi))  Q:'$D(@("p"_(pi+7)))  S pb=pb_$S(@("p"_(pi+7))=+@("p"_(pi+7)):@("p"_(pi+7)),1:$C(34)_@("p"_(pi+7))_$C(34))_","
+ S pij=p1_","_p2 I $P($G(@pp@(pt,"KEY",pi-1)),"@",6)="HiddenLastKey",$P($P(@(pp_"(pt,p1,p2)"),"@",18),"#",2)'="" D  Q $G(@$ZR,"<NO_VALUE>")
+ .S pij=$P($P(@$ZR,"@",18),"#",2) I $D(@(pb_$C(34)_pij_""")"))
+ I $P($P(@(pp_"(pt,p1,p2)"),"@",18),"#")'="" S pij=$P($P(@$ZR,"@",18),"#")
+ I $D(@(pb_$C(34)_pij_""")")) Q @$ZR
+ Q "<NO_VAL>"  ;$ZR
+BSD(BSD,%NAm) ;ССЫЛКА НА УЗЕЛ БАЗЫ ДАННЫХ
+ S %NAm=BSD_$G(%NAm)_$S(BSD["(":"",1:"(") I $E(%NAm,$L(%NAm))=")" S %NAm=$E(%NAm,1,$L(%NAm)-1)_","
+ Q %NAm
+BSR(bsr) N bs ;ПОЛНАЯ ССЫЛКА
+ I $E(bsr,1,2)="^%" Q $$%^%ZAPM.bs.BSF12(bsr)
+ ;4.;I $P($ZV,"Version ",2)'<4,bsr'["|" Q "^|"""_$P($$ZU^%ZAPM.bs.BS3(0),",")_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""|"_$P(bsr,"^",2)
+ ;4.;I $P($ZV,"Version ",2)'<4,$P(bsr,"|",2)'["," S bs=$P($P(bsr,"|",2),$C(34),2) Q "^|"""_bs_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""|"_$P(bsr,"|",2)
+ I bsr'["]" Q "^["""_$P($$ZU^%ZAPM.bs.BS3(0),",")_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""]"_$P(bsr,"^",2)
+ I $P($P(bsr,"]"),"[",2)'["," S bs=$P($P($P(bsr,"]"),"[",2),$C(34),2) Q "^["""_bs_""","""_$P($$ZU^%ZAPM.bs.BS3(0),",",2)_"""]"_$P(bsr,"]",2)
+ Q bsr
+TR(%1,%2,%3) N p,l,l3 ;ТРАНСФОРМАЦИЯ !!!!!ИЗ %BSsFUNM
+ I %2="" Q %1
+ I %1'[%2 Q %1
+ S p=1,l=$L(%2),l3=$L(%3),%z=$ZT,$ZT="TRMAX^%ZAPM.bs.BSsFUNM"
+ F  S p=$F(%1,%2,p) Q:p=0  S $E(%1,p-l,p-1)=%3,p=p+l3-l
+ S $ZT=$G(%z) Q %1
+TRMAX W $$bel^%ZAPM.bs.BS3 S $ZT=$G(%z) Q %1

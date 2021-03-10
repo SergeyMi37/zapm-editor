@@ -1,0 +1,179 @@
+ROUTINE %ZAPM.bs.BSCGIS
+%BSCGIS ; пpогpамма связи с КОМПОНЕНТОЙ 
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+TITL(S) Q "<TITLE>"_S_"</TITLE></HEAD>"
+INFO //  
+ W "ИНФОРМАЦИЯ : X="_$G(BSocxP0kD)_" Y="_$G(BSocxP0kS)
+ Q
+REG //функция регистации
+ N A,noPASS
+ I $G(BSocxREG)="notPASS" S noPASS=1
+ S A=$$PROTECT^%ZAPM.bs.BSC4reg($G(BSocxP0kD,"Z"),$G(BSocxP0kS))     ;ПРОВЕРКА ПАРОЛЯ
+ ;S ^%ZZZ(1)=A
+ I A="" W 0 Q
+ I '$$GRA($G(BSocxP0kD,"Z"),$G(BSocxGRAND)) W 0 Q
+ I A=1 S BSLOGIN=$G(BSocxP0kD,"Z") D Session^%ZAPM.bs.BSC4reg W "-=!=-"_$G(BSSES,"?")_"-=!=-"
+ ;S ^%ZZZ(BSLOGIN)=$G(BSSES,"?")
+ Q
+GRA(BSLOGIN,Gr)  N BSGRANT,A     N Cm,FF,F,BD //НАЙТИ ВХОЖДЕНИЕ ГРАНДА В ОБЩИЙ
+ I '$D(BDUSE) D MAINVAR^%ZAPM.bs.BSC4
+ S BD=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""GRAND"")")
+ S BSGRANT=$G(@BDUSE@(BSLOGIN,"GRANT")) I BSGRANT="" Q 0
+ d RECURS^%ZAPM.bs.BSC4(BSGRANT) I $D(FF(Gr)) Q 1
+ Q 0
+CLS //ЗАКРЫТИЕ СЕССИИ
+ D CloseSess^%ZAPM.bs.BSC4reg W "OK"
+ Q
+EVENT //СОБЫТИЯ
+ W $H
+ Q
+Report //СОБЫТИЯ
+ S Par1=$G(BSocxP0kD),Par2=$G(BSocxP0kS) ;,Par3=$G(BSExtVar)
+ W +$G(@Par1@("Count"))_BK
+ F i=0:1 Q:'$D(@Par1@(i))  D
+ .;W $G(@Par1@(i))_BK
+ .S A=$TR($G(@Par1@(i)),BK,"") W A_BK
+ W "<End Of File>"
+ Q
+Step1NewTabel D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("Шаг1 - потоковый ввод"),$$B27^%ZAPM.bs.BSCGIS
+ d Step1NewTabel^%ZAPM.bs.BSCAsIs 
+ D BUTT^%ZAPM.bs.BSCGIS,END^%ZAPM.bs.BSC4 //НОВЫЙ ТАБЕЛЬ
+ q
+ReportTabel2005 D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("Отчеты"),$$B27^%ZAPM.bs.BSCGIS
+ I $G(BSocxP0kD)'=""  S BSPART=$$Normalize($G(BSocxP0kD)),BSTABL=$G(BSocxP0kS),PT=$NA(@BSPART@(BSTABL))
+  D ReportLIST^%ZAPM.bs.BSCAsIs
+ D BUTT,END^%ZAPM.bs.BSC4
+ q
+ErrLogTabel2005 
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("Cписок ошибок, выявленных при занесении информации в базу данных"),$$B27^%ZAPM.bs.BSCGIS
+ D VAR M L=@BDSES@(BSSES,"VAR","ERR","LOG") M C=@BDSES@(BSSES,"VAR","ERR","COU") D BUTT^%ZAPM.bs.BSCGIS
+ I $D(C) W "<CENTER><H3><a name=a2>ОШИБКИ ВЫЧИСЛЕНИЯ -------------</H3> "_$s($d(L):"<a href='#a1' TITLE='Перейти'>ОШИБКИ ЛОГИЧЕСКОГО КОНТРОЛЯ",1:"")_"</a></CENTER>" D ErrWrite(.C) 
+ I $D(L) W "<CENTER><a name=a1>"_$s($d(C):"<a href='#a2' TITLE='Перейти'>ОШИБКИ ВЫЧИСЛЕНИЯ</a>",1:"")_" <H3>-------------- ОШИБКИ ЛОГИЧЕСКОГО КОНТРОЛЯ</H3></CENTER>" D ErrWrite(.L) 
+ D BUTT^%ZAPM.bs.BSCGIS,END^%ZAPM.bs.BSC4
+ q
+ErrWrite(L)  w "<HR><table border=0>"
+ S Y="" F  S Y=$O(L(Y)) Q:Y=""  w "<tr><td class=s1 width=5%>Строка "_Y D  W "</td></tr>"_BK
+ .w "<table border=0>"
+ .S X="" F  S X=$O(L(Y,X)) Q:X=""  w "<tr><td class=s2 width=5%>Колонка "_X D  W "</td></tr>"_BK
+ ..w "<table border=0 width=100%>"
+ ..I $D(L(Y,X,"ER")) w "<tr><td class=s3 width=5%>Ошибка выполнения!</td><td class=s4 >"_RED_L(Y,X,"ER")_EF_"</td></tr>"_BK
+ ..w "<tr><td class=s4 width=5%>Не выполняется формула</td><td class=s5 >"_L(Y,X,1)_"</td></tr>"_BK
+ ..w "<tr><td class=s4 width=5%>Текущие значения :</td><td class=s5 >"_L(Y,X,2)_"</td></tr>"_BK
+ ..w "</table>"
+ .w "</table>"
+ w "</table><HR>"
+ Q
+DocumTabel2005
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("Документация"),$$B27^%ZAPM.bs.BSCGIS
+ D VAR d DOCUM2^%ZAPM.bs.BSCAsIs 
+ ;d dop^%ZAPM.bs.BSCAsIs,help^%ZAPM.bs.BSC4 
+ D BUTT^%ZAPM.bs.BSCGIS,END^%ZAPM.bs.BSC4
+ q
+HELP //ПОМОЩЬ
+ I +$G(BSSES)="0" G STOP
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL("HELP"),$$B27
+ D help^%ZAPM.bs.BSC4
+ D BUTT
+ D END^%ZAPM.bs.BSC4
+ Q
+NEWDOC //ДОНЕСЕНИЯ О ОБЫТИЯХ
+ I +$G(BSSES)="0" G STOP
+ I '$G(BSocxP0kS) D CLOSEWIN^%ZAPM.bs.BSC4("Некорректные координаты "_$$SD(),0) q
+ D VAR
+ zn nsmon
+ s BSgMODE="NEW",BSList=2
+ D PART("^["""_nsmon_"""]BSC4MON.UFD","Новый документ "_$$SD())
+ q
+SD() Q "--- Широта("_$G(BSocxP0kS)_") Долгота("_$G(BSocxP0kD)_")"
+B27(C) Q "<BODY "_$$27_">"_BK_$$js^%ZAPM.bs.BSCp_$$Status^%ZAPM.bs.BSCm4("{Esc} - отмена, закрыть окно. {F5} - обновить окно")_$$GISclose($G(C))_$$jse^%ZAPM.bs.BSCp_BK
+27() Q " onkeyPress='javascript: if (27 == event.keyCode) GISclose();' "
+GISclose(C) N Q
+ S Q="function GISclose() {"_BK
+ S Q=Q_"status='Status :CloseWin:'"_BK
+ ;S Q=Q_"alert(111);"_BK
+ I $G(C) S Q=Q_"window.close();"_BK
+ S Q=Q_"}"_BK
+ Q Q
+BUTT  W "<CENTER><BUTTON onclick='"_$S('$D(BSocxP0kD):"window.close",1:"GISclose")_"();' title='Закрыть окно'><IMG SRC='"_BSDOMAIN_"/img/kill.gif'>Закрыть</BUTTON></CENTER>"
+ Q
+ 
+PART(pin,TITL) //РАЗДЕЛ
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL(TITL)
+ W $$B27 D BUTT
+ I $E(pin,1)'="^" S pin="^"_pin
+ I '$$Data^%ZAPM.bs.BSF12(pin) w "нет доступа к "_pin Q
+ W "<table border=0 width=100%>"
+ S N=""  F  S N=$O(@(pin)@(N)) Q:N=""  I $P($G(@(pin)@(N)),"@",17)=2 D
+ .I N="ROU" Q
+ .W "<tr><td width=20% class=s1 >"
+ .W "<a title='редактировать в форме' "_$$AN^%ZAPM.bs.BSCm(pin,N,"T^~BSCm4")_"> "_N_" </a>"
+ .W "</td><td class=s1 >"_AF,$P($G(@(pin)@(N)),"@",1),EF_"</td></tr>",BK
+ W "</table>"
+ D BUTT,END^%ZAPM.bs.BSC4
+ Q
+VAR //ПЕРЕМЕННЫЕ СОЗДАТЬ
+ S nsmon="FON" ;ГДЕ ЛЕЖИТ ПРОЕКТ МОНИТОРИНГ
+ Q
+Normalize(p) i p'["^" s p="^AsIs"_$ZCONVERT(p,"U") //нормализовать имя раздела для Табеля 2005
+ I $E(p,1,2)="^~" S p="^%"_$E(p,3,99)
+ q p
+EXnewKEY //НОВЫЙ КЛЮЧ ДЛЯ EXCELL
+ I +$G(BSSES)="0" G STOP
+ D VAR I $G(BSFlagRecord)'=""  S BStyleOver="GKVV7"
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL("Новый ключ : Для раздела ("_$$Normalize($G(BSocxP0kD))_") и таблицы ("_$G(BSocxP0kS)_")")
+ W $$B27 S BSPART=$$Normalize($G(BSocxP0kD)),BSTABL=$G(BSocxP0kS),PT=$NA(@BSPART@(BSTABL))
+ I '$$Data^%ZAPM.bs.BSF12(PT) W "Раздела(Таблицы) "_RED_PT_EF_" в рабочей области '"_RED_BSNSP_EF_"' нет. "_BBK
+ I $$ACCE^%ZAPM.bs.BSCocx(5),$G(BSnewForm)'="",$G(BSFlagRecord)="" D  //ЕСЛИ РАЗРЕШЕНО РЕДАКТИРОВАТЬ ТОБД, И НЕ СУЩЕСТВУЕТ "KEY"
+ .S BSLABEL="CREATAB^~BSCocx1" 
+ .W GREEN_"<A HREF='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"'>Создать/Редактировать Таблицу описания Баз Данных</A>"_EF
+ i $$ACCES^%ZAPM.bs.BSCocx(BSLOGIN,BSSES)>6,$$Data^%ZAPM.bs.BSF12(PT) D  //ЭТО РАЗРАБОТЧИК
+ .;S BSLABEL="KILLTAB^~BSCocx1" 
+ .;W GREEN_" Таблицу описания Баз Данных вместе с данными <A HREF='"_$$ADDBSGET^%ZAPM.bs.BSC4()_"'>"_RED_"Удалить"_EF_"</A>"_EF ;d
+ I $$Data^%ZAPM.bs.BSF12(PT) D KEYS^%ZAPM.bs.BSCocx
+ I $G(BSkeyCC)'="" D BUTT
+ d InfoSess^%ZAPM.bs.BSC4rout 
+ D END^%ZAPM.bs.BSC4
+ Q
+NEWLAY //НОВЫЙ СЛОЙ
+ I +$G(BSSES)="0" G STOP
+ D VAR
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL("Новый Слой")
+ W $$B27
+ S BSNSP=nsmon,BSPRT="BSC4MON"   D FrmRptBrowse^%ZAPM.bs.BSfonRPT
+ D BUTT,END^%ZAPM.bs.BSC4
+ Q
+EDITDOC //
+ I +$G(BSSES)="0" G STOP
+ D VAR
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL("Редактировать документы")
+ W $$B27
+ zn nsmon
+ ;s BSgMODE="NEW",BSList=2
+ S BSNSP=nsmon,BSPRT="BSC4MON"   
+ D PART("^["""_BSNSP_"""]"_BSPRT_".UFD","Редактировать документы"_$$SD())
+ ;D BUTT
+ D END^%ZAPM.bs.BSC4
+ Q
+REPORT //
+ I +$G(BSSES)="0" G STOP
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL("Формировать отчеты")
+ W $$B27
+ D LISTP^%ZAPM.bs.BSmirGL
+ D BUTT  D END^%ZAPM.bs.BSC4
+ Q
+STOP D CLOSEWIN^%ZAPM.bs.BSC4("Вы не зарегистрировались",0) 
+ Q       
+ /*
+SQLGO ;ВОЗВРАТИТЬ ТАБЛИЦУ
+ D Read^%ZAPM.bs.BSCG(DSN,SQL,$G(IF),,TG) ;ЧТЕНИЕ ТАБЛИЦЫ В МАССИВ TG
+ D TAB(TG)
+ S BDSN=$$KBDG("^%ZAPM.bs.BSC(""BSQLDSN"")") I BDSN'="" D
+ .S I=$O(@BDSN@("SQL",""),-1)+1,@BDSN@("SQL",I,"SQL1")=SQL
+ .I I>$$0^%ZAPM.bs.BSCh(30) S I=$O(@BDSN@("SQL","")) K @BDSN@("SQL",I)
+ D HELP
+ Q
+ */

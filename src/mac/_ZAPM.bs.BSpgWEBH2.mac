@@ -1,0 +1,32 @@
+ROUTINE %ZAPM.bs.BSpgWEBH2
+TKWEBH2	;PG&A,TK-WEB,1.1,HTML CONTROL;08OCT97  18:08 [ 10/15/97   8:12 AM ];01NOV2002  10:39;;08MAY2000  22:57
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	Q
+	;
+DEAC	S GLB="Aa",Aa="" D MESS("Service Not Available","The directory <b>"_$G(DIR)_"</b> at this web site is disabled.  Try it again in a few minutes.") S ST=404 Q
+	;
+404	S ST=404 D MESS("Not Found","The web page <b>"_FLN_"</b> was not found - check your link.<P>Sometimes it is helpful to refresh your current page since the links may have changed.") Q
+	;
+MESS(X,Y)	S LL(1)="<html><head><title>TK-WEB STATUS</title></head><body bgcolor=""#ffffff""><h1><font color=""#bb0000"">TkWeb Message</h1></font><p>"
+	S LL(2)="<h2>"_$G(X)_"</h2><P><font size=3> - "_DTMA_" -<p>"_$G(Y) Q
+	;
+ERROR I $ZE["DSCON"!($ZE["READ") K:$G(GLB)["TKTWEB" @GLB S ST="DSCON" G TRACE^%ZAPM.bs.BSpgWEBH
+ S ^%ZAPM.bs.BSpgWEBF("ERROR","HTML",$H)=$ZE_","_$G(CON)_","_$G(CNT)_","_$G(A),TRACE=1,LOG=0 H 1 G TRACE^%ZAPM.bs.BSpgWEBH
+	;
+CLN	; PRUNE LOGS
+ S T=$P($G(^%ZAPM.bs.BSpgWEBC("Control")),",",4) G:'T CLNT S LD=$H-T
+ S X=$H D DATE^%ZAPM.bs.BSpgWEBH
+ S A="",B="99/99" F  S A=$O(^%ZAPM.bs.BSpgWEBL("LOG",A)) Q:A=""  S C=$P($P(^(A),"`",11)," ") I B'=C D CLN2 S B=C Q:T<LD
+CLNT S T=$P($G(^%ZAPM.bs.BSpgWEBC("Control")),",",2) Q:'T  S A="" F J=1:1:T S A=$O(^mtempBSpgWEBT(A)) Q:A=""
+ F  S A=$O(^mtempBSpgWEBT(A)) Q:A=""  K ^(A)
+	Q
+CLN2 S:B']C YR=YR-1 S T=C_"/"_YR D JULIAN^%ZAPM.bs.BSpgWEBC Q
+	;
+HEAD	Q:FL=0  S FL=0,LL=""
+	I $D(SKP) S A=$O(@GLB@(0)),A=0 F  S A=$O(^(A)) Q:A=""  S LL=$$HEDD($S($D(SKP(A)):SKP(A),1:^(A))) G HEADEND:FL
+	I '$D(SKP),GLB["^" S A=$O(@GLB@(0)),A=0 F  S A=$O(^(A)) Q:A=""  S LL=$$HEDD($G(^(A))) G HEADEND:FL
+	I '$D(SKP),GLB'["^" S A=$O(@GLB@(0)),A=0 F  S A=$O(@GLB@(A)) Q:A=""  S LL=$$HEDD($G(@GLB@(A))) G HEADEND:FL
+HEADEND	I $TR(LL,LC,UP)["</HEAD>" S FL=$F($TR(LL,LC,UP),"</HEAD>"),LL=$E(LL,1,FL)
+	S FL=0 Q
+HEDD(X)	S X=LL_$E(X,1,511-$L(LL)-$L(X)),FL=$TR(LL,LC,UP)["</HEAD>" Q X

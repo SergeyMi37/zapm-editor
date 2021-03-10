@@ -1,0 +1,97 @@
+ROUTINE %ZAPM.bs.BSpgWEBU5
+TKWEBU5	;PG&A,TK-WEB,1.1,MISC UTILITIES;08OCT97  18:36 [ 10/15/97   8:12 AM ];17JUL2003  21:07;;18JAN2001  09:23
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+SP I ^%ZAPM.bs.BSpg("OS")'="MSM" Q
+	D getvg^%msv1 S %VGI=0,%NOSHOW=0 F  D DISPVG^%SP S %VGI=$O(VG(%VGI)) Q:%VGI'?1.N
+	Q
+RTNDIR	;
+	W !!,?20,"ROUTINE DIRECTORY  "
+	W !,?24,"OF ",$S(OS="MSM":$ZU(0),OS="M3":"UCI-"_$ZN,1:""),!
+	S $Y=2,%X=0,A="",B="TKWEB"
+	I OS="M3" F %RNUM=0:1 S A=$ZM(1,"R",A) Q:A=""  W:'(%RNUM#7) ! W:A[B "<A HREF=""HTTP:/CONTROL/M/RTNLST/"_A_""">"_A_"</A>" W:A'[B A W $J("",10-$L(A))
+	I OS="MSM" F %RNUM=0:1 S A=$O(^ (A)) Q:A=""  W:'(%RNUM#7) ! W:A[B "<A HREF=""HTTP:/CONTROL/M/RTNLST/"_A_""">"_A_"</A>" W:A'[B A W $J("",10-$L(A))
+	I OS="M11" F %RNUM=0:1 S A=$O(^ROUTINE(A)) Q:A=""  W:'(%RNUM#7) ! W:A[B "<A HREF=""HTTP:/CONTROL/M/RTNLST/"_A_""">"_A_"</A>" W:A'[B A W $J("",10-$L(A))
+	W !!,%RNUM,"  Routines",!
+	K %RNUM Q
+	Q
+	;
+REFER	D DDIR W "<FONT SIZE=2>",!?20,"TK-WEB REFERRER LISTING ",$S($D(DDIR):"("_DDIR_")",1:" -")," ",DTMA,!!
+	W "   Time",?20,"Page",?45,"Referrer",!,"--------------  ----------------  -------------------------------------------------------------",!!
+	S A=$S(FLN["?-":-$P(FLN,"?-",2),1:"")
+ F J=1:.1:300 S A=$O(^%ZAPM.bs.BSpgWEBL("LOG",A)) Q:A=""  S E=^(A),F=$E($P($P(E,"`",5),".",2)) I "H"[F,$P(E,"`",13)[$G(DDIR),$P(E,"`",10)]"" W $P(E,"`",11),?16,$E($P(E,"`",5),1,15),?34,$P(E,"`",10),! S J=J+1
+	I A'="" W !,"<A HREF=""" W:$G(DDIR)]"" "/",DDIR W "?REFER?",A,""">next</a>",!
+	Q
+	;         ;
+WEBLOG	D DDIR S T="Time,14,,11\Address,15,,3\Domain,24,,2\CMD,3,,4\File,20,,5\Length,6,R,7\Status,12,,6\Connect#,8,R,1"
+	W "<FONT SIZE=2>",!?20,"TK-WEB LOG ",$S($D(DDIR):"("_DDIR_")",1:" -")," ",DTMA,!!
+	S A=$S(FLN["?-":-$P(FLN,"?-",2),1:""),FLN=$P(FLN,"?-"),FI=$S(FLN["LOG?":$P(FLN,"LOG?",2),FLN["LOGH?":$P(FLN,"LOGH?",2),1:""),B=FLN["LOGH"
+	I FI]""!B W ?10 W:B "HTML PAGE LISTING ONLY" W:FI]"" ?45,"Filter: ",FI W !
+	F L=1:1:$L(T,"\") S a=$P(T,"\",L),b=$P(a,","),c=$P(a,",",2)-$L(b) W $J("",c\2),b,$J("",c-(c\2))," "
+	W ! F L=1:1:$L(T,"\") S a=$P(T,"\",L),b=$P(a,",",2) W $E("=====================================",1,b)," "
+ I '$D(DDIR) F J=1:.1:3000 S A=$O(^%ZAPM.bs.BSpgWEBL("LOG",A)) Q:A=""  S E=^(A) D:E[FI WEBLOG1
+ I $D(DDIR) F J=1:.1:3000 S A=$O(^%ZAPM.bs.BSpgWEBL("LOG",A)) Q:A=""  S E=^(A) I $P(E,"`",13)=DDIR D:E[FI WEBLOG1
+	I A'="" W !,"<A HREF=""" W:$G(DDIR)]"" "/",DDIR W $S(B:"?LOGH?",1:"?LOG?"),A,""">next</a>",!
+	Q
+WEBLOG1	I B,"H"'[$E($P($P(E,"`",5),".",2)) Q
+	S AB=$P(E,"`",3) I AB="" S AB=99
+ E  I '$D(AD(AB)) K:$G(AD(0))>20 AD S AD(AB)=$G(^%ZAPM.bs.BSpgWEBL("ADDR",AB)),AD(0)=$G(AD(0))+1
+	S $P(E,"`",2)=$G(AD(AB))
+	W ! F L=1:1:$L(T,"\") S F=$P(T,"\",L),C=$P(F,",",2,3),D=$E($P(E,"`",$P(F,",",4)),1,+C) W $S(C["R":$J(D,+C),1:D_$J("",C-$L(D)))," "
+	I 'B W:"H"[$E($P($P(E,"`",5),".",2)) !
+	S J=J+1 Q
+IPSTATS	W "<FONT SIZE=2>",!?10,"TK-WEB STATS BY CLIENT ADDRESS  -  ",DTMA,!!
+ S YR="" F  S YR=$O(^%ZAPM.bs.BSpgWEBL("STATS",YR)) Q:YR=""  D IPS2
+	Q
+IPS2	W "YEAR - ",YR,!!,"Domain Name/IP Address",?43 F L=1:1:12 W $P("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",",",L),"    "
+	W "Total",! W "------------------------------------- ",?41 F L=1:1:12 W "------ "
+	W "---------" K T,TT,A S (P,A)="" W !
+ F  S A=$O(^%ZAPM.bs.BSpgWEBL("STATS",YR,"ADDR",A)) Q:A=""  S D=^(A),E="E="_D,@E I E>99 W $S($L(^%ZAPM.bs.BSpgWEBL("ADDR",A)):$E(^(A),1,40),1:A),?40 S E=0 F L=1:1:12 S F=$P(D,"+",L),E=E+F,T(L)=$G(T(L))+F W $J(+F,7) I L=12 W $J(E,9),!
+	W !,"Grand Totals",?40 S E=0  I '$D(T) Q
+	F L=1:1:12 W $J(T(L),7) S E=E+T(L)
+	W $J(E,9),!!! K T,E Q
+	Q
+	;
+STATS D DDIR S Yr="" F  S Yr=$O(^%ZAPM.bs.BSpgWEBL("STATS",Yr)) Q:Yr=""  D STAT4
+	Q
+STAT4	K T,TT,A S (P,A)="",H="""H""[$E($P(A,""."",2))",G="""H""'[$E($P(A,""."",2))"
+ F  S C=A,A=$O(^%ZAPM.bs.BSpgWEBL("STATS",Yr,"FILE",A)) Q:A=""  I A["/",A'["?" S B=$P(A,"/") I B'=P S A(B)=C,P=B
+	I $D(DDIR) Q:'$D(A(DDIR))  S R=A(DDIR) K A S A(DDIR)=R
+	W "<FONT SIZE=2>",!?20,"TK-WEB STATS ",$S($D(DDIR):"("_DDIR_") ",1:" - "),DTMA,!!,Yr,!!
+	W "Page/Resource",?20 F L=1:1:12 W $P("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",",",L),"   "
+	W "Total",! W "------------------ " F L=1:1:12 W "----- "
+	W "-------"
+	S C="" F  S C=$O(A(C)) Q:C=""  W !!,C,!! F R=H,G S A=A(C) D STAT1,STAT2
+	W !,Yr," Grand Totals",?18 I '$D(T) Q
+	S E=0 F L=1:1:12 W $J(TT(L),6) S E=E+TT(L)
+	W $J(E,7),!! K TT,E Q
+STAT1 F  S A=$O(^%ZAPM.bs.BSpgWEBL("STATS",Yr,"FILE",A)) Q:A=""  I A["/",A'["?",@R S B=$P(A,"/") Q:C'=B  S D=^(A) W $E($P(A,"/",2,4),1,18),?18 S E=0 F L=1:1:12 S F=$P(D,"+",L),E=E+F,T(L)=$G(T(L))+F W $J(+F,6) I L=12 W $J(E,7),!
+	Q
+STAT2	I $D(T) W !,"Totals",?18 S E=0 F L=1:1:12 W $J(T(L),6) S TT(L)=$G(TT(L))+T(L),E=E+T(L)
+	I  W $J(E,7),!!
+	K T Q
+DDIR K DDIR S:$G(%("FORM","DIR"))]"" DDIR=%("FORM","DIR") I $G(DDIR)["?" K DDIR I $G(%("HOST:"))]"" S DDIR=$P($G(^%ZAPM.bs.BSpgWEBF("HOME",$TR(%("HOST:"),LC,UP))),"/",2) K:DDIR="" DDIR
+	Q
+	;
+MAP	D DDIR W "</PRE><h3><CENTER>TK-WEB MAP  -  ",DTMA,"<br>"
+ I $G(DDIR)]"",$D(^%ZAPM.bs.BSpgWEBF("XREF",DDIR,"H")) G MAP4
+	I $G(DDIR)'="" W "Directory not found" Q
+	W "Server Map</H3><p><table border=1 cellspacing=0 cellpadding=2><tr><th>Directory<th>Pages<th>Bytes<th>Images<th>Bytes<th>Virtual Server"
+ K A S A="" F  S A=$O(^%ZAPM.bs.BSpgWEBF("HOME",A)) Q:A=""  S B=$P(^(A),"/",2) I B]""  S A(B,A)=""
+ S (A,T,T1,T2,S1,S2)="" F T=0:1 S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",A)) Q:A=""  W !,"<tr><td>",A,"</td>" D
+ . S (B,C,D,B1,B2)="" F  S B=$O(^%ZAPM.bs.BSpgWEBF("PAGES",A,B)) Q:B=""  S:B[".H" C=C+1,B1=B1+$P(^(B),"`",3) S:B'[".H" D=D+1,B2=B2+$P(^(B),"`",3)
+	. W "<td>",+C,"<td align=right>",$FN(B1,","),"&nbsp;</td><td>",+D,"<td align=right>",$FN(B2,","),"&nbsp;</td><td>" I $D(A(A)) S B="" F  S B=$O(A(A,B)) Q:B=""  W B,"<br>"
+	. S T1=T1+C,T2=T2+D,S1=S1+B1,S2=S2+B2 Q
+	W "<tr><tr><td>total</td><td>",T1,"<td align=right>",$FN(S1,","),"</td><td>",T2,"<td align=right>",$FN(S2,","),"</table>" Q
+MAP4	W "Directory: ("_DDIR_")</h3><TABLE border=0 cellspacing=1><TR><th>Page<th>Referenced By<th>References<th>Images"
+ S A="" F J=1:1 S A=$O(^%ZAPM.bs.BSpgWEBF("XREF",DDIR,"H",A)) Q:A=""  W !,"<tr>",$$MAP2(J,1),A D MAP1
+	W "</table>" Q
+MAP1 w $$MAP2(J,2) S B=0 F  S B=$O(^%ZAPM.bs.BSpgWEBF("XREF",DDIR,"L",A,B)) Q:B=""  W $$MAP3(B)
+ w $$MAP2(J,1) S B=0 F  S B=$O(^%ZAPM.bs.BSpgWEBF("XREF",DDIR,"H",A,B)) Q:B=""  I B[".H" W $$MAP3(B)
+ w $$MAP2(J,2) S B=0 F  S B=$O(^%ZAPM.bs.BSpgWEBF("XREF",DDIR,"H",A,B)) Q:B=""  I B'[".H" W $$MAP3(B)
+	Q
+MAP2(X,Y)	Q "<td valign=top bgcolor="""_$P("AAAA,CCCC",",",X#2+1)_$P("AA,CC",",",Y)_""">&nbsp;"
+MAP3(X)	I $L(X)>60 S X=$E(X,1,60)_"+"
+	I $L(X)>30 S X=$E(X,1,30)_"<BR>&nbsp;&nbsp;"_$E(X,31,99)
+ S:$D(^%ZAPM.bs.BSpgWEBF("PAGES",DDIR,B)) X="<a href=""/"_DDIR_"/"_B_""">"_X_"</a>"
+	Q X_"<BR>&nbsp;"

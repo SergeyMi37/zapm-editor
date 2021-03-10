@@ -1,0 +1,40 @@
+ROUTINE %ZAPM.bs.BSER1
+%BSER1 ;ПАКЕТНЫЕ ОПЕРАЦИИ С ПРОГРАММАМИ ; 13:01   02.06.99
+4 S Txx=4,Tx="Строки поиска для редактирования" G GO
+1 S Txx=1,Tx="Метки поиска" G GO
+2 S Txx=2,Tx="Строки поиска"
+GO S %FLG=1,%ST=0 K %SE S $ZT="ERROR^%ZAPM.bs.BSER1"
+ASK2 U 0
+ASK3 D OP^%ZAPM.bs.BSF4 s %X=$$LineEdit^%ZAPM.bs.BSXfun("","Введите "_Tx,"","","",$$HISFIND^%ZAPM.bs.BSS()) D Echo^%ZAPM.bs.BSXfun(1) I %X="",'$D(%SE(1)) S %FLG=0 W /ED(2) G ASK1^%ZAPM.bs.BSER
+ I %X'="" S %ST=%ST+1,%SE(%ST)=%X G ASK3
+ W !! U 0
+ W !,?22,"Поиск в программах  " W !
+ S BSr="^%ZAPM.bs.BSbufB",BSt="%RSEBUF"_Txx,Obraz(12)=1,Obraz(21)=1,CR="S t=t+1,t(t)=%CC_""+""_%I_"": ""_%T"
+ S t0="-  "_Tx_" в программах. Введите <Enter> для входа в редактор " D CR^%ZAPM.bs.BSTT
+ S CRT1="X CRT K t S t=0",CRT="S t=0 F  S t=$O(t(t)) Q:'t  S t0=t(t) D CR^%ZAPM.bs.BSTT",t=0
+ S t0="-  "_$$ESDAY^%ZAPM.bs.BSsFUNR(9,$$h^%ZAPM.bs.BS3()) D CR^%ZAPM.bs.BSTT
+ F %I=1:1:%ST W ?(33-($L(%SE(%I))\2)),%SE(%I),! S t0="- "_%SE(%I) D CR^%ZAPM.bs.BSTT
+ I Txx=4 D
+ .S %LK="F %I=1:1 S %T=$T(+%I) Q:%T=""""  F %J=1:1:%ST I %T[%SE(%J) W /CUP(1,1),/ED(2),!,%CC,""+"",%I S li=%T,YES=0 X NNNN ZL @%CC S %F=1 I YES X NNN,CR"
+ .S NNN="ZI li:+(%I) ZR +%I ZS @%CC",NNNN="N (li,%BS,YES) S li=$$Edit^%ZAPM.bs.BSXuse(li,3,1,7,79,""@"") Q  "
+ I Txx=2 S %LK="F %I=1:1 S %T=$T(+%I) Q:%T=""""  F %J=1:1:%ST I %T[%SE(%J) W !,%CC,""+"",%I,"": "",%T S %F=1 X CR Q  "
+ I Txx=1 S %LK="F %I=1:1 S %T=$T(+%I) Q:%T=""""  F %J=1:1:%ST I $P(%T,"" "")[%SE(%J) W !,%CC,""+"",%I,"": "",%T S %F=1 X CR Q  "
+RSEL ;
+ S %CC=-1,%PCT=0,%FND=0,%F=0
+RSEL1 ;
+ S $ZT="RSEL2^%ZAPM.bs.BSER1"
+ F %K=1:1 S %CC=$N(^UTILITY(%Jo,%CC)) Q:%CC<0  I %CC'=0 X "ZL @%CC U 0 X:0'=$I ""W:'(%K-1#8) ! W ?(%K-1)#8*10,%CC,""""  """""" U 0 X %LK" X CRT1 S %PCT=%PCT+1 S:%F %FND=%FND+1,%F=0
+ D OkMsg^%ZAPM.bs.BSXfun(%PCT_" Программ обработано.")
+ U 0
+ S Coment="Программы."_Tx_$S(Txx=4:".Состояние до Редактирования",1:"") K t,t0
+ D CREAT^%ZAPM.bs.BSTT
+ K %SE S %ST=0 W /CUP(1,1),/ED(2) G ASK2
+RSEL2 ;
+ I $F($ZE,"<NOPGM>") W !,"Routine: ",%CC," not found." G RSEL1
+ G ERROR
+EXIT ;
+ U 0
+ K %,%BLK,%CC,%DEV,%F,%FLG,%FND,%LK,%I,%J,%K,%PCT,%SE,%ST,%T,%X,QUIT Q
+ERROR ;
+ I $F($ZE,"<INRPT>") U 0 W !!,"...Aborted." D EXIT ZQ:$ZV["Wind"!($ZV["Cach"||($ZV["IRIS"))  V 0:$J:$ZB($V(0,$J,2),#0400,7):2
+ ZQ

@@ -1,0 +1,48 @@
+ROUTINE %ZAPM.bs.BSpgWEBPUT
+TKWEBPUT	;PG&A,TK-WEB,1.1,PUBLISHING CODE;AUG97  16:21 [ 10/15/97   8:12 AM ];;;19MAY99  16:20
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+ H 2 L ^mtempBSpgWEBPUT
+B S:'$D(TEST) $ZT="ERROR^%ZAPM.bs.BSpgWEBPUT"
+	;
+ F KK=1,2 H 2 S (CON,CNT)="" F  S CON=$O(^mtempBSpgWEBPUT(CON)) Q:CON=""  I CON F  S CNT=$O(^mtempBSpgWEBPUT(CON,CNT)) Q:CNT=""  D A
+	L  Q
+	;
+A	I $G(^(CNT,0,"USER-AGENT:"))["HTTP Post" D C Q
+ S FILE=$G(^mtempBSpgWEBPUT(CON,CNT,0,"FLN")),DIR=$G(^("DIR")) Q:FILE=""  Q:DIR=""
+	S LC="abcdefghijklmnopqrstuvwxyz",UP="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	S DIR=$TR(DIR,LC,UP),FILE=$TR(FILE,LC_" ",UP_"_")
+ S D=$$GMT^%ZAPM.bs.BSpgWEBH($H,+$G(^%ZAPM.bs.BSpgWEBC("TimeZone"))),SZ=0,C=DT
+ S G="^%ZAPM.bs.BSpgWEBF(""PAGES"",DIR,FILE)"
+ I $G(@G)]"" S C=$P(@G,"`",6) M ^%ZAPM.bs.BSpgWEBF("ARCHIVE",DIR,FILE,$H)=^%ZAPM.bs.BSpgWEBF("PAGES",DIR,FILE)
+	I  K @G
+ S SZ=0,T=0 F  S T=$O(^mtempBSpgWEBPUT(CON,CNT,T)) Q:T=""  S SZ=SZ+$L(^(T))
+ M @G=^mtempBSpgWEBPUT(CON,CNT) K @G@(0) S C=C_"`"_$TR($$UUDEC^%ZAPM.bs.BSpgWEBU($G(^mtempBSpgWEBPUT(CON,CNT,"AUTHORIZATION:"))),LC,UP)_"`"_$G(^("ADDRESS"))
+	S T=$TR($E($P(FILE,".",2),1,3),UP,LC),T=$S(T="gif":"G",T="htm":"H",T="jpe":"J",T="jpg":"J",1:"")
+	I T="" S T=$TR($E(@G@(1),1,3),UP,LC),T=$S(T="<ht":"H",T="gif":"G",T="<!d":"H",1:"")
+	S @G=FILE_"`"_T_"`"_SZ_"`"_D_"`"_DT_"`"_C_"`"
+ D XREF^%ZAPM.bs.BSpgWEBF S ^%ZAPM.bs.BSpgWEBF("PUBLISH",$H,DIR,FILE)="" K ^mtempBSpgWEBPUT(CON,CNT)
+	Q
+	;
+E S (CON,CNT)="" F  S CON=$O(^mtempBSpgWEBPUT(CON)) Q:CON=""  F  S CNT=$O(^mtempBSpgWEBPUT(CON,CNT)) Q:CNT=""  D C
+	Q
+C I $G(AD)']"" S AD=$G(^mtempBSpgWEBPUT(CON,CNT,0,"ADDRESS")) I AD="","MSM,M3"[OS K ^mtempBSpgWEBPUT(CON,CNT) Q
+ I $G(^mtempBSpgWEBPUT(CON,CNT,0,"ADDRESS"))'=AD Q
+ S B=$O(^mtempBSpgWEBPUT(CON,CNT,0)) I B="" K ^mtempBSpgWEBPUT(CON,CNT) Q
+ S C=^(B),D=$P(C,$C(13,10)),E=$P(C,$C(13,10,13,10)) I E="" K ^mtempBSpgWEBPUT(CON,CNT) Q
+ I E["filename=" S F=CON_","_CNT,E=$P($P(E,"filename=""",2),""""),^mtempBSpgWEBPUT(CON,CNT,0,"FLN")=E G CS
+ I E[" name=" S E=$P($P(C,$C(13,10,13,10),2),$C(13)),E=$P(E,"/",$L(E,"/")-1) I $G(F) K ^mtempBSpgWEBPUT(CON,CNT) S CON=+F,CNT=$P(F,",",2),^mtempBSpgWEBPUT(CON,CNT,0,"USER-AGENT:")="IE POST DONE",^("DIR")=E Q
+	Q
+CS S ^mtempBSpgWEBPUT(CON,CNT,B)=$P(C,$C(13,10,13,10),2,99),(C,B)=0 F  S E=C,C=B,B=$O(^(B)) Q:B=""
+	I ^(C)[D S ^(C)=$P(^(C),D) Q
+	Q:'E  S B=^(E)_^(C) I B[D S ^(E)=$P(B,D) K ^(C)
+	Q
+	;         
+ERROR S ^mtempBSpgWEBPUT("ERROR",$H)=$ZE I $D(^mtempBSpgWEBPUT(CON,CNT,0)) M ^mtempBSpgWEBPUT(CON,CNT,.1)=^mtempBSpgWEBPUT(CON,CNT,0) K ^(0)
+	G B
+	;
+	;
+GETB1 S J=$L(Y) F D=1:1 S ^mtempBSpgWEBPUT(CON,CNT,D)=$E(Y,1,STL-1),Y=$E(Y,STL,99999) Q:Y=""
+ F D=D+1:1 Q:J'<%("CONTENT-LENGTH:")  S T=$P(TM,",",2)-$P($H,",",2)+TMO Q:T<0  R y#(STL-1):1 X $S("M3,MSM"[OS:"S C=$ZC",OS="M11":"S C=$ZA#8>3,y=y_$ZB",1:"S C=0") S ^mtempBSpgWEBPUT(CON,CNT,D)=y,J=J+$L(y) Q:C
+	S %("WEBPUT")="" Q
+	;

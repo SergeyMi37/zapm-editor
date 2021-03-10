@@ -1,0 +1,101 @@
+ROUTINE %ZAPM.bs.BSZGO
+BSZGO ;ГЕНЕРАЦИЯ ДИСТРИБУТИВА ОТКРЫТОГО %BS ; 9:10   24.06.2002
+ I $$CL() W /BEL Q
+ N I,II,III,Iv,IIv,X,X1,X2,X3,X4,li,x,YES,%RN,%ZPRINT,%ZPRI,%bs,%DEV,%TAP,QUIT,SyS,%ZPWN,DLZ
+ N %X,%J,%FN,ll,PR1,DATE,Zv,TRe1,TRe2,WA,STOP,Stop,ZVZ,ZZZ,ZVZ1,ZVZ2,%DEVC,%ZPCACHE,%ZPCACH,S1,S2,DOS,%ZPWNT
+% S DATE=$$ESDAY^%ZAPM.bs.BSsFUNR(6,$$h^%ZAPM.bs.BS3())
+ X "ZL %BS I $T(AL)["";"" W !!,""ВЫ НЕ РАСКОМЕНТИРОВАЛИ СТРОКУ"" " I  W $$bel^%ZAPM.bs.BS3 H 2 Q
+ K Stop S SyS=$P($ZU(1,0),",",2) D  I $D(Stop) D ErrMsg^%ZAPM.bs.BSXfun(Stop_" !!!"),^%ZAPM.bs.BSMSMGE(Stop) Q
+ .D XGlob^%ZAPM.bs.BSF9("^%ZAPM.bs.BSS","I @g["","""""_SyS_""" S (STOP,Stop)=$ZR",1) Q:$D(Stop)
+ .D XGlob^%ZAPM.bs.BSF9("^%ZAPM.bs.BSHLP","I @g["","""""_SyS_""" S (STOP,Stop)=$ZR",1) Q:$D(Stop)
+ .D XGlob^%ZAPM.bs.BSF9("^%ZAPM.bs.BSVOL","I @g["","""""_SyS_""" S (STOP,Stop)=$ZR",1) Q:$D(Stop)
+ .D XGlob^%ZAPM.bs.BSF9("^%ZAPM.bs.BSMDDR","I @g["","""""_SyS_""" S (STOP,Stop)=$ZR",1)
+ .D XGlob^%ZAPM.bs.BSF9("^%ZAPM.bs.BSZ","I @g["","""""_SyS_""" S (STOP,Stop)=$ZR",1)
+ .D XGlob^%ZAPM.bs.BSF9("^%ZAPM.bs.BSZS","I @g["","""""_SyS_""" S (STOP,Stop)=$ZR",1)
+ S ll="@",li=+^%ZAPM.bs.BS,ls=" КАКАЯ ЭТО БУДЕТ ВЕРСИЯ ? " D LE^%ZAPM.bs.BSS I 'YES Q
+ S Zv=li,ZZZ=li_" "_DATE D Yes^%ZAPM.bs.BSXfun("ДЛЯ ВНУТРЕННЕГО УПОТРЕБЛЕНИЯ ?") S DLZ=YES>0
+ K %FN,%DEV S PR1=$$AddFile^%ZAPM.bs.BSDOS2($G(%bs,$$DIR^%ZAPM.bs.BSMSMF))_"%BSVER.DAT" D DOSOPN^%ZAPM.bs.BSBL1 Q:'$D(%FN)
+ I DLZ,%FN[$$DIR^%ZAPM.bs.BSMSMF S ls=" ВЫСТАВИМ ФЛАГ САМОПОВЫШЕНИЯ ВЕРСИИ %BS В АРМах ? " D YES^%ZAPM.bs.BSF I YES S Zvv="§"
+ U %DEV W $G(Zvv) D SAY^%ZAPM.bs.BS3(0) W ! W:DLZ "Use Only in Internal Corparation",! C %DEV S %bs=$P(%FN,"%BSVER.DAT")
+ S NAMEF="%BS-FULL."_Zv
+NAME K %FN,%DEV S PR1=$$AddFile^%ZAPM.bs.BSDOS2($G(%bs,$$DIR^%ZAPM.bs.BSMSMF))_NAMEF D DOSOPN^%ZAPM.bs.BSBL1 I '$D(%FN) Q
+ S %bs=$P(%FN,"%BS") D ZGO U 0 S %ZPRI=$$ZV^%ZAPM.bs.BSZGAP
+ I '$D(ZVZ) D CHKSUM ;ЗАПИСАТЬ КОНТРОЛЬНЫЕ СУММЫ И ОПРЕДЕЛИТЬ НА КАКУЮ ВЕРСИЮ ДЕЛАТЬ UPG
+ S X1="S %RN=""%B"" X X3,%ZPRINT,%ZPCACHE,%ZPWNT S %RN=""%BS"" X X3,%ZPRINT,%ZPCACHE,%ZPWNT S I=""%BS"" F  S I=$O(^ (I)) U 0 Q:I=""""!($E(I,1,3)'=""%BS"")  I '('DLZ&($E(I,1,6)=""%BSMOL""!($E(I,1,6)=""%BSTAB""))) S %RN=I X $G(WA) X X3,%ZPRINT,%ZPCACHE,%ZPWNT"
+ S X3="X:ZVZ'="""" X2 I $D(%RN) U %DEV W %RN,!"
+ S X2="K:$G(@ZVZ@(""R"",%RN))=$G(^BSUPGR(""§""_Zv_""§"",""R"",%RN)) %RN"
+ S %ZPRINT="I $D(%RN) ZL @%RN U %DEV F %X=1:1 S %J=$T(+%X) X:$P(%J,"" "")=""ZV"" %ZPRI W %J,! Q:%J="""""
+ 
+ ;ANSI для восстановления в Cache'
+ S %ZPCACHE="I '$G(ZVZ2) X %ZPCACH I $D(%RN),$D(%DEVC) ZL @%RN U %DEVC W %RN_""^INT^1^"_$$h^%ZAPM.bs.BS3()_"^"",! F %X=1:1 S %J=$T(+%X) W $TR(%J,S1,S2),! Q:%J="""""
+ S %ZPCACH="I '$D(%DEVC) S (DOS,%DEVC)=%DEV+1 K:$$Open^%ZAPM.bs.BSXdos(%bs_""%BSCache.R"",""W"")<0 %DEVC,DOS I $D(%DEVC) U %DEVC W ""%BS for Cache Win32^Restore in Cache use routne ^%RI"",!,""%BS version ""_Zv_"", install to ~%SYS~"",!"
+ 
+ ;ASCII для простого восстановления
+ S %ZPWNT="I '$G(ZVZ2) X %ZPWN I $D(%RN),$D(%DEVW) ZL @%RN U %DEVW W %RN,! F %X=1:1 S %J=$T(+%X) W %J,! Q:%J="""""
+ S %ZPWN="I '$D(%DEVW) S (DOS,%DEVW)=%DEVC+1 K:$$Open^%ZAPM.bs.BSXdos(%bs_""%BS.R"",""W"")<0 %DEVW,DOS I $D(%DEVW) U %DEVW W ""%BS for MSM ...Restore ^%RR"",!,""%BS version ""_Zv,!"
+ 
+ S QUIT=0,%TAP=1,%TAPV=0 O 63::1 E  W !," НЕТ VIEW..." H 4 Q
+ U 0 D Wait^%ZAPM.bs.BSXfun("Генерация программ "_%FN) D INIT^%ZAPM.bs.BSre(1)
+ S X4="U %DEV ZL  ZS BSZRO D ^BSZRO ZR  ZS BSZRO" U %DEV W X4,!
+ S %RN="%BSZRO" X %ZPRINT
+ X X1
+ I $D(%DEVC) U %DEVC W !!
+ I $D(%DEVW) U %DEVW W !!
+ 
+ U 0 D Wait^%ZAPM.bs.BSXfun("Генерация массивов "_%FN)
+ S X4="K:$G(@ZVZ@(""G"",%RN))=$G(^BSUPGR(""§""_Zv_""§"",""G"",%RN)) %RN"
+ I $D(%DEVC) C %DEVC S DOS=%DEVC K:$$Open^%ZAPM.bs.BSXdos(%bs_"%BSCache.G","W")<0 %DEVC,DOS I $D(%DEVC) U %DEVC W "%BS for Cache for Win95/NT^INT^Restore in Cache use routne ^%GI",!,"%BS Version "_Zv,!
+ I $D(%DEVW) C %DEVW S DOS=%DEVW K:$$Open^%ZAPM.bs.BSXdos(%bs_"%BS.G","W")<0 %DEVW,DOS I $D(%DEVW) U %DEVW W "%BS for MSM...Restore ^%GR",!,"%BS vesions "_Zv,!
+ U %DEV W ";GLOBALS;",! U 0 S Iv=$$SETG(DLZ)
+ F IIv=1:1 Q:$P(Iv,",",IIv,IIv+1)=""  S I=$P(Iv,",",IIv),(%RN,II)="^%ZAPM.bs.BS"_I X:ZVZ'="" X4 I $D(%RN) D
+ .I $D(%DEVW) S II=%RN U %DEVW W:$D(@II)'["0" II,!,@II,! D  U %DEVW W "*",!,"*",!
+ ..F l=1:1 S II=$ZO(@II) Q:II=""  W II,!,@II,! I '(l#50) U 0 X $G(WA) U %DEVW
+ .I $D(%DEVC) S II=%RN U %DEVC W:$D(@II)'["0" $TR(II,S1,S2),!,$TR(@II,S1,S2),! F l=1:1 S II=$ZO(@II) Q:II=""  W $TR(II,S1,S2),!,$TR(@II,S1,S2),! I '(l#50) U 0 X $G(WA) U %DEVC
+ .S II=%RN U %DEV W:$D(@II)'["0" II,!,@II,! F l=1:1 S II=$ZO(@II) Q:II=""  W II,!,@II,! I '(l#50) U 0 X $G(WA) U %DEV
+ G END:ZVZ'="" ;!!!S TRe1="^SYS(""mnemonic""" D TRDEV^%ZAPM.bs.BSTK
+               ;!!!F I="PC" S II="%BS-"_I,TRe1="^SYS(""namespace"","""_II_"""" D TRDEV^%ZAPM.bs.BSTK
+END U 0 C %DEV I $D(%DEVC) U %DEVC W !! C %DEVC K %DEVC
+ I $D(%DEVW) U %DEVW W "**",!,"**",! C %DEVW K %DEVW
+ I '$D(ZVZ2) D:$G(Zvv)="§" OUTGLO^%ZAPM.bs.BSF11($P($P($G(^%ZAPM.bs.BSETUP("SERVER",2,4)),"@",15),"\",2,99),%FN)
+ I ZVZ1'="" S NAMEF="%BSUP"_$P(ZVZ1,"§",2)_"."_Zv,ZVZ=ZVZ1,ZVZ1="",ZVZ2=1 G NAME
+ D OP^%ZAPM.bs.BSF4
+ D OkMsg^%ZAPM.bs.BSXfun("Генерация завершена успешно")
+ENDEXIT C 63 Q
+SETG(DLZ) Q ",FUN,HLP,R,S,userS,X,GER,ARM,dbf,dbfT,VOL,VOLB,DDR,DFLT,cmd,JPRN,JPR,MDDR,ervIn,trm,Z,MMenu,trigg,actF,Zsort"_$S(DLZ:",ZS",1:"") ;dbfBA - ЕСТЬ УПРАВЛЯЮЩИЕ !!!
+ZGO N z,zz,zzz
+ S zzz="% U 0 D W(1),W(""... Восстановление %BS version "_ZZZ_" ..."")"
+ S z="ZL %BSZRO X zz ZS %BSZRO ZL %BSZGO",zz="ZI zzz:+0 ZR +2" X z
+ Q
+CHKSUM U 0 D Wait^%ZAPM.bs.BSXfun("Контрольные суммы для программ %BS*")
+ N CSM,G
+ S ^BSUPGR("§"_$P(ZZZ," ")_"§")=^%ZAPM.bs.BS
+ S X1="S %RN=""%B"" X X2,%ZPRINT,X3 S %RN=""%BS"" X X2,%ZPRINT,X3 S I=""%BS"" F  S I=$O(^ (I)) U 0 Q:I=""""!($E(I,1,3)'=""%BS"")  S %RN=I X $G(WA) X X2,%ZPRINT,X3"
+ S X2="S CSM=0",X3="S ^BSUPGR(""§""_$P(ZZZ,"" "")_""§"",""R"",%RN)=CSM"
+ S %ZPRINT="ZL @%RN F %X=1:1 S %J=$T(+%X) Q:%J=""""  S CSM=CSM+$ZCRC(%J,1)"
+ X X1 S ^%ZAPM.bs.BS=""
+ U 0 D Wait^%ZAPM.bs.BSXfun("Контрольные суммы для массивов %BS*")
+ S Iv=$$SETG(DLZ) F IIv=1:1 Q:$P(Iv,",",IIv,IIv+1)=""  S I=$P(Iv,",",IIv),(G,II)="^%ZAPM.bs.BS"_I,CSM=0 D
+ .S:$D(@II)'["0" CSM=CSM+$ZCRC(@II,1) F l=1:1 S II=$ZO(@II) Q:II=""  S CSM=CSM+$ZCRC(@II,1)+$ZCRC(II,1) I '(l#30) U 0 X $G(WA)
+ .S ^BSUPGR("§"_$P(ZZZ," ")_"§","G",G)=CSM
+ S ZVZ1=$$UZEL^%ZAPM.bs.BSVOL("UPGR","^%ZAPM.bs.BSVOL","","","ФАЙЛ ПОВЫШЕНИЯ ВЕРСИИ, ДЛЯ КАКОЙ ВЕРСИИ ДЕЛАТЬ ?"),ZVZ="",^%ZAPM.bs.BS=ZZZ
+ Q
+CLOSE N (%BS) ;ГЕНЕРАЦИЯ ЗАКРЫТЫХ ПРОГРАММ
+ I $$CL() W /BEL Q   ;
+ S $ZT="Z^"_$$R      ;~
+ I 1 X "ZL %BSF4 S:$T(CLr+3)["";"" AAA=1 ZL %BSZGO" I $D(AAA) D ErrMsg^%ZAPM.bs.BSXfun("А КОМПЛЕКС ТО НЕ ЗАКРЫТ ?!") Q
+ D RPCODE(1) ;СОХРАНЕНИЕ
+ W !!?20,"СОХРАНИЕ %BS В P-КОДАХ"
+ D ^%RS
+RESTORE D RPCODE(0) ;ВОССТАНОВЛЕНИЕ
+ Q
+RPCODE(M) 
+ S Iv=$$LIST,CR=$$R W !!
+ F IIv=1:1 Q:$P(Iv,",",IIv,IIv+1)=""  S I=$P(Iv,",",IIv) D  W " ",M,"^",I
+ .I M X "ZL @I ZS @$TR(I,""%"",""p"") ZS @I:11 ZL @CR" Q
+ .I 'M X "ZL @$TR(I,""%"",""p"") ZS @I ZL @CR" Q
+ Q
+LIST() Q "%B,%BS,%BS1,%BS2,%BS3,%BSF4,%BSH,%BSF7,%BSF12,%BSF11,%BSZGO"
+R() Q "%BSZGO"
+CL() ;ЗАКРЫТА ЛИ ВЕРСИЯ КОМПЛЕКСА
+ I $T(CLOSE+2)["~" Q 0
+ Q 1

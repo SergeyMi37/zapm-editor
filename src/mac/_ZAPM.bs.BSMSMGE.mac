@@ -1,0 +1,209 @@
+ROUTINE %ZAPM.bs.BSMSMGE
+%BSMSMGE(GLO) ;ПОЛНОЭКРАННЫЙ РЕДАКТОР МАССИВОВ (I PART) ; 13:36   28.02.99
+ N GG,i,ii,iii,Y1,Y2,YY,XX,Y,X,YES,%YES,W,S,M,EDI,R1,R2,R3,%CO,%LO,%LL,q0,q3,%ES,%EC,I,II,III,I1,I2
+ D L^%ZAPM.bs.BS3(GLO) I 'LOC G EXIT
+ I '$D(FIL) S FIL="I 1"
+ S EDI=0,%YES=1 D LOCK^%ZAPM.bs.BSF4
+ D CL^%ZAPM.bs.BSF4,%LOCK^%ZAPM.bs.BSMSMGI G %U
+D ;Delite
+ S K1=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+DBEG I YY=$P(S(YY),"/",3) G:XX=$P(S(YY),"/") %C S S(YY,1)=$E(S(YY,1),1,XX-$P(S(YY),"/")-1)_$E(S(YY,1),XX-$P(S(YY),"/")+1,$$LNG^%ZAPM.bs.BSF12),XX=XX-1 D  G DEND
+ .W /CUP(YY,XX),/EL(0),$E(S(YY,1),XX-$P(S(YY),"/")+1,$P(S(YY),"/",5)) S III=YY F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=YY  W /CUP(III,$P(S(III),"/")),/EL(0),$E(S(YY,1),$P(S(III),"/",4),$P(S(III),"/",5))
+ I XX'>$P(S(YY),"/") S YY=YY-1,XX=80 G DBEG
+ S S($P(S(YY),"/",3),1)=$E(S($P(S(YY),"/",3),1),1,$P(S(YY-1),"/",2)+XX-$P(S(YY),"/")-1)_$E(S($P(S(YY),"/",3),1),$P(S(YY-1),"/",2)+XX-$P(S(YY),"/")+1,$$LNG^%ZAPM.bs.BSF12),XX=XX-1 D  ;
+ .W /CUP(YY,XX),/EL(0),$E(S($P(S(YY),"/",3),1),$P(S(YY),"/",4)+(XX-$P(S(YY),"/")),$P(S(YY),"/",5)) S III=YY,II=$P(S(YY),"/",3)
+ .F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=II  W /CUP(III,$P(S(III),"/")),/EL(0),$E(S($P(S(YY),"/",3),1),$P(S(III),"/",4),$P(S(III),"/",5))
+DEND S K2=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+ S YES="",M($P(S(YY),"/",3),3)="" I K1>K2 D YES S (I3,Y)=$P(S(YY),"/",3) D  D PUT,REM I XX<$P(S(YY),"/") S YY=YY-1,XX=80
+ .S G=M(Y,1),Y=I3 D  D FOR,LOO S Y=I3-1 Q
+ ..F I=I3:1:25 K M(I),S(I)
+ G %C
+KS(%1,%2) Q ($L($P(%1,"(",2))+$L(%2))\(79-$L($P(%1,"(")))+1
+%U W /CUP(1,1),$$atr^%ZAPM.bs.BS3(0),/ED(2)
+ S W=$E($$GetLock^%ZAPM.bs.BSXfun()),P=1 ;P=0-ПОЛЕ ИНДЕКСОВ/МЕТОК,1-СТРОК ;
+BEGI I $D(@GLO)=0 G EXIT
+ S Y=1,G=GLO K M,S D:$D(@G)'["0" FOR D CL,LOO S Y=0 D PUT,REM S YY=$O(S("")),Y1=1,Y2=0,XX=$P(S(YY),"/")
+%C F  R *R:0  E  Q
+ W /CUP(YY,XX) W $$rt^%ZAPM.bs.BS3(+$G(%BS(2),9999)) I R1=-1,%BS(13)="%BS-PC" D GLUC^%ZAPM.bs.BSXgluc G %C
+ I R1=27,R2<0 D YES G EXIT
+ I R1=12 D YES G H^%ZAPM.bs.BSMSMGO
+ I R1=20 D YES G N^%ZAPM.bs.BSMSMGO
+ I R1=10 G J^%ZAPM.bs.BSMSMGO //UNDO
+ I R1=11 D YES G K^%ZAPM.bs.BSMSMGO
+ G %C:$E(%CO,R1+1)=" ",@$E(%CO,R1+1):$E(%CO,R1+1)'="S" D  G %C
+ .D ref(1) q
+ .S K1=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1 I $L(S($P(S(YY),"/",3),1))>509,W W $$bel^%ZAPM.bs.BS3 D REM Q
+ .I YY=$P(S(YY),"/",3) S S(YY,1)=$S(XX'=$P(S(YY),"/"):$E(S(YY,1),1,XX-$P(S(YY),"/")),1:"")_$C(R1)_$E(S(YY,1),XX-$P(S(YY),"/")+2-W,$$LNG^%ZAPM.bs.BSF12) W $C(R1) D:W  G SEND
+ ..W $E(S(YY,1),XX-$P(S(YY),"/")+2,$P(S(YY),"/",5)) S III=YY F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=YY  W /CUP(III,$P(S(III),"/")),$E(S(YY,1),$P(S(III),"/",4),$P(S(III),"/",5))
+ .I ($P(S(YY-1),"/",2)+XX-$P(S(YY),"/")+1)=509 W $$bel^%ZAPM.bs.BS3 D REM Q
+ .S S($P(S(YY),"/",3),1)=$E(S($P(S(YY),"/",3),1),1,$P(S(YY-1),"/",2)+XX-$P(S(YY),"/"))_$C(R1)_$E(S($P(S(YY),"/",3),1),$P(S(YY-1),"/",2)+XX-$P(S(YY),"/")+2-W,$$LNG^%ZAPM.bs.BSF12) W $C(R1) D:W  ;
+ ..W $E(S($P(S(YY),"/",3),1),$P(S(YY),"/",4)+(XX-$P(S(YY),"/")+1),$P(S(YY),"/",5)) S III=YY,II=$P(S(YY),"/",3)
+ ..F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=II  W /CUP(III,$P(S(III),"/")),$E(S($P(S(YY),"/",3),1),$P(S(III),"/",4),$P(S(III),"/",5))
+SEND .S K2=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+ .S YES="",M($P(S(YY),"/",3),3)="" I K1<K2 D YES S (I3,Y)=$P(S(YY),"/",3) D  D PUT,REM
+ ..F I=Y:1 Q:'$D(S(I))  Q:Y'=$P(S(I),"/",3)
+ ..I I>23 S GG=M($P(S(YY),"/",3),1),G=$O(M(0)),G=M(G,1),Y=0 K M,S D LOO D  S Y=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) Q
+ ...S YY="" F  S YY=$O(S(YY),-1) Q:M($P(S(YY),"/",3),1)=GG
+ ...S XX=$P(S(YY),"/") Q
+ ..S G=M(Y,1),Y=I3 D  D FOR,LOO S Y=I3-1 Q
+ ...F I=I3:1:25 K M(I),S(I)
+ .S XX=XX+1 I XX>80 S YY=YY+1 W /CUP(YY,1)," " S XX=$P($G(S(YY),XX),"/")+1 W /CUP(YY,XX-1),$C(R1) Q
+E ;ESC-КОДЫ
+ I %ES[R3 S I=$F(%ES,R3)-2 G @$E(%EC,I,I+1):$T(@$E(%EC,I,I+1))'=""
+ G %C
+Z ;НОЛЬ-КОДЫ
+ I R2=113,$E(%BS(1),3) D YES G ALTF10^%ZAPM.bs.BSMSMGO
+ I R2=84 D YES D SHIFTF1^%ZAPM.bs.BSMSMGO,SCREEN G HM^%ZAPM.bs.BSMSMGE
+ I R2=20 D YES G ALTT^%ZAPM.bs.BSMSMGO
+ I R2=37 D YES G KILL^%ZAPM.bs.BSMSMGO
+ ;I R2=97 D YES D ref(1),SCREEN G HM^%ZAPM.bs.BSMSMGE  //F4
+ I R2=98 D YES G F5^%ZAPM.bs.BSMSMGO
+ I R2=99 D YES G F6^%ZAPM.bs.BSMSMGO
+ I R2=100 D YES G F6^%ZAPM.bs.BSMSMGO
+ I %ES[R2 S I=$F(%ES,R2)-2 G @$E(%EC,I,I+1):$T(@$E(%EC,I,I+1))'=""
+ G %C
+I ;
+ S YY=YY+1 D:'$D(S(YY))  S XX=$P($G(S(YY),XX),"/") G %C
+ .D YES S Y=0,GG=$$ZO(G,1) I GG="" W $$bel^%ZAPM.bs.BS3 D REM S YY=YY-1 Q
+ .D WAIT S G=GG,K1=$$KS(G,@G) S K2=0 F  S Y=$O(M(Y)),K2=K2+$$KS(M(Y,1),S(Y,1)) Q:K1'>K2
+ .S G=M(Y,1),Y=0 K M,S D LOO S Y=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) D PUT F YY=23:-1:1 Q:$D(S(YY))
+ .D REM Q
+T ;
+ S XX=XX+10 D  G %C
+ .I XX>79 S YY=YY+1,XX=$P($G(S(YY),79),"/") Q
+ .I $P(S(YY),"/",3)=YY,(XX-$P(S(YY),"/")+1)>$L(S(YY,1)) S XX=$P(S(YY),"/")+$L(S(YY,1)) Q
+ .I $P(S(YY),"/",3)'=YY,(XX-$P(S(YY),"/")+1+$P(S(YY-1),"/",2))>$L(S($P(S(YY),"/",3),1)) S XX=$L(S($P(S(YY),"/",3),1))-$P(S(YY-1),"/",2)+$P(S(YY),"/") Q
+ref(m) D
+ .n i,g,G,ii,YES //РЕДАКТИРОВАТЬ В СТРОЧНОМ РЕДАКТОРЕ
+ .S $ZT="ErRef"
+ .S i=$P(S(YY),"/",3),G=M(i,1)
+ .N S,M,YY,XX,oldata
+ .S oldata=$G(@G)
+ .I m=1 S i=$D(@G),ii=$G(@G),txt=G_"==="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")
+ .E  S i="",ii=G,txt="Редактируем индекс="_G
+ .// //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
+ .i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ .S S=$$LineEdit^%ZAPM.bs.BSXfun(ii,txt) Q:YES<1
+ .i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ .I m,i["0",S="" D Yes^%ZAPM.bs.BSXfun("ВЫ ХОТИТЕ ВВЕСТИ ПУСТОЕ ЗНАЧЕНИЕ ?") Q:YES<1
+ .i 'm S @S=oldata Q  //ИНДЕКС
+ .S @G=S
+ D SCREEN
+ Q
+ErRef D ErrMsg^%ZAPM.bs.BSXfun($ZE)
+ Q
+P ;ПЕРЕХОД НА ПОЛЕ ИНДЕКСОВ
+F2 D YES D ref(0) g %C
+ ;I '$D(Fname) S Fname="N:\123.TXT" I $ZU(140,4,Fname)'=0 O Fname:"UWN" U Fname W "-----",! W  W "-------",! U 0 C Fname 
+ G ^%ZAPM.bs.BSMSMGI
+TA ;
+ S XX=XX-10 D  G %C
+ .I XX<$P(S(YY),"/"),YY=$P(S(YY),"/",3) S XX=$P(S(YY),"/") Q
+ .I XX<$P(S(YY),"/") S XX=79,YY=YY-1 Q
+ .Q
+LT ;
+ S XX=XX-1 D  G %C
+ .i '$d(S(YY)) Q
+ .I XX<$P(S(YY),"/"),YY=$P(S(YY),"/",3) S XX=$P(S(YY),"/") Q
+ .I XX<$P(S(YY),"/") S XX=79,YY=YY-1 Q
+ .Q
+RT ;
+ S XX=XX+1 D  G %C
+ .I XX>79 S YY=YY+1,XX=$P($G(S(YY),78),"/") Q
+ .i '$d(S(YY)) Q
+ .I $P(S(YY),"/",3)=YY,(XX-$P(S(YY),"/")+1)>$L(S(YY,1)) S XX=$P(S(YY),"/")+$L(S(YY,1)) Q
+ .I $P(S(YY),"/",3)'=YY,(XX-$P(S(YY),"/")+1+$P(S(YY-1),"/",2))>$L(S($P(S(YY),"/",3),1)) S XX=$L(S($P(S(YY),"/",3),1))-$P(S(YY-1),"/",2)+$P(S(YY),"/") Q
+ .Q
+UP ;
+ S YY=YY-1 D  G %C
+ .I '$D(S(YY)) D YES D  Q
+ ..S Y=0 I $$ZO(M($O(M("")),1),-1)="" W $$bel^%ZAPM.bs.BS3 S YY=YY+1 Q
+ ..S G=$$ZO(M($O(M("")),1),-1) S Y2=1,Y=1 K M,S D FOR,LOO S Y=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) D PUT,REM S YY=1,XX=$P($G(S(YY),XX),"/") Q
+ .I XX<$P(S(YY),"/"),YY=$P(S(YY),"/",3) S XX=$P(S(YY),"/") Q
+ .I $P(S(YY),"/",3)=YY,(XX-$P(S(YY),"/")+1)>$L(S(YY,1)) S XX=$P(S(YY),"/")+$L(S(YY,1)) Q
+ .I $P(S(YY),"/",3)'=YY,(XX-$P(S(YY),"/")+1+$P(S(YY-1),"/",2))>$L(S($P(S(YY),"/",3),1)) S XX=$L(S($P(S(YY),"/",3),1))-$P(S(YY-1),"/",2)+$P(S(YY),"/") Q
+ .Q
+DN ;
+ S YY=YY+1 D  G %C
+ .I '$D(S(YY)) D YES D  Q
+ ..S Y=0 S:G'="" GG=$$ZO(G,1) S:G="" GG=G I GG="" W $$bel^%ZAPM.bs.BS3 D REM S YY=YY-1 Q
+ ..D WAIT S G=GG,K1=$$KS(GG,@GG),K2=0 F  S Y=$O(M(Y)),K2=K2+$$KS(M(Y,1),S(Y,1)) Q:K1'>K2
+ ..S G=M(Y,1),Y=0 K M,S D LOO S Y=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) D PUT S YY=$O(S(""),-1)
+ ..D REM S XX=$P($G(S(YY),XX),"/") Q
+ .I XX<$P(S(YY),"/"),YY=$P(S(YY),"/",3) S XX=$P(S(YY),"/") Q
+ .I $P(S(YY),"/",3)=YY,(XX-$P(S(YY),"/")+1)>$L(S(YY,1)) S XX=$P(S(YY),"/")+$L(S(YY,1)) Q
+ .I $P(S(YY),"/",3)'=YY,(XX-$P(S(YY),"/")+1+$P(S(YY-1),"/",2))>$L(S($P(S(YY),"/",3),1)) S XX=$L(S($P(S(YY),"/",3),1))-$P(S(YY-1),"/",2)+$P(S(YY),"/") Q
+U ;
+ D ref(1) G %C
+ S K1=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+ I YY=$P(S(YY),"/",3) S S(YY,1)=$E(S(YY,1),1,XX-$P(S(YY),"/"))_$E(S(YY,1),XX-$P(S(YY),"/")+2,$$LNG^%ZAPM.bs.BSF12) D  G DLED
+ .W /CUP(YY,XX),/EL(0),$E(S(YY,1),XX-$P(S(YY),"/")+1,$P(S(YY),"/",5)) S III=YY F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=YY  W /CUP(III,$P(S(III),"/")),/EL(0),$E(S(YY,1),$P(S(III),"/",4),$P(S(III),"/",5))
+ S S($P(S(YY),"/",3),1)=$E(S($P(S(YY),"/",3),1),1,$P(S(YY-1),"/",2)+XX-$P(S(YY),"/"))_$E(S($P(S(YY),"/",3),1),$P(S(YY-1),"/",2)+XX-$P(S(YY),"/")+2,$$LNG^%ZAPM.bs.BSF12) D  G DLED
+ .W /CUP(YY,XX),/EL(0),$E(S($P(S(YY),"/",3),1),$P(S(YY),"/",4)+(XX-$P(S(YY),"/")),$P(S(YY),"/",5)) S III=YY,II=$P(S(YY),"/",3)
+ .F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=II  W /CUP(III,$P(S(III),"/")),/EL(0),$E(S($P(S(YY),"/",3),1),$P(S(III),"/",4),$P(S(III),"/",5))
+DLED S K2=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+ S YES="",M($P(S(YY),"/",3),3)="" I K1>K2 W $$esc^%ZAPM.bs.BS3("[J") D YES S (I3,Y)=$P(S(YY),"/",3) D  D PUT,REM I XX'>$P(S(YY),"/"),YY'=$P(S(YY),"/",3) S YY=YY-1,XX=80
+ .S G=$G(M(Y,2),M(Y,1)),Y=I3 D  D FOR,LOO S Y=I3-1 Q
+ ..F I=I3:1:25 K M(I),S(I)
+ G %C
+IN ;
+ S W=$S(W=0:1,1:0) D REM G %C ;ВСТАВКА СИМВОЛА
+L ;
+ S K1=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+ I YY=$P(S(YY),"/",3) S S(YY,1)=$E(S(YY,1),1,XX-$P(S(YY),"/")) W /CUP(YY,XX),/EL(0) G ELED
+ S S($P(S(YY),"/",3),1)=$E(S($P(S(YY),"/",3),1),1,$P(S(YY-1),"/",2)+XX-$P(S(YY),"/")) W /CUP(YY,XX),/EL(0)
+ELED S K2=($L($P(M($P(S(YY),"/",3),1),"(",2))+$L(S($P(S(YY),"/",3),1)))\(79-$L($P(M($P(S(YY),"/",3),1),"(")))+1
+ S YES="",M($P(S(YY),"/",3),3)="" I K1>K2 W $$esc^%ZAPM.bs.BS3("[J") D YES S (I3,Y)=$P(S(YY),"/",3) D  D PUT,REM I XX'>$P(S(YY),"/"),YY'=$P(S(YY),"/",3) S YY=YY-1,XX=80
+ .S G=$G(M(Y,2),M(Y,1)),Y=I3 D  D FOR,LOO S Y=I3-1 Q
+ ..F I=I3:1:25 K M(I),S(I)
+ G %C
+PD ;
+ D YES S G=M($O(M(""),-1),1) I $$ZO(G,1)="" W $$bel^%ZAPM.bs.BS3 D REM G %C
+ S Y=0 K M,S D LOO S Y=0,YY=0,Y2=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) D PUT,REM G I
+HM ;
+ S YY=$P(S(YY),"/",3),XX=$P($G(S(YY),XX),"/") G %C
+PU ;
+ D YES I $O(M(""))="" W $$bel^%ZAPM.bs.BS3 G HM
+ I $$ZO(M($O(M("")),1),-1)="" W $$bel^%ZAPM.bs.BS3 G HM
+ D PUU G I
+PUU S Y=0,GG=$O(M("")) I GG="" S G=GLO G PUU1
+ S (GG,G)=M($O(M("")),1) F i=1:1:20 S GG=$$ZO(GG,-1) Q:GG=""  S G=GG
+PUU1 S:GG'="" G=GG K M,S D LOO S Y=0,YY=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2),/CUP(1,1) D PUT,REM Q
+WAIT D WAIT^%ZAPM.bs.BSF2 Q
+EN ;
+ S i=$P(S(YY),"/",3) F ii=YY:1 Q:$P($G(S(ii)),"/",3)'=i  S iii=ii
+ S YY=iii,XX=78 G RT
+F1 ;
+ S IYI="^%ZAPM.bs.BSHLP(HELPGE" D F0 D  G %C
+ .I $ZV["Cach"||($ZV["IRIS") D SCREEN
+F0 D N^%ZAPM.bs.BSN("IYI"),ENTER^%ZAPM.bs.BSN,Q^%ZAPM.bs.BSN("IYI"),%LOCK^%ZAPM.bs.BSMSMGI Q
+YES Q:'$D(YES)  S %zT=$ZT,$ZT="ERR^%ZAPM.bs.BSMSMGI"
+YE S I="" F  S I=$O(M(I)) Q:I=""  I M(I)="KILL" X $S(%YES:"K @M(I,1),M(I)",1:"S EDI=EDI+1,EDI(EDI)=0,EDI(EDI,1)=M(I,1)")
+ S I="" F  S I=$O(M(I)) Q:I=""  I $D(M(I,3)) X $S(%YES:"S @M(I,1)=S(I,1)",1:"S EDI=EDI+1,EDI(EDI)=1,EDI(EDI,1)=M(I,1),EDI(EDI,2)=S(I,1)")
+ K YES S $ZT=$G(%zT) Q
+FOR ;ФОРМИРОВАНИЕ СТРОКИ G-ГЛ.ССЫЛКА,Y-ИНДЕКСЫ   M(...,S(...
+ S M(Y,1)=G,M(Y)=($L($P(G,"("))+1),S(Y)=($L(G)+1)_"/"_(79-$L(G))_"/"_Y_"/1/"_(79-$L(G)),II1=(79-$L(G)),S(Y,1)=@G,II=0
+ S K1=($L($P(M(Y,1),"(",2))+$L(S(Y,1)))\(79-$L($P(M(Y,1),"(")))+1
+ I K1>1 S I1=80-$L(G) F II=1:1:K1-1 S II1=II1+(79-M(Y)+1),S(Y+II)=M(Y)_"/"_II1_"/"_Y_"/"_I1_"/"_(I1+(79-M(Y))),I1=I1+(79-M(Y)+1)
+ S Y=Y+II Q
+PUT ;ПЕЧАТЬ СТРОКИ
+ S I=$O(M(Y)) Q:I=""  D:I'["."  F  S I=$O(M(I)) Q:I=""  I I'["." D  ;
+ .W /CUP(I,1) //,$$esc^%ZAPM.bs.BS3("[J")
+ .W $$clr^%ZAPM.bs.BS3(11),M(I,1),$$atr^%ZAPM.bs.BS3(0),$E(S(I,1),1,$P(S(I),"/",5)) S III=I F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=I  W /CUP(III,$P(S(III),"/")),$E(S(I,1),$P(S(III),"/",4),$P(S(III),"/",5))
+ .Q
+ Q
+LOO ;ЦИКЛ ПО ГЛОБАЛИ G=^NAM(...)
+ S I2=G F  Q:Y>23  S Y=Y+1,I2=G,G=$$ZO(G,1) Q:G=""  D FOR
+ I $D(S(Y)) S II=$P(S(Y),"/",3) F I=II:1:Y K M(I),S(I)
+ Q
+ZO(g,Ha) ;
+Z1 S g=$ZO(@g,Ha) I g="" Q ""
+ X FIL I  Q g
+ G Z1
+EXIT D U^%ZAPM.bs.BS3(GLO) D OP^%ZAPM.bs.BSF4 W $$atr^%ZAPM.bs.BS3(0) Q
+CL D CL^%ZAPM.bs.BSF4 Q
+SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1) S:GG="" GG=$P(G,"(") S:GG'="" G=GG K M,S D LOO S Y=0 W $$atr^%ZAPM.bs.BS3(0),/ED(2) D PUT,REM Q
+OP D OP^%ZAPM.bs.BSF4 Q
+REM W $$clr^%ZAPM.bs.BS3(4),/CUP(24,1),/EL(0)," <F1>-ПОМОЩЬ <Ctrl-K>-УДАЛИТЬ УЗЕЛ <Ctrl-P>-ИНДЕКСЫ <Esc>-ВЫХОД " D  W $$atr^%ZAPM.bs.BS3(0) Q
+ .W $S(W:"Вставка",1:"Замещение")
+e Q

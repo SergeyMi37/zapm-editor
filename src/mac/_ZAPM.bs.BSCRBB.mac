@@ -1,0 +1,7 @@
+ROUTINE %ZAPM.bs.BSCRBB
+%BSCRBB ;Remote Black Box
+ Q
+Action(ID,P1,P2,P3) ;посылка комады серверу
+ Q ID
+Event(ID) ;опрос сервера, есть ли что нибудь для него
+ q 0

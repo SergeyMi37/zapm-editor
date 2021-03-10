@@ -1,0 +1,59 @@
+ROUTINE %ZAPM.bs.BSCB
+%BSCB ;СОЗДАНИЕ ДИСТРИБУТИВОВ ; 10:12   18.10.2002
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+BsBuild //загрузка и компиляция классов BS-Portal
+ //ОСНОВА КОДА ПОДСМОТРЕНА У ШУТОВА СЕРГЕЯ (ДИМАС)
+ D Uninstall
+ D Install
+ Q
+Install
+ N STOP,I,II
+ S DIR="c:\bs\" //ДИРЕКТОРИЯ ИСХОДНИКОВ. НЕ УДАЛЯЙТЕ И НЕ ПЕРЕНОСИТЕ ЕЕ!
+ s OWNER="Михайленко Сергей <Mikhaylenko@b4y.net.ru>"
+ do $system.OBJ.Load(DIR_"BSALL.xml","ck",.ERR) 
+ S I="" F  S I=$O(ERR(I)) Q:I=""  D  Q:$G(STOP)
+ .I ERR(I,"code")'=5475 S STOP=I Q
+ .I ERR(I,"param",1)["%BSC" S STOP=I Q
+ I $G(STOP) W "Обнаружены критичные ошибки...",!,"Обратитесь к разработчику "_OWNER q
+ W "Обнаружены некритичные ошибки, продолжаем..."
+ d iniT^%ZAPM.bs.BSCB
+ Q 
+Show do $system.OBJ.ShowFlags()
+ Q
+Uninstall
+ N I,i Q:'$D(^%ZAPM.bs.BS)
+ S BS="BS-Portal"
+ write !,"удаление полного проекта "_BS,!
+ k ^oddPROJECT("%BSALL")
+ write !,"удаление всех описаний классов "_BS,!
+ do $system.OBJ.DeletePackage("BSC")
+ do $system.OBJ.DeletePackage("BSC4")
+ F I="Doc","DocResult","Lib","Libresult" S II="/csp/msw/Bs"_I_".csp" I ##class(%CSP.Routine).Delete(II) W !,"Удалили CSP страницу "_II
+ 
+   write !,"удаление всех программ "_BS,!
+ // удаляются все программы из области, кроме текущей
+ set rset = ##class(%ResultSet).%New()
+ set rset.ClassName = "%Library.Routine"
+ set rset.QueryName = "RoutineList"
+ 
+ for I="%BS","%zek"  {
+ 	S rext=I_"*.MAC,"_I_"*.INT,"_I_"*.OBJ"
+ 	do rset.Execute(rext,1,0)
+	 while (rset.Next(.sc)) {
+	    if ($SYSTEM.Status.IsOK(sc)) {
+	       set rname = rset.Data("Name")
+	       if ($t(+0)'=$extract(rname,1,$length(rname)-4)) {
+	       	write rname,!
+	       	do ##class(%Library.Routine).Delete(rname)
+	       }
+	    }
+	 }
+  }
+  write !,"удаление всех массивов "_BS,!
+ // удаляются все программы из области, кроме текущей
+ S I="" F i=1:1  S I=$O(^$GLOBAL(I)) Q:I=""  W:'(i#10) "." I I["^%ZAPM.bs.BS"!(I["^BSC") W !,I K @I
+ Q

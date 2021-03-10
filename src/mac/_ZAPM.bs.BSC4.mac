@@ -1,0 +1,569 @@
+ROUTINE %ZAPM.bs.BSC4
+%BSC4 ; Портал B4I ; 14:50 12.01.2003
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ Q
+RUN ;Выполнение
+ S $ZT="ErrRun^%ZAPM.bs.BSC4"
+ D %KEY,MAINVAR
+ I '$D(BSLABEL) W RED,$$LNG("Не определена метка выполнения",32),EF Q
+ ;КОНТРОЛЬ И БИЛИНГ
+ I $G(BSNSP)'="" D UCI($G(BSNSP))
+ I $D(@BDREF@(BSRoutineId,"Name")) D  Q
+ .S BDREQ=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""RouReq"")"),BDREQ1=$R(10)_$R(10)_$R(10)_$R(10)_$R(10)_$R(10)
+ .S @BDREQ@(BDREQ1,"Ref")=BSRoutineId,@BDREQ@(BDREQ1,"IP")=CurUS,@BDREQ@(BDREQ1,"Time")=$H //ЗДЕСЬ МОЖНО СЧИТАТЬ ТРАФИК
+ .D RU(BSLABEL_"^"_$G(@BDREF@(BSRoutineId,"Name")))
+ .K @BDREQ@(BDREQ1)
+ W RED,$$LNG("Некооректная переменная BSRoutineId=",33),BSRoutineId,EF
+ Q
+ErrRun S $ZT="",ze=$p($ZE,"^")  W RED,"Error: "_$$TRa^%ZAPM.bs.BSCh0(ze),EF,BBK
+ Q
+RU(%ZName) ;ЗАПУСК ПОЛЬЗ. ПРОГРАММЫ
+ N %KEY,%CGI,%CGIEVAR,BDTAR,BDREF,BDREQ,BDREQ1,BDPIN,BDUSE,BDSES,GTmp,%BS,%ZCS,%zT,CMND
+ N MGWCHD,MGWEBP,MGWJSP,MGWLPN,MGWNSP,MGWPWD,MGWUCI,MainOpt,NSPACE,ROU,TIMEOUT,X,bsg,bsd
+ ;N BDDIC
+ D @%ZName
+ Q
+LNG(ID,nu) i $d(nu) Q:$G(@BDDIC@(nu,$E($G(BSLNG,"RUS"),1)))="?" ID Q @$ZR
+ Q $G(@BDDIC@(ID,$E($G(BSLNG,"RUS"),1)),ID)
+MAIN ;ГОЛОВНАЯ ПРОГРАММА - ДИСПЕТЧЕР
+ ;S $ZT="ErrRun^%ZAPM.bs.BSC4"
+ D %KEY
+ D MAINVAR
+ I $G(%KEY("UZN"))'="" D:$$ZU^%ZAPM.bs.BSF4(%KEY("UZN")) ^dispatcher Q
+ I $P($P($G(^%ZAPM.bs.BSC4("ADV")),"@",1),":",2)["Portal" D REMONT("Информационный портал") Q
+ I $G(BSSES)'="",'$$EnablSess() D CLOSEWIN("#"_BSSES_". "_$$LNG("Текущая сессия закрыта. Открывайте новую сессию.",34)) Q
+ I '$D(BSLABEL) W "Не определена программа !"   D l^%ZAPM.bs.BSCp2 Q
+ S BSLABEL=$$%^%ZAPM.bs.BSCh(BSLABEL)
+ D UCI($G(BSNSP))
+ //I $G(BSPART)["~" S BSPART=$$%^%ZAPM.bs.BSCh(BSPART)
+ I $G(BSLABEL)'="" D  Q
+ .;I $G(BSLABEL)'["^" D @BSLABEL Q
+ .I $G(BSLABEL)["N%" S BSLABEL=$$TR^%ZAPM.bs.BSsFUNM(BSLABEL,"N%","^%") D @BSLABEL Q
+ .;I $G(BSLABEL)["^%ZAPM.bs.BS" 
+ .D @BSLABEL Q
+ .W $$LNG("Запрещенная метка 'BSLABEL'...",174)_$G(BSLABEL)_"!!!"
+ W $$LNG("Нет переменной 'BSLABEL'...",36)
+ Q
+UCI(BSNSP) Q:BSNSP="" "?"
+ I BSNSP["~" Q $$ZU^%ZAPM.bs.BSF4("%"_$E(BSNSP,2,99))
+ I BSNSP'["~" Q $$ZU^%ZAPM.bs.BSF4(BSNSP)
+ Q "?"
+ //$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","bzOUTtables","V","^[""%SYS""]BSC4.ISS.Setup") //ТИПОВОЙ ВЫЗОВ ОБЩЕСИСТЕМНЫХ ПАРАМЕТРОВ
+MainOpt() N t    S t=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Acfg")
+ I t="" S t="^%ZAPM.bs.BSETUP(""CFG"")"
+ Q t
+MAINVAR ;ОСНОВНЫЕ ПЕРЕМЕННЫЕ ПОРТАЛА
+ S MainOpt=$$MainOpt
+ ;```I '$D(BStyle) 
+ S BStyle=$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"CurCSS")
+ I '$D(GREEN) D VAR^%ZAPM.bs.BSCh
+ S NAVIG=$G(%CGIEVAR("HTTP_USER_AGENT"))
+ S BDDIC=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""DICT"")")
+ S BDREF=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""RouRef"")")
+ S BDPIN=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""PIN"")")
+ S BDUSE=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""PROTECT"")") ;W RED_111_$G(BDUSE,"?")_222_EF
+ S BDSES=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""SESSIONS"")")
+ S BDTAR=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""TARIFF"")")
+ S BSDOMAIN=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","bb4y1") 
+VARI     S (%BS(41),CurUS)=$$ADDRIP
+ S GTmp=$NA(^["%SYS"]mtempBD4(CurUS))
+ S HTTPREF=$G(%CGIEVAR("HTTP_REFERER"))
+ I $D(BSSES) S %BS(40)=BSSES
+ I $D(BSLOGIN) S %BS(12)=BSLOGIN
+ S %BS(24,1)=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSVOL(""PROTOKOL"")")
+ Q
+EnablSess() ;КОНТРОЛЬ СЕССИЙ
+ I $D(@BDSES@(BSSES)),$G(BSLOGIN)=$G(@BDSES@(BSSES,"NM")),$G(CurUS)=$G(@BDSES@(BSSES,"IP")),$G(@BDSES@(BSSES,"CHR"))="" S @BDSES@(BSSES,"CUR")=$H D  Q 1
+ .S @BDSES@(BSSES,"COUNT")=$G(@BDSES@(BSSES,"COUNT"))+1
+ Q 0
+%KEY N I,II,J  S I="" F  S I=$O(%KEY(I)) Q:I=""  D
+ .;S $ZT="%ErKey" 
+ .I $D(%KEY(I))>1 D  Q
+ ..I $D(%KEY(I,$O(%KEY(I,""),-1)))=1 S @I=%KEY(I,$O(%KEY(I,""),-1)) Q
+ ..S II="",J="",JJ=$O(%KEY(I,""),-1) I JJ="" S @I="" Q
+ ..F  S II=$O(%KEY(I,JJ,II)) Q:II=""  S J=J_%KEY(I,JJ,II)
+ ..S @I=J
+ .I $E(I)'?1N S @I=%KEY(I)
+ I $G(BSLNG)="" S BSLNG="RUS"
+ K BSROU,BSNSPACE
+ Q
+%ErKey Q
+BEG1 ;i $d(zBEG1) q
+ D GRA N BSGRANT
+ i '$D(BK) D VAR^%ZAPM.bs.BSCh
+ W "<HTML><HEAD>"_BK ;_"<LINK REL=""SHORTCUT ICON"" HREF=""http://localhost:1962/b4y/b4y.ico"">"	
+ s zBEG1=1 //флаг о том, что заголовок уже выведен 
+ w $$STYLE
+ Q
+First2 ;H 1
+First ;ПЕРВАЯ УГЛОВАЯ СТРАНИЦА
+ S Frame="LeftUp"
+ D BEG1
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function ReSet() {",BK
+ S BSLABEL="L1"
+   w "parent.L1.location='"_$$ADDBSGET()_"';",BK
+ S BSLABEL="U1"
+   ;w "alert(parent.U1.name);"
+   w "parent.U1.location='"_$$ADDBSGET()_"';",BK
+ S BSLABEL="D1"
+   w "parent.D1.location='"_$$ADDBSGET()_"';",BK
+ W "}",BK
+ W "</script>",BK
+ D UGOL(1)
+ S II=BSLNG,BSLABEL="First"
+ I $$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"MultiL") D
+ .W "<p align='center'><font size=1 face='Arial, Helvetica, MS Sans Serif'>"
+ .F I="RUS","ENG" d  ;,"GER","FRA" D
+ ..N BSLNG W " "
+ ..I II=I W I
+ ..E  S BSLNG=I W "<A HREF='",$$ADDBSGET(),"'>",I,"</A>"
+ ..W " "
+ .W EF,"</p>"
+ W "</span>"
+ D END
+ q
+UGOL(O)     W "</HEAD>",BK
+ W "<BODY "_$S(O:"onload='ReSet();'",1:"")_">" // background='"_BSDOMAIN_"/logo/ugol.gif'>",BK
+ N IP,IP1,IP2 S IP1="" //$$LNG("P")
+ S IP=$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"IP") I IP'="" S IP1=IP
+ S IP2=$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"B4I")
+ i IP1'="" S IP1="<font size=1 face='Arial, Helvetica, MS Sans Serif'>"_IP1_EF //_BBK
+ S IP2=BLUE_"<big><strong>"_IP2_"</strong></big>"_EF //__BBK
+ N BD,z,GR1L,GR1B S BD=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""GRAND"")")
+ s BSGRANT=$G(BSGRANT,"DFLT") I $G(BSGRANT)="" s BSGRANT="DFLT"
+ S z=$$GetVar^%ZAPM.bs.BSC4("GRANT") I z'["ERROR",z'="" S BSGRANT=z
+ S GR1L=$G(@BD@(BSGRANT,"TXTLITL")),GR1B=$G(@BD@(BSGRANT,"TXTBIG"))
+ I GR1L'="" S IP1=GR1L
+ I GR1B'="" S IP2=GR1B
+ W "<span id=Ugol >"
+ I $G(BSframe) d @("UGOL"_BSframe)
+ E  w "<table border=0 width=100%><tr><td align=center>"_IP1_"</td></tr><tr><td align=center>"_IP2_"</td></tr></table>"
+ Q
+END W "</BODY></HTML>",BK
+ Q
+RECURS(S) Q:S=""  ;РЕКУРСИВНЫЙ МОДУЛЬ ВЫЧЛЕНЕНИЯ НЕПЕРЕСЕКАЮЩИХСЯ АТОМАРНЫХ ГРАНДОВ
+ N FFF
+ I S'["," D  Q
+ .I $G(@BD@(S,"Z1"))'="" D RECURS($G(@BD@(S,"Z1"))) Q
+ .I $G(@BD@(S,"MENU"))'="" I '$D(FF(S)) S F=$G(F)+1,F(F)=S,FF(S)=""
+ F FFF=1:1 Q:$P(S,",",FFF,FFF+1)=""  D RECURS($P(S,",",FFF))
+ Q
+GRA N BD,z,GR1S S BD=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""GRAND"")")
+ s BSGRANT=$G(BSGRANT,"DFLT") I $G(BSGRANT)="" s BSGRANT="DFLT"
+ S z=$$GetVar^%ZAPM.bs.BSC4("GRANT") I z'["ERROR",z'="" S BSGRANT=z
+ S GR1S=$G(@BD@(BSGRANT,"STYLE"))
+ I GR1S'="" S BStyle=GR1S
+ Q
+L1 ;ЛЕВЫЙ ФРЭЙМ
+ N Cm,FF,F,BD
+ S Frame="LeftDn"
+ D BEG1
+ S BD=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""GRAND"")")
+ s BSGRANT=$G(BSGRANT,"DFLT") I $G(BSGRANT)="" s BSGRANT="DFLT"
+ S z=$$GetVar^%ZAPM.bs.BSC4("GRANT") I z'["ERROR",z'="" S BSGRANT=z
+ S Cm=$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"Commerce")
+ W "</HEAD><DIV id=BodyL1 >"
+ //w "<BODY TEXT=#8F8F8F LINK=#000095 VLINK=#460080 ALINK=BLUE>",BK
+ w "<BODY TEXT=black LINK=black VLINK=black ALINK=black>",BK
+ 
+ d RECURS(BSGRANT) I '$D(F)  W "Грант: "_RED_$G(BSGRANT)_EF_" - пустой!"
+ N BSGRANT 
+ 
+ I $G(BSframe) d @("Top"_BSframe)
+ e  W "<H3><table border=0>" D LA1,LAend
+ 
+ s I="" F  S I=$O(F(I)) Q:I=""  i F(I)'="" D  S BSmenuID=F(I) D @PMENU
+ .S PMENU=$G(@BD@(F(I),"MENU")),PREM=$G(@BD@(F(I),"REM")),PTITLE=$G(@BD@(F(I),"TITLE"))
+ .S PPROG=$G(@BD@(F(I),"PROG")),PWRITE=$G(@BD@(F(I),"WRITE")),PTOPIC=$G(@BD@(F(I),"TOPIC"))
+ .S PTOPIC1=$G(@BD@(F(I),"TOPIC1")),NSP1=$G(@BD@(F(I),"NSP"))
+ .I PMENU="" S PMENU="zerro^%ZAPM.bs.BSC4b"
+ 
+ I $G(BSframe) d @("TopEnd"_BSframe)
+ e  D LA1,LAend W "</table>" W "</H3>"
+ D JS^%ZAPM.bs.BSCp
+ 	w "var Prev1='1';"_BK
+ 	W "function Cur(tt)",!
+	W "    {",!  
+	//w "alert(11);"_BK
+	W "        if (Prev1=='2') {Prev.className = 'TopMenuNorm';}"_BK
+	//W "        tt.className = 'TopMenuSel';"_BK
+	//W "        tt.style.color='white';"_BK
+	W "        Prev=tt; Prev1='2';",!
+	W "    };",!
+	W "function MOver(t) {",!
+	W "     if (t.className!='TopMenuSel') {t.className = 'TopMenuOver';}"_BK
+	W "    };",!	
+	W "function MOut(t) {",!
+	W "     if (t.className!='TopMenuSel') {t.className = 'TopMenuNorm';}"_BK
+	W "    };",!	
+	W "function MDown(t) {",!
+	W "     if (t.className!='TopMenuSel') {t.className = 'TopMenuSel'; Cur(t);} "_BK
+	W "    };",!	
+ D JSE^%ZAPM.bs.BSCp
+ w "<br>" 
+ I $G(BSframe)="" D FOO("footer")
+ W ""
+ W "</BODY></DIV></HTML>"
+ Q
+mouse() n q s q=" ONMOUSEOVER='MOver(this);' ONMOUSEOUT='MOut(this);' ONMOUSEDOWN='MDown(this);' " 
+	//ONMOUSEUP="this.className = 'ParamOver';"> 
+	q q
+FOO(HTML) S gr=$G(^%ZAPM.bs.BS("Config",HTML)) I gr="" D
+ .D BSdebug
+ .I $G(BSdebug) d logo
+ .D COPYR
+ E  W AF_"Конфигурация :"_RED_$$CFG^%ZAPM.bs.BSCp_EF_""_EF_"<BR><BR>" W gr
+ Q
+BSdebug I $G(BSdebug),$d(BSLOGIN),'$$GRA^%ZAPM.bs.BSCGIS(BSLOGIN,"zDebug") K BSdebug
+ Q
+LA1 I $G(BSframe) d @("LA1"_BSframe)
+ E  W "<TR><TD class=s3> </TD><TD class=s3><font size=4 face='Arial, Helvetica, MS Sans Serif'><b>"
+ Q
+LA(TOP,ENABLE,IMG) ;ВЫВОД ПУНКТА
+ D LA1
+ S BSLABEL=TOP
+ I '$G(ENABLE) W "<div class=TopMenuDis id='"_F(I)_"'>"_$G(IMG)_$$LNG(TOP)_"</div>" g LAend
+ S BSTOP=TOP
+ W "<span id='"_F(I)_"'><A class=TopMenuNorm "_$$mouse()_" HREF='"_$$ADDBSGET_"' target='U1' "_$$title(TOP)_">"_$G(IMG)_$$LNG(TOP)_" </A><span>" ;,BBK
+LAend I $G(BSframe)  d @("LAend"_BSframe)
+ E  W "</b></font></TD><TD class=s3> </TD></TR>"_BK
+ Q
+mR I $G(BSNOREG)="0" D LA("reg",$G(BSSES))
+ Q
+reg D BSTOP Q
+reg2 D ^%ZAPM.bs.BSC4reg
+ Q
+mH D LA("docum",1,"<img src='"_BSDOMAIN_"/img/help1.gif' border=0 title='Документация разработчика' >") q
+docum D BSTOP Q
+docum2 D help
+ Q
+mSCO //попробуем без этого режима  D LA^%ZAPM.bs.BSC4($S($G(BSSES)'="":"Sclose",1:"Sopen"),1,$S($G(BSSES)'="":"<img border=0 src='"_BSDOMAIN_"/img/exit.gif'>",1:"<img border=0 src='"_BSDOMAIN_"/img/open.gif'>"))  
+ I $G(BSSES)'="" D
+ .N BSnewREG S BSnewREG=1
+ .D LA^%ZAPM.bs.BSC4("Sopen",1,"<img border=0 src='"_BSDOMAIN_"/img/open.gif'>")  Q
+ Q
+Sopen D BSTOP q
+Sopen2 D Sopen^%ZAPM.bs.BSC4reg
+ Q
+Sclose D BSTOP q
+Sclose2 D CloseSes^%ZAPM.bs.BSC4reg
+ Q
+mA D LA("ADM",1,"<img src='"_BSDOMAIN_"/img/option.gif' border=0>") Q
+ADM D BSTOP q
+ADM2 D ADM^%ZAPM.bs.BSC4rout
+ Q
+projimg() q "<img src='"_BSDOMAIN_"/img/proj.gif' border=0>"
+mP D LA("proo",$G(BSSES)'="",$$projimg) q
+proo D BSTOP Q
+proo2 D ^%ZAPM.bs.BSC4base
+ Q
+mRe I $g(Cm)=1 D LA("rent",$G(BSSES)'="")
+ q
+rent D BSTOP Q
+rent2 D rent^%ZAPM.bs.BSC4rout
+ Q
+mT  I $g(Cm)=1 D LA("tariff",1)
+ q
+tariff D BSTOP Q
+tariff2 ;тарифы
+ D BEG1 N BDT,I
+ W " <table border=0 width=100%>"
+ W "<tr><td align='right' class=s3 ><strong>"_$$LNG^%ZAPM.bs.BSC4("tariff")_"</strong></td class=s3 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s3 >&nbsp;"_$$LNG^%ZAPM.bs.BSC4("T"_I)_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(24)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"D"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(25)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"PG"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(26)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"GOD"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(23)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"M"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(27)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"BD"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(28)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"ROU"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(29)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$G(@BDTAR@(I,"TRF"))_"</td>"
+ W "<tr><td align='right' class=s3 >"_$$LNG^%ZAPM.bs.BSC4(30)_"</td class=s1 >" D  W "</tr>",BK
+ .F I=0:1:3 W "<td class=s1 >&nbsp;"_$$LNG^%ZAPM.bs.BSC4($G(@BDTAR@(I,"PRI"),"?"))_"</td>"
+ W "</table>"
+ //D TXTARIF^%ZAPM.bs.BSC4reg(
+ D InfoSess^%ZAPM.bs.BSC4rout
+ D END
+ Q
+mAb I Cm=1 D LA("about",1)
+ q
+about D BSTOP Q
+about2
+ D SITE("D1",BSDOMAIN_"/about/"_$$LITL^%ZAPM.bs.BSsFUNM(BSLNG)_"/index.htm")
+ Q
+SITE(FRAME,URL)
+ D BEG1
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function ReSet2() {",BK
+ w "parent."_FRAME_".location='"_URL_"';",BK
+ W "}",BK
+ W "</script>",BK
+ W "</HEAD>",BK
+ W "<BODY onload='ReSet2();'>",BK
+ D END
+ Q
+BSTOP1 W "<table border=0 width=100%><tr>"
+ W "<td align=center width=70% class=TopHeadSel>" //<font color=#FFFFFF>"
+ Q
+Header(s) q "<DIV id=HeadU1 align=center class=TopHeadSel >"_s_"</DIV>"
+BSTOP ;ВЫВОД ЗАГОЛОВКА В ВЕРХНЕМ ФРЭЙМЕ
+ S Frame="RightUp"
+ D BEG1
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function ReSet1() {",BK
+ S BSLABEL=BSTOP_2
+ w "parent.D1.location='"_$$ADDBSGET()_"';",BK
+ W "}",BK
+ W "</script>",BK
+ W "</HEAD>",BK
+ W "<BODY onload='ReSet1();'>"_BK // background='"_BSDOMAIN_"/logo/up.gif'>",BK
+ w $$Header($s($G(BSTOP2)'="":$$LNG^%ZAPM.bs.BSC4(BSTOP2),1:$$LNG^%ZAPM.bs.BSC4(BSTOP))) g END //для ASU
+ D BSTOP1
+ W "<H1><DIV id=HeadU1 >"_$$LNG(BSTOP)_"</DIV></H1>" //,EF
+ W "</td><td><DIV id=TabU1 ><table border=0>"
+ I BSTOP="proo" D
+ .n BSLABEL,A1
+ .S BSLABEL="PRO^~BSC4base" W "<tr><td>"_$$A1(1)_$$LNG("проекты",37)_A1_"</td></tr>",BK
+ .S BSLABEL="TAB^~BSC4base" W "<tr><td>"_$$A1(0)_$$LNG("таблицы",38)_A1_"</td></tr>",BK
+ .S BSLABEL="ROU^~BSC4base1" W "<tr><td>"_$$A1(0)_$$LNG("программы",39)_A1_"</td></tr>",BK
+ W "</table></DIV>"
+ W "</td></tr></table>"
+ D END
+A1(O) S A1="</LI>" Q "<LI class=u1 style=""list-style-image: url('"_BSDOMAIN_"/logo/open"_O_".gif')"" OnClick=""parent.D1.location='"_$$ADDBSGET()_"';"">"
+U1 ;ВЕРХНИЙ ФРЭЙМ
+ S Frame="RightUp"
+ D BEG1
+ W "</HEAD><BODY>"_BK // background='"_BSDOMAIN_"/logo/up.gif'>",BK
+ ;W "<table border=0 width=100%><tr><td align=center width=70% class=s3><font color=#FFFFFF><H1><DIV id=HeadU1 >",$$LNG(0)," ",$$LNG(1)_EF_"</DIV></H1></B></font></td><td><DIV id=TabU1 ><table border=0></table></DIV></td></tr></table>"
+ w $$Header($$LNG(0)_" "_$$LNG(1))
+ D END
+ Q
+D1 ;НИЖНИЙ ФРЭЙМ
+ S Frame="RightDn"
+ D BEG1
+ W "</HEAD><BODY>",BK
+ I $g(Cm)=1 W $$LNG(2),"<br><br>" D  D D11 I 1
+ .//_$$LNG(4)_" "_$$GetAllVisit^%ZAPM.bs.BSCh("R","B4Y")_"<br>"_$$LNG(3)," ",$$GetAllVisit^%ZAPM.bs.BSCh("Q","B4Y"),"<br>"
+ E  W $$LNG(333),"<br><br>"
+ N GetAccLU I $G(BSLOGINDFLT)'="" I $$GetAcc^%ZAPM.bs.BSC4cfgP(BSLOGINDFLT,"Aautoreg")!($G(@BDUSE@(BSLOGINDFLT,"REG"))=1) D  //ВКЛ АВТОРЕГИСТРАЦИЯ
+ .D JS^%ZAPM.bs.BSCp
+ .n BSLOGIN,BSLABEL S BSLOGIN=BSLOGINDFLT,BSLABEL="SopenP^~BSC4reg",BSPASS=$G(BSPASS)
+ .w "parent.D1.location='"_$$ADDBSGET()_"';"_BK
+ .D JSE^%ZAPM.bs.BSCp
+ D InfoSess^%ZAPM.bs.BSC4rout,END
+ Q
+D11 w "<br>",$$LNG(5),"<br><br>",$$LNG(6),"<br>" q
+title(ID) n i s i=$G(@BDDIC@(ID,"t"_$E(BSLNG,1)))
+ i i="" q ""
+ Q "title='"_i_"'"
+BSPARVAR(A,B) //ВОССТАНОВИТЬ ПЕРЕМЕННЫЕ
+ N I F I=1:1 Q:$P(A,"@",I,I+1)=""  S @$P(A,"@",I)=$P(B,"@",I)
+ Q I
+BSADDVAR() //СОБРАТЬ ВСЕ ПЕРЕМЕННЫЕ
+ N %zz1,%zz0,%zz2,%zz3,II
+ S %zz1="",%zz1=$O(@%zz1)
+ S II="",x="" F  Q:%zz1=""  D:%zz1'["%zz"  S %zz1=$O(@%zz1)
+ .I "11"[$D(@%zz1),$E(%zz1,1,2)="BS" S x=x_%zz1_"@",II=II_@%zz1_"@"
+ S I=x Q II
+ADDRIP() N CurUS //АДРЕС УДАЛЕННОГО КЛИЕНТА
+ S CurUS=$G(%CGIEVAR("REMOTE_ADDR"),$G(BSLOGIN,"?")) I CurUS="" S CurUS="?"
+ Q CurUS
+ADDSN() i $G(%("HOST:"))'="" Q $G(%("HOST:"))  //ИМЯ СЕРВЕРА С ПОРТОМ, Без порта $ZU(110)
+  Q $$ipS^%ZAPM.bs.BSCp2  //ip сервера
+ADDLIB()  I $G(MGWLIB)="" d
+ .i $G(%("HOST:"))'="" S MGWLIB="/?BSTKWEB%20" q  ;TK-WEB
+ .S MGWLIB="/scripts/mgwms32.dll"                 ;WEBLINK
+ Q $G(MGWLIB)_"?"
+ADDBSGET(%zz4,%zz8) ;ДОБАВИТЬ ВСЕ BS-ПЕРЕМЕННЫЕ
+ N %zz1,%zz0,%zz2,%zz3,I,II,%zz7
+ S II=$$addbs()
+ Q $$ADDLIB()_"BSG=B4"_$G(%zz4,"I")_II_%zz7
+addbs()  I $G(%zz8)'="" N BSLABEL S BSLABEL=$TR(%zz8,"%","~")
+ S %zz1="",%zz1=$O(@%zz1),%zz7="" I $G(MGWSTO) S %zz7="&MGWSTO="_MGWSTO
+ S II="" F  Q:%zz1=""  D:%zz1'["%zz"  S %zz1=$O(@%zz1)
+ .I "11"[$D(@%zz1),$E(%zz1,1,2)="BS",%zz1'="BSG" S II=II_"&"_%zz1_"="_@%zz1
+ Q II
+addb(%zz4,%zz8) ;ДОБАВИТЬ ВСЕ BS-ПЕРЕМЕННЫЕ
+ N %zz1,%zz0,%zz2,%zz3,I,II,%zz7
+ Q $$addbs()
+logo ;логотип
+ W AF_"Конфигурация :"_RED_$$CFG^%ZAPM.bs.BSCp_EF_""_EF_"<BR><BR>"
+ I $g(Cm)=1 W $$logo2 Q
+ W $$logo1
+ Q
+logo2() Q "<a href='http://www.intersystems.ru' target='_new'>"_$$logo1_"</a>"_"<br>"_BK
+logo1() Q "<img src='"_BSDOMAIN_"/logo/logo.gif' alt='InterSystems' border=0>"
+COPYR W "<p align='left'><font size=1 face='Arial, Helvetica, MS Sans Serif'>",BK
+ I BSLNG="RUS" W BLUE_"<div title='"_$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"ENDUSER")_"'>""Нужное не сложно,<br>Сложное не нужно"".<br></div>"_EF
+ E  W BLUE_"""Necessary it is not difficult,<BR>Difficult it is not necessary"".<BR>"_EF
+ W "<br>",BK S YY=$P($P($G(^%ZAPM.bs.BSC4),"от",2),"-") I YY="" S YY="2005"
+ W $$News("&copy; 1993 -"_YY_". %BS-Portal")_"<br>"
+ I $g(Cm)=1      W "&copy; 1993-"_YY_". "_$S(BSLNG="RUS":"Сергей В. Михайленко",1:"Serge W. Mikhaylenko")_"<br>"
+ I BSLNG="RUS" W "Все права защищены<br>Версия "
+ E  W "All Rights Reserved<br>Version "
+ W $$ver^%ZAPM.bs.BSC_"<br>"_BK
+ N A S A=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Admin") S BSend2mail=$ZCONVERT($P($P(A,"<",2),"@"),"U")
+ W "e-mail: <a href='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"SMTP1^~BSvdaMAIL")_"' target=new title='Послать письмо админиcтратору портала'>"_$P(A,"<",1)_"</a>"
+ W $P(A,">",2)
+ I $g(Cm)=1 w "<br>phone: +7 (095) 361-8735"
+ W "</p>"_BK
+ /*      I $D(BSSES) D  //НЕ ПОЛУЧИЛСЯ ФОКУС
+ .W "<script LANGUAGE='JavaScript' EVENT='onunload()' FOR='window'>"_BK
+ .S BSLABEL="CloseSession^~BSC4reg" W "open('"_$$ADDBSGET()_"','Dummy','width=1,height=1');",BK
+ .W "</script>"_BK */
+ ;S NoDetal=1 d InfoSess^%ZAPM.bs.BSC4rout
+ Q
+HelpPortal() N I ; N GetAccLU I $D(BSLOGIN),$$GetAcc^%ZAPM.bs.BSC4cfgP(BSLOGIN,"BSDA")>2 S I=" <a class=u1 onclick='open("""_$$ADDLIB^%ZAPM.bs.BSC4()_"BSG=B4&BSLABEL=Navigator&BSLNG=RUS&BSNSP=~SYS&BSPRO=DOC&BSRoutineId=839116428"","""",""toolbar=no,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"NWT1")_",status=1,resizable=1"");'><img src='"_BSDOMAIN_"/img/edithelp.gif' ALT='EditHelpPortal' border=0></a>"
+ Q $G(I)_"<li><a class=u1 onclick='open("""_$$ADDLIB^%ZAPM.bs.BSC4()_"BSG=B4&BSLABEL=ViewTree&BSLNG=RUS&BSNSP=~SYS&BSPRO=DOC&BSRoutineId=2441218863"","""",""toolbar=no,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"NWT1")_",status=1,resizable=1"");' ><img src='"_BSDOMAIN_"/img/help.gif' ALT='"_$$LNG^%ZAPM.bs.BSC4(" Схемы функционирования и информация о функциях, программных модулях и внутренних переменных необходимых для разработки пользовательских проектов'",42)_"' border=0></a>"
+ ;HelpCOS() q "<li><a href='"_BSDOMAIN_"/docs/olr/olrrefTOC.html' title='Cach&eacute; ObjectScript Language Reference' target='_new1'>HelpCOS</a>"
+ ;HelpSQL() q "<li><a href='"_BSDOMAIN_"/docs/sqr/sqlreference.html' title='Cach&eacute; SQL Reference' target='_new2'>Cach&eacute;SQL</a> <a href='"_BSDOMAIN_"/docs/err/errsql.html' title='Cach&eacute; SQL Errors' target='_newE'>SQL Errors</a>"
+HelpCache() Q "<li><a href='http://"_$P($$ADDSN^%ZAPM.bs.BSC4(),":")_":"_$s($$ZV^%ZAPM.bs.BSCp>5:8,1:1)_"972/csp/docbook/DocBook.UI.Page.cls' title='Online Full Documentation' target='_new5'>Полная документация по СУБД Cache'</a> "
+HelpCacheClass() q "<li><a href='http://"_$P($$ADDSN^%ZAPM.bs.BSC4(),":")_":"_$s($$ZV^%ZAPM.bs.BSCp>5:"8972/csp/documatic/%25CSP.Documatic.cls",1:"1972/apps/documatic")_"' title='Online Class Documentation' target='_new5'>Class Documentation</a> "_$$LNG^%ZAPM.bs.BSC4(" Докуметация Классов СУБД Cache'",47)
+HelpDhtml() q "<li><a href='"_BSDOMAIN_"/docs/html4spec/index.html' title='"_$$LNG^%ZAPM.bs.BSC4("Спецификация",40)_" HTML 4.0' target='_new3'>DHTML</a>"
+HelpJS() q "<li><a href='"_BSDOMAIN_"/docs/javascript/index.htm' title='"_$$LNG^%ZAPM.bs.BSC4("Спецификация",40)_" JavaScript' target='_new4'>JavaScript</a>"
+News(n) I $G(BSLOGIN)="" Q n
+ I '$$GRA^%ZAPM.bs.BSCGIS(BSLOGIN,"zDebug") Q n
+ n BSfile S BSfile="http://"_$$ADDSN^%ZAPM.bs.BSC4()_BSDOMAIN_"/docs/BS-Portal_Release_notes.txt"
+ q "<a href='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"GETTXT^~BSC4")_"' target=new TITLE='Что нового в комплексе'>"_n_"</a>"
+BSDOC  w "<li>"_$$News("BS-Portal_Release_notes"),BBK,BBK
+ S BSfile="http://"_$$ADDSN^%ZAPM.bs.BSC4()_"/vv/bsdoc/BS_Release_notes.txt"
+ w "<li><a href='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"GETTXT^~BSC4")_"#GOend' target=new TITLE='новости в комплексе до 9 версии для MSM'>Новости до 9 версии (Система MSM)</a> "
+       W "<a href='http://"_$$ADDSN^%ZAPM.bs.BSC4()_"/vv\bsdoc\index.htm' target=new TITLE='Официальная документация %BS - Терминальный режим для MSM до 9 версии'>Официальная документация %BS</a>"
+ Q
+help ;
+ D BEG1 W "<title>Документация по порталу для разработчика</title></HEAD>"_$$B27^%ZAPM.bs.BSCm4()
+ w !,"<li>Комплекс %BS<ul>" D BSDOC
+ W !,"<LI>"_$$mBSDOC1^%ZAPM.bs.BSC4b_BBK,BBK
+ w !,"<li>"_$$BsDoc^%ZAPM.bs.BSC4b("Докуметация по комплексу %BS")_BBK,BBK
+ W !,$$HelpPortal,"Докуметация BS-портала",BBK,BBK ;http://localhost:1972/CSP/MSW/Bsdoc.csp
+ W !,"<li><a href='http://"_$P($$ADDSN^%ZAPM.bs.BSC4(),":")_":"_$s($$ZV^%ZAPM.bs.BSCp>5:8,1:1)_"972/csp/msw/Bsdoc.csp' title='Online BS-Doc' target='_new9'>Online BS-Doc</a> "
+ W !,"<li><a href='http://"_$P($$ADDSN^%ZAPM.bs.BSC4(),":")_":"_$s($$ZV^%ZAPM.bs.BSCp>5:8,1:1)_"972/csp/msw/BsLib.csp' title='Online BS-Lib' target='_new99'>Online BS-Lib</a> "
+ ;W !,$$HelpCOS,$$LNG^%ZAPM.bs.BSC4(" Описние языка программирования в СУБД Cache'",43),BBK,BBK
+ ;S UR="http://"_$$ADDSN^%ZAPM.bs.BSC4()_BSDOMAIN_"/docs/Kirsten-Cache-book/index.htm",A=$$HTTP^%ZAPM.bs.BSCmail(UR) I $P(A," ",2)=200 D
+ ;.w !,"<a href='"_UR_"' title='Книга В.Кирстена' target='_ne4'><img border=0 src='"_BSDOMAIN_"/img/cos.gif'> СУБД Cache' объектно-ориентированная разработка приложений</a>",BBK,BBK
+ ;W !,$$HelpSQL,$$LNG^%ZAPM.bs.BSC4(" Описние SQL в СУБД Cache'",44),BBK,BBK
+ W !,"</ul>",$$HelpDhtml,$$LNG^%ZAPM.bs.BSC4(" Спецификация HTML 4.0",45),BBK,BBK
+ W !,$$HelpJS,$$LNG^%ZAPM.bs.BSC4(" Спецификация JavaScript",46),BBK,BBK
+ w !,"<li><a href='"_BSDOMAIN_"/docs/tags.chm' title='Помощь по HTML и CSS' target='_ne4'>Помощь по HTML и CSS. © 1999-2002 А.Климов</a>",BBK,BBK
+ W !,$$HelpCache,BBK,BBK
+ W !,$$HelpCacheClass,BBK,BBK
+ W !,"<li><a href='http://"_$P($$ADDSN^%ZAPM.bs.BSC4(),":")_":"_$s($$ZV^%ZAPM.bs.BSCp>5:8,1:1)_"972/csp/samples/menu.csp' title='Online CSP Sample Menu' target='_new6'>CSP Sample Menu</a> ",$$LNG^%ZAPM.bs.BSC4(" Примеры применения технологии Cache'ServerPages",48),BBK,BBK
+ D symbol^%ZAPM.bs.BSpgBS
+ D InfoSess^%ZAPM.bs.BSC4rout
+ Q
+GETTXT n tmp,AA,OK,S1,S2
+ D BEG1^%ZAPM.bs.BSC4  W $$B27^%ZAPM.bs.BSCm4()
+ I $ZCONVERT($E(BSfile,1,4),"L")="http" D  Q:'$D(tmp)
+ .S OK=$$HTTP^%ZAPM.bs.BSCmail(BSfile,2,.AA) I $P(OK," ",2)'=200 Q
+ .M tmp=AA("Data")
+ E  D File2Arr^%ZAPM.bs.BSCEXE($TR(BSfile,"/","\"),.tmp) 
+ W "<PRE><TT>"
+ S tmp="" F  S tmp=$O(tmp(tmp)) Q:tmp=""  D
+ .I '$D(S1),$$IFDOS^%ZAPM.bs.BSHTML1(tmp(tmp)) D INIT^%ZAPM.bs.BSre(1)
+ .W $TR(tmp(tmp),$G(S1),$G(S2))
+ W "</TT></PRE><A NAME='GOend'></BODY></HTML>"
+ Q
+meta() ;^^^q "<meta http-equiv=""Content-Type"" content=""text/html; charset=windows-1251"">"
+ q "<meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"">"
+STYLE() ;СТИЛИ
+ N Q
+ I $G(BStyle)'="" S:$D(BStyleOver) BStyle=BStyleOver  N %ZName S Q=$$GetDirectTabN1^%ZAPM.bs.BSC4r("[""%SYS""]BSC4.CFG","FrameStyle",BStyle,"MainS")_BK_$$GetDirectTabN1^%ZAPM.bs.BSC4r("[""%SYS""]BSC4.CFG","FrameStyle",BStyle,$G(Frame,"RightDn")) I Q'="" Q Q
+ S Q=$$meta()_BK
+ S Q=Q_"<style type=""text/css"">"_BK
+ S Q=Q_"body { scrollbar-face-color:#E4E4E4; scrollbar-shadow-color: #B4B4B4;"_BK
+ S Q=Q_"scrollbar-highlight-color: #B4B4B4; scrollbar-3dlight-color:#E4E4E4; scrollbar-darkshadow-color:BLACK;"_BK
+ S Q=Q_"scrollbar-track-color: #B4B4B4; scrollbar-arrow-color: #B4B4B4; "_BK
+ S Q=Q_"}"_BK
+ //S Q=Q_"Body { BackGround-Image: url("_BSDOMAIN_"/img/fon1.gif); BackGround-Repeat: repeat;  }"_BK
+ S Q=Q_"TD.s1 { BACKGROUND: #E4E4E4; }"_BK
+ S Q=Q_"TD.s2 { BACKGROUND: #B4B4B4; }"_BK
+ S Q=Q_".u1 { color:blue; text-decoration:underline; cursor:hand;  }"_BK
+ S Q=Q_"</style>"
+ Q Q
+SetVar(Name,Val)  N A S A=$$CheckVar() I 'A Q A
+ S @BDSES@(BSSES,"VAR",Name)=Val
+ Q 1
+GetVar(Name,DFLT) N A S A=$$CheckVar() I 'A Q A
+ Q $G(@BDSES@(BSSES,"VAR",Name),$G(DFLT))
+CheckVar() I $G(BSSES)="" Q "!ERROR BSSES"
+ I $G(BDSES)="" Q "!ERROR BDSES"
+ I $G(Name)="" Q "!ERROR NameVariable"
+ Q 1
+REMONT(NA) s BStyleOver="GKVVBLUE" D BEG1
+ Write "<title>"_NA_" - ремонтные работы </title></head><body><center>"_BK
+ Write "<h2> Ресурс '"_NA_"' временно недоступен.</h2>"_BK
+ Write "<hr>"_BK
+ Write "<p align=""center"">Проводятся ремонтные работы. За допонительной информацией обращайтесь"_BK
+ Write " по тел. 27-04.</p>"_BK
+ Write "<table border=""0"" cellspacing=""0"" cellpadding=""0"">"_BK
+ Write "<tr><td align=""left""><img src=""/iss/img/constr1.gif"" WIDTH=""16"" HEIGHT=""16""></td><td align=""right""><img src=""/iss/img/constr1.gif"" WIDTH=""16"" HEIGHT=""16""></td></tr>"_BK
+ Write "<tr><td align=""center"" colspan=""2""><img src=""/iss/img/constr2.gif"" WIDTH=""459"" HEIGHT=""28""></td></tr>"_BK
+ Write "</table>"_BK
+ Write "<p>&nbsp;</p>"_BK
+ Write "<p align=""center"">ИВЦ</p>"_BK
+ Write "<hr></center></body></html>"_BK      D END
+   Q     
+CLOSEWIN(SAY,CL) D BEG1^%ZAPM.bs.BSC4
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function ReSet() {",BK
+ W "status='Status :CloseWin:'"_BK
+ W "alert('"_SAY_"."_$$LNG(" Окно браузера будет закрыто.")_"');"_BK
+ I $G(CL)'=0 W "parent.window.close();"_BK
+ W "}",BK
+ W "</script>",BK
+ W "</HEAD>",BK
+ W "<BODY onload='ReSet();'>",BK
+ D END
+ Q
+RUNTIME
+ ;S A=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Atkweb") I A'="" K MGWLIB S %("HOST:")=$ZU(110)_":"_A D  Q
+ ;.D JS^%ZAPM.bs.BSCp
+ ;.w "var=parent.location;"_BK //...И ТАК ДАЛЕЕ 
+ ;.;--- ПОДМЕНА В url       http://home/scripts/mgwms32.dll?        НА      http://home:82/?BSTKWEB%20?
+ ;.D JSE^%ZAPM.bs.BSCp
+ ;.;D locvar^%ZAPM.bs.BSCh0("",1) //1 - выводить %KEY,%CGI,%ZCS,%CGIEVAR
+ w $$meta() 
+    s zlABEL=$G(^%ZAPM.bs.BS("Config","Frame"),"LogoL1U1D1")
+    I zlABEL'="" D  D @zlABEL G RUNTIME2
+    .I zlABEL'="LogoL1U1D1",$$CbaseNS^%ZAPM.bs.BSCp //перейти в базовый нс
+    E  D LogoL1U1D1   
+RUNTIME2    W "</html>"_BK
+    Q
+LogoL1U1D1 w "<title>"_$ZU(110)_" (Информационный Портал)</title></head>"_BK //СТАНДАРТНАЯ
+ w "<frameset framespacing='0' border='false' frameborder='0' cols='*,82%'>"_BK
+     w "<frameset framespacing='0' border='false' frameborder='0' rows='1,90,*'>"_BK //0!!!
+     s BSLABEL="First" //добавь в урл   BSNOREG=0&BSBBS=NewPin
+     N BSLOGIN S BSframe=""
+      w "<frame name='WORK' SCROLLING='no'>"_BK //noresize //WORK для WAKAVIKI
+      w "<frame SRC='"_$$ADDBSGET_"' name='logo' SCROLLING='no'>"_BK //noresize
+      W "<frame name='L1' SCROLLING='auto'>"_BK //
+     W "</frameset>"_BK
+    W "<frameset  framespacing='0' border='false' frameborder='0' rows='30,*'>"_BK //
+     W "<frame name='U1' marginheight=0 marginwidth=0  SCROLLING='no'>"_BK ////для ASU
+     W "<frame name='D1' SCROLLING='auto'>"_BK //
+    W "</frameset>"_BK
+    W "</frameset>"_BK
+ Q
+NewLogoL1U1D1 //НОВАЯ
+   w "<frameset framespacing='0' border='false' frameborder='0' rows='0%,7%,15%,*'>"_BK
+     s BSLABEL="First" //добавь в урл   BSNOREG=0&BSBBS=NewPin
+      N BSLOGIN S BSframe="1"
+       w "<frame name='WORK' SCROLLING='no'>"_BK //noresize //WORK для WAKAVIKI
+      w "<frame SRC='"_$$ADDBSGET_"' name='logo' SCROLLING='no'>"_BK //noresize
+      W "<frame name='L1' SCROLLING='auto'>"_BK //
+     
+    W "<frameset  framespacing='0' border='false' frameborder='0' cols='*,80%'>"_BK //
+     W "<frame name='U1' SCROLLING='auto'>"_BK //
+     W "<frame name='D1' SCROLLING='auto'>"_BK //
+    W "</frameset>"_BK
+   W "</frameset>"_BK
+ Q

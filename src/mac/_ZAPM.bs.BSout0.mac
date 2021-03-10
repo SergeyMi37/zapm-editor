@@ -1,0 +1,125 @@
+ROUTINE %ZAPM.bs.BSout0
+%BSout0 ; Карта вывода  (А.Тимофеев) ; 17:38   09.09.99
+ 
+Kout(%1,%2,%3) ;Формирование карты
+ ; %1-PRN (1),DOS (2),TXT (3),COM (4); %2 - BSR, %3 - BST
+ 
+ I $G(%1)="" Q
+ S:$G(%2)="" %2=$G(BSR) S:$G(%3)="" %3=$G(BST)   ;I BSR=""!(BST="") Q
+ N i,i1,i2,i3,zap,ot,ls,hs,tit,tip,ot,lty,rdy,ltx,rdx,kw,kx,ky,lx,ly,st,rp,%zT,IYI,ZapK
+ S %zT=$ZT,$ZT="2^%ZAPM.bs.BSout0"
+ S zap=$S(%1=1:"PRN",%1=2:"HFS",%1=3:"TXT",1:"COM"),BSR=%2,BST=%3
+ ;Выбор установок ; ls-симв. в строке,hs-строк на стр.
+ 
+ S ls="Формируется карта вывода !" D WAITS^%ZAPM.bs.BSF2
+ D
+ .I $D(in) D  Q
+ ..F i=1:1:7 S @("in"_i)=$P(in,"#",i) Q:i=7
+ .I $D(@(BSR_"(BST,zap)")) I $G(@(BSR_"(BST,zap)"))'["@" D  Q
+ ..S in=@(BSR_"(BST,zap)") F i=1:1:7 S @("in"_i)=$P(in,"#",i) Q:i=7
+ .F i=1:1:7 S @("in"_i)=$P($P(^%ZAPM.bs.BSS("OPout1",%1+1,1),"@",15),"#",i)
+ S ls=$S(in2'=0:in2,1:$$LNG^%ZAPM.bs.BSF12),hs=$S(in3'=0:in3,1:999999)
+ 
+ ;Определение титула;, tit - коорд. тит., tipt - тип титула
+ 
+ S ot=$G(@(BSR_"(BST)")),tit=$P(ot,"@",19),tip=$P(ot,"@",17)
+ I $P(ot,"@",50) S tit=$P(ot,"@",50) ;ТИТУЛ ПЕЧАТИ```MSW
+ I in5?.N1",".N S tit=in5 ;|||
+ S tipt=$S($G(tit)="":1,in5=0:1,$P(tit,",")=1&($P(tit,",",2)=1):1,$P(tit,",")=1&($P(tit,",",2)'=1):2,$P(tit,",")'=1&($P(tit,",",2)=1):3,1:4)
+ K ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u")
+ 
+ ;Запись установок
+ D  S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","TXT")=%1_"#"_in1        ;устройство + N устройства
+ .I %1=1 D
+ ..I $D(@(BSR_"(BST,""SHR"")")) S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","SHR")=$G(@(BSR_"(BST,""SHR"")"))
+ ..S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","DOS")=in4_"#"_in6 Q      ;отступ + режим печати
+ 
+ ;Длина и высота титула lt-длина,ht-высота
+ S (lt,ht)=0 D
+ .I tipt=1 Q
+ .I tipt=2 D  Q
+ ..F i=1:1:$P(tit,",",2) S lt=lt+$P(@(BSR_"(BST,1,i)"),"@",4)
+ .I tipt=3 D  Q
+ ..F i=1:1:$P(tit,",") S ht=ht+$P(@(BSR_"(BST,i,1)"),"@",3)
+ .F i=1:1:($P(tit,",")-1) S ht=ht+$P(@(BSR_"(BST,i,1)"),"@",3)
+ .F i1=1:1:($P(tit,",",2)-1) S lt=lt+$P(@(BSR_"(BST,1,i1)"),"@",4)
+ 
+ ;Создание карты
+ S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u")="@@@@@1@1@1@1@22@80@1@@1@@1@1@@2,2@1@@@@@1@@@6@3@@1;6;33;44@@@@@@@@@@3^%ZAPM.bs.BSout0"
+ S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",1,1)="1@1@3@15@@@@@1@1;6;33;44@@@@@ <ENTER>-Экран  <F2> - Вывод   <F3> - Опции"
+ S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","PRN")=BSR_"#"_BST_"#"_$G(%BS(15))
+ 
+ ;Первая строка
+ ;y-длина карты, y1-длина колонки, kw-номер карты, kx-координата по х, i3-последняя колонка, i2-номер колонки
+ S (y,y1,kw,i,i2,i3)=0,i1=1,kx=16
+ F  S i=$O(@(BSR_"(BST,1,i)")) Q:i=""  D   X $G(WA) S i3=i
+ .S y1=$P($G(@(BSR_"(BST,1,i)")),"@",4) D:y1=+y1  S y=y+y1
+ ..I (y+y1)>($$ls()-$S(kw=0:0,1:lt)) D
+ ...S y=0,kw=kw+1,i2=kw+1
+ ...S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",1,i2)="1@"_kx_"@3@10@@@@@1@1;6;33;45@@@@@Колонка  :"_kw_"         #"_$S(tipt=1!(i1=1):"",i1'=1&(tipt=2!(tipt=4)):1_":1:"_($P(tit,",",2)-1)_",",1:"")_i1_":1:"_(i-1)
+ ...S kx=kx+10,i1=i Q
+ I y'=0 D
+ .S kw=kw+1,i2=kw+1
+ .S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",1,i2)="1@"_kx_"@3@10@@@@@1@1;6;33;45@@@@@Колонка  :"_kw_"         #"_$S(tipt=1!(i1=1):"",i1'=1&(tipt=2!(tipt=4)):1_":1:"_($P(tit,",",2)-1)_",",1:"")_i1_":1:"_i3 Q
+ 
+ ;Первая колонка
+ S (y,y1,kw,i,i2,i3)=0,i1=1,ky=4
+ F  S i=$O(@(BSR_"(BST,i)")) Q:'i  D  X $G(WA) S:i=+i i3=i
+ .S y1=$P($G(@(BSR_"(BST,i,1)")),"@",3) D:y1=+y1  S y=y+y1
+ ..S st=$E($P($G(@(BSR_"(BST,i,1)")),"@",15),1)
+ ..I (hs'=+hs&(st=hs))!(hs=+hs&(y+y1>(hs-$S(kw=0:0,1:ht)))) D     ; > длины или разделитель страниц
+ ...S y=0,kw=kw+1,i2=kw+1
+ ...S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",i2,1)=ky_"@1@3@15@@@@@1@1;6;33;45@@@@@Страница :"_kw_"    #"_$S(tipt=1!(i1=1):"",i1'=1&(tipt=3!(tipt=4)):1_":1:"_($P(tit,",")-1)_",",1:"")_i1_":1:"_(i-1)
+ ...S ky=ky+3,i1=i Q
+ I y'=0 D
+ .S kw=kw+1,i2=kw+1
+ .S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",i2,1)=ky_"@1@3@15@@@@@1@1;6;33;45@@@@@Страница :"_kw_"    #"_$S(tipt=1!(i1=1):"",i1'=1&(tipt=3!(tipt=4)):1_":1:"_($P(tit,",")-1)_",",1:"")_i1_":1:"_i3 Q
+ 
+ ;Формирование таблицы
+ S (ky,kx,ly,lx)=""
+ S i=1 F  S i=$O(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",i)) Q:i=""  D  X $G(WA)
+ .S i1=1 F  S i1=$O(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",1,i1)) Q:i1=""  D
+ ..S ky=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",i,1)),"@")
+ ..S kx=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",1,i1)),"@",2)
+ ..S ly=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",i,1)),"@",3)
+ ..S lx=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",1,i1)),"@",4)
+ ..S ^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u",i,i1)=ky_"@"_kx_"@"_ly_"@"_lx_"@@@@@1@1;6;33;44@@@@@"
+ 
+ D  ;А ЭТО ПРАВИЛЬНОЕ Формирование таблицы
+ .N BSR,BST S BSR="^%ZAPM.bs.BSbufB",BST="W"_$G(%BS(3),$P)_$J_"u" D TAB^%ZAPM.bs.BSF1
+ 
+ ;Вывод без карты
+ I in7'=1 D  S out=$$OUT^%ZAPM.bs.BSout2(BSR,BST) G 2
+ .S rp=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","DOS")),"#",2),out=$$ALL^%ZAPM.bs.BSout1(BSR,BST,rp)
+ 
+ ;Работа с картой
+ S ^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u")=BSR_"#"_BST
+ S ZapK="" F i=0:1:9 S ZapK=ZapK_$G(@("k"_i))_"~"   ;запись набора ключей БД
+ S $P(^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u"),"#",3)=ZapK
+ S BSRold=BSR,BSTold=BST
+ S IYI="^%ZAPM.bs.BSbufB"_"("_"W"_$G(%BS(3),$P)_$J_"u" D NE^%ZAPM.bs.BSN ;```
+1 S BSR=BSRold,BST=BSTold,Refresh=1
+ 
+2 S $ZT=$G(%zT) K ^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u"),^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u")
+ Q  ;The end
+ 
+3 ;Обработка клавиш в таблице карты вывода
+ S Refresh=1
+ I R1=27,R2=79,R3=81 D  Q                       ;Вывод на устройство <F2>
+ .D 4 S out=$$Gout^%ZAPM.bs.BSout1(BSRnew,BSTnew,1,2)
+ .S BSRold=$P($G(^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u")),"#"),BSTold=$P($G(^%ZAPM.bs.BSbufB("old"_$G(%BS(3),$P)_$J_"u")),"#",2)
+ .S out=$$OUT^%ZAPM.bs.BSout2(BSRold,BSTold)
+ .S R1=-2 D W^%ZAPM.bs.BST Q
+ I R1=13,R2=-1,R3=-1 D  Q                       ;Просмотр на экране <ENTER>
+ .D 4  S out=$$Gout^%ZAPM.bs.BSout1(BSRnew,BSTnew,1,1)
+ .S ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u")="БУФЕР @@@@@@@1@1@22@80@@@@1@@5@@@1@@@@@@@@@@@1;6;36;44//1;6;36;40@@@@@@@1"
+ .D ^%ZAPM.bs.BSX("TEXT","^%ZAPM.bs.BSbufB","uP"_$G(%BS(3),$P)_$J_"u")
+ .S R1=-2 D W^%ZAPM.bs.BST Q
+ I R1=27,R2=79,R3=82 D OPprn^%ZAPM.bs.BSout(BSR,BST) Q   ;Опции принтера <F3>
+ I R1=27 Q
+ 
+4 ;Посылка на формирование буфера
+  S BSRnew=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","PRN")),"#"),BSTnew=$P($G(^%ZAPM.bs.BSbufB("W"_$G(%BS(3),$P)_$J_"u","PRN")),"#",2) Q
+ls() I ls'["," Q ls
+ I +$P(ls,",",kw+1)=0 Q +ls
+ Q +$P(ls,",",kw+1)

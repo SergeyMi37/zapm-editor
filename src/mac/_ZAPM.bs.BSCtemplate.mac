@@ -1,0 +1,336 @@
+ROUTINE %ZAPM.bs.BSCtemplate
+%BSCtemplate ; Портал B4I ; 14:50 12.01.2003
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ Q
+OP1()
+ N Q S Q="<option value='BegEnd'  >M; Начало и конец станицы портала</option>"
+ S Q=Q_"<option value='OpenWIN'   >S; Начало и конец страницы для окна </option>"
+ S Q=Q_"<option value='HIDDEN'    >S; Скрываемый(Раскрываемый) элемент DHTML</option>"
+ S Q=Q_"<option value='Form'      >S; Form форма страницы портала</option>"
+ S Q=Q_"<option value='aGet'      >F; Anchor...Get  //Anker c BSGET </option>"
+ S Q=Q_"<option value='bGet'      >F; Button...Get  //Button c BSGET </option>"
+ S Q=Q_"<option value='CHECKBOX'  >F; Вывести CHECKBOX</option>"
+ S Q=Q_"<option value='select'       >M; Вывести Select</option>"
+ S Q=Q_"<option value='FRAMES'       >M; FRAMES //FRAMESet</option>"
+ S Q=Q_"<option value='Table3'       >S; Table //таблицу со стилями на 3 колонки</option>"
+ S Q=Q_"<option value='aParam'       >M; Кнопка с параметрами и получить параметр с конструктором</option>"
+ S Q=Q_"<option value='LocVar'    >S; Вывести переменные текущей сессии в Брузер в виде таблицы</option>"
+ S Q=Q_"<option value='ctrl'      >F; Удалить управляющие символы</option>"
+ S Q=Q_"<option value='bd'        >F; Имя массива БД %BS</option>"
+ S Q=Q_"<option value='Data'      >F; Существование массива $$Data</option>"
+ S Q=Q_"<option value='GetV'      >F; Cохранить, Возвратить данные в БД текущей сессии</option>"
+ S Q=Q_"<option value='TR'     >S; Замена подстоки в строке $$TR^%ZAPM.bs.BSsFUNM</option>"
+ S Q=Q_"<option value='TRA'    >S; Замена %'' в строке на ~| и обратно для URL</option>"
+ S Q=Q_"<option value='TRE'    >F; Замена угловых скобок в строке на &lt для HTML</option>"
+ S Q=Q_"<option value='WEB'    >M; создать переменные В4Y интерфейса</option>"
+ S Q=Q_"<option value='SYSLOG' >M; Записать в %BS-системмный протокол</option>"
+ S Q=Q_"<option value='info'   >M; Информация о %BS-Portale</option>"
+ S Q=Q_"<option value='JSE'    >S; Добавить скобки JavaScript ... JSE</option>"
+ S Q=Q_"<option value='ASN'    >F; Добавить имя сервера с именем библиотеки</option>"
+ S Q=Q_"<option value='BSLOG'    >F; %BS-СИСТЕМНЫЙ ПРОТОКОЛ</option>"
+ S Q=Q_"<option value='EXE'      >M; ЗАГРУЗКА ТЕРМИНАЛОВ,EXE ФАЙЛОВ,КОНВЕРТЕРА в EXCELL из-под ИП (пример Гранда)</option>"
+ S Q=Q_"<option value='GUCI'     >F; ФУНКЦИЯ ПЕРЕХОДА В РАБОЧУЮ ОБЛАСТЬ</option>"
+ S Q=Q_"<option value='TD'       >F; ДАТА \ ВРЕМЯ</option>"
+ S Q=Q_"<option value='WOUT'     >M; Выгрузить в файл буфер локальных переменных</option>"
+ S Q=Q_"<option value='bssyslog' >F; программа протоколирования действий пользователей BS</option>"
+ S Q=Q_"<option value='TmpDir'   >F; Каталог для временных файлов</option>"
+ S Q=Q_"<option value='open1'    >F; Открыть окно браузера</option>"
+ S Q=Q_"<option value='CutS'     >S; Удалить начальные и коцевые пробелы</option>"
+ S Q=Q_"<option value='VERBS'    >F; Версия bs-portala</option>"
+ S Q=Q_"<option value='CHISLO'   >F; Число прописью</option>"
+ S Q=Q_"<option value='KBD'      >F; Тригерное имя БД, или Глобала</option>"
+ S Q=Q_"<option value='JF'       >S; JUSTIFY пробелы в конце</option>"
+ S Q=Q_"<option value='UPLOAD'   >M; UPLOAD FILES TO SERVER</option>"
+ S Q=Q_"<option value='File2Arr' >F; Читать Файл в массив и разбор массива по контексту</option>"
+ Q Q
+OP3()
+ N Q S Q="<option value='USER' >M; Добавить\Удалить Прямого И терминального пользователя (Cache5.0.x)</option>"
+ S Q=Q_"<option value='DNS' >F; Имя сервера и\или IP-адрес</option>"
+ S Q=Q_"<option value='ODBC' >M; Получить список источников DNS ODBC (%BS SQL-менеджер)</option>"
+ S Q=Q_"<option value='conv' >F; $ZCNVT() - конверировать в большие и маленькие буквы</option>"
+ S Q=Q_"<option value='ini' >M; РАЗБОР ФАЙЛА .INI</option>"
+ S Q=Q_"<option value='LIC' >M; Информация о Лицензии Cache'</option>"
+ S Q=Q_"<option value='md5' >F; криптокодирование Blow Fish и MD5</option>"
+ S Q=Q_"<option value='ExRou' >F; Существует ли программа</option>"
+ S Q=Q_"<option value='DecomposeStatus' >F; Сообщение об ошибке</option>"
+ S Q=Q_"<option value='REACT' >M; Реактивация конфигурации СУБД</option>"
+ S Q=Q_"<option value='RESTART' >M; Рестарт СУБД</option>"
+ Q Q
+ //----------------------------------------------%bs МОДУЛИ
+1(A,type1,RN,NS,PR,ST,US)
+ //I $$CTRL^%ZAPM.bs.BSChT(ST)'=ST S ST="ControlSymbol???!!!"
+ //I $$2LAT^%ZAPM.bs.BSCp(ST,1)'=ST S ST="CyrilicSymbol!!!"
+ I ST="" S ST="ST"
+ ;I $G(NewTop)'="" W $G(NewTop) Q 
+ if A=1,(type1="select") {   
+ w "  W ""<SELECT name=base1 onchange=""""open('""_$$ADDBSGET^%ZAPM.bs.BSC4(,""onchange^"_$P($TR(RN,"%","~"),".")_""")_""&Base2='+base1.value,'','toolbar=no,menubar=no,width=1,height=1');"""">""  D  W ""</SELECT>"" ",!
+ w "  .N I W ""<OPTION value='' selected >--</OPTION>"" ",!
+ }
+ ;M; 
+ if A=1,(type1="UPLOAD") {   
+ w "  //UPLOAD FILE TO SERVER",!
+ w " S BSS1=""""",!
+ w " S BSS6=""FILE1^"_$P($TR(RN,"%","~"),".")_""" //ПРОГРАММА КОТОРАЯ ИСПОЛНЯЕТСЯ ПОСЛЕ ЗАГУЗКИ ФАЙЛА",!
+ w " S BS1="""" ",!
+ w " S BS2=""""  I $$SetVar^%ZAPM.bs.BSC4(""NSpace"",BSNSP) ",!
+ w " S BSS3=BSSES,BS3=MGWLIB,BSS8=$$BSADDVAR^%ZAPM.bs.BSC4(),BSS4="""" ",!
+ w " D UP^%ZAPM.bs.BSC4r3",!
+ w " Q ",!
+ w "FILE1 D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS(""UPLOAD. Step 2""),$$B27^%ZAPM.bs.BSCGIS(1) ",!
+ w " W RED_$G(FiNa)_EF_BBK //ИМЯ ФАЙЛА",!
+ w " S NoCloseWin=1 //ФЛАГ НЕ ЗАКРЫВАТЬ ОКНА",!
+ W " M Mas=@GL K @GL //МАССИВ В КОТОРОМ ЛЕЖИТ ЗАГРУЖЕННЫЙ ФАЙЛ",!
+ W " //TO DO",!
+ w " D END^%ZAPM.bs.BSC4",!
+ }
+ ;M; 
+ if A=1,(type1="File2Arr") {   
+ w " K fT1,fT2 D File2Arr^%ZAPM.bs.BSCEXE(FN,.fT1),STR2MAS^%ZAPM.bs.BSCmail(.fT1,.fT2,$C(13,10)) K fT1 S i="""" F  S i=$O(fT2(i)) Q:i=""""  I $G(fT2(i))'="""" //TODO",!
+ }
+ 
+ if A=1,(type1="JF") {   
+ w " W ""$$JF^%ZAPM.bs.BSC4r4("_ST_",45)"" //ADD 45 SPACE TO END",!
+ w " W ""$TR($J("""",9),"" "",""*"")"" //WRITE 9 *",!
+ }
+ 
+ if A=1,(type1="CHISLO") {   
+ w " W ""$$sump^%ZAPM.bs.BSCp2("_ST_")"" //",!
+ }
+ 
+ if A=1,(type1="KBD") {   
+ w " S GL=$$KBD^%ZAPM.bs.BSF12(""^PART(""""TAB"""")"") //TRIGGERED BD",!
+ w " S GL=$$SW^%ZAPM.bs.BSF12(""^GLO"") //SWITHER GLOBAL, USE zBS4cfg=Currently configuration portal",!
+ }
+ 
+ if A=1,(type1="VERBS") {   
+ w " W ""$$ver^%ZAPM.bs.BSC()""",!
+ }
+ 
+ if A=1,(type1="CutS") {   
+ w " W ""$$CutS^%ZAPM.bs.BSF10("_ST_")""",!
+ }
+ 
+ if A=1,(type1="open1") {   
+ w " W ""open(""""""_$$ADDBSGET^%ZAPM.bs.BSC4(,""Lab^"_$P($TR(RN,"%","~"),".")_""")_"""""",""""xxx"""",""""toolbar=no,menubar=no,scrollbars=no,width=500,height=200,status=1,resizable=1"""");""_BK",!
+ }
+ 
+ if A=1,(type1="bssyslog") {   
+ w " D Tex^%ZAPM.bs.BSMSMF(""UpdateVersion"",V),SYSMSG^%ZAPM.bs.BSCek(""UpdateVersion ""_V,""W"")",!
+ }
+ 
+ if A=1,(type1="TmpDir") {   
+ w " s T=$$CacheSysDir^%ZAPM.bs.BSCp(""\dev\"")",!
+ }
+ //
+ if A=1,(type1="EXE") {
+ w "KID //SAMPLE ^%ZAPM.bs.BSCprivOVV",!
+  w " D BEG1^%ZAPM.bs.BSC4",!
+ w " ; D locvar^%ZAPM.bs.BSCh0("""",1)",!
+ 
+ w "  N HREF,TA,BSTOP,BSTOP2,BSLABELt",!
+  w " S BSPGM=""KID"",BSLAB1=""KID3"" ",!
+  w " W ""<HR><BUTTON onclick=""""open('""_$$ADDBSGET^%ZAPM.bs.BSC4(,""KID2^KID"")_""','','width=1,height=1');"""" title='Загрузить в терминале KID' VALUE='' ><IMG SRC='""_BSDOMAIN_""/img/term.gif'> КОМПЛЕКС КИД</BUTTON>""_BK",!
+  w " W ""<HR><BUTTON onclick=""""open('""_$$ADDBSGET^%ZAPM.bs.BSC4(,""KID4^KID"")_""','','width=1,height=1');"""" title='Загрузить в терминале KID' VALUE='' ><IMG SRC='""_BSDOMAIN_""/img/term.gif'> КОМПЛЕКС КИД</BUTTON>""_BK",!
+  w " D END^%ZAPM.bs.BSC4",!
+  w " ;D Read^%ZAPM.bs.BSCG(""URO"",""SELECT * FROM FeniaNorm"",1,,""^mtemple"")",!
+  w " ;W !,$G(^mtemle(0),""?"")",!
+ w "  Q",!
+ w "KID2 D RunProSess^%ZAPM.bs.BSC4rout(""TELNETP(""""KID"""",""""#"""",""""""_BSLAB1_""""^^""_BSPGM_"""""",""""--КИД--"""");"") Q",!
+  w " Q",!
+ w "KID3 ;ZW %BS",!
+  w "   S BSR=""^Kmen"",BST=""M0"" D ^%ZAPM.bs.BST",!
+ w "  Q   ",!
+ w "KID4 ;D RunProSess^%ZAPM.bs.BSC4rout(""ExeRun2("""""""",""""ExT2E.exe"""",""""*fn:http://urovv2:1962/vv/struct/111.txt *c:1 *d:, *s:3""""); "",""ExeRun1"") Q",!
+ w " D RunProSess^%ZAPM.bs.BSC4rout(""ExeRun2("""""""",""""ExT2E.exe"""",""""*fn:http://urovv2:1962/vv/struct/111.txt *c:0 *alls""""); "",""ExeRun1"") Q",!
+ w " Q",! 
+ }
+ 
+ if A=1,(type1="JSE") {
+ w " D JS^%ZAPM.bs.BSCp",!
+ w " w ""var=parent.location;""_BK",!
+ w " D JSE^%ZAPM.bs.BSCp",!
+ }
+ 
+ if A=1,(type1="TD") {
+ w " W $$TD^%ZAPM.bs.BSC4base($H)",!
+ }
+ 
+ if A=1,(type1="WOUT") {
+ w " I '$D(Fname) S Fname=""N:\123.TXT"" I $ZU(140,4,Fname)'=0 S OLDIO=$I O Fname:""UWN"" U Fname W ""-----"",! W  W ""-------"",! U OLDIO C Fname ",!
+ w " //или w $$w2f^%ZAPM.bs.BSCp2(Fname)",!
+ }
+ 
+ if A=1,(type1="BSLOG") {
+ w " D Tex^%ZAPM.bs.BSMSMF(""TEXT"",MODE)",!
+ }
+ 
+ if A=1,(type1="GUCI") {
+ w " I $$ZU^%ZAPM.bs.BSF4(""FON"") //OK",!
+ }
+ 
+ if A=1,(type1="ASN") {
+ w "$$ADDSN^%ZAPM.bs.BSC4()_$$ADDLIB^%ZAPM.bs.BSC4()",!
+ }
+ 
+ if A=1,(type1="CHECKBOX") {
+ w " W ""<input type=checkbox name=SubMitPop value='' title='...'>""",!
+ }
+ 
+ if A=1,(type1="HIDDEN") {
+ w " D STY^%ZAPM.bs.BSCm2(2),DIV^%ZAPM.bs.BSCm2(2,""TEXT"",""TEXT2222"")",!
+ w " ",ST,!
+ w " D DI^%ZAPM.bs.BSCm2",!
+ }
+ 
+ if A=1,(type1="LocVar") {
+ W " D locvar^%ZAPM.bs.BSCh0("""_ST_""",1)",!
+ }
+ 
+ if A=1,(type1="OpenWIN") {
+ W " D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS(""Step1 for NewTabel""),$$B27^%ZAPM.bs.BSCGIS(1)",!
+    //W " "_ST_" //TODO",!
+ W " D BACK^%ZAPM.bs.BSCh,END^%ZAPM.bs.BSC4",!
+ }
+ 
+ if A=1,(type1="Table3") {
+ W " w ""<table border=0 width=100%>""",!
+ W " w ""<tr><td class=s1 width=5%></td><td class=s1  width=75%><strong><strong></td><td class=s1 width=20%></td></tr>"",BK",!
+    w " ",ST,!
+ W " w ""</table>""",!
+ }
+ 
+ if A=1,(type1="FRAMES") {
+ W " w ""<FRAMESET rows='0%,*'  framespacing=0 border=false frameborder=0 >""_BK",!
+ W " w ""<FRAME SRC='/iss/RD/RunDos.htm' name='rd1' frameborder=0 >""_BK",! 
+ w " S BSLABEL=""ROU^~BSCAsIs""",!
+ W " w ""<FRAME SRC='""_$$ADDBSGET^%ZAPM.bs.BSC4_""' NAME='LIST' frameborder=0 >""_BK",!
+    W " ",ST,!     
+ W " w ""</FRAMESET>""",!
+ Q
+ }
+ 
+ if A=1,(type1="BegEnd") {
+	w " D BEG1^%ZAPM.bs.BSC4",!
+	w " D BACK^%ZAPM.bs.BSCh,END^%ZAPM.bs.BSC4",!
+ }
+ 
+ if A=1,(type1="Form") {
+ W " w ""<BODY>""",!
+ W " w ""<form action=""""""_$$ADDLIB^%ZAPM.bs.BSC4()_"""""" method=""""POST"""">""",!
+ w " S BSLABEL=""Form^"_$P($TR(RN,"%","~"),".")_"""",!
+ w " D ADDBSPOST^%ZAPM.bs.BSC4reg",!
+ w " ",ST,!
+ W " w ""<input type=submit name=sDUB value='Copy' title='copy...'>""_BK",!
+ W " w ""</form>""",!
+ w " G BACK^%ZAPM.bs.BSCh ",!
+ }
+ 
+ if A=1,(type1="bGet") {
+    w " w ""<BUTTON onclick='messages.DE.value=1; submit();' title='save currently setting' ><IMG SRC='""_BSDOMAIN_""/img/save.gif'>save</BUTTON>""_BK",!
+    w " //OR"
+    W " $$BUTTBS^%ZAPM.bs.BSCp2(ROU,GIF,FNAME,TIT,H,W) ",!
+ }
+ 
+ if A=1,(type1="aGet") { w " q ""<a href='""_$$ADDBSGET^%ZAPM.bs.BSC4(,""aGET^"_$P($TR(RN,"%","~"),".")_""")_""' target=new TITLE='""_dt_""'>""_t_""</a>""",!
+ }
+ 
+ if A=1,(type1="aParam") {
+ w " s g=""^AsI.PAR.OPT""",!
+ w " w $$BP^%ZAPM.bs.BSC4cfgP(""Main option"",""Main option2"",g,g,1)_$$Param3()",!
+ w " w $$GETOPT^%ZAPM.bs.BSC4cfgP(g,""aTamplete"")_""<hr>""",!
+ w "Param3() N pin,N S pin=$P(g,""."",1,2),N=$P(g,""."",3)",!
+ w " Q "" Construction Options ""_$$PAframe^%ZAPM.bs.BSCm()",!
+ }
+ 
+ if A=1,(type1="TR") {
+ W " A=$$TR^%ZAPM.bs.BSsFUNM("_ST_",REPL,TO)",!
+ }
+ 
+ if A=1,(type1="TRA") {
+ W " S BSPART=$$%T^%ZAPM.bs.BSCh("_ST_") //%-->~",!
+ W " S BSTABL=$$%^%ZAPM.bs.BSCh(BSTABL) //~-->%",!
+ }
+ 
+ if A=1,(type1="TRE") {
+ W " W $$TRa^%ZAPM.bs.BSCh0($ZE)",!
+ }
+ 
+ if A=1,(type1="info") {
+ W " d InfoSess^%ZAPM.bs.BSC4rout",!  
+ }
+ 
+ if A=1,(type1="WEB") {
+ W " I '$D(GREEN) D VAR^%ZAPM.bs.BSCh  ",!  
+ }
+ 
+ if A=1,(type1="ctrl") { W "$$CTRL^%ZAPM.bs.BSChT("_ST_")"
+ }
+ 
+ if A=1,(type1="bd") {
+ w " S BD=$$KBD^%ZAPM.bs.BSF12(""^%ZAPM.bs.BSC4(""""PROTECT"""")"")",!
+ }
+ 
+ if A=1,(type1="Data") {
+ W " I $$Data^%ZAPM.bs.BSF12(G)",! 
+ }
+ 
+ if A=1,(type1="GetV") {
+ W " S BSMODE=$$GetVar^%ZAPM.bs.BSC4(""STR_MODE"")",! 
+ W " S A=$$SetVar^%ZAPM.bs.BSC4(""STR_MODE"",BSMODE)",!
+ }
+ 
+ //------------------------------------------------------------... ФУНКЦИИ
+ if A=3,(type1="USER") {
+ W " D RegSave^%ZAPM.bs.BSCm2 //SAVE",!
+ }
+ 
+ //	Error Message
+ if A=3,(type1="DecomposeStatus") {
+ W " Do DecomposeStatus^%apiOBJ(status,.err,""-d"")  ",!  
+ }
+ 
+ ;	Reactivation
+ if A=3,(type1="REACT") {
+  W " D cpf^%ZAPM.bs.BSCm2 ",!  
+ }
+ 
+ ;	Restarted
+ if A=3,(type1="RESTART") {
+ W " D RESTART^%ZAPM.bs.BSCm2  ",!  
+ }
+ 
+ if A=3,(type1="ODBC") {
+  W " N LD,svc,I D DSNLIST1^%ZAPM.bs.BSCGH S I="""" F  S I=$O(LD(I)) Q:I=""""  ",!  
+ }
+ 
+ if A=3,(type1="DNS") {
+  w "$$ipS^%ZAPM.bs.BSCp2 //W "" S IP1=$P($ZU(54,13,NAME1),"","")   S NAME2=$P($zu(54,14,$zu(54,1,IP2)),"","",2) ",!  
+ }
+ 
+ if A=3,(type1="conv") {
+ W " s a=$ZCONVERT(a,""U"")),b=$ZCONVERT(b ,""L"")   ",!  
+ }
+ 
+ if A=3,(type1="SYSLOG") {
+ W " D Tex^%ZAPM.bs.BSMSMF(""OpenSess"",$G(U)_"",""_$G(BSR)_"",""_$G(BST)_"",""_$G(EDIT)_"",""_$G(MODE)_"",""_$G(BSLOGIN)_"",""_$G(BSSES))",!  
+ }
+ 
+ if A=3,(type1="ini") {
+ W " d INI^%ZAPM.bs.BSCindx(FNINI,.MS) //N O D parseCfg^%DMCONFIG(FNINI,.O) //Sample parse file .INI  ",!  
+ }
+ 
+ if A=3,(type1="LIC") {
+ W " d $SYSTEM.License.CKEY()",!  
+ }
+ 
+ if A=3,(type1="md5") {
+ W " d TestString^%ZAPM.bs.BSCBlowfish(""TEST"")",!  
+ }
+ 
+ if A=3,(type1="ExRou") {
+ W " I '$$EXIST^%R(""%GKDOC.INT"") Q  //No exist",!  
+ }
+ 
+ 

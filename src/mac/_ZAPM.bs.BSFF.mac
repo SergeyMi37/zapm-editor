@@ -1,0 +1,4 @@
+ROUTINE %ZAPM.bs.BSFF
+%BSFF ; пpогpамма ГОРЯЧИХ ФУНКЦИЙ ; 13:25   27.07.2000
+ Q
+TODAY() Q $$ESDAY^%ZAPM.bs.BSsFUNR(8,$$h^%ZAPM.bs.BS3)

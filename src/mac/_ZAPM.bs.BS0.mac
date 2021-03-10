@@ -1,0 +1,4 @@
+ROUTINE %ZAPM.bs.BS0
+%BS0 ;ЭМУЛЯЦИИ СТАРОЙ БЛОКИРОВКИ ; 17:00 10-JUN-98
+R(BSR) D L^%ZAPM.bs.BS3(BSR) Q
+D(BSR) D U^%ZAPM.bs.BS3(BSR) Q

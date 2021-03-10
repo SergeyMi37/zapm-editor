@@ -1,0 +1,177 @@
+ROUTINE %ZAPM.bs.BSzvR
+%BSzvR ;Создание пpогpаммы насчета сводки  (А.Тимофеев) ; 18:18   15.04.2003
+ ;Входящие переменные: C,G1(C),G2(C),nf,na,mas,mas3,uslL
+ 
+ S %zT=$ZT,$ZT="ERROR^%ZAPM.bs.BSzvU"
+ S ls="Погнали..." D WAITS^%ZAPM.bs.BSF2
+ S rout=$$rout("RepS"),rout2=$$rout("RepB"),kolI=$G(@mas3@("tab",12))
+ S @mas3@("r",0)=rout_" ;Программа насчета сводки "_na_" *TAF*",ind=1
+ S @mas3@("r",ind)=" S %zT=$ZT,$ZT=""ERROR^%ZAPM.bs.BSzvU"" "_$S($ZV'["Cach"&&($ZV'["IRIS"):"",1:"ZN ""GLAVK"" "),ind=ind+1 ZN "GLAVK"
+ S str=" S ",str1=" ;" F C1=1:1:C D
+ .S str=str_"G1("_C1_")="_G1(C1)_",G2("_C1_")="_G2(C1)_","
+ .S str1=str1_"С "_G1(C1)_" ПО "_G2(C1)_","
+ S @mas3@("r",ind)=str1,ind=ind+1,@mas3@("r",ind)=$E(str,1,($L(str)-1)),ind=ind+1
+ 
+ ;Общие условия на программу
+ S i="",strB=0 F  S i=$O(@mas3@("bk",i)) Q:i=""  S strB=strB+1  ;Кол-во строк в боковине
+ S strB=strB*C,i=$G(%BS(3),$P)_$J,i=$NA(^%ZAPM.bs.BSbufB("PO"_i_"u")) ;```MSW
+ S @mas3@("r",ind)=" S mas0=$NA("_i_"),mas1=$P(mas0,"")"")_"",""""n"""")"" K @mas1" S ind=ind+1
+ S @mas3@("r",ind)=" N BSD,BUF,masR,k1,k2,k3,k4,k5,k6,k7,k8,k9,i,j,P,Po,D,sN,Str,L,V,cHOSe" S ind=ind+1
+ 
+ ;Условия на форму
+ S i=0 F  S i=$O(@mas@(nf,na,i)) Q:i=""  I i'="00" D  X $G(WA) ;```MSW
+ .K mtb,tabO,tabL,keyO,keyS,kol,Po
+ .S mtb=$G(@mas@(nf,na,i,0,"2,4")),tabO=$G(^("5,4")),tabL=$G(^("7,4")),keyO=$G(^("8,4"))
+ .S keyS=$G(^("10,4")),kol=$G(^("12,4")),Po=$G(^("14,4"))
+ .S (endF,kolI1)="" S:kolI="" endF=1
+ .I kolI'="" X "F kole="_kol_" F kole1="_kolI_" I kole=kole1 S kolI1=kole_$S(kolI1="""":"""",1:"","")_$G(kolI1),endF=1" S:kolI1'="" kol=kolI1
+ .I kolI="" X "F kole="_kol_" S kolI1=kole_$S(kolI1="""":"""",1:"","")_$G(kolI1)" S:kolI1'="" kol=kolI1
+ .Q:endF=""  S kol=$$KOL^%ZAPM.bs.BSzmOL(kol)
+ .S masBD=$$KBD^%ZAPM.bs.BSF12($NA(@tabO))
+ .S Gref="" I $ZV'["Cach"&&($ZV'["IRIS") S Gref="["""_$P($P(masBD,"[",2),",")_""","""_$P($P(masBD,",",2),"]")_"""]"
+ .S @mas3@("r",ind)="A"_i_" F j="_kol_" S D(j)=0 I '$D(@mas1@(1,j)) F i=1:1:"_strB_" S @mas1@(i,j)=0" S ind=ind+1
+ .S k0=$S($G(@mas@(nf,na,i,"k0","11,4"))'="":^("11,4"),$G(@mas3@("zp","k0",7))'="":^(7),1:"")
+ .I k0'="" S:k0'["=" k0="$$YY^%ZAPM.bs.BSsFUNR(G2(C))" S:k0["=" k0=$P(k0,"=",2)  ;`Y2000
+ .S @mas3@("r",ind)=" F C=1:1:"_C_" D REC S mas=""^"_Gref_$P(masBD,"]",2)_""""_$S(k0="":"",1:"_")_k0_" I $D(@mas) D Wait^%ZAPM.bs.BSXfun(na_"" ""_mas) D B"_i S ind=ind+1
+ .
+ .S @mas3@("r",ind)=" G Q"_i,ind=ind+1
+ .D KEYS   ;На блок условий по ключам БД
+ .S @mas3@("r",ind)=" Q",ind=ind+1
+ .S @mas3@("r",ind)="C"_i_" S masR=""^"_Gref_$P(masBD,"]",2)_""""_$S(k0="":"",1:"_")_k0_"_"""_$$KEYL^%ZAPM.bs.BSzvR1(keyS)_""" D  ",ind=ind+1
+ .S @mas3@("r",ind)=" .S BSD=""^"_Gref_$P(masBD,"]",2)_""""_$S(k0="":"",1:"_")_k0,ind=ind+1
+ .S @mas3@("r",ind)=" .K D F j="_kol_" S D(j)=0",ind=ind+1
+ .;Вытаскивание пунктов О.Ч.
+ .I tabO'=""&(Po'="") D
+ ..S Po=$$PO^%ZAPM.bs.BSzvR1(1,Po),Po=$TR(Po,";",",")
+ ..S @mas3@("r",ind)=" .F Po="_Po_" S P(Po)=$G(@masR@(Po))",ind=ind+1
+ .;Условия сквозные и на группу по ОЧ
+ .S @mas3@("r",ind)=" ."_$S($D(@mas3@("zp","k10",6)):"I "_$$PO^%ZAPM.bs.BSzlR1(1,^(6)),1:"")_"  "_$S($D(@mas@(nf,na,i,"A1","2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(2,$G(^("2,4"))),1:"")_" D  ",ind=ind+1
+ .S i1="C" F  S i1=$O(@mas@(nf,na,i,i1)) Q:i1'?1"C"1N.N  D  ;```Q:$E(i1,1)'="C"  D
+ ..S @mas3@("r",ind)=" .."_$S($D(@mas@(nf,na,i,i1,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(1,$G(^("2,4"))),1:"")_" D  ",ind=ind+1
+ ..S sN=$G(@mas@(nf,na,i,i1,"6,4"))
+ ..X "F kk="_$G(@mas@(nf,na,i,i1,"4,4"),0)_" D KOLO" ;```На колонку
+ ..I $D(@mas@(nf,na,i,"CC"_$E(i1,2,9))) D KOLOCC("CC"_$E(i1,2,9)) ;```MSW
+ .I $G(uslL)'="" D
+ ..S @mas3@("r",ind)=" ..F Z="_kol_" I D(Z)'=0 D STR",ind=ind+1
+ .I mtb="Y" D          ;Условия сквозные и на группу по ЛЧ
+ ..S @mas3@("r",ind)=" ..K L ;По Л.Ч.",ind=ind+1
+ ..S @mas3@("r",ind)=" .."_$G(strE),ind=ind+1
+ ..S @mas3@("r",ind)=" ...S BSD=""^"_Gref_$P(masBD,"]",2)_"""_$$YY^%ZAPM.bs.BSsFUNR(G1(C))",ind=ind+1
+ ..S @mas3@("r",ind)=" ...S masR=""^"_Gref_$P(masBD,"]",2)_"""_$$YY^%ZAPM.bs.BSsFUNR(G1(C))_"""_$$KEYL^%ZAPM.bs.BSzvR1(keyS)_""" D  ",ind=ind+1
+ ..I $G(uslL)'="" S @mas3@("r",ind)=" ....K D F j="_kol_" S D(j)=0",ind=ind+1
+ ..S i1="D" F  S i1=$O(@mas@(nf,na,i,i1)) Q:i1'?1"D"1N.N  D  ;```Q:$E(i1,1)'="D"  D
+ ...S @mas3@("r",ind)=" ...."_$S($D(@mas@(nf,na,i,i1,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(2,$G(^("2,4"))),1:"")_" D  ",ind=ind+1
+ ...S @mas3@("r",ind)=" ....."_$S($D(@mas3@("zp","k11",6)):"I "_$$PO^%ZAPM.bs.BSzlR1(2,^(6)),1:"")_"  "_$S($D(@mas@(nf,na,i,"B1","2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(2,$G(^("2,4"))),1:"")_" D  ",ind=ind+1
+ ...S sN=$G(@mas@(nf,na,i,i1,"6,4"))
+ ...X "F kk="_$G(@mas@(nf,na,i,i1,"4,4"),0)_" D KOLL" ;```На колонку
+ ...I $D(@mas@(nf,na,i,"DD"_$E(i1,2,9))) D KOLODD("DD"_$E(i1,2,9)) ;```MSW
+ .S @mas3@("r",ind)=" .."_$S($G(uslL)="":"",1:"..")_"F Z="_kol_" I D(Z)'=0 D STR",ind=ind+1
+ .;```S @mas3@("r",ind)=" .."_$S($G(uslL)="":"",1:"...")_"F Z="_kol_" I D(Z)'=0 D STR",ind=ind+1
+ .;Конец по форме
+ .S @mas3@("r",ind)=" Q",ind=ind+1
+ .S @mas3@("r",ind)="Q"_i_" D REC  ;Конец по форме",ind=ind+1
+ ;Конец по формам
+ S rout1=$G(@mas@(nf,na,0,"21,4")) ;```MSW
+ I $TR(rout1," ","")'="" S @mas3@("r",ind)=" "_$S($E(rout1)="^":"D ",1:"")_rout1,ind=ind+1
+ S @mas3@("r",ind)=" G ^%ZAPM.bs.BSzvT",ind=ind+1
+ S @mas3@("r",ind)="STR  G ^"_rout2_"  ;Наполнение строк таблицы",ind=ind+1
+ S @mas3@("r",ind)="REC ;Сброс буфера",ind=ind+1
+ S @mas3@("r",ind)=" S i1="""" F  S i1=$O(BUF(i1)) Q:i1=""""  D ",ind=ind+1
+ S @mas3@("r",ind)=" .S Z="""" F  S Z=$O(BUF(i1,Z)) Q:Z=""""  I $G(BUF(i1,Z)) D ",ind=ind+1
+ S @mas3@("r",ind)=" ..S @mas1@(i1,Z)=$G(@mas1@(i1,Z))+BUF(i1,Z)",ind=ind+1
+ S @mas3@("r",ind)=" K BUF",ind=ind+1
+ ;Проверка объема боковины
+ n L,i,i1,A
+ s L=0,i="",i1=0 F  S i=$O(@mas3@("bk",i)) q:i=""  S A=@mas3@("bk",i) D
+    .I i1>30000 S L=$G(L)+1,i1=0
+    .;I $E(A,$L(A))'="Q" s @mas3@("bk",i)=A_"^"_rout2
+    .S i1=i1+$L(A) I $P(A," ")'="" S L(1,i)=L,L(2,$P(A," "))=L
+ i $G(L)>0 s i="" F  S i=$O(@mas3@("bk",i)) q:i=""  S A=@mas3@("bk",i) D
+    .S LA=$P(A," ",$L(A," ")) I LA'="",$D(L(2,LA)),L(1,i)'=L(2,LA) s @mas3@("bk",i)=A_"^"_rout2_"."_L(2,LA)
+ ;Запись и загрузка программы насчета
+ X "ZR  S i="""" F  S i=$O(@mas3@(""r"",i)) ZS:i="""" @rout Q:i=""""  ZI $G(^(i)):+(i) S i1=i+1"
+         I L<1 X "ZR  ZI """_rout2_" ;Условия на строки сводки *TAF*"":+0 S i1=1,i="""" F  S i=$O(@mas3@(""bk"",i)) ZS:i="""" @rout2 Q:i=""""  ZI $G(^(i)):+(i1) S i1=i1+1" I 1
+ E  D COMPROU
+ S Total=$P($$h^%ZAPM.bs.BS3,",",2) K L
+ G ^@rout   ; X "G ^"_rout    ; Q
+ Q
+COMPROU ;КОМПИЛЯЦИЯ ПРОГРАММ
+         W # N ServR
+         s i="",i1=0,K=0,FIRST=rout2_" ;Условия на строки сводки (MSW)"
+         F  S i=$O(@mas3@("bk",i)) q:i=""  S A=@mas3@("bk",i) D
+ .S K=K+1 I K=1 S ServR(K)=FIRST,K=K+1
+ .I L(1,i)=i1 s ServR(K)=A Q
+ .S i1=L(1,i) s ServR(K)=" G ^"_rout2_"."_i1
+ .D COMPR S K=K+1,ServR(K)=A
+ S i1=i1+1 D COMPR
+ Q
+COMPR N out,err,VER,A
+ S ServR="",ServR(0)=K,out="",K=0
+ I i1=1 S VER=".INT"
+ E  S VER="."_(i1-1)_".INT"
+ D DEL1^%ZAPM.bs.BSC4r4(rout2_VER_".*") 
+ D ROUTINE^%R(rout2_VER,.ServR,.err,"CS",0)
+ I $G(err)'="" W !,$$FMTERR^%R(.err,.ServR) ;D  Q
+ .N (ServR) D ^%ZAPM.bs.BSMSMG("ServR")
+ .D x^%ZAPM.bs.BS3(VER)
+ K ServR
+ Q
+rout(A) N rout S rout=$G(%BS(42),"%BSx"_$J),rout=$P(rout,"%BS",2,9) 
+ S rout=A_rout X "ZR  ZS "_rout
+ Q rout
+KOLO ;условия на колонку по ОЧ
+ S i2="K"_kk Q:'$D(@mas@(nf,na,i,i2))
+ S nk=$G(@mas@(nf,na,i,i2,"4,4")) Q:nk=""  Q:'$$FOR^%ZAPM.bs.BSzmOL(kol,nk)  ;```MSW Q:kol'[nk
+ Q:$G(@mas@(nf,na,i,i2,"8,4"))'=1  ;ОЧ
+ D
+ .I sN'="" D  Q   ;Выполнение условия на строку (если есть)
+ ..S str=" ..."_$$POINT($G(Ur))_$S($D(@mas@(nf,na,i,i2,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(1,$G(^("2,4")))_" ",1:"")
+ ..S @mas3@("r",ind)=str_"S:D("_nk_")=0 D("_nk_")="""" F sN="_sN_" S D("_nk_",sN)=$G(D("_nk_",sN),0)+"_$S($D(@mas@(nf,na,i,i2,"10,4")):$$PO^%ZAPM.bs.BSzvR1(1,$G(^("10,4"))),1:1),ind=ind+1
+ .S @mas3@("r",ind)=" ..."_$$POINT($G(Ur))_$S($D(@mas@(nf,na,i,i2,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(1,$G(^("2,4")))_" ",1:"")_"S D("_nk_")=D("_nk_")+"_$S($D(@mas@(nf,na,i,i2,"10,4")):$$PO^%ZAPM.bs.BSzvR1(1,$G(^("10,4"))),1:1),ind=ind+1
+ Q
+POINT(I) I 'I Q ""  ;```
+ Q $TR($J("",I)," ",".")
+KOLOCC(i1) ;ДОПОЛНЕНИЕ ```MSW
+ N Ur,CCC
+KOLOC S Ur=$G(Ur)+1
+ S @mas3@("r",ind)=" .."_$$POINT($G(Ur))_$S($D(@mas@(nf,na,i,i1,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(1,$G(^("2,4"))),1:"")_" D  ",ind=ind+1
+ S sN=$G(@mas@(nf,na,i,i1,"6,4"))
+ X "F kk="_$G(@mas@(nf,na,i,i1,"4,4"),0)_" D KOLO"
+ S CCC="CC"_$TR($J("",Ur)," ","C")
+ I $D(@mas@(nf,na,i,CCC_$P(i1,$E(CCC,2,99),2))) S i1=CCC_$P(i1,$E(CCC,2,99),2) G KOLOC
+ Q
+KOLL ;условия на колонку по ЛЧ
+ S i2="K"_kk Q:'$D(@mas@(nf,na,i,i2))
+ S nk=$G(@mas@(nf,na,i,i2,"4,4")) Q:nk=""  Q:'$$FOR^%ZAPM.bs.BSzmOL(kol,nk)  ;```MSW Q:kol'[nk
+ Q:$G(@mas@(nf,na,i,i2,"8,4"))=1  ;ЛЧ
+ D
+ .I sN'="" D  Q   ;Выполнение условия на строку (если есть)
+ ..S str=" ......"_$$POINT($G(Ur))_$S($D(@mas@(nf,na,i,i2,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(2,$G(^("2,4")))_" ",1:"")
+ ..S str=str_$S($G(@mas@(nf,na,i,i2,"12,4"))="N":"I $G(L("_nk_"))'=1 ",1:"")
+ ..S @mas3@("r",ind)=str_"S:D("_nk_")=0 D("_nk_")="""" S L("_nk_")=1 F sN="_sN_" S D("_nk_",sN)=$G(D("_nk_",sN),0)+"_$S($D(@mas@(nf,na,i,i2,"10,4")):$$PO^%ZAPM.bs.BSzvR1(2,$G(^("10,4"))),1:1),ind=ind+1
+ .S @mas3@("r",ind)=" ......"_$$POINT($G(Ur))_$S($D(@mas@(nf,na,i,i2,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(2,$G(^("2,4")))_" ",1:"")_"S D("_nk_")=D("_nk_")+"_$S($D(@mas@(nf,na,i,i2,"10,4")):$$PO^%ZAPM.bs.BSzvR1(2,$G(^("10,4"))),1:1),ind=ind+1
+ Q
+KOLODD(i1) ;ДОПОЛНЕНИЕ ```MSW
+ N Ur,CCC
+KOLOD S Ur=$G(Ur)+1
+ S @mas3@("r",ind)=" ....."_$$POINT($G(Ur))_$S($D(@mas@(nf,na,i,i1,"2,4")):"I "_$$PO^%ZAPM.bs.BSzvR1(2,$G(^("2,4"))),1:"")_" D  ",ind=ind+1
+ S sN=$G(@mas@(nf,na,i,i1,"6,4"))
+ X "F kk="_$G(@mas@(nf,na,i,i1,"4,4"),0)_" D KOLL" ;```На колонку
+ I $D(@mas@(nf,na,i,"DD"_$E(i1,2,9))) D KOLODD("DD"_$E(i1,2,9)) ;```MSW
+ S CCC="DD"_$TR($J("",Ur)," ","D")
+ I $D(@mas@(nf,na,i,CCC_$P(i1,$E(CCC,2,99),2))) S i1=CCC_$P(i1,$E(CCC,2,99),2) G KOLOD
+ Q
+KEYS ;Перебор ключей с условиями
+ K str,str1,str2,str3,strE,str4,kk,k
+ I keyS'<1 D  Q:keyS=1
+ .S str="B"_i_" S k1="""" F  S k1=$O(@mas@(k1)"_$$KEY^%ZAPM.bs.BSzvR1("k1")_"  X $G(WA)"
+ .S @mas3@("r",ind)=str,ind=ind+1 Q
+ S str1=" ",kk="=$O(@mas@(k1" F k=2:1:keyS D
+ .S str1=str1_".",kk=kk_",k"_k
+ .S str2="S k"_k_"="""""_$S($G(@mas@(nf,na,i,"k"_k,"11,4"))'="":" ",$G(@mas3@("zp","k"_k,7))'="":" ",1:" F  S k"_k_kk_")")
+ .S:mtb="Y"&(k=keyS) str3="S k"_k_"="_keyO     ;По О.Ч. документа
+ .S str4=$$KEY^%ZAPM.bs.BSzvR1("k"_k)
+ .S str=str1_$S($G(str3)'="":str3,1:str2)_$S($G(str3)'="":$E(str4,2,450),1:str4)
+ .S strE=str2_str4,strE=$P(strE,"D C"_i)_" I k"_k_"'="_keyO_" D  "
+ .S @mas3@("r",ind)=str,ind=ind+1
+ Q

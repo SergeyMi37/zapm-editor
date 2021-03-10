@@ -1,0 +1,90 @@
+ROUTINE %ZAPM.bs.BSGCH
+%BSGCH ;ХАРАКТЕРИСТИКИ РАЗДЕЛОВ ; 17:54   23.12.1999
+ ;COPYRIGHT MICRONETICS DESIGN CORP @1990 & %BS 1.1 @1993
+ N %JB,II,Ox,Oy,R1,R2,R3,ls,uci,PPPP
+ N %GBL,%,%ANS,%BLK,%DIV,%DN,%DR,%DT,%EF,%GBN,%HLP,%I,%MF,%NB,%PC,%PT,%QF,%QST,%QUE,%RSP,%RSPHLD,%T,%X,CLASS,GN,PRO,PROTECT,KEY,%OF,XEM,%F,%MAX,%UI,%USZ,%UT,CC,I,K,OF,TFL,TYP,UC,XE
+ N %DB,%GNUM,%GSN,%MGR,%NAM,%PR,%ST,%UCI,%USTS,COL,NEW,SEQ,%GVN,VG,MM,MMM,OO,OOO,VGI,VGVOL,FBLK,%a,%PTRS,%VGI,%VGN,%VGPTR,%VGPTR1,%VGSLOT
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) S Erro=-7 G EXIT
+ S %zT=$ZT,$ZT="ERROR^%ZAPM.bs.BSGCH" S ls="" i $P($ZV,"Version ",2)'<4 G 0^%ZAPM.bs.BSGCH4 ;MSM 4.0
+ I '$D(%GLB) S Erro=-1 G EXIT
+ O 63::0 I '$T S ls="View Buffer busy.. Please retry later",Erro=-3 G EXIT
+ D GETVG^%VGUTIL S %MGR=($$ZU^%ZAPM.bs.BS3($P($$ZU^%ZAPM.bs.BS3(0),","),$P($$ZU^%ZAPM.bs.BS3(0),",",2))="1,0")
+%GLOBAL S %UCI="",%VGN=$P($$ZU^%ZAPM.bs.BS3(0),",",2)
+ I %GLB=""!(%GLB="^")!(%GLB="^Q") S Erro=-1 G EXIT
+ S %QF=0,%EF=0
+ S:%GLB?1"^".E %GLB=$E(%GLB,2,99)
+ I %GLB["[" S %UCI=$P(%GLB,"]"),%GLB=$P(%GLB,"]",2)
+%CHECK I %UCI["""" F %I=1:1:$L(%UCI) I $E(%UCI,%I)="""" S $E(%UCI,%I)="",%I=%I-1
+ I %UCI'="",%UCI'?1"["3U1","3U,%UCI'?1"["3U S ls="НЕПРАВИЛЬНОЕ ИМЯ КИПА В ССЫЛКЕ МАССИВЕ",Erro=-2 G EXIT
+ I %UCI'="" S:$L(%UCI)<5 %UCI=%UCI_","_%VGN ;S %GLB="["""_$P(%UCI,"[",2)_"""]"_$P(%GLB,"]",2)
+ I %UCI'="" S %VGN=$P(%UCI,",",2) S %UCI=$E(%UCI,2,4) S %UI=$$ZU^%ZAPM.bs.BS3(%UCI,%VGN) I %UI<1  S ls="НЕСУЩЕСТВУЮЩЕЕ ИМЯ КИПА",Erro=-2 G EXIT
+ I (%UCI'="")&('%MGR) S ls="Cross UCI is notation not available from non manager UCI",Erro=-2 G EXIT
+ S %UI=$S(%UCI'="":+%UI,1:$V(2,$J,2)#32),(%VGI,VGI)=VG(%VGN),%VGSLOT="G"_%VGI D GETVOL^%VGUTIL
+ I '(%GLB?1"%".AN!(%GLB?1A.AN)) S ls="НЕПРАВИЛЬНОЕ ИМЯ МАССИВА",Erro=-1 G EXIT
+ I $L(%GLB)>8 S ls=" Global name must be 8 characters or less ",Erro=-1 G EXIT
+ S %PTRS=$V($V(44)+8,-3,2),%USZ=$V($V(44)+14,-3,2),%VGPTR=$V(40+%PTRS+$V(44)),%VGPTR1=$V(%VGI*4+%VGPTR),%UT=%UI-1*32+$V(%VGPTR1+20)
+UCINUM ;
+ S %GBN=$V(%UT+4,-3,4),GN=%GLB,%GLB=%GLB_$C(0)
+%GDBLK V %GBN:%VGSLOT S OF=$V(1022,0),TYP=1,TFL=$E($V(1021,0,1,3))
+ S K="" K KEY S I=$S(TYP=1&TFL&($V(0,0,4)=0):13,1:0)
+ F I=I:0:OF-1 S CC=$V(I,0,1),UC=$V(I+1,0,1),K=$E(K,1,CC)_$V(I+2,0,UC,1),KEY(I)=K,I=I+UC+2+$S(TYP=8:$V(I,0,1)+1,TYP=1&TFL:11,1:3)
+ S %F=0,%X=-1
+%GDENT S %X=$N(KEY(%X)) I %X'<0 G:$S(TFL:%GLB]KEY(%X),1:KEY(%X)]%GLB) %GDENT  S:%GLB=KEY(%X) %F=1
+ I 'TFL,'%F S %GBN=$V(%X+2+$V(%X+1,0,1),0,3) G %GDBLK
+ I TFL,'%F S %GBN=$ZB($V(1012,0,4),#FFFFFF,1) G:%GBN>0 %GDBLK
+ I '%F&%EF S ls="МАССИВ НЕ НАЙДЕН В КИПЕ!!, ВОЙДИТЕ СИСТЕМНЫЙ КИП",Erro=-4 G EXIT
+ I '%F S ls=" МАССИВ НЕ РАСПРЕДЕЛЁН ",Erro=-4 G EXIT
+%GDENT1 S %HLP=2
+ S %OF=%X+2+$V(%X+1,0,1)+4
+ S %USTS=(($V(%OF,0,1)#4)=3)
+ G %PRO
+ERROR ;
+ I $F($ZE,"<INRPT>") U 0 S ls="...Aborted." D O^%ZAPM.bs.BSF7 V 0:$J:$ZB($V(0,$J,2),#0400,7):2
+ S $ZT=$G(%zT) ZQ
+EXIT ;
+ I $D(^ZZZZZZZZ)!($D(^UTILITY)) ; FLUSHES LOCAL COPY OF CHANGED GLOBAL
+ C 63 S ls=$G(ls) I '$D(ReadProt),ls'="" D O^%ZAPM.bs.BSF7
+ K %GBL,%,%ANS,%BLK,%DIV,%DN,%DR,%DT,%EF,%GBN,%HLP,%I,%MF,%NB,%PC,%PT,%QF,%QST,%QUE,%RSP,%RSPHLD,%T,%X,CLASS,GN,PRO,PROTECT,KEY,%OF,XEM,%F,%MAX,%UI,%USZ,%UT,CC,I,K,OF,TFL,TYP,UC,XE I $D(PPPP) S R1=27
+ K %DB,%GNUM,%GSN,%MGR,%NAM,%PR,%ST,%UCI,%USTS,COL,NEW,SEQ,%GVN,VG,MM,MMM,OO,OOO,VGI,VGVOL,FBLK,%a,%PTRS,%VGI,%VGN,%VGPTR,%VGPTR1,%VGSLOT
+ K PPPP S $ZT=$G(%zT) I $D(ReadProt) Q:$D(Erro) Erro Q ReadProt
+ Q
+%PRO I ('%MGR)&('%USTS) S ls="Protection access denied to ^"_GN,Erro=-5 G EXIT
+ D %LST I $D(ReadProt) C 63 Q ReadProt
+ S PROTECT=$V(%OF,0,1),ls="" G:$D(INTERNAL) %CLA S MM=$P($P(MMM(1,1)," ",%B+1),"=",2)
+ G EXIT:R1=27 S %OPT=%B,MMM(1,1)=" NONE READ R\W R\W\D @6@ @0@3@",MMM(3,1)=" ЗАПРЕТ ДОСТУПА",%B=$S(MM["NO":1,MM["RE":2,MM="R\W":3,1:4)
+ S MMM(3,2)=" ТОЛЬКО ЧТЕНИЕ ",MMM(3,3)=" ЧТЕНИЕ И ЗАПИСЬ ",MMM(3,4)=" ЧТЕНИЕ ЗАПИСЬ И УДАЛЕНИЕ "
+ K %JB D 24^%ZAPM.bs.BSTM,^%ZAPM.bs.BSB,ZA^%ZAPM.bs.BSF G:R1=27 %PRO I %B=1 S PPPP=1
+%CLA S PRO=$S(%B=1:0,%B=2:1,%B=3:2,%B=4:3,1:4)
+%CLASS1 F %I=1:1 S XE=$P(%OPT,",",%I) Q:XE=""  S %PT(XE)=PRO
+%UPDT S PROTECT=0,%DIV=256
+ F %X=1:1:4 S %DIV=%DIV\4,PROTECT=PROTECT+(2*%DIV*(%PT(%X)\2)+(%DIV*(%PT(%X)#2)))
+ V %OF:0:PROTECT:1
+ V -%GBN:%VGSLOT
+ S FGBN="^"_$S(%UCI="":"",1:"["""_%UCI_$S(%VGN="":"",1:""","""_%VGN)_"""]")_GN
+ S BKN=$ZBN(@FGBN)
+ I +$P($ZV,"Version ",2)>2.2 S OK=$ZMSM(5,BKN) ;INVALIDATE NAKED GLOBALS
+ K FGBN,BKN,OK
+%AGAIN G %PRO:'$D(INTERNAL),EXIT
+%LST S %DIV=256,MMM(1,1)=" ",MM=" "_%GLB_" ВЫБЕРИТЕ КЛАСС ПОЛЬЗОВАТЕЛЕЙ ДЛЯ МОДИФИКАЦИИ ЗАШИТЫ "
+ F %X=1:1:4 S %DIV=%DIV\4,%PC=$V(%OF,0,1)\%DIV#4,%PT(%X)=%PC S MMM(1,1)=MMM(1,1)_$P("System,World,Group,User",",",%X)_"="_$P("NONE,READ,R\W,RWD",",",%PC+1)_" " I $D(ReadProt) S ReadProt=ReadProt_(%PC+1)
+ Q:$D(ReadProt)
+ S MMM(3,1)="Доступ пользователей системного КИПа к Глобалам системного Кипа",MMM(3,2)="Доступ пользователей из других систем к Глобалам вашей системы по DDP"
+ S MMM(3,3)="Доступ пользователей из несистемных КИПов к Глобалам других Кипов",MMM(3,4)="Доступ пользователей из несистемных КИПов к Глобалам своего Кипа"
+ S MMM(1,1)=MMM(1,1)_"@6@ @0@3@",OO=1,OOO="MMM" K %JB Q:$D(INTERNAL)  D 24^%ZAPM.bs.BSTM,^%ZAPM.bs.BSB,ZA^%ZAPM.bs.BSF Q
+ ;
+RP(%GLB) ;СМОТРЕТЬ ХАРАКТЕРИСТИКИ
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q "-7"
+ N ReadProt,Erro S ReadProt="" G %BSGCH
+ ;
+CP(%GLB,Prot) ;ИЗМЕНИТЬ ХАРАКТЕРИСТИКИ
+ ;%GLB=ИМЯ МАССИВА   Prot="SYSTEM/WORLD/GROUP/USER=NONE/READ/RW/RWD"
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ N Erro F %OPT=1:1:4 S %B=$E(Prot,%OPT) D:%B In(%GLB,%OPT,%B) Q:$D(Erro)
+ C 63 Q
+ ;
+In(%GLB,%OPT,%B) ;%GLB-ИМЯ МАССИВА     %OPT=1/2/3/4 -- SYSTEM/WORLD/GROUP/USER
+INT N INTERNAL   ;                     %B=1/2/3/4 -- NONE/READ/RW/RWD
+ I %GLB[",",$$ZU^%ZAPM.bs.BS3(0)=$TR($P(%GLB,"]"),"^["_$C(34),"") S %GLB="^"_$P(%GLB,"]",2)
+ S %B=$G(%B,4),%OPT=$G(%OPT,4),%GLB=$G(%GLB) I %B<1!(%B>4)!(%OPT<1)!(%OPT>4) W /BEL Q
+ S INTERNAL=1 G %BSGCH
+e Q

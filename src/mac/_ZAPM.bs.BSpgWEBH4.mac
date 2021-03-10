@@ -1,0 +1,81 @@
+ROUTINE %ZAPM.bs.BSpgWEBH4
+TKWEBH4	;PG&A;TK-WEB;1.1;HELP SCREENS;16DEC97  13:17
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+HELP4	;
+	;&Virtual<BR>Servers
+	;Generally you have only one host name for each IP address and since most webservers have only one IP address this limits the web server to a single name.  This gives you 4 options when it comes to addressing a web site:
+	;<menu><li>Host Name - example: <b>alpha</b> or <b>www.mycompany.com</b> (you can only use the xxx.xxx.xxx name if you are using DNS lookup)
+	;<li>Host Name/Directory - example: <b>www.mycompany.com/sales</b>
+	;<li>Host Name/Directory/Page - example: <b>www.mycompany.com/sales/page1.htm"</b></menu>
+	;
+	;If you want to use the first option above, you will need to configure the default page in <a href="/?config5">TK-WEB DEFAULT PAGE SETUP</a>.
+	;If you want to use the second option above, you will need to configure the default page of each directory in <a href="/?config2">TK-WEB DIRECTORY DEFINITIONS</a>.
+	;
+	;So what can you do when you want more than one <b>www.mycompany.com</b> type of address on the same machine?  Then you need to resort to what is called "virtual servers".
+	;
+	;The issue of virtual servers is involved in DNS registery.  For each www.xyz.com type of name, there needs to be a DNS server entry somewhere in the network that will resolve this name to the IP address of your web server.
+	;If you have a world wide connection (internet), then you would need to
+	;register your host name and each virtual name with the national DNS authority (InterNic in US)
+	;in order for it to be used by others.
+	;
+	;Once you have the name registered, then you will need to add your new names to the Virtual Server Configuration screens along with respective default directory that will service this virtual name.
+	;
+	;<a href="/?help6">next</a><BR>
+	;;
+HELP5	;
+	;&Naming<BR>Conventions
+	;Although TK-WEB does not restrict your freedom in creating names for directories and web content, you should abide by certain rules to make life easier and to insure that your web pages come out correctly under a wide range of web browsers:
+	;<ol><li>Limit your names to alphanumeric characters, a dash and an underscore.  No spaces.
+	;<li>Keep the names short.  Abbreviated names make for shorter URLs and less typing.
+	;<li>Use the standard extensions.  The standard DOS extensions will work fine.  TK-WEB interprets a ".h" as HTML, ".j" and ".g" as images, and ".t" as text.
+	;<li>TK-WEB extends the extensions for web pages with some special characters:  I for MS Internet Explorer, P for Protected Pages.
+	;So if you want to create two copies of a page, one for Netscape and another for MSIE, name the first xxx.HTM and the second xxx.HTMI.
+	;<li>The names are case insensitive.  TK-WEB converts all names to uppercase internally.  Unlike some web servers, it makes no difference how the user types in the URL.
+	;
+	;<a href="/?help3">next</a><BR>
+	;;
+HELP7	;
+	;&Publishing<BR>using<BR>Netscape
+	;You can publish web content directly to TK-WEB by using version 4.0 of Netscape Navigator (Composer).
+	;
+	;Here are the step that you will need to take to publish:
+	;<ol><li>Make sure TK-WEB is up and running.
+	;<li>Bring up Netscape Composer.  Create or edit your page inserting text and images where needed.  You can edit already published pages by entering in the URL.
+	;<li>Once you are finished, bring up the FILE menu and select PUBLISH.  This allows your to publish both the page and all of its images.
+	;<li>You will be asked specify the Page Title.  This is the title line that appears on the top of the browser.  Enter the appropriate title.
+	;<li>The HTML Filename is the name of your page.  If you use a name that it already being used, it will move the original one to an archive file and replace it with the one you are publishing.  You should use the ".HTM" or ".HTML" extension,
+	;although all TK-WEB is looking for is the ".H"
+	;<li>The HTTP location is the name of your TK-WEB server and directory where you want this data to be published.  Make sure that it ends in a "/" such as "HTTP://mycomputer/sales/".
+	;<li>The user name and password is only needed if you have specified a password for publishing.
+	;<li>If want to publish the images along with the page, select the OTHER FILES TO INCLUDE box and select all.
+	;<li>Press OK when done.  You should receive a confirmation screen indicating what was published.
+	;
+	;<a href="/?help9">next</a><BR>
+	;;
+HELP6	;
+	;&Publishing<BR>using<BR>Microsoft
+	;Microsoft offers a number of different methods for publishing web content from Microsoft Word to Front Page Express and Front Page.  The basic web publishing wizard works pretty much the same in each case.
+	;
+	;Usually you will publish one page at a time.  You can create and edit each of the web pages on any Windows based PC that is connected to the network (you need web browser access to the TK-WEB server).
+	;As you create the pages you can either store them temporarily on another PC in regular files or you can use TK-WEB to store the content exclusively.
+	;
+	;Here are the step that you will need to take to publish:
+	;<ol><li>Make sure TK-WEB is up and running.
+	;<li>Bring up your Microsoft HTML editor.  Create or edit your page inserting text and images where needed.  You can edit already published pages by entering in the URL.
+	;<li>Once you are finished, bring up the FILE menu and select SAVE ALL.  This allows your to publish both the page and all of its images.
+	;<li>The next few steps you go through may vary in order from product to product, but here are the basics:
+	;<li>If your web server is running on Window-NT, you may be instructed to enter the name and password to gain access to it.
+	;<li>If the directory in which you are publishing contains a publishing password, you will be required to enter that password.  The name should be your own.
+	;<li>If the Web Publishing Wizard wants to know the type of publishing you would like, specify "HTTP Post", not FTP. 
+	;<li>In the Posting Information screen you will need to insure that the server name is correct.  Everything else is not used.
+	;<li>You will be asked specify the Title of the Page as well as its location.  The title is not critical, but make sure you specify the correct name.  You could easily replace one of your existing web paes if you do not pay attention to the location. </o
+	;
+	;After you have gone through the various questions, it will publish your page and it's associated images.  The first thing you should do is try it out on a browser.
+	;
+	;Problems:
+	;
+	;Page works fine - no images.  Check the addressing of the images.  See <a href="/?help2#references">references</a> for more explaination.
+	;
+	;<a href="/?help7">next</a><BR>
+	;;

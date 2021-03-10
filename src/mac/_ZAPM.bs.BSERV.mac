@@ -1,0 +1,88 @@
+ROUTINE %ZAPM.bs.BSERV
+%BSERV ;пpогpамма FOR-SERVER ; 12:20   21.03.99
+ Q
+JOB N T,G,S,LIST I '$$LO Q
+ I $$ACTIV(G,T,S,0)=1 Q
+ J JOB^%ZAPM.bs.BSERVER(G,T,S):20:1 E  W $$bel^%ZAPM.bs.BS3
+ Q
+JOBING(PR,XP) N T,G,S,LIST I '$$LO Q 0
+ S @G@("OTK",S)="J?" N I,II
+ S @G@("CMD",S)="J "_PR_"(XP)::1 S:$T @G@(""OTK"",S)=""JOB!OK""" F I=1:1:T+2 H 1 I $G(@G@("OTK",S))="JOB!OK" S II=1 Q
+ Q +$G(II)
+ACTIV(G,T,S,N) N WA,ls,li I $G(N) D Wait^%ZAPM.bs.BSXfun("Проверка Активности %BS-Сервера системы "_S)
+ S @G@("OTK",S)="?" N I,II
+ S @G@("CMD",S)="D ACT^%ZAPM.bs.BSERVER" F I=1:1:T*2 H 1 X:$G(N) WA I $G(@G@("OTK",S))="!" S II=1 Q
+ Q +$G(II)
+LIST W #,"                 Активны следующие М-Сервера" K LIST
+ S I="" F II=1:1 S I=$O(@G@("STA",I)) Q:I=""  D
+ .I $$ACTIV(G,T,I,1) W /CUP(II+2,1),II,".",I," Time ",($P($$h^%ZAPM.bs.BS3(),",")-$P(@G@("STA",I),",")),"\ ",$$Time^%ZAPM.bs.BSsFUNR($P($$h^%ZAPM.bs.BS3(),",",2)-$P(@G@("STA",I),",",2)) D  S LIST(II)=I Q
+ ..W " "_$E($G(@G@("CMT",I)),1,59)
+ .S II=II-1
+ I II=1 D ErrMsg^%ZAPM.bs.BSXfun("Нет активных Серверов")
+ Q
+NUM I $D(LIST(S)) S S=LIST(S)
+ I S=0 S S="All"
+ Q
+COCO(I) ;ВНУТРЕННИЕ КОМАНДЫ КОМАНДЕРУ
+ S I=$P(I," ;") I I="LIST" D LIST Q 1
+ I I="LAST" D LastMsg^%ZAPM.bs.BSERVF Q 1
+ I I="GO" D JOB^%ZAPM.bs.BSERV Q 1
+ I $E(I,1,3)'?3U X I Q 1
+ Q 0
+SEND ;ПОСЛАТЬ СООБЩЕНИЕ
+ N T,G,S,I,II,MS I '$$LO Q
+ K I
+SEN S I=$$LineEdit^%ZAPM.bs.BSXfun($G(I),"Посылайте Текст сообщения в формате: SYS Сам текст... Циркулярно,то All",$C(34),"","","^%ZAPM.bs.BSbufB(""HISTMSGSRV"")") q:YES<1
+ I $$COCO(I) G SEN
+ S S=$P(I," ") Q:S=""  S MS=$P(I," ",2,999) I S?.N D NUM
+ I S'="All",'$D(@G@("STA",S)) D ErrMsg^%ZAPM.bs.BSXfun("Система "_S_" Не активна") G SEN
+ I $D(@G@("STA",S)) D MSG(G,T,S,MS) Q
+ I S="All" S I="" F II=1:1 S I=$O(@G@("STA",I)) Q:I=""  D MSG(G,T,I,MS)
+ Q
+MSG(G,T,S,M) ;ПОСЛАТЬ СООБЩЕНИЕ БЕЗ ОЖИДАНИЯ ПОДТВЕРЖЕНИЯ
+ S M="Сообщение "_$P($$ZU^%ZAPM.bs.BS3(1,0),",",2)_"-->"_S_" :"_M
+ S @G@("CMD",S)="D MSG^%ZAPM.bs.BSERVER("""_$TR(M,$C(34),"")_""")"
+ Q
+CTRL ;КОНТРОЛЬ
+ I '$$AccesMSM^%ZAPM.bs.BSDOS2(4) Q
+ N T,G,S,I,II,MS I '$$LO Q
+ K I
+CTR S I=$$LineEdit^%ZAPM.bs.BSXfun($G(I),"Посылайте Команду %BS-Серверам: SYS Команда... Циркулярно,то All","","","^%ZAPM.bs.BSHLP,CMDSRV","^%ZAPM.bs.BSbufB(""HISTCMDSRV"")") q:YES<1
+ I $$COCO(I) G CTR
+ S S=$P(I," ") Q:S=""  S MS=$P(I," ",2,999) I S?.N D NUM
+ I S'="All",'$D(@G@("STA",S)) D ErrMsg^%ZAPM.bs.BSXfun("Система "_S_" Не активна") G CTR
+ I $D(@G@("STA",S)) D CMD(G,T,S,MS) Q
+ I S="All" S I="" F II=1:1 S I=$O(@G@("STA",I)) Q:I=""  D CMD(G,T,I,MS)
+ Q
+CMD(G,T,S,C) ;ПОСЛАТЬ КОМАНДУ
+ S @G@("CMD",S)=C
+ Q
+IntCMD(C) ;ВНУТРЕННЯЯ ТОЧКА КОМАНД М-СЕРВЕРУ
+ N T,G,S,I,II,MS I '$$LO Q
+ D CMD(G,T,S,C)
+ Q
+Int(C) ;ВНУТРЕННЯЯ ТОЧКА КОМАНД
+ N T,G,S,I,II,MS I '$$LO Q
+ X C
+ Q
+LO() S G=$P($G(^%ZAPM.bs.BSETUP("SERVER",4,4)),"@",15)
+ S T=+$P(G,"\") Q:'T 0
+ I '$$Data^%ZAPM.bs.BSF12($NA(@$P(G,"\",2))) Q 0
+ S S=$P($$ZU^%ZAPM.bs.BS3(1,0),",",2),G=$ZR
+ D CLr^%ZAPM.bs.BSF4
+ Q 1
+SPACE ;ПРОСТРАНСТО ДИСКОВ
+ D TempT^%ZAPM.bs.BSTT N B D TempTX^%ZAPM.bs.BSTT("")
+ F I="C","D","E","F" S B=$$ZOS9^%ZAPM.bs.BSDOS(I) I +B>0 D SPA(I,B)
+ D TempTXT^%ZAPM.bs.BSTT("Распределение Дискового пространства",$G(@%BS(20)@("ErrorTXT")))
+ D TempTXTE^%ZAPM.bs.BSTT
+ Q
+SPA(D,B) N I,C
+ F I=1:1:4 S C(I)=$P(B,"^",I)
+ D TempTX^%ZAPM.bs.BSTT(" Total space on drive "_D_$J("("_$FN(C(1)*C(3)*C(4),",")_" bytes)",25))
+ D TempTX^%ZAPM.bs.BSTT("                 Free "_D_$J("("_$FN(C(1)*C(2)*C(3),",")_" bytes)",25))
+ Q
+ 
+DSP N %X,%Y,%A,%B,%C,%I S %X=%DRV Q:%X=-1  S %Y=$$ZOS9^%ZAPM.bs.BSDOS(%X) F %I=1:1:4 S @("%"_$C(64+%I))=$P(%Y,"^",%I)
+ S i1=" Free  space on drive "_%X_" "_$J(%A*%B*%C,10)_" bytes  ("_(%A*%B*%C\104857.6/10)_" Megabytes)"
+ S i2=" Total space on drive "_%X_" "_$J(%A*%C*%D,10)_" bytes  ("_(%A*%C*%D\104857.6/10)_" Megabytes)" Q

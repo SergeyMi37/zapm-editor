@@ -1,0 +1,50 @@
+ROUTINE %ZAPM.bs.BSTIMER
+%BSTIMER ; ФОНОВЫЙ ТАЙМЕР ДЛЯ ТЕСТИРОВАНИЯ БАЗЫ ДАННЫХ НА СЕРВЕРЕ (C.Кривошеев) ; 18:17   04.04.2001
+ ;NEW INTERVAL,ACTTIME,FTRUE,FFALSE,FBAT,I,M,DATTIME,DAT1,%ERR,DATT,STRING
+ F I=1:1:3 H 1 L +%BStimer:0 E  I I=3 H
+ S INTERVAL=$P(^%ZAPM.bs.BSS("TIMER",4,4),"@",15)
+ S STRING=$P(^%ZAPM.bs.BSS("TIMER",5,4),"@",15)
+ S DAT1=$$TiME()
+ S ACTTIME=$P(DAT1,":",1)*3600+($P(DAT1,":",2)*60)+$P(DAT1,":",3)
+ S FTRUE=$P(^%ZAPM.bs.BSS("TIMER",7,4),"@",15)
+ S FFALSE=$P(^%ZAPM.bs.BSS("TIMER",9,4),"@",15)
+ S FBAT=$P(^%ZAPM.bs.BSS("TIMER",11,4),"@",15)
+1 HANG INTERVAL I $$EVENT D ACTION ;LOOP
+ I $D(STOP) HALT
+ G 1
+SETTIME(T) I T'?1N.N1":"2N W !,"НЕКОРРЕКТНЫЙ ФОРМАТ ВРЕМЕНИ ! (ЧЧ:MM)" Q
+ S $P(^%ZAPM.bs.BSS("TIMER",2,4),"@",15)=T ;УСТАНОВИТЬ НУЖНОЕ ВРЕМЯ
+ D STATUS
+ Q
+TiME() Q $P(^%ZAPM.bs.BSS("TIMER",2,4),"@",15)
+ATiME() S DAT1=$$TiME()
+ Q $P(DAT1,":",1)*3600+($P(DAT1,":",2)*60)+$P(DAT1,":",3)
+EVENT() ;СОБЫТИE
+ S M=$P($$h^%ZAPM.bs.BS3(),",",2),ACTTIME=$$ATiME()
+ I (M>(ACTTIME-(INTERVAL/2)))&(M<(ACTTIME+(INTERVAL/2)+1)) Q 1
+ Q 0
+ACTION ;ДЕЙСТВИЯ
+ DO AUTO^VALIDATE
+ S DATTIME=$$ESDAY^%ZAPM.bs.BSsFUNR(9,$$h^%ZAPM.bs.BS3())
+ S DATT=$P($$h^%ZAPM.bs.BS3(),",",1)
+ IF %ERR=0 D PROCTRUE J ^%ZAPM.bs.BSTIMER::0 H:$T  Q
+ ;
+ ;ЕСЛИ ОШИБКИ ЕСТЬ
+ O 51:(FFALSE:"W") U 51 W "ERRORS"_DATTIME_":",!
+ S I=""  F  S I=$O(%ERR(I)) Q:I=""  W %ERR(I),!
+ C 51
+ Q
+PROCTRUE ;ЕСЛИ ОШИБОК НЕТ
+ O 51:(FTRUE:"A") U 51 W "Test DataBase passed O'k  "_DATTIME_", File BackCopy is "_DATT_".arj",! C 51
+ O 51:(FBAT:"W") U 51 W "rem   -=Creating "_DATTIME_"=-",!,STRING_DATT,! C 51
+ Q
+START ;ЗАПУСК НА СТАНЦИИ
+SERVER ;ЗАПУСК НА СЕРВЕРЕ
+ I '$D(^%ZAPM.bs.BSbufS) S ^%ZAPM.bs.BSbufS="BaSe MsW @РАЗДЕЛ НАСЧИТАННЫХ СВОДОК И СПИСКОВ",^%ZAPM.bs.BSMOLN="BaSe MsW @РАЗДЕЛ НАСЧИТАННЫХ СВОДОК И СПИСКОВ МОЛНИИ",^%ZAPM.bs.BSTABEL="BaSe MsW @РАЗДЕЛ НАСЧИТАННЫХ СВОДОК И СПИСКОВ ТАБЕЛЯ"
+ J ^%ZAPM.bs.BSTIMER::0 I  W !,"%BS-TIMER STARTED. BASE VALIDATING IN "_$$TiME() Q
+ W !,"%BS-TIMER NOT STARTED" Q
+ Q
+STATUS ;СТАТУС ТАЙМЕРА
+ L +%BStimer:0 I  W !,"%BS-TIMER NOT ACTIVE" Q
+ W !,"%BS-TIMER ALLREADY STARTED. BASE VALIDATING IN "_$$TiME()
+ Q

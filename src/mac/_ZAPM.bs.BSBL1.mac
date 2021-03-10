@@ -1,0 +1,96 @@
+ROUTINE %ZAPM.bs.BSBL1
+%BSBL1 ;ОТКРЫТИЕ HFS, EXPORT DOS-FILE ; 16:39   12.05.99
+DosOpn(NumDev,PR1) ;
+DOSOPN ;ОТКРЫТИЕ УСТРОЙСТВА HFS ДЛЯ ЗАПИСИ
+ I $ZV["Cach"||($ZV["IRIS"),'$$ASK^%ZAPM.bs.BSCi Q
+ S YES=1 I $D(%DEV)&($D(%FN)) G U:%DEV>50&(%DEV<55),U:$ZV["Cach"||($ZV["IRIS")
+DEV I $ZV["Cach"||($ZV["IRIS") S %DEV=51 G FN
+ F %DEV=$G(NumDev,51):1:54 O %DEV::0 Q:$T
+ I '$T S %DEV=0 S ls=" Все файловые устpойства ДОС заняты ..." D O^%ZAPM.bs.BSF7 G END
+ N Qq
+FN U 0 S %DEVTYPE="HFS" K %FN S ls=" Введите полный путь к DOS-файлу для ЗАПИСИ (F3-Каталог) ",li=$G(PR1)
+         I li="" S li=$$DIRUSER^%ZAPM.bs.BSCmDDR(%BS(12)) //```
+ D ChP^%ZAPM.bs.BSF10(2) ;ПЕРЕОПРЕДЕЛЕНИЕ ТЕКУЩЕГО КАТАЛОГА
+ I $D(%BS)["0" D CLr^%ZAPM.bs.BSF4
+ I $G(pacetD)=""!($G(pacetO)=1&($G(pacetD)=2))!($G(PR1)="") S %KAT="D DOS^%ZAPM.bs.BSDOS",ll="",%HIS="^%ZAPM.bs.BSbufB(""HISFILE"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.bs.BSTT Q:'YES  I li="" S YES=0 Q
+ //```
+ I $E(li,2)'=":"!("Aa"[$E(li,1))!($E(li,$L(li))="\") D ER^%ZAPM.bs.BSF("Вводите имя файла в формате... "_$$DIRUSER^%ZAPM.bs.BSCmDDR(%BS(12))_"FileName") G FN
+ S %FN=li G:"^."[%FN END I $G(%SDEV)="HISTORY" C %DEV Q  ;!!!
+ S:$P(li,"\",$L(li,"\")+1)'["." li=li_".%BS" I $E(li,$L(li)-3,$L(li))'=".%BS" S ls=" НЕОБХОДИМО РАСШИРЕНИЕ *.%BS " D O^%ZAPM.bs.BSF7 G FN
+ I $G(pacetD)'="" I pacetD=1!(pacetO=1) D  G:$G(Qq) FN
+ .I $$ZOS10^%ZAPM.bs.BSDOS(%FN)>0 I $$DelFile^%ZAPM.bs.BSXdos(%FN) S Qq=1
+ S:$G(pacetD)'="" pacetO=2,pacetPR1=%FN
+ I $G(pacetD)="" I $$OverAdd^%ZAPM.bs.BSXdos(%FN) G FN
+U I $ZV["MSM" O %DEV:(%FN:"A") U %DEV I $ZA<0 G ErrO
+  I $ZV["Cach"||($ZV["IRIS") G ErrO:'$$OpenFile^%ZAPM.bs.BSCF1(%FN,"A")
+END S %3=250 I "^."[%FN S %4="" C %DEV K %DEV,%FN D CL^%ZAPM.bs.BSF4 Q
+ U 0 Q
+C C %DEV K %DEV,%FN D CL^%ZAPM.bs.BSF4 Q
+ErrO U 0 S ls=" Ошибка откpытия файла "_%FN D O^%ZAPM.bs.BSF7 C %DEV
+ I $G(pacetD)'="" Q
+ G FN
+ 
+IntTXT2T(BSr,BSt,BSR,BST) 
+ ;ВНУТРЕННЯЯ ТОЧКА ВХОДА ИЗ BSr,BSt ---> BSR,BST
+ S IntTXT2T=1 G IntTXT
+EXPORTXT ;ВОССТАНОВЛЕНИЕ ИЗ ТЕКСТА
+ D RIT^%ZAPM.bs.BSF3 I 'YES G D
+IntTXT K ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15)),^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15)) S %I=$I
+ S %zT=$ZT,$ZT="ER^%ZAPM.bs.BSBL1"
+ S %IN=$G(@(BSr_"(BSt,1)")) I %IN="" S ls=" Нет ведь ничего !" D O^%ZAPM.bs.BSF7 G D
+ I $E(%IN,1)'="#" S ls=" Не тот формат !" D O^%ZAPM.bs.BSF7 G D
+ I '$D(IntTXT2T) S ls=" Восстановим ? Но текущая таблица будет потеряна! " D YES^%ZAPM.bs.BSF G:'YES D
+ S AN=%IN,DL=$L(%IN)
+IF S ls="ВОССТАНОВЛЕНИЕ..." D WAITS^%ZAPM.bs.BSF2  D TRANS
+ S i=1 F  S i=$O(@(BSr_"(BSt,i)")) Q:i=""  Q:$G(@(BSr_"(BSt,i)"))=""  D
+ .S %IN=$G(@(BSr_"(BSt,i)"))
+ .S:i=2 AN=$E(%IN,1) S AN1=$E(%IN,1) D TRANS1 X $G(WA)
+ G QQQ
+tr(S) //АВТО-ТРАНСЛЯЦИЯ ИЗ ASCII
+ S (S2,S1)="" D INIT^%ZAPM.bs.BSre(1)
+ Q $TR(S,S1,S2)
+EXPORT ;ВОССТАНОВЛЕНИЕ ИЗ DOS-ФАЙЛА
+ K ^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15)),^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15))
+ S %I=$I D DEV^%ZAPM.bs.BSS1
+REST D DOSREAD I '$D(%FN) K %DEV Q  ;ВОССТАНОВЛЕНИЕ ТАБЛИЦ
+ S %zT=$ZT,$ZT="ER^%ZAPM.bs.BSBL1" U %DEV R %IN G:$ZC'=0 CLO
+RES I $E(%IN,1)["#"!($E(%IN,1)["$") U 0 S ls=" Восстановим ? Но текущая таблица будет потеряна! " D YES^%ZAPM.bs.BSF G:'YES D S AN=%IN,DL=$L(%IN) G I
+ U 0 S ls=" Не тот формат !" D O^%ZAPM.bs.BSF7 G D
+I U 0 S ls="ВОССТАНОВЛЕНИЕ..." D WAITS^%ZAPM.bs.BSF2 S (S2,S1)="" I ($E(%IN,1)["#") D INIT^%ZAPM.bs.BSre(1)
+ D TRANS
+ F i=1:1 U %DEV R %IN Q:$ZC'=0  S %IN=$tr(%IN,S1,S2) D 
+ .U 0 S:i=1 AN=$E(%IN,1) S AN1=$E(%IN,1) D TRANS1 X $G(WA)
+QQQ S QQ=1 U 0 D TRANS1,TRA2
+QQ S $ZT=$G(%zT) U 0 D CLO,TAB^%ZAPM.bs.BSF1,DEND^%ZAPM.bs.BSF2,REND^%ZAPM.bs.BSF2 G:$D(IntTXT2T) D D W^%ZAPM.bs.BST,KLE^%ZAPM.bs.BSTM G D
+ G D
+DOSREAD I $D(%DEV)&($D(%FN)) I %DEV>50&(%DEV<55) G U^%ZAPM.bs.BSS1
+e Q
+ER U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G ERE
+ I $ZE["<ENDOFFILE" G QQQ
+ I $ZE["<MXSTR" S ls=" Слишком длинная строка считана " G ERE
+ S ls=$ZE
+ERE S $ZT=$G(%zT) D O^%ZAPM.bs.BSF7,CLO K:$E($G(BST),1)="@" @(BSR_"(BST)") G END^%ZAPM.bs.BSF
+CLO U 0 C:$D(%DEV) %DEV Q
+D ;???MSW D U^%ZAPM.bs.BS3($NA(@BSR@(BST)))
+ I $D(IntTXT2T) K IntTXT2T Q
+ G 0^%ZAPM.bs.BSTM
+TRANS ;ЗАПИСЬ ТАБЛИЦЫ
+ S QQ="",FS=@(BSR_"(BST)") K @(BSR_"(BST)") S @(BSR_"(BST)")=FS
+ S k=1,k1=2,k2=3,AN1=$E(AN,2) F i=k2:1 S AN2=$E(AN,i) D  Q:AN2=""
+ .I AN2'=AN1 S j=i-1,^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),k)=k1_","_j,k2=i,AN1=AN2,k=k+1,k1=k2
+ S l=0,BSI=0 Q
+TRANS1 ;
+ I $L(%IN)<DL S %IN=%IN_$J("",(DL-$L(%IN)))
+ I '$D(AN1) G TRA2
+ I AN1=AN D  Q
+ .S j=0,l=l+1 F  S j=$O(^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),j)) Q:j=""  S k=^%ZAPM.bs.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),j),^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15),l,j)=$E(%IN,$P(k,","),$P(k,",",2))
+TRA2 S AN=AN1,l=0,BSII=0,BSI=BSI+1,j1=0
+TRA S BSII=BSII+1,STR="",STR1=""  F  S j1=$O(^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15),j1)) Q:j1=""  S SY=j1 S:QQ=1 SY=SY-1 D  G:STR1="" TRA1 S STR=STR_STR1
+ .Q:'$D(^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15),j1,BSII))  S STR1=^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15),j1,BSII),SX=$L(STR1)
+ D  S @(BSR_"(BST,BSI,BSII)")="@@"_SY_"@"_SX_"@@@@@1@@@@@@"_STR G TRA
+ .I $TR(STR," ","")="" S STR="" Q
+ .S f2=STR,f=$L(STR) I STR[" " F f=$L(STR):-1 S f1=$E(STR,f) Q:f1'=" "
+ .S STR=$E(STR,1,f)
+ .I $L(STR)>502 S STR=$E(STR,1,502)_"??"
+TRA1 K ^%ZAPM.bs.BSbufB("P"_$G(%BS(3),$P)_$J_"u"_%BS(15)) G:QQ="" TRANS1
+ Q

@@ -1,0 +1,98 @@
+ROUTINE %ZAPM.bs.BSpgWEBH1
+TKWEBH1	;PG&A,TK-WEB,1.1,HTML CONTROL - 2;03OCT97  18:14 [ 10/15/97   8:12 AM ];14AUG2003  16:46;;17MAR2000  13:43
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	Q
+	;
+PARSEY S ST=200 G:FLN["INDEX?" INDEXP^%ZAPM.bs.BSpgWEBH1 G:$G(%("USER-AGENT:"))["HTTP Post" POST
+	S D=Y I FLN["?" S (DIR,%("FORM","DIR"))=$S($E(FLN)="?":DIR,1:$P(FLN,"?")),%("FORM","DATA")=$P(FLN,"?",2,99),D=D_"&"_%("FORM","DATA")
+	S v="%(""FORM"")",k=1 F J=1:1:$L(D,"&") D P3
+ I $D(%("WEBPUT")),$D(^mtempBSpgWEBPUT(CON,CNT)) S v="^mtempBSpgWEBPUT(CON,CNT,0)"
+ I   I CMD="GET" S D="",i=0 F  Q:i=""  S i=$O(^mtempBSpgWEBPUT(CON,CNT,i)) S:i D=D_^(i) I $L(D)>10000!(i="") S J=1 F j=1:1:$L(D,"&")-(i>0) D P3 S D=$P(D,"&",2,9999)
+P2	S D=$G(%("FORM","routine"))_$G(%("FORM","ROUTINE")) I D]"" G:D["CONFIG" P1 S FLN=D
+	I FLN["/",$P(FLN,"/",2)["^" S RLC=$P(FLN,"/"),FLN=$P(FLN,"/",2,9)
+	I FLN["?",FLN["^" S FLN=$P(FLN,"?")
+ I FLN?.AN1"^"1A.E G GLOB^%ZAPM.bs.BSpgWEBL
+	I $D(%("FORM","DIR")) S D=$TR($P($G(%("FORM","DATA")),"?"),"/") G P1
+ S D=$G(%("FORM","ROU")) G:",TOOLS,TOOL2,TOOL3,PUBLISHX,BASE,"[(","_D_",") @D G GET4^%ZAPM.bs.BSpgWEBH
+P1 D UTIL^%ZAPM.bs.BSpgWEBU1(D)
+GET1 G GET1^%ZAPM.bs.BSpgWEBH
+P3	S B=$P(D,"&",J),C="" Q:B=""  S:B?1.50E1"=".E C=$P(B,"="),B=$P(B,"=",2,999) Q:C=""
+	S B=$TR(B,"+"," ") I B["%" S E=B,B=$P(E,"%") F K=2:1:$L(E,"%") S B=B_$C(+$$ZH($E($P(E,"%",K),1,2)))_$E($P(E,"%",K),3,99999)
+	F k=k:1 S I=$P(B,$C(13,10)),B=$P(B,$C(13,10),2,9999) Q:$L(I)+$L(B)=0  S @$S('$D(@v@(C)):"@v@(C)=I",1:"@v@(C,k)=I")
+	Q
+ZH(X)	Q $F("0123456789ABCDEF",$E(X))-2*16+$F("0123456789ABCDEF",$E(X,2))-2
+	;
+PUT D FILE^%ZAPM.bs.BSpgWEBH
+POST S ST=200 I '$D(^%ZAPM.bs.BSpgWEBF("PAGES",DIR)) ;CHECK NEW DIRECTORY LOCKOUT
+ G:$G(^%ZAPM.bs.BSpgWEBC("PUBLISH-PASS",DIR))="" POST1
+	I '$D(%("AUTHORIZATION:")) S ST=401 G GET1
+ S ST=$P($TR($$UUDEC^%ZAPM.bs.BSpgWEBU(%("AUTHORIZATION:")),LC,UP),":",2),ST=$S(ST="":403,$G(^%ZAPM.bs.BSpgWEBC("PUBLISH-PASS",DIR))=ST:200,$D(^(DIR,ST)):200,1:403) I ST'=200 S LL(1)="FORBIDDEN ACCESS - CHECK YOUR PASSWORD" G GET1
+POST1 I '$D(^mtempBSpgWEBPUT(CON,CNT,1)) F D=1:1 S ^(D)=$E(Y,1,STL-1),Y=$E(Y,STL,99999) Q:Y=""
+ M ^mtempBSpgWEBPUT(CON,CNT,0)=% S ^mtempBSpgWEBPUT(CON,CNT,0,"FLN")=$G(FLN),^("DIR")=$G(DIR) L +^mtempBSpgWEBPUT:1 I  J ^%ZAPM.bs.BSpgWEBPUT L -^mtempBSpgWEBPUT
+	G GET1
+	;
+JULIAN	S m=+T-3,d=$P(T,"/",2),y=$P(T,"/",3) I (m+d+y)<-2 S T="" Q
+	S:y<100 y=y+1900 S o=$S(y<1900:-14917,1:21608),y=y>1999*100+$E(y,3,4) S:m<0 m=m+12,y=y-1 S T=1461*y\4,T=153*m+2\5+T+d+o K m,y,o,d Q
+	;
+INDEX	S LL(1)="<html><head><title>TK-WEB Index</title></head><body bgcolor=""#ffffff""><font size=2><h2>Index for "_$S($G(OS)="M3":"M3 ",1:"Tk")_"Web Server</h2> - "_DTMA_" -<p><table border=5 cellpadding=10><td valign=top>",J=3
+ S A="" I $O(^%ZAPM.bs.BSpgWEBF("SERVICES",""))'="" F J=J-1:1 S A=$O(^(A)) Q:A=""  S LL(J)="<A HREF="""_$$REF($P(^(A),"`",3))_""">"_$P(^(A),"`")_"</A><BR>" I J+2#3=0 S LL(J)=LL(J)_"<td valign=top>"
+	S LL(J)="</table><TABLE border=1><font size=2><tr><th>Directory<th>Pages<th>Page Bytes<th>GIFS<th>GIF Bytes<th>JPEGS<th>JPEG Bytes<th>OTHER<th>OTHER Bytes</tr>"
+ K TT,TTT S A="" F J=J+1:1 S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",A)) Q:A=""  D CNT
+	S LL(J)="<tr><td>Totals" F B="HTML","GIF","JPEG","OTHER" S LL(J)=LL(J)_"<td>"_$G(TT(B))_"<td>"_$G(TTT(B))
+	S LL(J)=LL(J)_"</TR></TABLE></body>"
+	K T,TT,TTT G GET1
+REF(A)	I A'["$&" Q A
+	N B S B=A,A=$P(B,"$&") F I=2:1:$L(B,"$&") S C=$P($P(B,"$&",I),")"),A=A_$S($D(%(C)):%(C),$D(@C):@C,1:"")_$P($P(B,"$&",I),")",2,99)
+	Q A
+	;
+INDEXP	S B=$E($P(FLN,"INDEX?",2)) S:B="" B="H" S B="."_B I "GJ"[$E(B,2) S A="" G IMAGEX
+	S LL(1)="<body><h2>HTML Index for Server</h2><p><hr size=5 noshade>Pages listed in DIRECTORY - "_DIR_"<TABLE><basefont size=2><tr><th>Page</th><th>Date</th><th>Size</th><th>Graphics</th></tr>",J=3
+	S C="A[B" I B["O" S C="""HJG""'[$E($P(A,""."",2))"
+ S A="" F J=J+1:1 S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,A)) Q:A=""  I @C S LL(J)="<TD><A HREF=""HTTP:/"_DIR_"/"_A_""">"_A_"</A></TD><TD>"_$$DT($P(^(A),"`",5))_"</TD><TD align=right>"_$FN($P(^(A),"`",3),",")_"</TD><TD align=right>" D
+ . K E S D=0,E="" F  S E=$O(^%ZAPM.bs.BSpgWEBF("XREF",DIR,"H",A,E)) Q:E=""  I '$D(E(E)),E[".G"!(E[".J"),$D(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,E)) S D=D+$P(^(E),"`",3),E(E)=""
+	. S LL(J)=LL(J)_$FN(D,",")_"</TD></TR><TR>"
+	S LL(J)="</TABLE></body>" G GET1
+	;
+DT(X)	Q $E(X,5,6)_"/"_$E(X,7,8)_"/"_$E(X,1,4)
+CNT S B="" K C,T F  S B=$O(^%ZAPM.bs.BSpgWEBF("PAGES",A,B)) Q:B=""  S D=$S(B[".H":"HTML",B[".G":"GIF",B[".J":"JPEG",1:"OTHER"),C(D)=$G(C(D))+1,T(D)=$G(T(D))+$P(^(B),"`",3)
+	S LL(J)="<tr><td><a href=""/"_A_""">"_A_"</a>"
+	F B="HTML","GIF","JPEG","OTHER" S LL(J)=$G(LL(J))_"<TD><A HREF=""HTTP:/"_A_"/INDEX?"_$E(B)_""">"_$G(C(B))_"</A>&nbsp;<td align=right>&nbsp;"_$G(T(B)),TT(B)=$G(TT(B))+$G(C(B)),TTT(B)=$G(TTT(B))+$G(T(B))
+	S LL(J)=$G(LL(J))_"</tr>" Q
+	;
+FILE S FILE=FLN D FILESPEC^%ZAPM.bs.BSpgWEBU1 I A="" S ST=404,LL=$$BODY^%ZAPM.bs.BSpgWEBH(404)_FILE G GET1
+	S FL=+A
+ S ST=200,LM=$$GMT^%ZAPM.bs.BSpgWEBH($H,TZ) D FILWR
+	Q
+FILWR S L=FL D HTML^%ZAPM.bs.BSpgWEBH,TRACE^%ZAPM.bs.BSpgWEBH G:$ZC FILWREND
+	O 51:(FILE:"R") F  U 51 R A#500 Q:$ZC  U 56 W A G:$ZC FILWREND
+FILWREND	C 51 Q
+	;
+CONTROL	;
+	I DIR="",$E(FLN)="?" G PARSEY
+	G INDEX:FLN="CONTROL",M3C:DIR="M3CONTROL" I $P(URI,"/",4)="SEARCH",$P(URI,"/",5)["*" S B=$P(URI,"/",5),A="",DIR=$P(URI,"/",3) S:$P(URI,"/",6)="MORE" A=$P(URI,"/",7) G IMAGEX
+	S:FLN?.E1C.E FLN="ERROR/BAD CHARS"
+ S B=$P(FLN,"/",2),B=$S(B="":"",$D(^%ZAPM.bs.BSpgWEBF("SERVICES",B)):$P(^(B),"`",2),1:$TR(B,"+"," "))
+ S DIR=$P(FLN,"/") I DIR="M" G PARSEY:FLN["?" D UTIL^%ZAPM.bs.BSpgWEBU1(B) G GET1
+ I DIR="TOOLS" D UTIL^%ZAPM.bs.BSpgWEBT(B) G GET1
+	S LL(1)="<body><font color=""#bb0000""><h2>"_$S($G(OS)="M3":"M3 ",1:"Tk")_"Web Error</h2></font><h3>Unrecognized or Privileged Command</h3>"_URI_"</body>" G GET1
+M3C I FLN[".G"!(FLN[".J") S GLB="^%ZAPM.bs.BSpgWEBF(""~"","""_FLN_""")" D:'$D(@GLB) ^M3webI G GET4^%ZAPM.bs.BSpgWEBH
+	I FLN'=DIR,'$D(%("AUTHORIZATION:")) S ST=401 G GET1
+ I FLN'=DIR S ST=$P($TR($$UUDEC^%ZAPM.bs.BSpgWEBU(%("AUTHORIZATION:")),LC,UP),":",2),ST=$S(ST="":401,$G(^%ZAPM.bs.BSpgWEBC("M3CONTROL-PASS"))=""&(ST="M3"):0,$G(^("M3CONTROL-PASS"))=ST:0,1:401),AUT="M3CONTROL" I ST G GET1
+ G PARSEY:FLN["?",PARSEY:$D(%("WEBPUT")),SS^M3WEB:FLN'=DIR D UTIL^%ZAPM.bs.BSpgWEBU1("M3") G GET1
+IMAGEX	S LL(1)="<html><head></head><body><h1>Images on Server - Directory: "_DIR_"</h1><P>"_FLN_"<P>",B=$TR(B,"*")
+	S T=0
+ F J=3:0:102 S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,A)) Q:A=""  I A[B S D=$P(^(A),"`",3),C=A,LL(J)="<HR><IMG SRC=""/"_DIR_"/"_A_""" BORDER=0 ALT=""/"_DIR_"/"_A_"""</IMG><P>"_A_"   "_$FN(D,",")_" bytes<P>",J=J+1,T=T+D D IMAGEX1
+	; F J=1:1:35 S LL(J)="<IMG SRC=""http://www."_($e(100+J,2,3))_".jpg""></IMG><P>",J=J+1
+	I A'="" S (A,LL(J))="<hr><a href=""HTTP:/CONTROL/"_DIR_"/SEARCH/*"_B_"/more/"_C_"""</img>more images</a>",J=J+1
+	S LL(2)=(J-3)_" Images in this page for a total of "_$FN(T,",")_" bytes   "_A_"<p><p>"
+	S LL(J)="</body></html>" G GET1
+IMAGEX1 I $O(^%ZAPM.bs.BSpgWEBF("XREF",DIR,"R",A,""))'="" S LL(J)=" - Used in: " S D="" F  S D=$O(^(D)) Q:D=""  S LL(J)=LL(J)_D_", "
+	I $D(LL(J)) S LL(J)=$E(LL(J),1,$L(LL(J))-2)_"<P>",J=J+1
+	Q
+	;
+TOOLS D TOOLS^%ZAPM.bs.BSpgWEBT G GET1
+TOOL2 D TOOL2^%ZAPM.bs.BSpgWEBT G GET1
+TOOL3 D TOOL3^%ZAPM.bs.BSpgWEBT G GET1
+PUBLISHX D PUBLISHX^%ZAPM.bs.BSpgWEBT G GET1
+DBASE D DBASE^%ZAPM.bs.BSpgWEBT1 G GET1

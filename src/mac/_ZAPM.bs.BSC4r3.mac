@@ -1,0 +1,423 @@
+ROUTINE %ZAPM.bs.BSC4r3
+%BSC4r3 ;МОДУЛЬ ДЛЯ СПЕЦИАЛЬНЫХ ФУНКЦИЙ = CSP-UPLOAD ; 11:11   12.09.2002
+ Q
+UPL ;ОСНОВНОЙ ВЫЗЫВАЮЩИЙ МОДУЛЬ UPLOAD
+ N BSS1,BSS2,BSS3,BSS4,BSS5 ;BSS6=ПРОГРАММА КОТОРУЮ НАДО ВЫПОЛНИТЬ ПОТОМ
+ S BSS1=$G(BSLOGIN),BSS3=$G(BSSES),BSS4=CurUS
+ W $$NEWIN^%ZAPM.bs.BSC4base1($$LNG^%ZAPM.bs.BSC4("UploadFile"),"1",$$LNG^%ZAPM.bs.BSC4("UploadFile"),"UP^~BSC4r3"),BBK
+ Q
+UP D BEG1^%ZAPM.bs.BSC4
+ ;<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+ W "<title>UpLoad File</title>"_$g(BK)
+ W "</head><body onkeyPress='javascript: if (27 == event.keyCode) window.close();' >"
+ D CSPUPLOAD("")
+ W "</form>"_$g(BK)
+ D END^%ZAPM.bs.BSC4
+ Q
+ERRR ;
+ W "<pre>"
+ W
+ W "</pre>"
+ Q
+TKUPLOAD //ЗАКОНЧИТЬ ПРИЕМ ФАЙЛА
+ S F=$G(%KEY("FileStream"))
+ Set by=$P(F,"~",3)
+ S FiNa=$P(F,"~",5,9)
+ S GL=$P(F,"~",1)
+ I FiNa="" S BK=$c(13,10) D CLOSEWIN Q
+ i by'=0,BSS1'="" D
+ .K ^mtempBSC4(BSS1,BSS3)
+ .S ^mtempBSC4(BSS1,BSS3)=BSS4_","_by_","_FiNa
+ .S I="" F  S I=$O(@GL@(I)) Q:I=""  D
+ ..Set bytes=$G(@GL@(I))
+ ..s ^mtempBSC4(BSS1,BSS3,I)=bytes
+ .K @GL
+ .Write !,"Загружен с Login :",BSS1,!,"<BR>Адрес IP:",BSS4,!
+ I $g(BSS6)'="" D  I $G(BSNSP)'="" I $$ZU^%ZAPM.bs.BSF4(BSNSP) D @BSS6
+ .I BSS6["^~" S BSS6=$$%^%ZAPM.bs.BSCh(BSS6)
+ .S BSSES=BSS3,BSNSP=$$%^%ZAPM.bs.BSCh($$GetVar^%ZAPM.bs.BSC4("NSpace"))
+ // D locvar^%ZAPM.bs.BSCh0("",1)
+ D CLOSEWIN 
+ Q
+CSPUPLOAD(F) N uri ;S uri="/csp/asu/b4y/b4yupload"_F_".csp"
+ s uri="http://"_$P($ZU(54,13,$zu(110)),",")_":"_$$WebPort^%ZAPM.bs.BSCp2_"/csp/asu/b4y/b4yupload"_F_".csp"
+ ;i $G(%("HOST:"))'="" S uri=""_$$ADDLIB^%ZAPM.bs.BSC4_"" 
+ W "<hr><form action='"_uri_"' enctype='multipart/form-data' method='post'>"_BK
+ W $$LNG^%ZAPM.bs.BSC4("Введите полное имя файла")_": <input name=FileStream size=""50"" type=""file"">"_BK
+ W "<p>"_BK
+ W "<ul><input type='submit' value='"_$$LNG^%ZAPM.bs.BSC4("Загрузить")_"'></ul>"_BK
+ W "</p><hr>"_BK
+  i $G(%("HOST:"))'="" W "<input type='hidden' name='BSLABEL' value='TKUPLOAD^~BSC4r3 '>"_BK
+ I $D(BSS1) D
+ .W "<input type='hidden' name='BSS1' value='"_BSS1_"'>"_BK
+ .W "<input type='hidden' name='BSS2' value='"_$L(BSS1)_"'>"_BK
+ W "<input type='hidden' name='BSS3' value='"_BSS3_"'>"_BK
+ I $D(BSS4) D
+ .W "<input type='hidden' name='BSS4' value='"_BSS4_"'>"_BK
+ .W "<input type='hidden' name='BSS5' value='"_$L(BSS4)_"'>"_BK
+ I $D(BSS6) D
+ .W "<input type='hidden' name='BSS6' value='"_BSS6_"'>"_BK
+ .W "<input type='hidden' name='BSS7' value='"_$L(BSS6)_"'>"_BK
+ I $D(BSS8) D
+ .W "<input type='hidden' name='BSS8' value='"_BSS8_"'>"_BK
+ .W "<input type='hidden' name='BSS9' value='"_$L(BSS8)_"'>"_BK
+ Q
+UPLOAD ;CSP-МОДУЛЬ
+ New by,I,BSS1,byte,BSS2,BSS3,BSS4,BSS5
+ ;S $ZT="ERRR^%ZAPM.bs.BSC4r3"
+ S BSS2=+%request.Get("BSS2")
+ S BSS1=$E(%request.Get("BSS1"),1,BSS2)
+ S BSS3=+%request.Get("BSS3")
+ S BSS5=+%request.Get("BSS5")
+ S BSS4=$E(%request.Get("BSS4"),1,BSS5)
+ S BSS7=+%request.Get("BSS7")
+ S BSS6=$E(%request.Get("BSS6"),1,BSS7)
+ S BSS9=+%request.Get("BSS9")
+ S BSS8=$E(%request.Get("BSS8"),1,BSS9)
+ W "<input type='hidden' name='BSS1' value='"_$g(BSS1)_"'>",!
+ W "<input type='hidden' name='BSS2' value='"_$g(BSS2)_"'>",!
+ W "<input type='hidden' name='BSS3' value='"_$g(BSS3)_"'>",!
+ W "<input type='hidden' name='BSS4' value='"_$g(BSS4)_"'>",!
+ W "<input type='hidden' name='BSS5' value='"_$g(BSS5)_"'>",!
+ W "<input type='hidden' name='BSS6' value='"_$g(BSS6)_"'>",!
+ W "<input type='hidden' name='BSS7' value='"_$g(BSS7)_"'>",!
+ W "<input type='hidden' name='BSS8' value='"_$g(BSS8)_"'>",!
+ W "<input type='hidden' name='BSS9' value='"_$g(BSS9)_"'>",!
+ Set by=%request.GetMimeData("FileStream").Size
+ S FiNa=%request.GetMimeData("FileStream").FileName
+ I FiNa="" D UPEND S BK=$c(13,10) D CLOSEWIN Q
+ i by'=0,BSS1'="" D
+ .K ^mtempBSC4(BSS1,BSS3)
+ .S ^mtempBSC4(BSS1,BSS3)=BSS4_","_by_","_FiNa
+ .F I=0:30000:by D
+ ..Set bytes=%request.GetMimeData("FileStream").Read(30000)
+ ..s ^mtempBSC4(BSS1,BSS3,I)=bytes
+ .Write !,"Загружен с Login :",BSS1,!,"<BR>Адрес IP:",BSS4,!
+ I $g(BSS6)'="" D  D @BSS6
+ .I BSS6["^~" S BSS6=$$%^%ZAPM.bs.BSCh(BSS6)
+UPEND F I=1:1:30 W "<BR>"
+ D %session.%Close()
+ d CLOSEWIN
+ Q
+CLOSEWIN I $G(NoCloseWin) Q
+ D JS^%ZAPM.bs.BSCp
+ W "window.close();"_BK
+ D JSE^%ZAPM.bs.BSCp
+ Q
+UPLOADFL ;импорт из ТЕКСТОВОГО ФАЙЛА (3 ШАГ)
+ D MAINVAR^%ZAPM.bs.BSC4
+ W "<HR><H3>"_$$LNG^%ZAPM.bs.BSC4("Создание таблицы из текстового файла")_$$LNG^%ZAPM.bs.BSC4(" ( 3 ШАГ )")_"<H3>"
+ k ^mtempBSC4LF(BSS1,BSS3),by
+ S I="",j=0 F  S I=$O(^mtempBSC4(BSS1,BSS3,I)) Q:I=""  S ST=^mtempBSC4(BSS1,BSS3,I) D
+ .i j'=0 S ST=III_ST,j=j-1
+ .F II=1:1 Q:$P(ST,BK,II,II+1)=""  S III=$P(ST,BK,II) d
+ ..s j=j+1,^mtempBSC4LF(BSS1,BSS3,j)=III
+ ;W BK,!,"OK"
+ N InsD,Desc,Suff,Y,PT,a,A,BD,Y,I,SuffSave,SuffKEY,FCount,FC
+ S P="^%ZAPM.bs.BSC4E",T="EMPTY",pin=$P(BSS8,"~",2),TabName=$P(BSS8,"~",3) d NewT^%ZAPM.bs.BSC4base($NA(@P@(T)),pin,TabName)
+ S NAMF=$P(BSS8,"~",4)
+ F I=1:1 Q:$P(NAMF,";",I,I+1)=""  S (FC(I),@("Field"_I))=$P(NAMF,";",I),@("Desc"_I)="Description of "_$P(NAMF,";",I)
+ S FCount=I-1,T=TabName,Desc=%request.GetMimeData("FileStream").FileName
+ D Group^%ZAPM.bs.BSC4base
+ N DEL,BD,S,i,I
+ S DEL=$P(BSS8,"~",5),BD=$G(@("^"_pin)@(T,"KEY"))
+ S I="" F  S I=$O(^mtempBSC4LF(BSS1,BSS3,I)) Q:I=""  S i=I,S=^mtempBSC4LF(BSS1,BSS3,I) F Y=1:1:FCount D
+ .I $P(S,DEL,Y)'="" S @BD@(I,FC(Y))=$P(S,DEL,Y)
+ W $$LNG^%ZAPM.bs.BSC4("Загружено записей: "),i,BK
+ k ^mtempBSC4LF(BSS1,BSS3),^mtempBSC4(BSS1,BSS3)
+ ;D ERRR
+ Q
+UPLOADF2         ;ПАРАМЕТРЫ импорта из ТЕКСТОВОГО ФАЙЛА (2 ШАГ)
+ D BEG1^%ZAPM.bs.BSC4    W $$STYLE^%ZAPM.bs.BSC4
+ W "<BODY><H3>"_$$LNG^%ZAPM.bs.BSC4("Создание таблицы из текстового файла")_$$LNG^%ZAPM.bs.BSC4(" ( 2 ШАГ )")_"<H3>"
+ N BSS1,BSS2,BSS3,BSS4,BSS5,BSS6,BSS7,BSS8,BSS9
+ S $ZT="ErrSave^%ZAPM.bs.BSC4base"
+ F I=1:1 Q:$P(NAMF,";",I,I+1)=""
+ K S,A,a F I=1:1 Q:$P(NAMF,";",I,I+1)=""  S ii=$P(NAMF,";",I) S A=ii,@A=1 D  i '$$CtrlKeyWord^%ZAPM.bs.BSC4base(A) ZT "errorName"
+ .I '$D(S(A)) S S(A)="" Q
+ .E  W $$LNG^%ZAPM.bs.BSC4("ИМЕНА ПОЛЕЙ НЕ ДОЛЖНЫ ПОВТОРЯТЬСЯ",93)," '",A,"'",BBK ZT "errorName"
+ K A,a
+ S BSS1=$G(BSLOGIN),BSS3=$G(BSSES),BSS4=CurUS,BSS6="UPLOADFL^%ZAPM.bs.BSC4r3",BSS8=Proj_"~"_Pn_"~"_Ta_"~"_NAMF_"~"_DELIM
+ D CSPUPLOAD("f")
+ W "</form>"
+ d BACK^%ZAPM.bs.BSCh
+ D END^%ZAPM.bs.BSC4
+ Q
+ //ErrSaveUP G ErrSave^%ZAPM.bs.BSC4base
+UPLOADF(Proj,pin,Table) ;ПАРАМЕТРЫ импорта из ТЕКСТОВОГО ФАЙЛА (1 ШАГ)
+ n aa ;D pin^%ZAPM.bs.BSC4base
+ D BEG1^%ZAPM.bs.BSC4
+ W $$STYLE^%ZAPM.bs.BSC4
+ W "<BODY><H3>"_$$LNG^%ZAPM.bs.BSC4("Создание таблицы из текстового файла")_$$LNG^%ZAPM.bs.BSC4(" ( 1 ШАГ )")_"<H3>"
+ s aa=$$GETOPT^%ZAPM.bs.BSC4cfg(MainOpt,"ImportTXT")
+ ;I $G(newPR)="2" s aa=0 ;пока так - это линк
+ ;I $G(newTP)="2" s aa=0 ;пока так - это линк
+ i 'aa W $$LNG^%ZAPM.bs.BSC4("Режимы импорта таблиц из Текстовых файлов доступны при тарифном плане КОРПОРАТИВНЫЙ, или при согласовании условий с администратором при тарифном плане ПРОФЕССИОНАЛЬНЫЙ.")
+ W "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" method=""POST"">"
+ S BSLABEL="UPLOADF2^~BSC4r3"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ W "<input type=""hidden"" name='Proj' value="""_Proj_""">"
+ W "<input type=""hidden"" name='Pn' value='["""_$zu(5)_"""]"_pin_"'>"
+ W "<input type=""hidden"" name='Ta' value='"_Table_"'>"
+ W "<table border=0 width=100%>"
+ s namf="F1;F2;F3;F4;F5;F6;F7;F8;F9;F10;F11;F12;F13;F14"
+ W "<tr><td  width=30% align='right' class=s1>"_$$LNG^%ZAPM.bs.BSC4("Имена полей будущей таблицы")_"</td><td align='left' class=s1 ><input type=""text"" title='"_$$LNG^%ZAPM.bs.BSC4("не меняйте разделитель ; между именами полей")_"' size=50 maxlength=50 name='NAMF' value='"_namf_"'></td></tr>"
+ W "<tr><td align='right' class=s1>"_$$LNG^%ZAPM.bs.BSC4("Разделитель между даными в строках файла")_"</td><td  align='left' class=s1 ><input type=""text"" size=1 maxlength=1 name='DELIM' value=';'></td></tr>"
+ W " </table>"
+ ;W "<input "_$s('aa:"disabled",1:"")_" type=""submit"" name='UPLOAD' value='"_$$LNG^%ZAPM.bs.BSC4("Загрузить только структуру таблиц",71)_"'><br>",BK
+ w "<input type=""submit"" "_$s('aa:"disabled",1:"")_" name='UPLOAD' value='"_$$LNG^%ZAPM.bs.BSC4("Загрузить структуру и данные")_"'><br><input type=""reset"" name='ESC' value='"_$$LNG^%ZAPM.bs.BSC4("отмена",73)_"'>",BK
+ W "</form>" d BACK^%ZAPM.bs.BSCh
+ D END^%ZAPM.bs.BSC4
+ Q
+ //------------------------------------------ CSP TEMPLATE
+ 
+ q "<a href='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"aGET^")_"' target=new TITLE='"_dt_"'>"_t_"</a>"
+BSRES D BEG1^%ZAPM.bs.BSC4 S name=BStype
+  D BACK^%ZAPM.bs.BSCh W "<HR>"
+ s a=$$TR^%ZAPM.bs.BSsFUNM($$txttab^%ZAPM.bs.BSC4r3($P(name,"_",1),$P(name,"_",2)),$C(34),"&#34;") 
+ w $$TR^%ZAPM.bs.BSsFUNM($$TR^%ZAPM.bs.BSsFUNM(a,"'","&#8217;"),"<Ins>","&#60;Ins&#62;")_"';"
+ W "<HR>" D BACK^%ZAPM.bs.BSCh
+ D END^%ZAPM.bs.BSC4 Q
+BSDOC D BEG1^%ZAPM.bs.BSC4
+ W "<style type='text/css'>"_BK
+ W "h4 { background-color: #007D7D; color: yellow; }"_BK
+ W "h2 { background-color: yellow; color: #007D7D; }"_BK
+ W "textarea {font-family: Fixedsys, Courier New, Courier;}"_BK
+ W "</style>"_BK
+ W "</HEAD>"_BK
+ W "<BODY>"_BK
+ W "<form action='' method=post><CENTER>"_BK
+ W "<h4>1. Документация по текстовому процессору %BS"_BK
+ W "<select id=type1 name=type onchange=""location='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"BSRES^%ZAPM.bs.BSC4r3")_"&BStype='+document.getElementById('type1').value;"">"_BK
+ W "	<option value=""""></option>"_BK
+	D TampleteTXT^%ZAPM.bs.BSC4r3
+ W "</select></h4>"_BK
+ W "<h4>2. Документация по табличному процессору %BS"_BK
+ W "<select id=type2 name=type onchange=""location='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"BSRES^%ZAPM.bs.BSC4r3")_"&BStype='+document.getElementById('type2').value;"">"_BK
+ W "	<option value=""""></option>"_BK
+	D TampleteTAB^%ZAPM.bs.BSC4r3
+ W "</select></h4>"_BK
+ W "<h4>3. Стpуктуpа %BS-ресурсов. Локали,буфера,NS"_BK
+ W "<select id=type3 name=type onchange=""location='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"BSRES^%ZAPM.bs.BSC4r3")_"&BStype='+document.getElementById('type3').value;"">"_BK
+ W "	<option value=""""></option>"_BK
+	D TampleteBSD^%ZAPM.bs.BSC4r3
+ W "</select></h4>"_BK
+ W "<h4>4. Cache'-ОПИСАНИЕ ФУНКЦИЙ И МОДУЛЕЙ"_BK
+ W "<select id=type4 name=type onchange=""location='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"BSRES^%ZAPM.bs.BSC4r3")_"&BStype='+document.getElementById('type4').value;"">"_BK
+ W "	<option value=""""></option>"_BK
+	D TampleteBSC^%ZAPM.bs.BSC4r3
+ W "</select></h4>"_BK
+ W "<h4>5. Документация по ""Информационному порталу"""_BK
+ W " <A CLASS=s2 HREF='http://"_($$ipS^%ZAPM.bs.BSCp2)_":1962/vv/bsdoc/index.htm' >Загрузить</A>"_BK
+ W "</h4>"_BK
+ W "</CENTER><HR>"_BK
+ D BACK^%ZAPM.bs.BSCh
+ D END^%ZAPM.bs.BSC4
+ Q
+TampleteBSC //
+	S P="^%ZAPM.bs.BSC"
+	F I="FUN" D
+	.W "<option value=C_"_I_" >"_$P($G(@P@(I)),"@")_"</option>",!
+	Q
+TampleteBSD //
+	S P="^%ZAPM.bs.BSHLP",T="DOC_TAB"
+	F I=1:1 Q:'$D(@P@(T,I))  D
+	.I $G(@P@(T,I))["_____" S S=$G(@P@(T,I)) W "<option value="_T_$TR($E(S,1,4),".","")_" >"_$P($P($G(@P@(T,I+1)),"== ",2)," ==",1)_"</option>",!
+ Q
+TampleteTXT //
+	S P="^%ZAPM.bs.BSX"
+	F I="DocMain","DocStruct","DocGlobals","DocVariabl" D
+	.W "<option value=X_"_I_" >"_$P($G(@P@(I)),"@")_"</option>",!
+ Q
+TampleteTAB //
+	S P="^%ZAPM.bs.BSHLP"
+	F I=1:1:9 W "<option value=HLP_D"_I_" >"_$P($G(@P@("D"_I)),"@")_"</option>",!
+ Q
+TampleteRES(N)  Q $$txttab($P(N,"_",1),$P(N,"_",2))
+ 
+txttab(B,T) N Q i B="" Q ""
+  S P="^%ZAPM.bs.BS"_B,$ZT="TampleERROR",Q=""
+  I B="DOC" S G=$NA(^%ZAPM.bs.BSHLP("DOC_TAB")) S T=$P($P(T,"TAB",2)," ") D  G txt2 
+  .F I=1:1 Q:'$D(@G@(I))  I $E($G(@G@(I)),1,3)[(T_".") S II=I D txt1($P($P($G(@G@(II+1)),"== ",2)," ==",1)) D  Q
+  ..D  F II=I+1:1 Q:'$D(@G@(II))  Q:$G(@G@(II))["_____"  D
+  ...S Q=Q_$G(@G@(II))_"<BR>" 
+  E  S G=$NA(@P@(T))
+  D txt1($P($G(@G),"@")) 
+  F I=1:1 Q:'$D(@G@(I))  S Q=Q_" "_$G(@G@(I))_"<br>" ;$C(13,10)
+txt2 S Q=Q_"</pre>" ;  </textarea>"_$C(13,10)
+ q Q
+txt1(SS)  S Q=Q_"<H2>"_SS_"</H2><pre>"_$C(13,10)  ;_" <textarea cols=95 rows=10 >"
+ Q
+SetSelectTXT(T,R) 
+ i R'="" S ^%ZAPM.bs.BSbufB("SetSelectTXT",R)=T 
+ Q $J
+GetSelectTXT(R) Q $G(^%ZAPM.bs.BSbufB("SetSelectTXT",R)," //?")
+TampleERROR Q $ZE
+PROFREST I '$$EXIST^%R("tempBS.INT") D ErrMsg^%ZAPM.bs.BSXfun("НЕ из чего ВОССТАНАВЛИВАТЬ, сначало импортируйте программы *.rgr") Q
+ D RestGlo^tempBS,DelRou^tempBS,DEL1^%ZAPM.bs.BSC4r4("tempBS.*") D OkMsg^%ZAPM.bs.BSXfun("Восстановлено")
+ Q
+GetLenRou(r) //возвратить размер программы в байтах
+ i r="" q "???"
+ n n,I,i S r=$P(r,".")
+ m n=^ROUTINE(r,0)
+ S I=0  F i=1:1 Q:'$D(^ROUTINE(r,0,i))  S I=I+$L($G(^ROUTINE(r,0,i)))
+ q r_" - имеет размер <font color=red>"_I_"</font> байт."
+ //.........................................
+VerEX() N F,M1,N1,N2,i,SS,N,FN,STR,T,T1
+ S F="L:\MSW_Tools\MakeCab-Copy2---Installation.BAT" ////////////////////////////
+ D File2Arr^%ZAPM.bs.BSCEXE(F,.M1),STR2MAS^%ZAPM.bs.BSCmail(.M1,.N,$C(13,10))
+ S SS=0,i="",STR="",N2=0,T1=0
+  F  S i=$O(N(i)) Q:i=""  D  Q:SS=2
+ .I N(i)["@echo !  Recompilation" S SS=1 Q
+ .I N(i)["rem -STOP-" S SS=2 Q
+ .I SS=0 Q
+ .I N(i)["copy " S FN=$P(N(i)," ",2) i FN[":" D
+ ..S T=$ZU(140,2,FN) S:T>T1 T1=T S T=$$TD^%ZAPM.bs.BSC4base(T)
+ ..S N1=$$VerEXE(FN),STR=STR_$$JF^%ZAPM.bs.BSC4r4($$JF^%ZAPM.bs.BSC4r4($P(FN,"\",$L(FN,"\")),20)_N1,35)_T_$C(13,10),N1=$TR(N1,".0"),N2=N2+N1
+  S STR=$$JF^%ZAPM.bs.BSC4r4($$JF^%ZAPM.bs.BSC4r4("Client BS-Portal ver.",20)_"4."_$I(^%ZAPM.bs.BS("Client BS-Portal ver.4.")),35)_$$TD^%ZAPM.bs.BSC4base(T1)_$C(13,10)_"--------------------------------"_$C(13,10)_STR
+ K SS S SS(1)=STR D Arr2File^%ZAPM.bs.BSCEXE(.SS,"L:\MSW_Tools\_installation_ext\soft\dsr-client-dev\Support\client.inf")
+ Q STR
+VerEXE(FN) //ВЕРСИЯ ПРОГРАММЫ
+ N I,N,M,i,S,AA S $ZT="VerEr"
+ S I="ProductVersion",S="" F i=1:1:$L(I) S S=S_$E(I,i)_$C(0)
+ D File2Arr^%ZAPM.bs.BSCEXE(FN,.M),STR2MAS^%ZAPM.bs.BSCmail(.M,.N,$C(1))
+ S i="" F  S i=$O(N(i)) Q:i=""  I N(i)[S Q
+ S i=$TR($P($P(N(i),S,2),$C(16)),$C(0,1,20,24,12,14,22),"")
+ S AA=$TR($P(i,"("),", ",".")
+ ;F I=1:1:$L(AA) W !,$E(AA,I),"---",$A($E(AA,I))
+ Q $P(AA,".",1,3)
+VerEr Q "..." ;$ZE
+SetALLStyle //ALL
+ D BEG1^%ZAPM.bs.BSC4 W $$TITL^%ZAPM.bs.BSCGIS("Style Set"),$$B27^%ZAPM.bs.BSCGIS(1)
+ ;D locvar^%ZAPM.bs.BSCh0("",1)
+ I V["@" W RED_"Запрещенный символ @"_EF G SetALLStyle1
+ S T=$$GETOPT^%ZAPM.bs.BSC4cfgP("^%ZAPM.bs.BSETUP(""ISS"")","Acfg")
+ I V'="" D
+ .I A=2 S $P(@T@(10,1),"@",15)=V,SET=1
+ .I A=1,$G(BSGRANT)'="" S BD=$$KBD^%ZAPM.bs.BSF12("^%ZAPM.bs.BSC4(""GRAND"")") D  ;W 1_BD_1 D
+ ..I $D(@BD@(BSGRANT)) S @BD@(BSGRANT,"STYLE")=V,SET=1
+ I $G(SET)=1 W GREEN_"Параметры изменены<HR>"_EF 
+ E  W RED_"Параметры НЕ изменены<HR>"_EF
+SetALLStyle1 D BUTT^%ZAPM.bs.BSCGIS,END^%ZAPM.bs.BSC4
+ Q
+ //////////////// ЕСЛИ УДАЛЯТ BSC4.CFG.FrameStyle.MAC то вставить снова в программу
+%BSC4inc ;встроенные функции   ; Compiled October 26, 2005 20:19:50
+Navigator ; Пример CacheObjectScript кода : Навигатор прямого доступа к таблице `FrameStyle` 
+ ;============================================================
+ set Home1=1 
+Navig1 ;  ;============================================================
+ set Header=" Навигатор прямого доступа к таблице `FrameStyle` " // заголовок страницы
+ set Max=$$GetField^%ZAPM.bs.BSC4rou("CFG","FrameStyle","Count") //количество полей
+ set MaxI=$$GetField^%ZAPM.bs.BSC4rou("CFG","FrameStyle","Index") //количество индексированных полей
+ D DKILL^%ZAPM.bs.BSC4r("Dis") // удалить массив признака опции DISABLE
+ D DKILL^%ZAPM.bs.BSC4r("STOP") 
+ for Num=1:1:MaxI D  Q:$G(STOP)=1  G:$G(STOP)=2 Navigator  //цикл по индексным полям
+    .D KKey(Num)  
+    .IF $$DDATA^%ZAPM.bs.BSC4r("Home"_Num) D DSET^%ZAPM.bs.BSC4r("Home"_(Num+1),1) D DSET^%ZAPM.bs.BSC4r("value"_Num,$$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,"",1)) D CheckL Q:$D(STOP)  
+    .IF $$DDATA^%ZAPM.bs.BSC4r("End"_Num) D DSET^%ZAPM.bs.BSC4r("Home"_(Num+1),1) D DSET^%ZAPM.bs.BSC4r("value"_Num,$$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,"",-1)) D CheckR 
+    .IF $$DDATA^%ZAPM.bs.BSC4r("Del"_Num) D DKILL^%ZAPM.bs.BSC4r("Del"_Num) D DSET^%ZAPM.bs.BSC4r("Left"_Num,1) D KillDirectTab^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key) //удалить узел 
+    .IF $$DDATA^%ZAPM.bs.BSC4r("Left"_Num) D DSET^%ZAPM.bs.BSC4r("Home"_(Num+1),1) D DSET^%ZAPM.bs.BSC4r("value"_Num,$$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,$$DGET^%ZAPM.bs.BSC4r("value"_Num),-1)) D CheckL Q:$D(STOP)  
+    .IF $$DDATA^%ZAPM.bs.BSC4r("Right"_Num) D DSET^%ZAPM.bs.BSC4r("Home"_(Num+1),1) D DSET^%ZAPM.bs.BSC4r("value"_Num,$$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,$$DGET^%ZAPM.bs.BSC4r("value"_Num),1)) D CheckR 
+    .S Dis(Num,1)=($$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,$$DGET^%ZAPM.bs.BSC4r("value"_Num),-1)="") 
+    .S Dis(Num,2)=($$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,$$DGET^%ZAPM.bs.BSC4r("value"_Num),1)="") 
+ Write "",!
+	Write "<html><title>"_(Header)_"</title>"_$c(9),!
+	Write "",!
+ W $$GetDirectTabN1^%ZAPM.bs.BSC4r("CFG","FrameStyle",$$DGET^%ZAPM.bs.BSC4r("value1"),"MainS")_$$GetDirectTabN1^%ZAPM.bs.BSC4r("CFG","FrameStyle",$$DGET^%ZAPM.bs.BSC4r("value1"),"LeftDn")
+ Write "",!
+	Write "<body><center><H4>"_(Header)_"</H4>",!
+	//ДЕМОНСТРАЦИЯ СТИЛЕЙ ---------
+	Write "<table border=1 class=tpTable ><tr>",!
+	Write "",!
+ 	F I=1:1:5 w "<td class=s"_I_" >class=s"_I_"</td>"
+ 	w "<td ><th title='для оформления ZEN таблицы'>class='table.tpTable th'</th></td>",!
+ 	w "<td class=u1 ><A ONCLICK='SS(1,NameForm1.value1.value);' class=u1 TITLE='Применить текущий стиль, как основной для Гранда `"_$G(BSGRANT)_"`, который использует текущий пользователь `"_$G(BSLOGIN)_"`'>class=u1</A></td>",!
+ 	w "<td><A ONCLICK='SS(2,NameForm1.value1.value);' class=item TITLE='Применить текущий стиль, как основной для ВъХ пользователей'>class=A.item</A></td>"
+ 	Write "</table>",!
+ 	Write "",!
+ D JS^%ZAPM.bs.BSCp
+ 	w "function SS(A,V) {"_BK
+ 	;W "alert(V);"_BK
+ 	W "open("""_$$ADDBSGET^%ZAPM.bs.BSC4(,"SetALLStyle^%ZAPM.bs.BSC4r3")_"&A=""+A+""&V=""+V,""xxx"",""toolbar=no,menubar=no,scrollbars=1,width=500,height=200,status=1,resizable=1"");"_BK
+ 	W "}"_BK
+ D JSE^%ZAPM.bs.BSCp
+	//------------------------------
+	Write "<form name='NameForm1'  method='POST' action='"_($$ADDLIB^%ZAPM.bs.BSC4())_"' >",!
+    D
+    I $G(BSLOGIN)'="" Write "<input type=hidden name='BSLOGIN' value='"_$G(BSLOGIN)_"'>",!
+    I $G(BSGRANT)'="" Write "<input type=hidden name='BSGRANT' value='"_$G(BSGRANT)_"'>",!
+ 
+	Write "<input type=hidden name='BSDOMAIN' value='/b4y'>",!
+	Write "<input type=hidden name='BSG' value='B4'>",!
+	Write "<input type=hidden name='BSLABELt' value='Sopen2'>",!
+	Write "<input type=hidden name='BSLNG' value='RUS'>",!
+	Write "<input type=hidden name='BSNSP' value='~SYS'>",!
+	Write "<input type=hidden name='BSPRO' value='CFG'>",!
+	Write "<input type=hidden name='BSaX' value='1'>",!
+ ;	Write "<input type=hidden name='BSdebug' value='1'>",!
+	Write "<input type=hidden name='BSnewREG' value='1'>",!
+	Write "<input type=hidden name='BStyle' value='GREEN'>",!
+	Write "<input type='hidden' name='BSLABEL' value='Navig2'>",!
+	Write "<table border=0>",!
+	Write "",!
+   D DSET^%ZAPM.bs.BSC4r("Key(Key)",$$DGET^%ZAPM.bs.BSC4r("value"_Num)) //присвоить значение последнего индекса 
+    IF $D(Save) D  //присвоить исправления
+       .for Num=(MaxI+1):1:Max D  //цикл по всем неиндексным полям
+       ..set var1=$$GetField^%ZAPM.bs.BSC4rou("CFG","FrameStyle",Num) //взять все атрибуты текущего поля
+       ..set NameFeild=$P(var1,"~",1) //вычленить имя поля
+       ..IF $$SetDirectTab^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,NameFeild,$$DGET^%ZAPM.bs.BSC4r("value"_Num)) //присвоим в прямом доступе
+   for Num=1:1:Max {  //цикл по всем полям
+     set var1=$$GetField^%ZAPM.bs.BSC4rou("CFG","FrameStyle",Num) //взять все атрибуты текущего поля
+     set NameFeild=$P(var1,"~",1) //вычленить имя поля
+     set Description=$P(var1,"~",2) //вычленить описание поля
+     write "<tr>" //вывести описание
+     if $P(var1,"~",4)'="" D  //эти поля индексные
+       .W "<td align='right'><input type='submit' name='Del"_Num_"' title='удалить узел "_$SELECT(Num=MaxI:"",1:"со всеми потомками высших уровней")_"' value='Удалить'> <input type='submit' "_$$Disable(Num,1)_" name='Home"_Num_"' value='<<'><input type='submit' name='Left"_Num_"' "_$$Disable(Num,1)_" value='<'></td>"
+     if Num=(MaxI+1) w "<tr><td><hr></td><td><hr></td><td></td><td><hr></td></tr><td align='right'><input type='submit' name='Save' value='Coхранить'></td>" 
+     if Num=(MaxI+2) w "<td align='right'><input type='Reset' name='Reset' value='Отменить'></td>" 
+     if Num>(MaxI+2) w "<td></td>"
+     if $P(var1,"~",4)="" D  //эти поля не индексные
+       .D DSET^%ZAPM.bs.BSC4r("value"_Num,$$GetDirectTab^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,NameFeild)) //прямой доступ к данным таблицы, когда знаешь индексы
+     if $P(var1,"~",3)'=1 write "<td><input type='text' size=40 maxlength=2048 title='"_NameFeild_"' name='value"_Num_"' value='"_$$DGET^%ZAPM.bs.BSC4r("value"_Num)_"'></td>"
+     if $P(var1,"~",3)=1 write "<td><textarea cols=40 rows=5 title='"_NameFeild_"' name='value"_Num_"' >"_$$DGET^%ZAPM.bs.BSC4r("value"_Num)_"</textarea></td>"
+     S var2="<td align='left'>" 
+     if $P(var1,"~",4)'="" D  //эти поля индексные
+       .S var2=var2_"<input type='submit' name='Right"_Num_"' "_$$Disable(Num,2)_" value='>'><input type='submit' "_$$Disable(Num,2)_" name='End"_Num_"' value='>>'>" 
+     write var2_"</td>" 
+     write $$Desc(" ("_NameFeild_") "_Description)_"</tr>" 
+     }
+ write "<input type='hidden' name='BSRoutineId' value='"_BSRoutineId_"'>"
+ Write "",!
+	Write "</table></form></center>",!
+	Write "</body></html>",!
+	Write "",!
+ ;D $$$DoRou("CFG","NewRoutin3","Variables1") Q  
+ quit
+Desc(D) Q "<td align='lift'><strong>"_D_"</strong></td>" //вывести описание
+CheckL //проверить значение ключей
+ if $$DGET^%ZAPM.bs.BSC4r("value"_Num)="" D DSET^%ZAPM.bs.BSC4r("value"_Num,$$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,"",1)) d  
+ .if $$DGET^%ZAPM.bs.BSC4r("value"_Num)="" D  
+ ..I Num=1 S STOP=1 Q  
+ ..E  S Num=Num-1 S STOP=2
+ quit
+CheckR //проверить значение ключей
+ if $$DGET^%ZAPM.bs.BSC4r("value"_Num)="" D DSET^%ZAPM.bs.BSC4r("value"_Num,$$ORDEr^%ZAPM.bs.BSC4r("CFG","FrameStyle",.Key,"",-1)) d  
+ .if $$DGET^%ZAPM.bs.BSC4r("value"_Num)="" D  
+ ..I Num=1 S STOP=1 Q  
+ ..E  S Num=Num-1 S STOP=2
+ quit
+Disable(N,A) Q $S($G(Dis(N,A)):"DISABLED",1:"") //выставить опцию
+KKey(k) //подготовить массив данных узлов
+ D DKILL^%ZAPM.bs.BSC4r("Key") //Удалить массив
+ n i f i=1:1:k s Key(i)=$$DGET^%ZAPM.bs.BSC4r("value"_i)
+ s Key=k Q
+Navig2 ;  ;============================================================
+ G Navig1
+DOCOUT 
+ S Fname="N:\123.TXT" I $ZU(140,4,Fname)'=0 S OLDIO=$I O Fname:"UWN" U Fname W "-----",! d  W "-------",! U OLDIO C Fname 
+ .s BSR="^%ZAPM.bs.BSHLP" F I=1:1:9 D DOCOUT1(BSR,"D"_I) 
+ .s BSR="^%ZAPM.bs.BSX",I="" F  S I=$O(@BSR@(I)) Q:I=""  I $E(I,1,3)="Doc" D DOCOUT1(BSR,I) 
+ Q
+DOCOUT1(R,T) W !!,"------------------------------------------------------------------"
+ S II="" F  S II=$O(@R@(T,II)) Q:II=""  W !,$G(@R@(T,II))
+ Q 

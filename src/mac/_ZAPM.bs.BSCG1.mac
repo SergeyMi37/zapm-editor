@@ -1,0 +1,167 @@
+ROUTINE %ZAPM.bs.BSCG1
+%BSCG1 ; пpогpамма НА ПРАВАХ ПРИМЕРА ПОИСКОВОГО МОДУЛЯ ; 20:09   18.09.2000
+ Q     ;ПЛОХОЕ РЕШЕНИЕ, НО РАБОТАЕТ...  ХОРОШЕЕ СМОТРИ %BSCG2
+ ;KNH.DBF  SNAIM - СОКР. НАИМЕНОВАНИЕ ВЧ
+ ;         NWC - НОМЕР ВЧ
+ ;         KPD - КОД ДИСЛОКАЦИИ
+ ;         IMG - ПОЛНОЕ НАИМЕНОВАНИЕ ВЧ
+ ;KPD.DBF  KPD - САМ КОД
+ ;         HAR - ХАРАКТЕРИСТИКА НАСЕЛЕННОГО ПУНКТА
+ ;         IMJ - НАИМЕНОВАНИЕ
+ ;
+ ;!!! НЕ ЗАБУДЬТЕ СДЕЛАТЬ !..
+ ;ОПРЕДЕЛИТЕ  DNS="KSP" В CONTROL PANEL -- ODBC DRIVERS
+ ;S ^MGWAPP("SAMPLE_KSP")=MAIN^%ZAPM.bs.BSCG1
+ ;ВЫЗОВ http://cacheserver/scripts/mgwms32.dll?MGWAPP=SAMPLE_KSP
+ ;
+FIRST ;ПЕРВАЯ СТРАНИЦА
+ D VAR^%ZAPM.bs.BSCh
+ D FORM^%ZAPM.bs.BSCh
+ W "<P><strong>ВВЕДИТЕ КОНТЕКСТ ПОИСКА  </strong>"
+ w "<input type=""submit"" value="" Искать"" name=""FIND1"">"
+ W "<input type=""reset"" value="" Очистить текстовые поля"" name=""FIND2"">"
+ w "<input type=""hidden"" name=""MGWAPP"" value=""SAMPLE_KSP""></P>"
+ w BK,"<table border=""0"">",BK
+ w "<tr>",BK
+   w "<td align=""right""><strong>Номер В/Ч (4цифры)</strong></td>",BK
+   w "<td><input type=""text"" name=""NWC"" size=""17"">"
+   W "</td>",BK
+ w "</tr>"
+ w "<tr>"
+   w "<td align=""right""><strong>Действительное наименование</strong></td>",BK
+   w "<td><input type=""text"" name=""IMJ"" size=""17"">"
+   W "</td>",BK
+ w "</tr>"
+ w "<tr>"
+   w "<td align=""right""><strong>Дислокация</strong></td>",BK
+   w "<td><input type=""text"" name=""DIS"" size=""17"">"
+   W "</td>",BK
+ w "</tr>"
+ w "</table>",BK
+ W "</FORM>"
+ Q
+MAIN ;ГОЛОВНАЯ ПРОГРАММА - ДИСПЕТЧЕР
+ I $G(%KEY("FIND1"))'="" G FIND
+ G FIRST
+FIND ;ИСКАТЬ...
+ N Errors,DNS,ErV,Break,Return,SQL,IF,TK,TD,TempK,TempD,KDS,KDS1
+ D VAR^%ZAPM.bs.BSCh
+ I $G(%KEY("NWC"))="",$G(%KEY("IMJ"))="",$G(%KEY("DIS"))="" W "ВСЕ ПОЛЯ ПУСТЫЕ !" Q
+ S (Z1,Z2)=""
+ I $G(%KEY("NWC"))'="" S Z1="nwc LIKE '"_$G(%KEY("NWC"))_"%' AND "
+ I $G(%KEY("IMJ"))'="" S Z2="snaim LIKE '"_$G(%KEY("IMJ"))_"%' AND "
+ S TK="TempG",TD="TempD"
+ I Z1="",Z2="" G DISL
+ 
+ S SQL="SELECT nwc, snaim, kpd FROM knh WHERE "_Z1_" "_Z2_" TRUE"
+ S IF="$LI(d,3)'="""" S KDS1($LI(d,3))=1"
+ D Read^%ZAPM.bs.BSCG("KSP",SQL,IF,1,TK) I $D(Errors) W !,Errors Q
+ I '$D(@TK) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I '$D(@TK@(1)) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I $G(%KEY("DIS"))'="" G DISL1
+ 
+ S SQL="SELECT kpd, har, IMJ FROM kpd WHERE HAR IS NOT NULL AND ("
+ S I="" F  S I=$O(KDS1(I)) Q:I=""  S SQL=SQL_" KPD='"_I_"' OR "
+ S SQL=SQL_" FALSE)" K KDS1
+ S IF="$LI(d,1)'="""" S KDS($LI(d,1))=$LI(d,2)_$LI(d,3)"
+ D Read^%ZAPM.bs.BSCG("KSP",SQL,IF,1,TD) I $D(Errors) W !,Errors Q
+TAB D TABL1 S II=""
+ F I=1:1 Q:'$D(@TK@(I))  D
+ .w "<tr>",BK
+ .w "<td>",$G(@TK@(I,1)),"</td>"
+ .w "<td>",$G(@TK@(I,2)),"</td>"
+ .w "<td>" D  W II,"</td>"
+ ..I $G(KDS($G(@TK@(I,3),0)))'="" S II=$G(KDS($G(@TK@(I,3),0))) Q
+ ..S II="???"
+ .w "</tr>"
+ D TABL2
+ Q
+DISL1 ;ДИСЛОКАЦИЯ
+ ;Q
+DISL ;ДИСЛОКАЦИЯ
+ S SQL="SELECT kpd, har, IMJ FROM kpd WHERE HAR IS NOT NULL AND IMJ LIKE '"_$G(%KEY("DIS"))_"%'"
+ S IF="$LI(d,1)'="""" S KDS($LI(d,1))=$LI(d,2)_$LI(d,3)"
+ D Read^%ZAPM.bs.BSCG("KSP",SQL,IF,1,TD) I $D(Errors) W !,Errors Q
+ I '$D(@TD) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I '$D(@TD@(1)) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ K @TD
+ S SQL="SELECT nwc, snaim, kpd FROM knh WHERE NWC IS NOT NULL AND ("
+ S I="" F  S I=$O(KDS(I)) Q:I=""  S SQL=SQL_" KPD='"_I_"' OR "
+ S SQL=SQL_" FALSE)"
+ S IF="$E($LI(d,1),1)'=0"
+ I $D(KDS1) S IF=IF_" I $D(KDS1($LI(d,3)))" D
+ .I $G(%KEY("IMJ"))'="" S IF=IF_",$E($LI(d,2),1,"_$L(%KEY("IMJ"))_")="""_$G(%KEY("IMJ"))_""""
+ .I $G(%KEY("NWC"))'="" S IF=IF_",$E($LI(d,1),1,"_$L(%KEY("NWC"))_")="""_$G(%KEY("NWC"))_""""
+ D Read^%ZAPM.bs.BSCG("KSP",SQL,IF,1,TK) I $D(Errors) W !,Errors Q
+ I '$D(@TK) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I '$D(@TK@(1)) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ G TAB
+TABL1 ;НАЧАТЬ ТАБЛИЦУ
+  w BK,"<table border=""1"">",BK
+ w "<tr>",BK
+   w "<td align=""right""><strong>Номер В/Ч (4цифры)<BR>'"_$G(%KEY("NWC"))_"'</strong></td>",BK
+   w "<td align=""right""><strong>Действительное наименование<BR>'"_$G(%KEY("IMJ"))_"'</strong></td>",BK
+   w "<td align=""right""><strong>Дислокация<BR>'"_$G(%KEY("DIS"))_"'</strong></td>",BK
+ w "</tr>"
+ Q
+TABL2 ;ЗАКОНЧИТЬ
+ w "</table>",BK
+ Q
+ /////////////////////////////////////////////////////////////////////////////////// NEW
+ /////////////////////////////////////////////////////////////////////////////////// 
+A1 W "<TITLE>НАЧАЛО НОВОГО ПОИСКА КСП</TITLE>"_BK
+ w "<FRAMESET rows='60%,10%,*'  >"_BK
+ w "<FRAME SRC='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"AR^%ZAPM.bs.BSCG1")_"' NAME='ARH' frameborder=0 SCROLLING=AUTO >"_BK
+  w "<FRAME SRC='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"AF^%ZAPM.bs.BSCG1")_"' NAME='FIN' frameborder=0 >"_BK
+   w "<FRAME SRC='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"AN^%ZAPM.bs.BSCG1")_"' NAME='NAST' frameborder=0 SCROLLING=AUTO>"_BK
+ w "</FRAMESET>"
+ Q
+ARHIV
+AR D BEG1^%ZAPM.bs.BSC4
+ I '$D(BSPATT) W "Здесь будет архив искомого ксп" G AR0
+ W BSPATT
+ S TK="TempG",TD="TempD"
+ S IF="1"
+ D Read^%ZAPM.bs.BSCG("KSP","SELECT KSP,NKSP,KVD,KPD,KNP,IMJ_D,IMJ_P,IMJ_B,IMJ_R,NPR,DPR,DIZ FROM ArxKsp WHERE KSP LIKE '"_BSPATT_"%'",IF,1,TK) I $D(Errors) W !,Errors Q
+  I '$D(@TK) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I '$D(@TK@(1)) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ D TAB^%ZAPM.bs.BSCGH(TK)
+AR0 D END^%ZAPM.bs.BSC4
+ Q
+AF D BEG1^%ZAPM.bs.BSC4
+ w "<BODY BGCOLOR=Dodgerblue "_$$27_" onload='F3.patternstr.focus();'>"_BK_$$js^%ZAPM.bs.BSCp_$$Status^%ZAPM.bs.BSCm4("введите контекст поиска. {Esc} - отмена, закрыть окно. {F5} - обновить окно")_$$jse^%ZAPM.bs.BSCp_BK
+ W "<CENTER><TABLE BORDER=0><TR><TD>"
+ W "<form action="""_$$ADDLIB^%ZAPM.bs.BSC4()_""" name=F3 target='NAST' method=""POST"">"_BK
+ S BSLABEL="AN^~BSCG1"
+ D ADDBSPOST^%ZAPM.bs.BSC4reg
+ w "Введите начальные цифры КСП <INPUT TYPE=text TITLE='Контекст поиска' size=32 name=patternstr >&nbsp;"
+ w "<BUTTON title='поиск начать' TYPE=SUBMIT VALUE='Искать' NAME=F1><img src='"_BSDOMAIN_"/img/find.gif'></BUTTON>&nbsp;"
+ W "</FORM></TD>"_BK
+ W "</TR><TABLE></CENTER>"_BK
+ D END^%ZAPM.bs.BSC4
+ Q
+27() Q " onkeyPress='javascript: if (27 == event.keyCode) parent.window.close();' "
+FINDSTRCONV(S)
+ Q $TR(S,"FDULTPBQRKVYJGHCNEAWXIOSMZf,dult`;pbqrkvyjghcnea[wxio]sm'.z","АВГДЕЗИЙКЛМНОПРСТУФЦЧШЩЫЬЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя")
+AN D BEG1^%ZAPM.bs.BSC4
+ ;SELECT MAX(DAT) As DATA1 FROM Knh_a
+ w "<BODY bgcolor=Lightgrey "_$$27_">"_BK
+ I $G(patternstr)="" W "Контекст пустой",BK G AN0
+ s BSPATT=$$FINDSTRCONV($G(patternstr))
+ S TK="TempG",TD="TempD"
+ S SQL="SELECT MAX(DAT) As Last_Data FROM Knh_a"
+ S IF="1"
+ D Read^%ZAPM.bs.BSCG("KSP",SQL,IF,1,TK) I $D(Errors) W !,Errors Q
+ S MAXDAT=$E(@TK@(1,1),9,10)_"."_$E(@TK@(1,1),6,7)_"."_$E(@TK@(1,1),1,4)
+ D TAB^%ZAPM.bs.BSCGH(TK)
+ I '$D(@TK) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I '$D(@TK@(1)) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ S LD=$G(@TK@(1,1)) I LD="" W !,"ДАТА ПУСТАЯ" Q 
+ D Read^%ZAPM.bs.BSCG("KSP","SELECT KSP,SNM,DAT,KNH,KPD,OKATO,KNP FROM Knh_a WHERE (KSP LIKE '"_BSPATT_"%') AND (DAT LIKE '"_MAXDAT_"')",IF,1,TK) I $D(Errors) W !,Errors Q
+ D TAB^%ZAPM.bs.BSCGH(TK)
+ W BK_$$js^%ZAPM.bs.BSCp D  W $$jse^%ZAPM.bs.BSCp_BK 
+ .W "parent.ARH.location='"_$$ADDBSGET^%ZAPM.bs.BSC4(,"ARHIV^%ZAPM.bs.BSCG1")_"';"_BK
+ ;D locvar^%ZAPM.bs.BSCh0("",1)
+AN0
+ D END^%ZAPM.bs.BSC4
+ Q  

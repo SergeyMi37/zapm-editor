@@ -1,0 +1,274 @@
+ROUTINE %ZAPM.bs.BSF11
+%BSF11 ; ДОПОЛНИТЕЛЬНЫЕ ПРОВЕРКИ ; 11:45   04.05.2001
+ Q
+COP2L(si,st) ;КОПИРОВАНИЕ СТРОКИ si В ЛОКАЛЬ
+ S bsr="BUF"
+ I $D(@BSR@(BST,si,1)) F kj=1:1 Q:'$D(@BSR@(BST,si,kj))  S @bsr@(BSt,st,kj)=@$ZR D
+ .I 'fo F f="FCL","FTR","COL" S $P(@bsr@(BSt,st,kj),"@",$S(f="COL":13,f="FCL":7,f="RTR":16,1:8))=""
+ .I fo D
+ ..I "2345"'[$P(@BSR@(BST,si,kj),"@",7),$D(@BSR@(BST,"FCL",si,kj)) S @bsr@(BSt,"FCL",st,kj)=@$ZR
+ ..I $D(@BSR@(BST,"FTR",si,kj)) S @bsr@(BSt,"FTR",st,kj)=@$ZR
+ ..I '$P(B,"@",27) I $D(@BSR@(BST,"COL",si,kj)) S @bsr@(BSt,"COL",st,kj)=@$ZR D
+ ...I $D(@BSR@(BST,"COL",si,kj,1)) S @bsr@(BSt,"COL",st,kj,1)=@$ZR
+ Q
+COPY(si) ;КОПИРОВАНИЕ СТРОКИ si ИЗ ЛОКАЛИ
+ S St=St+1 X WA F kj=1:1 Q:'$D(@bsr@(BSt,si,kj))  S @(BSr_"(BSt,St,kj)")=@bsr@(BSt,si,kj) D
+ .I 'fo F f="FCL","FTR","COL" S $P(@$ZR,"@",$S(f="COL":13,f="FCL":7,f="RTR":16,1:8))=""
+ .I fo D
+ ..F f="FCL","FTR" I $D(@bsr@(BSt,f,si,kj)) S @(BSr_"(BSt,f,St,kj)")=@bsr@(BSt,f,si,kj)
+ ..I '$P(B,"@",27) I $D(@bsr@(BSt,"COL",si,kj)) S @BSr@(BSt,"COL",St,kj)=@bsr@(BSt,"COL",si,kj) D
+ ...I $D(@bsr@(BSt,"COL",si,kj,1)) S @BSr@(BSt,"COL",St,kj,1)=@bsr@(BSt,"COL",si,kj,1)
+ Q
+LASTHIS(key,ny) N %HIS D HIS^%ZAPM.bs.BSF1($$NHIS()) Q $D(@%HIS@(1))
+INSERT(key,ny) N %HIS D HIS^%ZAPM.bs.BSF1($$NHIS()) Q $G(@%HIS@(1))
+NHIS() Q "TabelKey"_key_"String"_ny
+PREDTEMP ;ПРЕДОБРАБОТКА ВЫБОРКИ ДЛЯ КЛЮЧЕЙ
+ Q:R1>332
+ I R1=13 D  Q  ;ЗАПИСЬ В ИСТОРИЮ
+ .I d'["#",key'=0 Q:ny>4
+ .D AddHist($$NHIS(),d)
+ I R1=27,R2=91,R3=68!(R3=67) D  ;ЗАСВЕТКА СПИСКА ИСТОРИЙ
+ .N %HIS,TTT D HIS^%ZAPM.bs.BSF1($$NHIS()) S TTT=$P($P(%HIS,"(",2),$C(34),2)
+ .s Tmp=$$History^%ZAPM.bs.BSXfun("^%ZAPM.bs.BSbufB",TTT) I Tmp=""!(YES<1) S R1=-2 Q
+ .S d=Tmp,R1=0,R2=18 Q
+ I ny>4,R1>31,R2=-1,R3=-1 S R1=-4,li=$P($G(@BSR@(BST,ny,2)),"@",15)_"#"_$P($G(@BSR@(BST,"COL",ny,3)),"I ",2,99)
+ Q
+AddHist(f,d) Q:d=""  N %HIS D HIS^%ZAPM.bs.BSF1(f) D AddHist^%ZAPM.bs.BSXuse(%HIS,d)
+ Q
+SETEMP ;ВРЕМЕННАЯ ВЫБОРКА
+ S ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,3)="I "_$P(d,"#",2,999)
+ S ^%ZAPM.bs.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15),COMP,key,4)="TXTC#"_$P(d,"#")
+ Q
+CREA(F) ;ФОРМУЛА НА БОКОВИНУ
+ N FF
+ I F["LongString" S F=$$GLRET^%ZAPM.bs.BSF12(F)
+ I F["$$TSV" X "S FF="_F
+ I F'["$$TSV" S FF="I "_F
+ Q FF
+TSVV(kod) Q "I "_kod
+CREAT(M,Y,X,RA,EN) D Wait^%ZAPM.bs.BSXfun("КОПИРОВАНИЕ М\ЗАПРОСОВ В СВОДКУ")
+ G creat:$E(SVo,1)=0
+ N si,MM,fo,MMM,bsr,BUF
+ S MM="",MMM=Y,fo=1 K SP(5) D COP2L(Y,1) S fo=0 D COP2L(RA,2)
+ F  S MM=$O(@M@(1,MM)) Q:MM=""  D  S MMM=MMM+2
+ .S Tmp=$$GLRET^%ZAPM.bs.BSF12($NA(@M@(1,MM))),fo=1 D COPY(1) S @BSr@(BSt,St)=1,n(MMM)=n,n=n+1 D  F C=2:1:COMP D COPY(1) S @BSr@(BSt,St)=C,$P(@BSr@(BSt,St,TSVV),"@",15)=""
+ ..S $P(@BSr@(BSt,St,TSVV),"@",15)=$P(Tmp,"@")
+ ..S SP(5,MMM)=$$CREA($P(Tmp,"@",2,9999))
+ .I $O(@M@(1,MM))'="" S fo=0 D COPY(2)
+ S si=EN,fo=0 D COP^%ZAPM.bs.BSSV
+ Q
+creat ;КОПИРОВАНИЕ М\ЗАПРОСОВ В СВОДКУ (СТАРЫЙ ВАРИАНТ)
+ N si,MM,fo,MMM
+ S MM="",MMM=Y K SP(5)
+ F  S MM=$O(@M@(1,MM)) Q:MM=""  D  S MMM=MMM+2
+ .S si=Y,fo=1 D COP^%ZAPM.bs.BSSV S @BSr@(BSt,St)=1,n(MMM)=n,n=n+1 D  F C=2:1:COMP D COP^%ZAPM.bs.BSSV S @BSr@(BSt,St)=C,$P(@BSr@(BSt,St,TSVV),"@",15)=""
+ ..S $P(@BSr@(BSt,St,TSVV),"@",15)=$P(@M@(1,MM),"@")
+ ..S SP(5,MMM)=$$CREA($P(@M@(1,MM),"@",2,999))
+ .I $O(@M@(1,MM))'="" S si=RA,fo=0 D COP^%ZAPM.bs.BSSV
+ S si=EN,fo=0 D COP^%ZAPM.bs.BSSV
+ Q
+CHO(MM,NO,x,zz) ;ВЫБОР
+ N M,BSr,BSt,Fk,se,Obraz
+ S YES=1,%zT=$ZT,$ZT="ERMA^%ZAPM.bs.BSF11"
+ D TempT^%ZAPM.bs.BSTT
+ F M=1:1 Q:$P(MM,"@",M)=""  D TempTX^%ZAPM.bs.BSTT($P(MM,"@",M)_" "_$P($G(@$P(MM,"@",M)),"@",2))
+ D TempTXT^%ZAPM.bs.BSTT("<<< Выберите БОКОВИНУ для сводки >>>",$G(@%BS(20)@("ErrorTXT")))
+ d ^%ZAPM.bs.BSX("TEXT",BSr,BSt) Q:YES<1
+ S M=YES I YES D Yes^%ZAPM.bs.BSXfun("Будем УТОЧНЯТЬ БОКОВИНУ ?",2) S Tmp=YES,YES=1 I Tmp D TEMPZAPR($P(MM,"@",M))
+ S $P(@x,"#",9)=$P(MM,"@",M),$P(@x,"#",10)=NO
+ ;```???```I $D(NZP),$D(@BSR@(BST,"ZPR",NZP,0)) S $P(@$ZR,"#",9)=$P(MM,"@",M),$P(@$ZR,"#",10)=NO
+ Q
+TEMPZAPR(GL) ;РАЗОВЫЕ М-ЗАПРОСЫ
+ N TG,TT,BSR,BST,BSr,BSt,IntTmp,i,j,s1,s2,s6i,l1,l2,col,ke,Fk,tIT,IYI,txt,kod,%INV1,%INV2
+ N k1,k2,k3,k4,k5,k6,k7,k8,k9,%INV,Tmp,Shab
+ S TT=$$TMPG^%ZAPM.bs.BSF11,BSR=$P(TT,"("),BST=$P($P($P(TT,"(",2),")"),$C(34),2),IntTmp=1
+ S Shab="^%ZAPM.bs.BSS(""OPout"")" I $D(zz),$$Data^%ZAPM.bs.BSF12(zz) S Shab=zz
+ S @BSR@(BST)=@Shab
+ S s1="dinamo",Fk="",Tmp=0
+ D Int I $D(@Shab@("AF2")) S @BSR@(BST,"AF2")=@Shab@("AF2")
+AGAIN S IYI=BSR_"("_BST D NE^%ZAPM.bs.BSN I R1=27 S YES=0 Q
+ S %INV="TempZap"_$G(%BS(3),$P)_$J_"u",%INV=$$BSR^%ZAPM.bs.BSA($NA(^%ZAPM.bs.BSbufB(%INV))) K @%INV S %INV2=1,%INV1=2,s6=0,@%INV="%BS-dimamo-@Temporary"
+ S do="D TEMPZ^%ZAPM.bs.BSF11(j)" D BLOK^%ZAPM.bs.BSF1 I YES<1!('s6) G AGAIN
+ S YES=1,MM=%INV,M=1
+ Q
+TEMPZ(j) ;СОЗДАНИЕ TEMP.М\ЗАПРОСОВ
+ Q:Tmp=i
+ D DINA^%ZAPM.bs.BSS I YES<1 S i=999999 Q
+ S Tmp=i Q
+ERMA D ErrMsg^%ZAPM.bs.BSXfun($$ErrSay^%ZAPM.bs.BSF8($ZE)) S $ZT=$G(%zT),YES=0 Q
+TS ;ПОИСК ДИНАМИЧЕСКОЙ БОКОВИНЫ
+ N F S ls=1
+ S F=$G(@BSR@(BST,"FCL",id,jd)) X "I "_F
+ Q
+TSVD(M,N,T,Z) I '$D(@BSR@(BST,N)) S ls="В ФУНКЦИИ $TSVD НЕТ СТРОКИ С НОМЕРОМ "_N Q 0
+ I '$D(@BSR@(BST,T)) S ls="В ФУНКЦИИ $TSVD НЕТ СТРОКИ С НОМЕРОМ "_T Q 0
+ S @BSR@(BST,"TSV",1,3)=$G(M),@BSR@(BST,"TSV",1,3,1)=+$G(N)_","_+$G(T)_","_id_","_jd
+ I $D(Z) S @BSR@(BST,"TSV",1,3,2)=Z
+ Q 1
+INVTAB S s1="invert" G DINS ;ОБРАТНАЯ ОПЕРАЦИЯ
+DINTAB S s1="dinamo"
+DINS I BST'["@" D ErrMsg^%ZAPM.bs.BSXfun("ОПЕРАЦИЯ ВОЗМОЖНА В РЕЖИМЕ РЕДАКТИРОВАНИЯ ТАБЛИЦЫ <F4>") G D
+ D Yes^%ZAPM.bs.BSXfun("ТЕКУЩАЯ ТАБЛИЦА СИЛЬНО ИЗМЕНИТСЯ ! ВЫ ГОТОВЫ К ЭТОМУ ?",2) I YES<1 G D
+ S li="^" D GLO^%ZAPM.bs.BSF3 I $G(GL)="" G D
+ I $P($G(@GL),"@")'[("%BS-"_s1_"-") D ErrMsg^%ZAPM.bs.BSXfun("НУ, ЭТО СОВСЕМ НЕ ТО !") G D
+Int S s2=@BSR@(BST) K @BSR@(BST) S @BSR@(BST)=s2,$P(@$ZR,"@",29)=2,ke=2,s2=0
+ S i="",BSr=BSR,BSt=BST
+ I s1["mo" F  S i=$O(@GL@(1,i)) Q:i=""  D DINSM($P($G(^(i)),"@"))
+ I s1'["mo" F  S i=$O(@GL@(1,i)) Q:i=""  D DINSM(i)
+ S s2=s2+1 I s2>50 S s2=50
+ S l1=s2,l2=75-l1,(col(1),col(2))=$P(%BS,"!",4) D DINSE(" КОДЫ"," "_$S(s1'["mo":"ТЕКСТЫ",1:"ФОРМУЛЫ (для включения в М\Запрсы их надо ПОМЕТИТЬ)"))
+ S col(1)=$P(%BS,"!",5),col(2)=$P(%BS,"!",6),a=""
+ I s1["mo" F  S a=$O(@GL@(1,a)) Q:a=""  D DINSE($P(@GL@(1,a),"@"),$P(@GL@(1,a),"@",2,999))
+ I s1'["mo" F  S a=$O(@GL@(1,a)) Q:a=""  D DINSE(a,@GL@(1,a))
+ D CREAT^%ZAPM.bs.BSN S $P(@BSr@(BSt),"@")=$P($G(@GL,"@???"),"@",2)
+ Q:$D(IntTmp)
+ D TIT^%ZAPM.bs.BST,W^%ZAPM.bs.BST G B^%ZAPM.bs.BSTM
+DINSM(t1) I $L(t1)>s2 S s2=$L(t1)
+ Q
+DINSE(t1,t2) D CR^%ZAPM.bs.BSN Q
+ERCMD ;ОШИБКИ В ФОРМУЛАХ СПИСКОВ И СВОДОК
+ D TempT^%ZAPM.bs.BSTT
+ D TempTX^%ZAPM.bs.BSTT($$ErrSay^%ZAPM.bs.BSF8($ZE)),TempTX^%ZAPM.bs.BSTT("")
+ D TempTX^%ZAPM.bs.BSTT("    ВОЗМОЖНО ОШИБКА В ФОРМУЛАХ:"),TempTX^%ZAPM.bs.BSTT("")
+ I $D(iii),$D(SP(2,iii)) D TempTX^%ZAPM.bs.BSTT("номер="_iii_" Логики на Шапку"),TempTX^%ZAPM.bs.BSTT(SP(2,iii))
+ I $D(iii),$D(SP(4,iii)) D TempTX^%ZAPM.bs.BSTT("номер="_iii),TempTX^%ZAPM.bs.BSTT(SP(4,iii))
+ I $G(iS),$D(SP(5,iS)) D TempTX^%ZAPM.bs.BSTT("номер="_iS_" Логики на Боковину"),TempTX^%ZAPM.bs.BSTT(SP(5,iS))
+ I $D(i),$D(C),$D(CH(C,i,3)) D TempTX^%ZAPM.bs.BSTT(" Логика Выборки="_CH(C,i,3))
+ D TempTXT^%ZAPM.bs.BSTT("ОШИБКА !!!",$G(@%BS(20)@("ErrorTXT")))
+ D TempTXTE^%ZAPM.bs.BSTT
+ Q
+D G 0^%ZAPM.bs.BSTM
+DIN ;МИКРОЗАПРОСЫ ИЗ СВОДКИ В МАССИВ
+ S do="I j=%INV1 D DINASE^%ZAPM.bs.BSS($P(^(j),""@"",15),$G(@BSR@(BST,""FCL"",i,j)))"
+ D SETKD^%ZAPM.bs.BSS S s6=0
+ D BLOK^%ZAPM.bs.BSF1 G ENDIN^%ZAPM.bs.BSS
+S(C) Q:C'["]" 0 N U,S
+ S U=$P(C,$C(34),2),S=$P(C,$C(34),4) I $$ZU^%ZAPM.bs.BS3(U,S) Q 0
+ Q 1
+F(S) I $$S(S)=0 Q "НОВЫЙ ФОНОВЫЙ НАСЧЕТ"
+ Q "НОВЫЙ ЛОКАЛЬНЫЙ ФОНОВЫЙ НАСЧЕТ"
+H(S) I $$S(S)=0 Q "НОВЫЙ НАСЧЕТ"
+ Q "НОВЫЙ ЛОКАЛЬНЫЙ НАСЧЕТ"
+R(C) ;УДАЛЕННЫЕ НАСЧЕТЫ
+ N %TAB,%TAA
+ D UU(C) I '$D(UU) Q
+ S %TAB=%OLDII I UU=$$BSR^%ZAPM.bs.BSA("^%ZAPM.bs.BSbufS") Q
+ F  S %TAB=$O(@(UU_"(%TAB)")) Q:%TAB=""  Q:%TAB'[%OLDII  I %TAB'["@"&(%TAB'["&") S i=i+1 D
+ .S @TS@(i,1)="@@1@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ "_$P(%TAB,"!",3)_$J("",13-$L($P(%TAB,"!",3)))_$S($P(@(UU_"(%TAB)"),"@",30)="":".....",1:$E($P(@$ZR,"@",30),1,5))_";REMOTE;1;"_$P(@$ZR,"@")
+ ;```S (%TAB,%TAA)=%OLDII
+ ;```F  S %TAB=$O(@(UU_"(%TAB)")) Q:%TAB=""  Q:%TAB'[%TAA  I %TAB'["@"&(%TAB'["&") S i=i+1 D
+ ;```.S @TS@(i,1)="@@1@75@@@@@1@"_$P(%BS,"!",5)_"@@@@@ "_$P(%TAB,"!",3)_$J("",13-$L($P(%TAB,"!",3)))_$S($P(@(UU_"(%TAB)"),"@",30)="":".....",1:$E($P(@$ZR,"@",30),1,5))_";REMOTE;1;"_$P(@$ZR,"@")
+ Q
+UU(C) N U ;ОПРЕДЕЛЕНИЕ ССЫЛКИ СЕТЕВОГО РАЗДЕЛА
+ S U="^["""_$P(C,$C(34),2)_""","""_$P(C,$C(34),4)_"""]BSdirddp",U=$P($G(@U),"@",2) I U="" G UUu
+ S UU="^["""_$P(U,",")_""","""_$P(U,",",2)_"""]%BSbufS" I $$Data^%ZAPM.bs.BSF12(UU) Q
+UUu S UU="^[""MGR"","""_$P($G(^%ZAPM.bs.BSETUP("SERVER",14,4)),"@",15)_"""]%BSbufS" I $$Data^%ZAPM.bs.BSF12(UU) Q
+ S UU=$$BSR^%ZAPM.bs.BSA("^%ZAPM.bs.BSbufS") Q
+DEL S %TAB=$P(d," ",2) S %OLDII1=$S(%OLDII'["^%":$E(%OLDII,4,6)_":"_$E(%OLDII,10,12)_":"_$P($P(%OLDII,"]",2),"!",1,9),1:%OLDII)
+ I $D(%DIA) S do="S d=$P(^(j),""@"",15) K Temp D DE^%ZAPM.bs.BSF11(d) I $D(Temp) S %TAB=%OLDII1_$P($P($P(^(j),""@"",15),"" "",2),""."",2) D DEL^%ZAPM.bs.BS(Temp,$S($ZV[""Cach"":%OLDII_$P(%TAB,""."",2),1:%OLDII1_$P(%TAB,""."",2)))" D BLOK^%ZAPM.bs.BSF1 Q
+ Q:ny<4  K Temp D DE(d) I $D(Temp) D DEL^%ZAPM.bs.BS(Temp,$S($ZV["Cach"||($ZV["IRIS"):%OLDII_$P(%TAB,".",2),1:%OLDII1_$P(%TAB,".",2)))
+ Q
+DE(d) I d[";REMOTE;" S Temp=UU Q
+ I d[";LOCKAL;" S Temp=%nAM
+ Q
+OUTGLO(GLO,FN) ;КОПИРОВАНИЕ НОВОЙ ВЕРСИИ В СЕТЕВУЮ ГЛОБАЛЬ
+ I GLO'["^" Q
+ N DOS,I,II
+ S %zT=$ZT,$ZT="OG^%ZAPM.bs.BSF11",YES=0,II=1
+ F DOS=51:1:54 O DOS::0 Q:$T
+ I $$Open^%ZAPM.bs.BSXdos(FN,"R")<0 Q
+ D L^%ZAPM.bs.BS3(GLO)
+ U 0 d Wait^%ZAPM.bs.BSXfun("Копирование в "_GLO) K @GLO@("LAST") S @GLO@("LAST")=0
+ F  U DOS Q:$ZC'=0  R I S @GLO@("LAST",II)=I,II=II+1 I '(II#50) U 0 X $G(WA)
+ S @GLO@("LAST")=^%ZAPM.bs.BS
+ S YES=1 D U^%ZAPM.bs.BS3(GLO) C DOS
+ Q
+OG I $ZE["<ENDOFFILE" G OGO
+ D ErrMsg^%ZAPM.bs.BSXfun($$ErrSay^%ZAPM.bs.BSF8($ZE))
+OGO S $ZT=$G(%zT),YES=0 D U^%ZAPM.bs.BS3(GLO) C DOS
+ Q
+SCAN(%FN) ;СКАНИРОВАНИЕ
+ C %FN K fT2
+ N I,WRITE,DOS,FN,DOSO,FNO,FIRST,M,CU,v,ST,STOPSCAN,DOSIN,DOSOUT,say
+ I $D(^%ZAPM.bs.BSDDR("DDRPARM")) F CU=2:2:16 S CU(CU)=$P(^%ZAPM.bs.BSDDR("DDRPARM",CU,4),"@",15)
+ I %IN["%BS-SCANINIG" G SCA
+ ;S FN=$$BaseDir^%ZAPM.bs.BSDOS_$$DIR^%ZAPM.bs.BSMSMF_$$TEMPFILE,FNO=%FN
+ ;C %DEV 
+ I $ZV["Cach"||($ZV["IRIS") D  G SCA1
+ .S say="без перекодировки" S (S2,S1)="" I $$IFDOS^%ZAPM.bs.BSHTML1(%IN) D  S say="с перекодировкой" 
+ ..N (S1,S2) D INIT^%ZAPM.bs.BSre(1)
+ ;F %DEV=$G(%Dev,51):1:54 O %DEV::0 Q:$T
+ ;S DOS=%DEV
+ ;F %DEV=$G(DOS,51)+1:1:54 O %DEV::0 Q:$T
+SCA1 ;I $$Open^%ZAPM.bs.BSXdos(FNO,"R")<0 G STOPSCAN
+ ;S DOSO=DOS,DOS=%DEV I $$Open^%ZAPM.bs.BSXdos(FN,"W")<0 G STOPSCAN
+ ;S DOSIN=DOSO,DOSOUT=DOS X $G(CU(16)) I $G(STOPSCAN) G STOPSCAN
+ k fT2 d fT1(.fT1,.fT2) k fT1 m fT1=fT2 k fT2
+ d Wait^%ZAPM.bs.BSXfun("освобождения от мусора и разрезка "_%FN)
+ S %zT=$ZT,$ZT="ERFILE^%ZAPM.bs.BSF11"
+ ;U DOS W "%BS-SCANINIG ",$G(say),!
+ D fT2("%BS-SCANINIG "_$G(say))
+ ;S ST="" F v=1:1 U DOSO  R I D  D:I'="" CUT(I) //I '(v#10) U 0 X $G(WA) /////Q:$ZC'=0
+ S ST="",i="" F v=1:1 S i=$O(fT1(i)) Q:i=""  S I=fT1(i) D  D:I'="" CUT(I)
+ .S I=$TR(I,CU(2),CU(4))
+ .I $P(CU(14),"/",3)="Y" S I=$$Cut^%ZAPM.bs.BSF10(I)
+ .I $P(CU(14),"/",2)="Y" S I=$$Cut^%ZAPM.bs.BSF10(I,1)
+ .I I[CU(6),I'[CU(8) S I=$$TR^%ZAPM.bs.BSsFUNM(I,CU(6),CU(8))
+ .I I[CU(10),I'[CU(12) S I=$$TR^%ZAPM.bs.BSsFUNM(I,CU(10),CU(12))
+ .I $P(CU(14),"/",1)="Y" F M=1:1 Q:$E(I,M)=""  I $A($E(I,M))<32 S I=$E(I,1,M-1)_$E(I,M+1,$L(I))
+ .I '$D(FIRST),I'[CU(12) S I=""
+ .I '$D(FIRST),I[CU(12) S FIRST=1
+STOPSCAN ;I $P(CU(14),"/",4)'="Y" S %FN=FN C DOSO,DOS G SCA
+ ;C DOSO,DOS W /CUP(22,1) D EXE^%ZAPM.bs.BSDOS("COPY "_FN_" "_FNO,1) 
+ ;W /CUP(22,1) D EXE^%ZAPM.bs.BSDOS("DEL "_FN,1)
+SCA ;I $ZV["Cach"||($ZV["IRIS") C FN,FNO S %DEV=%FN G SCA2
+ ;C %DEV F %DEV=$G(%Dev,51):1:54 O %DEV::0 Q:$T
+ ;S DOS=%DEV
+SCA2 ;I $$Open^%ZAPM.bs.BSXdos(%FN,"R")
+ ;U %DEV R %IN
+ S fT2=$O(fT2("")),%IN=$G(fT2(fT2)) 
+ Q
+fT2(S) S fT2=$G(fT2)+1,fT2(fT2)=S //ЗАПИСЬ В НОВЫЙ МАССИВ
+ Q
+fT1(fT2,fT1) n i s i="" F  S i=$O(fT2(i)) Q:i=""  I $G(fT2(i))'="" D  S fT1(i)=fT2(i) I $G(fT1)="" S fT1=i
+ .I $E(fT2(i),$L(fT2(i)))="="!(fT2(i)["+++") Q  //выравнивание по =
+ .N A,ii,AA S AA=fT2(i),A=$P(fT2(i),"=",$L(fT2(i),"=")),fT2(i)=$P(fT2(i),"=",1,$L(fT2(i),"=")-1)_"="
+ .S ii=$O(fT2(i)) I ii="" S fT2(i)=AA Q
+ .S fT2(ii)=A_$G(fT2(ii))
+ q
+ERFILE S $ZT=$G(%zT) I $ZE["<ENDOFFILE" G STOPSCAN
+ D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($ZE))
+ Q
+CUT(I) ;РАЗРЕЗКА
+ I $L(ST_I)>4000 D CU(ST)
+ S ST=ST_I I ST["=++" D CU(ST) D fT2($TR(ST,S1,S2)) S ST="" //U DOS W $TR(ST,S1,S2),! S ST=""
+ Q
+CU(S) N SS
+ S SS=""
+ F M=1:1 Q:$P(S,"=",M,M+1)=""  S SS=SS_$P(S,"=",M)_"=" I $L(SS)>74 D fT2($TR(SS,S1,S2)) S SS="" //U DOS W $TR(SS,S1,S2),! S SS=""
+ S ST=SS
+ Q
+UNMARK(U) N I,J ;СНЯТЬ ПОМЕТКУ С ТАБЛИЦЫ
+ F I=1:1 Q:$G(@U@(I,1))=""  F J=1:1 Q:$G(@U@(I,J))=""  S $P(@U@(I,J),"@",12)=""
+ S $P(@U,"@",3)="" Q
+TEMPFILE() ;ВРЕМЕННЫЙ ФАЙЛ
+ Q "%BSTEMP.TMP"
+RANDFILE() ;СЛУЧАЙНОЕ ИМЯ ФАЙЛА
+ Q $R(10)_$R(10)_$R(10)_$R(10)_$R(10)_$R(10)_$R(10)_$R(10)_".TMP"
+TMPG() ;СЛУЧАЙНАЯ ССЫЛКА ВРЕМЕННОГО МАССИВА
+TMR N T S T=$NA(@"^%ZAPM.bs.BSbufB"@("TMP"_$TR($$RANDFILE(),".","")_$G(%BS(3),$P)_$J_"u1")) I $D(@T) G TMR
+ Q T
+MARK(U,M) N I,J,P ;ПОМЕТИТЬ ТАБЛИЦУ ПО ДАННЫМ В КЛЕТКАХ -->M
+ S P=0 F I=1:1 Q:$G(@U@(I,1))=""  F J=1:1 Q:$G(@U@(I,J))=""  I $P(@U@(I,J),"@",15)'="",$D(@M@($P(@U@(I,J),"@",15))) S $P(@U@(I,J),"@",12)=1,P=P+1
+ I 'P S $P(@U,"@",3)="" K %DIA Q
+ S %DIA=1,$P(@U,"@",3)=P Q
+STAT ;СТАТИСТИКА -=АС НЕФЕДОВ=-
+ N (%BS) D SA^%ZAPM.bs.BSsBUF,^%ZAPM.bs.BSTAT,RE^%ZAPM.bs.BSsBUF
+ Q
+MENU ;ОБНОВЛЕНИЕ ВРЕМЕНИ В МЕНЮ
+ Q:R1>332  I '$D(%BS(2,1)),$ZV'["Cach"&&($ZV'["IRIS") S %BS(2,1)=%BS(2),%BS(2)="1-D MENU^%ZAPM.bs.BST" Q
+ I R1=13,R2=-1,R3=-1 D UNDOMENU Q
+ I R1=27,R2=-1,R3=-1 D UNDOMENU
+ Q
+UNDOMENU I $D(%BS(2,1)) S %BS(2)=%BS(2,1) K %BS(2,1) Q
+ D CLr^%ZAPM.bs.BSF4 Q

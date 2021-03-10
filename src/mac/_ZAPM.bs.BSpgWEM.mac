@@ -1,0 +1,46 @@
+ROUTINE %ZAPM.bs.BSpgWEM
+TKWEM	;PG&A,TK-IMAIL,1.1,INTRO;;;;24FEB98  09:56
+	;;Copyright (C) 1998 Patterson, Gray and Associates, Inc.
+	;
+	;
+ W ! G:$D(^%ZAPM.bs.BSpgWEMM) CONT
+	F D=1:1 S A=$T(D+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	D INIT
+	G CONT
+D	;
+	;Congratulations on purchasing TK-IMAIL!
+	;
+	;In order to run TK-IMAIL, you need the following:
+	;
+	;    1. Microsoft Windows, Unix or VMS with a TCP/IP stack running.
+	;
+	;    2. M operating system with TCP/IP connectivity.
+	;
+	;    3. Access to a Domain Name Server.  If you are going to use TK-IMAIL
+	;       to send documents to other mail servers, you need the IP address
+	;       of your DNS.
+	;
+	;    4. MX entry in your DNS.  Conversely, if you expect to receive email
+	;       from other mail servers, you will need a MX record in your local
+	;       DNS so that other mail servers can find your TK-IMAIL server.
+	;
+	;    NOTE:  You do not need to be concerned with 3 and 4 if you are
+	;           using TK-IMAIL as the only mail server in an intranet setup.
+	;
+	;    5. TK-WEB running.  Only required for system configuration.
+	;
+	;    6. A browser such as Netscape or Microsoft Internet Explorer.
+	;
+	;    7. A email client such as Netscape Communicator or Microsoft Outlook.
+	;;
+CONT L ^%ZAPM.bs.BSpgWEBC(25):0 E  W "The TK-IMAIL server is already running",!! G CONT1
+	L  R "Do you want to start the TK-IMAIL server? (Y/N)-",A#1,!
+ I A="Y"!(A="y") J SMTP^%ZAPM.bs.BSpgWEBC,POP3^%ZAPM.bs.BSpgWEBC
+	E  W !,"TK-IMAIL not started - you can run this program later to start it.",! Q
+	;
+CONT1	W ! F D=1:1 S A=$T(D1+D) Q:A=""  S A=$P(A,";",2,9) Q:A=";"  W A,!
+	Q
+D1	;
+	;The TK-IMAIL server is ready to send and receive mail.
+	;;
+INIT	Q

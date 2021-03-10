@@ -1,0 +1,15 @@
+ROUTINE %ZAPM.bs.BSpgWEBT2
+TKWEBT2	;PG&A,TK-WEB,1.1,FILE TOOLS;03OCT97  17:14 [ 10/15/97   8:12 AM ]
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+	Q
+UTIL(X) S $ZT="ERROR^%ZAPM.bs.BSpgWEBU1" D SETUP
+	X X W !!
+UTILCO	C 51 O 51:(FIL:"R") U 51 F J=2:1 R A#509 Q:$ZC  S FL=FL+$L(A)+2,@GLB@(J)=A_$S($L(A)<509:$C(13,10),1:"")
+	C 51 S J=J+1,@GLB@(J)="</body></html>",FL=FL+$L(^(J)) K FIL,NOPAGE Q
+	;
+SETUP S FIL=$$TEMPDIR^%ZAPM.bs.BSpgBS_"SCRA"_$J ;$S($D(^%ZAPM.bs.BSpgWEBC("SCRATCH SPACE")):^("SCRATCH SPACE"),1:"")_"SCRA"_$J
+ S NOPAGE=1,GLB="^mtempBSpgTWEB($J)" K @GLB
+	S @GLB@(1)="<html><head><meta http-equiv=""Content-Type"" content=""text/html; charset=iso-8859-1""></head><body TEXT=""#000000"" LINK=""#0000ff"" VLINK=""#800080"" BGCOLOR=""#FFFFFF"">"
+	S FL=$L(^(1)) O 51:(FIL:"W") U 51 Q
+	;

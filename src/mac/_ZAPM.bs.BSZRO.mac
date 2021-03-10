@@ -1,0 +1,95 @@
+ROUTINE %ZAPM.bs.BSZRO
+% U 0 D W(1),W("... Восстановление %BS version 810 16.04.2003 ...")
+ ;
+ ;  ИНСТАЛЛЯЦИЯ ОТКРЫТОЙ ВЕРСИИ КОМПЛЕКСА %BS ПРОИЗВОДИТСЯ УТИЛИТОЙ ^%PACKAGE
+ZV ;                           ДЛЯ MSM4.0.14C
+ ;
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) G 1
+ I +$P($ZV,"Version ",2)<3 D W(1),W("НЕСОВМЕСТИМЫЕ ВЕРСИИ !!! ВЕРСИЯ MSM ДОЛЖНА БЫТЬ НЕ НИЖЕ 3.x.x !!!"),W(7) Q
+ K NOMXTR S $ZT="MX^BSZRO" S ^TR("?")=$J(1,500) K ^TR("?")
+ K ^%ZAPM.bs.BSinFL
+ I $ZV["MSM" D  ;УДАЛЕНИЕ ПРОГРАММ ПО МАСКЕ %BS*
+ .X "N I S I=""%BS"" F  S I=$O(^ (I)) Q:I=""""!($E(I,1,3)'=""%BS"")  ZR  ZS @I"
+1 F  U %DEV R %RN Q:%RN=";GLOBALS;"  D LOAD U 0 D W(".")
+ D NaSET
+ S YearNew=$G(^%ZAPM.bs.BSETUP("YEAR",1))
+ I +$G(^%ZAPM.bs.BS)<229 K ^%ZAPM.bs.BSETUP("COLOR")
+ I +$G(^%ZAPM.bs.BS)<295 K ^%ZAPM.bs.BSbufB("INFO_K")
+ I +$G(^%ZAPM.bs.BS)<575 K ^%ZAPM.bs.BSETUP("SETUP")
+ I +$G(^%ZAPM.bs.BS)<665,$E($P($G(^%ZAPM.bs.BSETUP("PATH",6,4)),"@",15))'="^" S $P(^%ZAPM.bs.BSETUP("PATH",6,4),"@",15)="^[""SRV"",""SYS""]BSprotkl"
+ I $P($G(^%ZAPM.bs.BSETUP("SERVER",15,4)),"@",15)'[":" S BSr1="^%ZAPM.bs.BSS",BSt1=$S($ZV["MSM":"SERVER",1:"CacheServ"),BSr2="^%ZAPM.bs.BSETUP",BSt2="SERVER" D COPY^%ZAPM.bs.BSTK
+ S Version=+$G(^%ZAPM.bs.BS),G=""
+ K ^%ZAPM.bs.BSbufB("PRNset"),^%ZAPM.bs.BSbufB("PRNini")
+ U 0 F i=1:1 U %DEV R %G,%V Q:%G=""  D  I '(i#150) U 0 D W(".")
+ .I G'=$P(%G,"(") S G=$P(%G,"(") I $E(G,1,4)="^%ZAPM.bs.BS"&($E(G,1,7)'="^%ZAPM.bs.BSbuf") K @G
+ .I $L(%V)<256 S @%G=%V Q
+ .I '$D(NOMXTR) S @%G=%V
+ C %DEV
+ ;```I $P($G(^%ZAPM.bs.BSETUP("SERVER",16,4)),"@",15)'["." S BSr1="^%ZAPM.bs.BSS",BSt1=$S($ZV["MSM":"SERVER",1:"CacheServ"),BSr2="^%ZAPM.bs.BSETUP",BSt2="SERVER" D COPY^%ZAPM.bs.BSTK
+ D NaGET
+ K ^%ZAPM.bs.BS("SYSGEN"),^BSINSTAL
+ I YearNew'="" S ^%ZAPM.bs.BSETUP("YEAR",1)=YearNew
+ I '$D(IntSe),$ZV'["Windows" D SYSFIX^%ZAPM.bs.BSF9
+ S ^%ZAPM.bs.BSinFL=$$ESDAY^%ZAPM.bs.BSsFUNR(9,$$h^%ZAPM.bs.BS3())
+EXIT C 63
+ Q
+W(W) I '$D(IntSe) D
+ .I W?.N D  Q
+ ..I W=1 W !
+ ..I W=2 W #
+ .W W
+ Q
+MX U 0 W *7 I $ZE'["MXSTR>" H:$ZE["LOBR>"  W #,!,$ZE R R Q
+ S NOMXTR=1,$ZT="" I $P($ZV,"Version ",2)'<4 D
+ .W #,"- Утилитой ^DBMAINT редактируйте параметры Системного Тома:"
+ .W !,"  установите разрешение использовать глобали длиной до "_$$LNG^%ZAPM.bs.BSF12_" символов"
+ .W !,"- Утилитой ^SYSGEN редактируйте Системные Флаги: "
+ .W !,"  установите разрешение использовании в программах строк длинее 255 символов"
+ .w !,"   (>D ^SYSGEN --> 3 --> <DFLT> --> 20 --> 11)"
+ .W !,"- Утилитой ^SYSGEN редактируйте Системные Стэк и Стэп:"
+ .W !,"  36 и 36 соответственно"
+ .w !,"   (>D ^SYSGEN --> 9 --> 2)"
+ .W !!,"После этого перезагрузитесь и снова попробуйте инсталляцию %BS" Q
+ G 1
+LOAD X "ZL  ZS @%RN ZL BSZRO" Q
+NaSET ;ПРИСВОЕНИЕ ИМЕН БАЗ
+ K Na
+ D NaSE(1,"^%ZAPM.bs.BSS","USER","^%ZAPM.bs.BSU")          ;ПОЛЬЗОВАТЕЛИ %BS
+ D NaSE(2,"^%ZAPM.bs.BSDDR","DDR","^%ZAPM.bs.BSddr")       ;ФОРМЫ DDR
+ D NaSE(3,"^%ZAPM.bs.BSS","XECUTE","^%ZAPM.bs.BSex")       ;КОММАНДЕР %BS
+ D NaSE(4,"^%ZAPM.bs.BSS","ARM","^%ZAPM.bs.BSARM")         ;АРМЫ %BS
+ D NaSE(5,"^%ZAPM.bs.BSS","CMD","^%ZAPM.bs.BScmd")         ;КОМАНДЕР %BS
+ D NaSE(6,"^%ZAPM.bs.BSJPRN","PRN","^%ZAPM.bs.BSJPR")      ;ПРИНТ-СИСТЕМА
+ D NaSE(7,"^%ZAPM.bs.BSVOL","MARK","^%ZAPM.bs.BSmark")     ;БАЗА ПОМЕТОК
+ D NaSE(8,"^%ZAPM.bs.BSMDDR","BPO","^%ZAPM.bs.BSbpo")      ;НОВАЯ БД DDR
+ D NaSE(9,"^%ZAPM.bs.BSVOL","PACKET","^%ZAPM.bs.BSpack")               ;БД ПАКЕТОВ ЗАПРОСОВ
+ D NaSE(10,"^%ZAPM.bs.BSZ","LOGIC","^[""MOL"",""VOI""]BSzLOG") ;ЛОГИКА
+ D NaSE(11,"^%ZAPM.bs.BSVOL","TRM","^%ZAPM.bs.BStrm")                  ;БД ТЕРМИНАЛОВ
+Na D NaSE(12,"^%ZAPM.bs.BSZ","SVb1","^[""MOL"",""VOI""]BSzB")  ;БД БОКОВИН
+ D NaSE(13,"^%ZAPM.bs.BSZ","SVb4","^[""MOL"",""VOI""]BSzB")
+ D NaSE(14,"^%ZAPM.bs.BSZ","SVz1","^[""MOL"",""VOI""]BSzZ")    ;БД ЗАПРОСОВ
+ D NaSE(15,"^%ZAPM.bs.BSZ","SVz2","^[""MOL"",""VOI""]BSzZ")
+ D NaSE(16,"^%ZAPM.bs.BSZ","SVz11","^[""MOL"",""VOI""]BSzZ")
+ D NaSE(17,"^%ZAPM.bs.BSZ","SVz2","^[""MOL"",""VOI""]BSzZ1")
+ D NaSE(18,"^%ZAPM.bs.BSZ","SVz3","^[""MOL"",""VOI""]BSzZ1")
+ D NaSE(19,"^%ZAPM.bs.BSZ","SLm1","^[""MOL"",""VOI""]BSzlU")   ;БД СПИСКОВ
+ D NaSE(20,"^%ZAPM.bs.BSZ","SLm2","^[""MOL"",""VOI""]BSzlU")
+ D NaSE(21,"^%ZAPM.bs.BSZ","SLm3","^[""MOL"",""VOI""]BSzlU")
+ D NaSE(22,"^%ZAPM.bs.BSZ","SVm3","^[""MOL"",""VOI""]BSzvU")   ;БД СВОДОК
+ D NaSE(23,"^%ZAPM.bs.BSZ","SVm2","^[""MOL"",""VOI""]BSzvU")
+ D NaSE(24,"^%ZAPM.bs.BSZ","SVm5","^[""MOL"",""VOI""]BSzvU")
+ D NaSE(25,"^%ZAPM.bs.BSZ","SVR","^[""MOL"",""VOI""]ZSVr")            ;?
+ D NaSE(26,"^%ZAPM.bs.BSS","TRIGGER","^[""SRV"",""SYS""]BStrigg")     ;ПЕРЕАДРЕСАЦИЯ ИМЕНИ БАЗЫ ДАННЫХ
+ D NaSE(27,"^%ZAPM.bs.BSZ","SLsort","^[""MOL"",""VOI""]BSzSort")      ;СОРТИРОВКА И ВЫДЕЛЕНИЕ СПИСКОВ В ТАФ
+ D NaSE(28,"^%ZAPM.bs.BSVOL","PROTOKOL","^[""SRV"",""SYS""]BSprotkl") ;ПРОТОКОЛИРОВАНИЕ
+ D NaSE(29,"^%ZAPM.bs.BSVOL","MainMenu","^[""SRV"",""SYS""]BSMMenu")  ;ГЛАВНОЕ МЕНЮ
+ D NaSE(30,"^%ZAPM.bs.BSVOL","ACTFILE","^%ZAPM.bs.BSactF")  ;ДЕЙСТВИЕ С ФАЙЛАМИ
+ Q
+NaSE(N,P,T,DFLT) S Na(N)=$G(@P@(T,"KEY")),Na(N,1)=$ZR,Na(N,3)=$G(@$ZR),Na(N,2)=DFLT
+ I $D(InTNa) S @P@(T,"KEY")=DFLT
+ Q
+NaGET ;ВОЗВРАТ ИМЕН
+ S Na="" F  S Na=$O(Na(Na)) Q:Na=""  D
+ .I Na(Na)'="" S @Na(Na,1)=Na(Na,3)
+ .E  S @Na(Na,1)=Na(Na,2)
+ Q

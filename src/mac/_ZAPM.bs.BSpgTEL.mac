@@ -1,0 +1,122 @@
+ROUTINE %ZAPM.bs.BSpgTEL
+BSTEL	;TCP-SOCKET
+TELNET	S port=$P($G(^%ZAPM.bs.BSpgBS("Control")),",",7),type=23,TRACE=1,LOG=1  I port="" S p=123
+startup L ^%ZAPM.bs.BSpgWEBC(port):0 E  H
+ S OS=^%ZAPM.bs.BSpg("OS") S @$S(OS'="MSM":"nt=0",1:"nt=($ZB($V(0,-4,2),#F,1)=10)")
+	; Open and initialize the device
+CONNECT 
+ I type=23 L +TCONNECT S (CON,^%ZAPM.bs.BSpgBS("CONNECT"))=$G(^%ZAPM.bs.BSpgBS("CONNECT"))+1 L -TCONNECT S ST=$G(^("Control")) I CON["." S ^%ZAPM.bs.BSpgBS("CONNECT")=$P(^%ZAPM.bs.BSpgBS("CONNECT"),".",2) H 2 H
+	I $G(ST)]"" S port=$S($P(ST,",",7):$P(ST,",",7),1:type),TRACE=$P(ST,",")="ON",LOG=$P(ST,",",3)="ON"
+	I OS="M11" D initM11
+	G:$S(OS="MSM":'nt,OS="M11":$ZV'["Cache",1:1) unix
+CB G:OS="M11" CBM11 
+	G CONNECT
+CBM11 //CACHE
+ i type=23 J accept(0,CON,TRACE,LOG):(:5:TCP:TCP) /////////////////////////////////////////////////////////////////////
+	G CONNECT
+initM11	I $D(TCP) U TCP W *-2
+	I '$D(TCP) S TCP="|TCP|"_port O TCP:(:port:"MA") ; watch $C(10) ////////////////////////////////////////////////////
+	U TCP R *%xddb 
+	Q
+accept(%ddb,CON,TRACE,LOG)	
+	S OS="M11",TCP=0,ADDR="" 
+	;U TCP:(::"AS":$C(10)) 
+	;U TCP:(::"PSTE") 
+	U TCP:(::"M") 
+	D ^%ZAPM.bs.BSC
+	Q
+PORT() //НОМЕР ПОРТА TCP-SOCKETA
+ N p S p=$P($G(^%ZAPM.bs.BSpgBS("Control")),",",7) I p="" S p=23
+  L ^%ZAPM.bs.BSpgWEBC(p):0 I  L -^%ZAPM.bs.BSpgWEBC(p) Q ""
+ Q p
+unix I OS="MSM" J USTART^%ZAPM.bs.BSpgWEBC(type,TRACE,LOG,OS,nt):60:15 E  S ^%ZAPM.bs.BSpgWEBC("NOJOB",$H,%xddb)=%lddb_"_"_type G CONNECT
+ I OS="M11" J USTART^%ZAPM.bs.BSpgWEBC(type,TRACE,LOG,OS,nt)::15 E  S ^%ZAPM.bs.BSpgWEBC("NOJOB",$H)=type G CONNECT
+ I OS="DSM4" J USTART^%ZAPM.bs.BSpgWEBC(type,TRACE,LOG,OS,nt)::15 E  S ^%ZAPM.bs.BSpgWEBC("NOJOB",$H)=type G CONNECT
+ i type=80 D uaccept^%ZAPM.bs.BSpgWEBH(CON,TRACE,LOG,%xddb,TCP,OS) H
+ i type=25 D uaccept^%ZAPM.bs.BSpgWEMM(CON,TRACE,LOG,%xddb,TCP,OS) H
+ i type=110 D uaccept^%ZAPM.bs.BSpgWEMP3(CON,TRACE,LOG,%xddb,TCP,OS) H
+	G CONNECT
+USTART(type,TRACE,LOG,OS,nt) S $ZT="ERROR^%ZAPM.bs.BSpgWEBC" G CONNECT
+	;
+GMT(X,T)	;($H,timezone)
+	N K,Y,D,M S T=$P(X,",",2)+(-T*3600) S:T<0 X=X-1,T=T+86400 S:T>86400 X=X+1,T=T-86400
+	S K=X>21608+305+X,Y=4*K+3\1461,D=K*4+3-(1461*Y)+4\4,M=5*D-3\153,D=5*D-3-(153*M)+5\5,M=M+2,Y=M\12+Y-60,M=M#12+1,DT=1900+Y*100+M*100+D
+	S D=$P("Mon,Tue,Wed,Thu,Fri,Sat,Sun",",",X+3#7+1)_", "_D_" "_$P("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",",",M)_" "_(1900+Y)
+	S M=T\60,M=$E(M\60+100,2,3)_":"_$E(M#60+100,2,3)_":"_$E(T#60+100,2,3) Q D_" "_M_" GMT"
+JULIAN	S m=+T-3,d=$P(T,"/",2),y=$P(T,"/",3) I (m+d+y)<-2 S T="" Q
+	S:y<100 y=y+1900 S o=$S(y<1900:-14917,1:21608),y=y>1999*100+$E(y,3,4) S:m<0 m=m+12,y=y-1 S T=1461*y\4,T=153*m+2\5+T+d+o K m,y,o,d 
+	Q
+ERROR S ^%ZAPM.bs.BSpgWEBF("ERROR","BSTELNET",$H)=$ZE Q
+	;
+DOWN(X) F port=80,25,110 L ^%ZAPM.bs.BSpgWEBC(port):0 E  D
+ . I port=80 S:$G(^%ZAPM.bs.BSpgWEBC("CONNECT"))'<1 ^%ZAPM.bs.BSpgWEBC("CONNECT")="."_$G(^%ZAPM.bs.BSpgWEBC("CONNECT"))
+ . E  S:$G(^%ZAPM.bs.BSpgWEMM("CONNECT"))'<1 ^%ZAPM.bs.BSpgWEMM("CONNECT")="."_$G(^%ZAPM.bs.BSpgWEMM("CONNECT"))
+ . Q:$G(^%ZAPM.bs.BSpg("OS"))'="MSM"  D T2 H 1 Q
+	L  Q
+T2	C 56 O 56::"TCP" U 56 S %lddb=$KEY
+T3	U 56:(%lddb) W /SOCKET(X,port) I $ZC&($ZB=-8) H 2 G T3
+	I $ZC S C=$ZC Q
+	W ! C 56 Q
+	/*
+	Собственно, в документации есть пример как сделать параллельнопоточный
+сервер. Страница http://127.0.0.1:1972/csp/docbook/DocBook.UI.Page.cls?KEY=GIOD_interproccomm
+, в самом конце.
+ 
+Вот мой примерчик TCP-сервера:
+ 
+====
+ */
+open
+       Set io="|TCP|1"
+       Set ^serverport=123
+       Open io:(:^serverport:"MA"):200
+       If ('$TEST) {
+          Write !,"Cannot open server port" Quit
+       }
+       Else { Write !,"Server port opened" }
+       While ($data(^serverport)) {
+          Use io Read x ; Read for accept
+          Use 0 Write !,"Accepted connection"
+          Job child:(:5:io:io) ;Concurrent server bit is on
+       }
+       quit
+ 
+child
+       Write $JOB,! ; Send job id on TCP device to be read by client
+       Use $io:(::"M") ; turn to PSTE mode
+       ;Do {
+       ;   read buf
+       ;   set ^a.tcp("q"_buf)="" ; we cannot write to console, because we don't have an access to it
+       ;} while ($find(buf,"exit") = 0)
+       D FOR^%ZAPM.bs.BSCp
+       Quit
+ 
+close
+       Set serverport=^serverport
+       Kill ^serverport
+       Set io="|TCP|2"
+       Set host="127.0.0.1"
+       Open io:(host:serverport:"M"):200 ;Connect to server
+       If ('$TEST) {
+          Write !,"cannot open connection" Quit }
+       Else {
+          Write !,"Closing server"
+          Use io write "exit",!
+       }
+       Close io
+       Quit
+ /*
+====
+ 
+Сервер запускается по входу open, закрывается по входу close.
+Отрыв соединения - команда, содержащая строку "exit".
+Все поступившие команды записываются в глобаль ^a.tcp
+ 
+Данный пример выкладываю также в КашеВар по адресу
+http://dimas.ru/cvar/TcpServerExample
+ 
+Любви.
+logist (ООО Димас, Хабаровск)
+	
+	*/
+	

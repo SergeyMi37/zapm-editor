@@ -1,0 +1,52 @@
+ROUTINE %ZAPM.bs.BSpgWEBD
+TKWEBD	;PG&A,TK-WEB,1.1,PAGE EDITOR;22JUL97  11:38 [ 10/15/97   8:12 AM ];;;08OCT99  15:28
+	;;Copyright (C) 1997 Patterson, Gray and Associates, Inc.
+	;
+ED	; TKWEB - here from ?EDITOR
+	S DIR=$G(%("FORM","DIR")) I DIR=""!($E(DIR)="?") G NODIR
+ S AUT="TK-WEB HTML EDITOR",ST=$P($TR($$UUDEC^%ZAPM.bs.BSpgWEBU($G(%("AUTHORIZATION:"))),LC,UP),":",2),ST=$S(ST="":401,"EDITOR"=ST:202,1:401)
+	I ST'=202 W "UNAUTHORIZED" q
+	S v="%(""FORM"")" D ^M3WEBD1 Q
+	;
+NODIR D HEAD^%ZAPM.bs.BSpgWEBT
+	W "NO DIRECTORY SPECIFIED<P>To run the HTML EDITOR make sure that you have the DIRECTORY in the URL.<p>Example:  www.mycomputer/XYZ?EDITOR" q
+IN	; TKWEB - here from submit from form
+	S DIR=$P($G(@v@("open_files_single")),"/") I DIR="" W "NO DIRECTORY" q
+ I $g(@v@("submit"))="Open" G ^%ZAPM.bs.BSpgWEBD1
+	I $g(@v@("submit"))="Save" G SAVE
+	I $g(@v@("submit"))="Preview" G PREVIEW
+	I $g(@v@("submit"))="Save As" G SAVEAS
+	I $g(@v@("submit"))="Toolbars" G TOOLBAR
+	W "<PRE>" W  W "</PRE>" Q
+	;
+TOOLBAR	S TB=1 S:$G(@v@("Toolbars")) TB=0 G ^M3WEBD1
+	;
+SAVEAS	S DOC=$G(@v@("Loadfile")) S:DOC["/" DIR=$P(DOC,"/") S DOC=$G(@v@("saveas")) G SAVE1
+	;
+SAVE	S DOC=$G(@v@("Loadfile")) S:DOC["/" DIR=$P(DOC,"/"),DOC=$P(DOC,"/",2)
+SAVE1	I $G(DIR)="" W "NO DIRECTORY" q
+	I DOC="" W "NO FILE NAME" Q
+ S A=0,L=0 F  S A=$O(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,A)) Q:A=""  K ^(A)
+	S A="",C="",J=1,B=$G(@v@("TEXT")) D  F  S A=$O(@v@("TEXT",A)) Q:A=""  S B=@v@("TEXT",A) D
+	. ; S I=$TR(B," ",""),I=$E(I,$L(I)),B=$E(B,1,$L($P(B,I,1,$L(B,I)-1)_I))
+	. I $TR(B,"texar","TEXAR")["<\TEXTAREA>" D P1
+ . S:1 B=B_$C(13,10) S:$L(C)+$L(B)>255 ^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,J)=C,L=L+$L(C),C="",J=J+1 S C=C_B
+ S:$L(C) ^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC,J)=C,L=L+$L(C)
+ D INIT^%ZAPM.bs.BSpgWEBH S D=$$GMT^%ZAPM.bs.BSpgWEBH($H,+$G(^%ZAPM.bs.BSpgWEBC("TimeZone"))),C=$$DTEX^%ZAPM.bs.BSpgWEBH(D)
+ S $P(^%ZAPM.bs.BSpgWEBF("PAGES",DIR,DOC),"`",3,5)=L_"`"_D_"`"_C
+ S $P(^%ZAPM.bs.BSpgWEBF(98,DIR,DOC),"`",3,5)=L_"`"_D_"`"_C
+ S FILE=DOC,T="H" D XREF^%ZAPM.bs.BSpgWEBF
+ W "<BODY BGCOLOR=FFFFDD><TABLE><TD ALIGN=CENTER HEIGHT=100 WIDTH=400>",!,"<P><P><P>",!,"<FONT COLOR=AA1111 SIZE=7>Page Saved</FONT>",!,"</TD></TABLE></BODY>" I $g(v)["^mtempBSpgWEBPUT" k @v
+	Q
+P1	S JJ=$TR(B,"texar","TEXAR") I JJ'["<\TEXTAREA>" Q
+	S a=$F(JJ,"<\TEXTAREA>") S $E(B,a-10)="/" G P1
+	;
+PREVIEW	I $D(@v@("TEXT"))#2 S @v@("TEXT",.5)=@v@("TEXT")
+ S (XGLOB,GLB)="^%ZAPM.bs.BSpgtWEB($J)" K @GLB
+ M ^%ZAPM.bs.BSpgtWEB($J)=@v@("TEXT") I $g(v)["^mtempBSpgWEBPUT" k @v
+	S FL=0,A="" F  S A=$O(@GLB@(A)) Q:A=""  S FL=FL+$L(@GLB@(A))
+ S @GLB="``"_FL D XREFen^%ZAPM.bs.BSpgWEBF I $P(@GLB,"`",3)["M" D MODIFY^%ZAPM.bs.BSpgWEBL
+	S NOFILE=""
+	Q
+	;
+VAR	W "<PRE>" W  W "</PRE>" Q
