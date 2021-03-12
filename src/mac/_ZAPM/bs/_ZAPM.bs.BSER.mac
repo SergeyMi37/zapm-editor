@@ -1,0 +1,58 @@
+ROUTINE %ZAPM.bs.BSER
+%BSER ;RTM;MSM ПАКЕТНОЕ РЕДАКТИРОВАНИЕ ПРОГРАММ ; 13:39   31.05.99
+ S IYI="^%ZAPM.bs.BSS(EditRou" D NE^%ZAPM.bs.BSN Q
+%RSEL() ;ФУНКЦИЯ ВЫБОРА ПРОГРАММ
+ I $ZV["MSM" K QUIT D  I $D(QUIT) I '%FLG Q 0
+ .D INT^%RSEL S %Jo=$J
+ I $ZV["Cach"||($ZV["IRIS") D  I %R=0 Q 0
+ .D ^%RSET S %Jo=%JO
+ Q 1
+E(No) ;1=МЕТКА     2-ПОИСК    3-ПОИСК И ЗАМЕНА    4-ПОИСК И РЕДАКТИРОВАНИЕ
+ S %FLG=0 W /ED(2),/CUP(1,1)
+ASK1 U 0 I '$$%RSEL() D ErrMsg^%ZAPM.bs.BSXfun("Программы не выбраны") G EXIT
+ G @No
+3 S %FLG=1,%ST=0 S $ZT="ERROR^%ZAPM.bs.BSER"
+ASK2 U 0 s %X=$$LineEdit^%ZAPM.bs.BSXfun("","Что Замещать") d Echo^%ZAPM.bs.BSXfun(1) I %X="" S %FLG=0 G ASK1
+ S %ST=%X
+ s %RP=$$LineEdit^%ZAPM.bs.BSXfun("","На что    : ") d Echo^%ZAPM.bs.BSXfun(1)
+VER R !!,"С подтверждением ? <N> ",%V G ASK2:%V="^",EXIT:%V="^Q"
+ S %V=$S(%V?1"Y".E:1,%V?1"N".E:0,%V="":0,1:-1) I %V<0 W "  ??",*7 G VER
+ S BSr="^%ZAPM.bs.BSbufB",BSt="%RSEBUF3",Obraz(12)=1,Obraz(21)=1,CR="S t=t+1,t(t)=%CC_""+""_%I_"": ""_%T"
+ S t0="-  Поиск И Замена строк в программах. Введите <Enter> для входа в редактор " D CR^%ZAPM.bs.BSTT
+ S CRT1="X CRT K t S t=0",CRT="S t=0 F  S t=$O(t(t)) Q:'t  S t0=t(t) D CR^%ZAPM.bs.BSTT",t=0
+ S t0="-  "_$$ESDAY^%ZAPM.bs.BSsFUNR(9,$$h^%ZAPM.bs.BS3()) D CR^%ZAPM.bs.BSTT
+ S t0="-  Заменяем :<"_%ST_"> На    :<"_%RP_">" D CR^%ZAPM.bs.BSTT
+ W !! U 0
+ W !,?22,"Изменения В программах "
+ I $ZV["MSM" D ^%GUCI
+ I $ZV["Cach"||($ZV["IRIS") D ^%DIR
+ W !!,t0 K END
+LK S %LK="F %I=1:1 S %T=$T(+%I) Q:%T=""""  S %K=$L(%T,%ST) I %K>1 X %LM I '%ER S %F=1 X %LL X %LN Q:$D(END)  I %UF ZI %M:+(%I) ZR +%I U 0 I '%V U 0 W !,%CC,""+"",%I-1,"": "",%M X CR"
+LL S %LL="S %M="""" F %J=1:1:%K S %M=%M_$P(%T,%ST,%J) S:%J'=%K %M=%M_%RP"
+ I $ZV["MSM" ;S %X=$S($ZB($V(140,$J,2),#800,1):1000,1:255)
+ I $ZV["Cach"||($ZV["IRIS") S %X=1000 ;?
+LM S %LM="S %ER=$S(($L(%T)-(%K-1*$L(%ST))+(%K-1*$L(%RP)))>"_%X_":1,1:0) I %ER W !,%CC,""+"",%I-1,"": Not changed - New line is greater than "_%X_" characters"""
+LN S %LN="S %UF=1 Q:'%V  U 0 X CR W !!,%CC,""+"",%I-1,!,""OLD: "",%T,!,""NEW: "",%M F %VN=1:1 R !!,""Замещаем <Y> "",%VA,! S:%VA=""^"" END=1 Q:$D(END)  S %UF=$S(%VA=""N"":0,%VA=""Y"":1,%VA="""":1,1:-1) Q:%UF'<0  W ""  ??"",*7"
+RSEL ;
+ S $ZT="RSEL2^%ZAPM.bs.BSER",%CC=-1,%PCT=0,%FND=0,%F=0
+RSEL1 ;
+ F %I=1:0 S %CC=$N(^UTILITY(%Jo,%CC)) Q:%CC<0  I %CC'=0 X "ZL @%CC U 0 X:0'=$I ""W %CC,""""  """""" U 0 X %LK Q:$D(END)  ZS:%F @%CC" S %PCT=%PCT+1 S:%F %FND=%FND+1,%F=0 X CRT1
+ D OkMsg^%ZAPM.bs.BSXfun("Обработано "_%PCT_" Программ(а)")
+ S %ST=0
+ S Coment="Список Замен в программах.Состояние до Редактирования" K t,t0
+ D CREAT^%ZAPM.bs.BSTT S %FLG=0 W /CUP(1,1),/ED(2)
+ G ASK2
+RSEL2 ;
+ U 0 I $F($ZE,"<NOPGM>") S $ZT="RSEL2^%ZAPM.bs.BSER" W !,"Routine: ",%CC," not found." G RSEL1
+ G ERROR
+EXIT ;
+ U 0 I $D(%DEV),%DEV'=$I,+%DEV C %DEV
+ K %,%BLK,%CC,%DEV,%ER,%F,%FLG,%FND,%J,%K,%LK,%LL,%LM,%M,%PCT,%RP,%ST,%T,%UCI,%UCN,%X,%I,%LN,%UF,%V,%VA,%VN,QUIT
+ Q
+ERROR ;
+ I $F($ZE,"<INRPT>") U 0 W !!,"...Aborted." D EXIT ZQ:$ZV["Wind"!($ZV["Cach"||($ZV["IRIS"))  ;V 0:$J:$ZB($V(0,$J,2),#0400,7):2
+ ZQ
+REDIT ;ВХОД В РЕДАКТОР ПО ТОЧКЕ ПРЕРЫВАНИЯ
+ Q:$ZE=""  I $ZV["MSM" d ^%ZAPM.bs.BSX("PROG",$P($P($ZE,"^",2),":"),$P($P($ZE,"+",2),"^")) Q
+ d ^%ZAPM.bs.BSX("PROG",$P($P($ZE,"^",2),":"),$$LABEL^%ZAPM.bs.BSCp($P($P($ZE,">",2),"^"),$P($P($ZE,">",2),"^",2))) ;ДЛЯ CACHE'
+ Q
