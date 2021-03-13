@@ -121,10 +121,10 @@ CLr I $ZV'["Cach"&&($ZV'["IRIS") N I,II,uci,SGCNFG S uci=$$ZU^%ZAPM.bs.BS3(0) I 
  I '$D(^%ZAPM.bs.BSETUP("SERVER")) S BSr1="^%ZAPM.bs.BSS",BSt1=$S($ZV["MSM":"SERVER",1:"CacheServ"),BSr2="^%ZAPM.bs.BSETUP",BSt2="SERVER" D COPY^%ZAPM.bs.BSTK
  S %BS(32)="X3.64-1979" I $P'=1 ;   S %BS(32)=???
  I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D %BS35^%ZAPM.bs.BSre ;ЗАГРУЗКА ТАБЛИЦЫ ПЕРЕКОДИРОВКИ
- I '$D(IntP) D NS^%ZAPM.bs.BSH
+ I '$D(IntP) D NS
  ;```D %BS35^%ZAPM.bs.BSre ;ЗАГРУЗКА ТАБЛИЦЫ ПЕРЕКОДИРОВКИ
  ;
- I $ZV["MSM-Workstation" S ^$DISPLAY($PDISPLAY,"ZOEMDB")=1
+ I $ZV["MSM-Workstation" ;S ^$DISPLAY($PDISPLAY,"ZOEMDB")=1
  I $ZV["Cach"||($ZV["IRIS") D CACHERUN^%ZAPM.bs.BSC
  I $ZV["MSM-PC" D ADRMEM
  D %BS1 B $E(%BS(1),15)=0
@@ -172,4 +172,7 @@ ZU(UCI,SYS) ;ПЕРЕЙТИ В НУЖНЫЙ КИП
  I '$$ZU^%ZAPM.bs.BS3(UCI,SYS) Q 0 ;
  V 2:$J:$P($ZU(UCI,SYS),",",2)*32+$P($ZU(UCI,SYS),","):2
  Q 1
-ADRMEM N VT,CPU386 D VTYPE^%VIDEO S %BS(17)=$S(VT&CPU386:#B8000,'VT&CPU386:#B0000,VT&'CPU386:#B8000000,1:#B0000000) Q
+ADRMEM N VT,CPU386 ;D VTYPE^%VIDEO S %BS(17)=$S(VT&CPU386:#B8000,'VT&CPU386:#B0000,VT&'CPU386:#B8000000,1:#B0000000) Q
+ q
+NS I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) S %BS(13)="%BS-PC" U $I::%BS(32) D  Q
+ .I $ZV["Cach"||($ZV["IRIS") D %BS3^%ZAPM.bs.BSCp

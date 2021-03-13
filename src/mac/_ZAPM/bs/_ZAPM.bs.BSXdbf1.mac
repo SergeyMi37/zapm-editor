@@ -114,7 +114,7 @@ MakeObr(Basa,Mass,idx) ; сделать обpазец в Mass из стpукту
  i idx s lo=0 d COL^%ZAPM.bs.BSF3 i lo d  q -2
  . d ErrMsg^%ZAPM.bs.BSXfun("Устpаните логические ошибки в стpуктуpе (Alt-L)")
  s Empty=$TR($J("",32)," ",$C(0))
- s Head=$C(3)_$C(#5E)_$C(02)_$C(#19)_$E(Empty,1,28)
+ ;s Head=$C(3)_$C(#5E)_$C(02)_$C(#19)_$E(Empty,1,28)
  d R^%ZAPM.bs.BS3($NA(@Mass))
  s @Mass@(4,1)=Fields,@Mass@(2,1)=(32*(Fields+1))+2
  s $E(Head,9,10)=$$IntToStr^%ZAPM.bs.BSXfun(@Mass@(2,1),2)

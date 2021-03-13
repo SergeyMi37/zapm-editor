@@ -2,7 +2,7 @@ ROUTINE %ZAPM.bs.BSMSMF
 %BSMSMF ;РЕДАКТИРОВАНИЕ ФУНКЦИЙ                             ; 10:18   17.06.99
  S IYI="^%ZAPM.bs.BSS(FUN_ED" D ENTER^%ZAPM.bs.BSN Q
 ROU ;ВХОД В ПРОГРАММУ
- S LA=$P(d,"^"),RO=$P(d,"^",2) X:'$D(^ (RO)) "ZR  ZI LA_"" ;..."" ZS @RO" X "ZL @RO F i=0:1 Q:$T(+i)=""""  I $P($P($T(+i),"" ""),""("")=LA Q"
+ S LA=$P(d,"^"),RO=$P(d,"^",2) ;X:'$D(^ (RO)) "ZR  ZI LA_"" ;..."" ZS @RO" X "ZL @RO F i=0:1 Q:$T(+i)=""""  I $P($P($T(+i),"" ""),""("")=LA Q"
  D ^%ZAPM.bs.BSX("PROG",RO,i_",1") Q
 HELP Q:d=""  S Br=$P(d,"("),Bt=$P(d,"(",2) Q:Bt=""  I '$D(@(Br_"(Bt)")) S $P(@$ZR,"@",17)=5 ;BSr1="^%ZAPM.bs.BSS",BSt1="NEW4",BSr2=Br,BSt2=Bt D COPY^%ZAPM.bs.BSTK
  S IYI=d D NE^%ZAPM.bs.BSN

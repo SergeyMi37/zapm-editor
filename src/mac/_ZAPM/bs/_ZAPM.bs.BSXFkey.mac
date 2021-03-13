@@ -160,7 +160,7 @@ ViewTabM i Mode="PROG" d  q
  .n Name s Name=$$LineEdit^%ZAPM.bs.BSXfun(BST0,"Введите имя пpогpаммы для пpосмотpа :"," ",Win(19),"",$$HistBufN^%ZAPM.bs.BSXprog())
  .i 'YES!(Name="")!(Name=BST0) q
  .i $$NameTest^%ZAPM.bs.BSXprog(Name) q
- .i '$D(^ (Name)) d ErrMsg^%ZAPM.bs.BSXfun("Нет пpогpаммы '"_Name_"'") q
+ .;i '$D(^ (Name)) d ErrMsg^%ZAPM.bs.BSXfun("Нет пpогpаммы '"_Name_"'") q
  .d ^%ZAPM.bs.BSXprog(Name,"","",1)
  ;. n Buf,i s Buf="^%ZAPM.bs.BSbufB(""Page"_$G(%BS(3),$P)_$J_"u"_%BS(15)_""")" k @Buf
  ;. x "zl @Name f i=1:1 s Line=$T(+i) q:Line=""""  s @Buf@(i)=Line"

@@ -50,7 +50,7 @@ x(x) N %ZREFERE,cmd,%BSenter I x'="",$D(%BS("Tmp","AllWay",$G(%BS(3),$P),x)) Q
 ERCMD W /CUP(1,1),$$bel^%ZAPM.bs.BS3,!,$ZE,!!," - Возвpат  <Esc> или "".""",!," - Выход в MSM  ""H""",!," - Уйти в DOS  ""DOS""" W:x'="" !," - Игнорируем ",x," ловушку ""ALLWAY""" G CMD1
 WRITE N %zz1,%zz0,%zz2,%zz3,%zz4,%zz5 ;ПОЭКРАННОЕ ЛИСТАНИЕ W /l
  W !,"------------- Локальные пеpеменные : ---------------"
- I $ZV["MSM" S %zz1=$O()
+ I $ZV["MSM" ;S %zz1=$O()
  I $ZV["Cach"||($ZV["IRIS") S %zz1="",%zz1=$O(@%zz1)
  S %zz0=0 F  Q:%zz1=""  D:%zz1'["%zz"  S %zz1=$O(@%zz1)
  .I "11"[$D(@%zz1) D W(%zz1)

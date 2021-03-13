@@ -7,7 +7,7 @@ ROUTINE %ZAPM.bs.BST5
  G MOV^%ZAPM.bs.BST
 Z(bY1,bX1,bY2,bX2) F b=1:1:(bY2-bY1+1) S BFL(b)=$V(bY1+b-2*160+(bX1-1*2)+%BS(17),-1,bX2-bX1*2,1)
  Q  ;зап.часть экр. в локаль с bX1,bY1,bX2,bY2
-V(bY1,bX1) S b="" F  S b=$O(BFL(b)) Q:b=""  V bY1+b-2*160+(bX1*2)+%BS(17):-1:BFL(b)::1
+V(bY1,bX1) S b="" F  S b=$O(BFL(b)) Q:b=""  ;V bY1+b-2*160+(bX1*2)+%BS(17):-1:BFL(b)::1
  K BFL Q  ;восст.часть экр. из локали В точку bY1,bX1
 DN K BS1,BS2,BY
  S BSII=BSX(BS0) K ENDDN F BSI=BSY(BS0):1 Q:BSI>se  D Y Q:$D(ENDDN)

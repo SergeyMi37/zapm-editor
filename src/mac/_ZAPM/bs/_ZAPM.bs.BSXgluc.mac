@@ -97,7 +97,7 @@ Bar(Delay,WidthX,WidthY,Rnd,Atr,Inv) n i,j,x,y,x0,x1,dx,y0,y1,dy,Win,Spc,Ptr,Ptr
  s Win=$TR($J("",WidthX)," ",$C(0)),Spc=$E(Win,1,2)
  d SW
  w $$atr^%ZAPM.bs.BS3("2;6;40;30"),/ED(2) D String
- s Ptr=Ptr0+x0 f i=y0:1:y0+WidthY v 160*i+Ptr:-3:$E(Win(i),x0+1,x0+WidthX)::1
+ s Ptr=Ptr0+x0 f i=y0:1:y0+WidthY ;v 160*i+Ptr:-3:$E(Win(i),x0+1,x0+WidthX)::1
  f  d  w $$rt^%ZAPM.bs.BS3(0) i R1'=-1!(R2'=-1)!(R3'=-1) q
  . i '$R(Rnd) s dx=-dx
  . i '$R(Rnd) s dy=-dy
@@ -106,10 +106,10 @@ Bar(Delay,WidthX,WidthY,Rnd,Atr,Inv) n i,j,x,y,x0,x1,dx,y0,y1,dy,Win,Spc,Ptr,Ptr
  . i x0>(160-WidthX) s x0=x0-(2*dx),dx=-dx
  . i y0<0 s y0=y0-(2*dy),dy=-dy
  . i y0>(21-WidthY) s y0=y0-(2*dy),dy=-dy
- . s j=(WidthX-2)*(dx>0)+x0,Ptr=Ptr0+j f i=y0:1:y0+WidthY v 160*i+Ptr:-3:$E(Win(i),j+1,j+2)::1
- . s j=WidthY*(dy>0)+y0 v 160*j+Ptr0+x0:-3:$E(Win(j),x0+1,x0+WidthX)::1
- . s Ptr=Ptr0+x1+((WidthX-2)*(dx<0)) f i=y1:1:y1+WidthY v 160*i+Ptr:-3:Spc::1
- . v (160*(WidthY*(dy<0)+y1))+Ptr0+x1:-3:Win::1
+ . ;s j=(WidthX-2)*(dx>0)+x0,Ptr=Ptr0+j f i=y0:1:y0+WidthY v 160*i+Ptr:-3:$E(Win(i),j+1,j+2)::1
+ . ;s j=WidthY*(dy>0)+y0 v 160*j+Ptr0+x0:-3:$E(Win(j),x0+1,x0+WidthX)::1
+ . ;s Ptr=Ptr0+x1+((WidthX-2)*(dx<0)) f i=y1:1:y1+WidthY v 160*i+Ptr:-3:Spc::1
+ . ;v (160*(WidthY*(dy<0)+y1))+Ptr0+x1:-3:Win::1
  . f i=1:1:Delay
  D LW
  Q
@@ -142,16 +142,16 @@ Strok(Delay) n i,x,y,x0,x1,dx,Win,Ptr,Width
  s Ptr=%BS(17) f i=0:1:21 s Win(i)=$V(i*160+Ptr,-1,160,1)
  s Win=$TR($J("",160)," ",$C(0))
  d SW w $$atr^%ZAPM.bs.BS3("2;6;40;30"),/ED(2) D String
- f i=x0:1:x0+Width-1 v 160*i+Ptr:-3:Win(i)::1
+ ;f i=x0:1:x0+Width-1 v 160*i+Ptr:-3:Win(i)::1
  f  d  w $$rt^%ZAPM.bs.BS3(0) i R1'=-1!(R2'=-1)!(R3'=-1) q
  . i $R(10)>8 s dx=-dx
  . s x1=x0,x0=x0+dx
  . i x0<0 s x0=x0-(2*dx),dx=1
  . i x0>(22-Width) s x0=x0-(2*dx),dx=-1
- . if dx>0 v 160*x1+Ptr:-3:Win::1
- . e  v 160*(x1+Width-1)+Ptr:-3:Win::1
- . i dx<0 v 160*x0+Ptr:-3:Win(x0)::1
- . e  v 160*(x0+Width-1)+Ptr:-3:Win(x0+Width-1)::1
+ .; if dx>0 v 160*x1+Ptr:-3:Win::1
+ . ;e  v 160*(x1+Width-1)+Ptr:-3:Win::1
+ . ;i dx<0 v 160*x0+Ptr:-3:Win(x0)::1
+ . ;e  v 160*(x0+Width-1)+Ptr:-3:Win(x0+Width-1)::1
  . f i=1:1:Delay
  D LW
  q

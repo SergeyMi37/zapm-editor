@@ -1,8 +1,0 @@
-ROUTINE %ZAPM.bs.BSCtrm
-%BSCtrm ;ДЛЯ CACHE' - Terminal ; 11:04   24.01.2002
- ;
- ; Copyright (c) Serge W. Mikhaylenko
- ; All Rights Reserved
- ;
- D ^%ZAPM.bs.BSC
- Q

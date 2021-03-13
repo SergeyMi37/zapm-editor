@@ -2,7 +2,7 @@ ROUTINE %ZAPM.bs.BSN
 %BSN ;ВЫЗОВ ТАБЛИЦ,ДИНАМИЧЕСКИЙ РАЗДЕЛ,СОЗДАНИЕ МЕНЮ И ТАБЛИЦ ; 16:41   01.04.2001
 S(%z,%zz) S ^(%z)=$E(%zz,1,$$LNG^%ZAPM.bs.BSF12) Q  ;!!!!!!!!
 N(%zzzzz) D %nN(1) K ^%ZAPM.bs.BSbufB("AN"_$G(%BS(3),$P)_$J_"u"_$G(%nN)) I $D(^("AN"_$G(%BS(3),$P)_$J_"u"_$G(%nN),1))
- I $ZV["MSM" S %zzz=$O()
+ I $ZV["MSM" ;S %zzz=$O()
  I $ZV["Cach"||($ZV["IRIS") S %zzz="",%zzz=$O(@%zzz)
  S %zzzzz=","_%zzzzz_",%nN," F  S %zzz=$O(@%zzz) Q:%zzz=""  I %zzz'["%zzz",%zzzzz'[(","_%zzz_",") D
  .I $D(@%zzz)=1 D S(%zzz,@%zzz) Q
@@ -84,7 +84,7 @@ CR ;l1,l2,...ln-ДЛИНЫ КОЛОНОК t1,t2,...tn-СОДЕРЖАНИЕ КО�
  Q
 CREAT K CReATe,i,j,cl,col S @BSr@(BSt)="@@@@@@@1@1@22@80@1@@1@1@@1@@"_$G(tIT)_"@1@"_$P($G(@BSr@(BSt)),"@",21,99),BSR=BSr,BST=BSt S:$D(Fk) $P(@$ZR,"@",15)=Fk S:$D(PrEd) $P(@$ZR,"@",41)=PrEd D RESZER^%ZAPM.bs.BSF2,TABm^%ZAPM.bs.BSF1 Q
 CREATE D CREAT K BSr,BSt,tIT,Fk D ^%ZAPM.bs.BST Q
-ERR S ls=$ZE D O^%ZAPM.bs.BSF7 G 1
+
 DOAF2 D SI G:'$D(@(BSR_"(BST,""AF2"")")) OO I $G(@$ZR)="" S OOO=BSR,BLo=BST G DOA
  S OOO=$P(@$ZR,",",1,$L(@$ZR,",")-1),BLo=$P(@$ZR,",",$L(@$ZR,","))
 DOA S OO=$S(BLo=+BLo:BLo,1:""""_BLo_"""")_",""AF2"",1"

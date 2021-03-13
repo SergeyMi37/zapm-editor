@@ -24,7 +24,7 @@ PASS(G,K) N GL,GL1 ;ПАРОЛИРОВАНИЕ УЗЛОВ БАЗЫ ДАННЫХ
  D L^%ZAPM.bs.BS3(GL),PASSWORD^%ZAPM.bs.BSF4(GL,"",1,"Вводите пароль На Узел '"_d_"'","GL1"),U^%ZAPM.bs.BS3(GL) I '$D(GL1) Q
  Q
 O I $G(%BS(13))="%BS-PC" d ErrMsg^%ZAPM.bs.BSXfun(ls) Q  ;СООБЩЕНИЕ ОБ ОШИБКЕ
-OSH n x I $ZV'["Cach"&&($ZV'["IRIS") U $I:(0::::#10080)
+OSH n x I $ZV'["Cach"&&($ZV'["IRIS") ;U $I:(0::::#10080)
  W $$bel^%ZAPM.bs.BS3,/CUP(23,1),$$clr^%ZAPM.bs.BS3($G(CoLoR,10)),$E(ls,1,153),$$atr^%ZAPM.bs.BS3(0),$J("",153-$L($E(ls,1,153)))
  W $$clr^%ZAPM.bs.BS3($G(CoLoR,10))," <Ok>",$$atr^%ZAPM.bs.BS3(0),$$rt^%ZAPM.bs.BS3(9999),/CUP(23,1) X "I 0" I R1=0,R2=140 D x^%ZAPM.bs.BS3("Ловушка...пользователя")
  W $$atr^%ZAPM.bs.BS3(0),/CUP(23,1),/EL(0),/CUP(24,1),/EL(0),/CUP(25,1),/EL(0)

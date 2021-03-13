@@ -1,8 +1,0 @@
-ROUTINE %ZAPM.bs.BSDIA
-%BSDIA ;ОБРАБОТКА ДИАЛОГОВОЙ ПАНЕЛИ ```(А.Нефедов) ; 16:56 10-JUN-98
-DoDIAL ;ВХОД В ДИАЛОГОВУЮ ПАНЕЛЬ
- ;N CVVCVVXCVXCVNM,CVMXCVNM, !!!!
- D ^%ZAPM.bs.BSDIAL ; Регистрация стандартных классов.
- I $D(@BSR@(BST,"Dial"))
- D ExecDlg^%ZAPM.bs.BSDIAL($ZR,"DialTmp")
- Q

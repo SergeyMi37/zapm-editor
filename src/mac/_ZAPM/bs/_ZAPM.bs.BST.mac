@@ -1,6 +1,6 @@
 ROUTINE %ZAPM.bs.BST
 %BST ;ВХОД В ТАБЛИЦУ ; 11:16   03.10.2000
- W $$atr^%ZAPM.bs.BS3(0) I $ZV'["Cach"&&($ZV'["IRIS") U 0:(0::::#10080)
+ W $$atr^%ZAPM.bs.BS3(0) I $ZV'["Cach"&&($ZV'["IRIS") ;U 0:(0::::#10080)
  I $P($ZV,"Version ",2)<4 W $$clear^%ZAPM.bs.BS3
  K STATUS D SI^%ZAPM.bs.BSN I $D(%BS)["0" D CLr^%ZAPM.bs.BSF4
  ;N S,STATUS,VYC,BS0,BSX,BSY,B,BX,BY,BS1,BS2,MX,MY,x,t,zr,t1,%VDB,%CAL,%X1,%X2,%Y1,%Y2,%TIT,MR,%w(2),M1,BS,%w(4),%w(5),%DIA,%DI,%ZAP,%FK,i,j,ii,jj,se,ke,j1,j2,j3,MX,MY,M,BS1,BS2,BSF,BSX1,BSX2,BSY1
@@ -28,7 +28,7 @@ WRITE I $G(@BSR@(BST,"RSM"))'="" D XM^%ZAPM.bs.BSre(@$ZR) ;ВЫПОЛНИТЬ К
  I $P(@BSR@(BST),"@",51) D PRESAUTO^%ZAPM.bs.BSSR($P(@BSR@(BST),"@",51)) ;АВТОПОДЖАТИЕ
 Wr I $P(B,"@",41)'="" S R1=333 D Pred^%ZAPM.bs.BSF12($P(B,"@",41)) ;ПРЕДОБР.ПОСЛЕ ВЫЧИСЛЕНИЯ
  D TIT
-WRI I $ZV'["Cach"&&($ZV'["IRIS") U 0:(0::::#10080)
+WRI I $ZV'["Cach"&&($ZV'["IRIS") ;U 0:(0::::#10080)
  S ls="ЗАГРУЗКА" D WAITS^%ZAPM.bs.BSF2 D W,MR K %VDB S $ZT=$G(%zT) G ^%ZAPM.bs.BSTM
 VW D VT,W Q
 GW D GT,W Q

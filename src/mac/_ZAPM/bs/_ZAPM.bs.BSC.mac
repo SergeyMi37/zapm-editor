@@ -261,6 +261,22 @@ r(R) O 0:(:"IS")
           ИЛИ ЛОКАЛИ      D ^%ZAPM.bs.BSMSMG("XXX")         
                   ER D ErrMsg^%ZAPM.bs.BSXfun($ZE_" "_$$ErrSay^%ZAPM.bs.BSF8($>
 
+Экспортируемый глобал: ^%ZAPM.bs.BS
+Экспортируемый глобал: ^%ZAPM.bs.BSC
+Экспортируемый глобал: ^%ZAPM.bs.BSC4
+Экспортируемый глобал: ^%ZAPM.bs.BSC4E
+Экспортируемый глобал: ^%ZAPM.bs.BSCDFLT
+Экспортируемый глобал: ^%ZAPM.bs.BSCER
+Экспортируемый глобал: ^%ZAPM.bs.BSCGER
+Экспортируемый глобал: ^%ZAPM.bs.BSDFLT
+Экспортируемый глобал: ^%ZAPM.bs.BSETUP
+Экспортируемый глобал: ^%ZAPM.bs.BSGER
+Экспортируемый глобал: ^%ZAPM.bs.BSHLP
+Экспортируемый глобал: ^%ZAPM.bs.BSMAIL
+Экспортируемый глобал: ^%ZAPM.bs.BSR
+Экспортируемый глобал: ^%ZAPM.bs.BSS
+Экспортируемый глобал: ^%ZAPM.bs.BSVOL
+Экспортируемый глобал: ^%ZAPM.bs.BSX
 
  */
  /// do FOR^%ZAPM.bs.BSCp - клавиши
@@ -299,8 +315,8 @@ Exports(dir) // d Exports^%ZAPM.bs.BSC("d:\_proj\_zapp\zpm-addition+\zapm-")
 	;	s mask=$p(d,",",2)
 	;	do Exp(dir_di_"-"_ed_slash,mask,0)
 	;}
-	do Exp(dir_"tkweb"_slash,"pgWEB","pgWEB")
-	do Exp(dir_"tkimail"_slash,"pgWEM","pgWEM")
+	;do Exp(dir_"tkweb"_slash,"pgWEB","pgWEB")
+	;do Exp(dir_"tkimail"_slash,"pgWEM","pgWEM")
  q
 Exp(dir,mask="",glomask="",isk="") ;d Exp^%ZAPM.bs.BSC("d:\_proj\_zapp\zpm-addition+\zapm-editor\")
 	new $namespace
@@ -336,16 +352,25 @@ Exp(dir,mask="",glomask="",isk="") ;d Exp^%ZAPM.bs.BSC("d:\_proj\_zapp\zpm-addit
 	}
 	k list
 	set dirpath=dir_"src"_slash_"gbl"_slash
-	s list("%ZAPM.bs.*.GBL")=""
+	s list("%ZAPM.bs.BS.GBL")=""
+	s list("%ZAPM.bs.BSC*.GBL")=""
+	s list("%ZAPM.bs.BSD*.GBL")=""
+	s list("%ZAPM.bs.BSE*.GBL")=""
+	s list("%ZAPM.bs.BSG*.GBL")=""
+	s list("%ZAPM.bs.BSH*.GBL")=""
+	s list("%ZAPM.bs.BSR*.GBL")=""
+	s list("%ZAPM.bs.BSS*.GBL")=""
+	s list("%ZAPM.bs.BSV*.GBL")=""
+	s list("%ZAPM.bs.BSX*.GBL")=""
 	do $system.OBJ.Export(.list,dirpath_"_ZAPM.bs.xml","d",.err) 
-	
-	kill list
-	set dirpath=dir_"bs"_slash
-		do $system.OBJ.Export(.rou,dirpath_"_ZAPM.bs.mac.xml","d",.err) 
-	zw err
-	kill list
 	set dirpath=dir_"bs"_slash
 	;m list=rou
-	s list("%ZAPM.bs.*.GBL")=""
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.bs.gbl.xml","d",.err) 
+	;s list("%ZAPM.bs.*.GBL")=""
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.bs.gbl.xml","d",.err) 	
+	kill list
+	set dirpath=dir_"bs"_slash
+	do $system.OBJ.Export(.rou,dirpath_"_ZAPM.bs.mac.xml","d",.err) 
+	zw err
+	kill list
+
  q

@@ -36,5 +36,5 @@ EXIT ;
  U 0
  K %,%BLK,%CC,%DEV,%F,%FLG,%FND,%LK,%I,%J,%K,%PCT,%SE,%ST,%T,%X,QUIT Q
 ERROR ;
- I $F($ZE,"<INRPT>") U 0 W !!,"...Aborted." D EXIT ZQ:$ZV["Wind"!($ZV["Cach"||($ZV["IRIS"))  V 0:$J:$ZB($V(0,$J,2),#0400,7):2
+ I $F($ZE,"<INRPT>") U 0 W !!,"...Aborted." D EXIT ZQ:$ZV["Wind"!($ZV["Cach"||($ZV["IRIS"))  ;V 0:$J:$ZB($V(0,$J,2),#0400,7):2
  ZQ

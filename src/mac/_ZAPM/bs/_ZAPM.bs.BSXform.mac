@@ -18,7 +18,7 @@ Format(Mass,Begin,End,Left,Right,Red,DoRight)
  i Left>MaxLen s Left=MaxLen
  i Left<1 s Left=1
  i Left>Right s Right=Left
- s Left=$J("",Left-1),Red=$J("",Red-1),Buf=$$FormatBuf()
+ s Left=$J("",Left-1),Red=$J("",Red-1),Buf=$$FormatBu()
  d Wait^%ZAPM.bs.BSXfun("Фоpматиpую текст '"_Mass_"' ") k @Buf
  s @Buf=@Mass f  q:Str'<Begin  s @Buf@(Str)=$G(@Mass@(Str)),Str=Str+1
  s FStr=Str s Ftxt=""

@@ -81,6 +81,6 @@ REM W $$clr^%ZAPM.bs.BS3(4),/CUP(24,1),/EL(0)," <F1>-ПОМОЩЬ  <Ctrl-P>-ИН
  S %EC="UP,DN,RT,LT,HM,IN,PU,PD,EN,DL,F1,F2,F3,F4,F5,F6,F7,F8,F9,F0,TA"
  S %CO="Z       DTJKHI  P   N      E L  ",%CO=%CO_$TR($J("",220)," ","S")
  S $E(%CO,128)="U",%W=0 Q
-BEGIN O 0:(0::::#10080) Q
+BEGIN ;O 0:(0::::#10080) Q
 e ;
 ERR S ls=$ZE D O^%ZAPM.bs.BSF7 W $$r^%ZAPM.bs.BS3 D SCREEN^%ZAPM.bs.BSMSMGE Q

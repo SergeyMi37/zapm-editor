@@ -14,7 +14,7 @@ ROUTINE %ZAPM.bs.BSD
  Q
  ;СТАРАЯ
  D SI^%ZAPM.bs.BSN D NNN^%ZAPM.bs.BSN("")
-0 D CLr^%ZAPM.bs.BSF4 U $I::%BS(32) U 0:(0::::#10080)
+0 D CLr^%ZAPM.bs.BSF4 ;U $I::%BS(32) U 0:(0::::#10080)
  D WAIT^%ZAPM.bs.BSF2 G UCI:$$ZU^%ZAPM.bs.BS3(0)=$$ZU^%ZAPM.bs.BS3(1,0),RAZD
 MGR G MGR^%ZAPM.bs.BS
 UCI S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.bs.BS3(6),"" <Enter>-РАСКРЫТЬ КИП !!! РЕЖИМ ВЫБОРА ТАБЛИЦЫ !!! <Esc>-ОТМЕНА  """
