@@ -1,0 +1,148 @@
+ROUTINE %ZAPM.ed.BSCpool
+%BSCpool ;работа со спулером
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+COPY2BSSES(US,ID,BST) Q:US'=2  Q:$G(%BS(40))=""  
+ N BSSES
+ S BSSES=%BS(40)
+ D MAINVAR^%ZAPM.ed.BSC4 
+ I $D(^SPOOL(ID)) D Spool2BSSES(ID,BST)
+ Q
+Spool2BSSES(ID,BST) //Копировать из спулера в переменную окружения сессии
+ N last
+ s last=$O(^SPOOL(ID,""),-1) I last="" Q
+ I ^SPOOL(ID,last)="" k ^SPOOL(ID,last)
+ I $G(BSSES)="" Q
+ M @BDSES@(BSSES,"VAR","SPOOL",BST)=^SPOOL(ID)
+ K ^SPOOL(ID)
+ Q
+Spool2Mass(ID,GL) //Копировать из спулера в переменную окружения сессии
+ N last
+ s last=$O(^SPOOL(ID,""),-1)
+ I ^SPOOL(ID,last)="" k ^SPOOL(ID,last)
+ M @GL=^SPOOL(ID)
+ K ^SPOOL(ID)
+ Q
+Test(a) w !!,a,! q a  //это тест
+OutSpool(What)  //вывод в спулер
+ n io,file,start,last
+     s io=$IO,$ZT="OutErr"
+     s file=+$J
+     s start=1
+     k ^SPOOL(file)
+     o 2:(file:start)
+     u 2
+     x What
+     u io
+     c 2
+     s last=$O(^SPOOL(file,""),-1)
+     k ^SPOOL(file,last)
+     Quit $na(^SPOOL(file))
+OutErr U io C 2
+ Q $na(^SPOOL(file))
+TT S A="W $$rcomp^%Wr1(""%SYS"",""%SYS"",""%BSCSVV.INT"",""%BSCSVVold.INT"")"
+ S B=$$OutSpool(A)
+ D ^%ZAPM.ed.BSMSMG(B)
+ Q
+ 
+T //TEST
+ S A="ZL %BSTM P  "
+ S B=$$OutSpool(A)
+ D ^%ZAPM.ed.BSMSMG(B)
+ Q
+ /* ------------------------------------------------------------------
+ Message: 6         
+   Date: Thu, 09 Dec 2004 15:12:31 +0300
+   From: Eugene Karataev <ekarataev@mail.ru>
+Subject: Re[2]: "Memory" Cache I/O Device
+ 
+Добрый день.
+ 
+> > Не поможете со следующей ситуацией:
+> > Вызывается некоторый метод класса, пишущий в
+> > Current I/O device.
+> > Необходимо перехватить данный вывод (затем обработь
+> > как целое).
+ 
+Нужно сделать 
+1) отдельную рутину, в которой будет делаться такой перехват
+2) указать девайсу эту рутину в команде use
+3) включить это перенаправление
+ 
+Делается это так.
+rstr(len,to)
+ D $ZU(82,12,0)
+ if $D(len)&&$D(to) d
+ . R data#len:to
+ e  i $D(len) d
+ . R data#len
+ e  i $D(to) d
+ . R data:to
+ e  d
+ . R data 
+ D $ZU(82,12,1)
+ Q $G(data)
+rchr(to)
+ D $ZU(82,12,0)
+ R *data 
+ D $ZU(82,12,1)
+ Q data
+ // W expr
+wstr(expr) 
+ D $ZU(82,12,0)
+ W $$Перекодируем(expr)
+ D $ZU(82,12,1)
+ Q
+ // W *expr      
+wchr(expr) 
+ D $ZU(82,12,0)
+ W *expr
+ D $ZU(82,12,1)
+ Q
+ // W ?expr
+wtab(expr)
+ D $ZU(82,12,0)
+ W ?expr
+ D $ZU(82,12,1)
+ Q
+ // W !
+wnl
+ D $ZU(82,12,0)
+ W ! 
+ D $ZU(82,12,1)
+ Q
+ // W #
+wff
+ D $ZU(82,12,0)
+ W # 
+ D $ZU(82,12,1)
+ Q  
+ 
+И используем так.
+ 
+        u dev::"^ПЕРЕХВАТЧИК" ; указываем какую мнемонику использовать
+        D $ZU(82,12,1)   ; реально включаем флаг использования
+        d normal() ; что будет писать в текущий девайс
+        D $ZU(82,12,0)   ; перед закрытием девайса возвращаем флажок
+        c dev
+ 
+У себя мы такое использовали для выдачи csp страниц
+в кодировке ISO8859-5, хотя вся разработка велась
+в win1251. В каше 5 такие трюки используются например в ^%XDTM2.
+ 
+Хотя, если неохота связываться с подозрительными $zu,
+то можно включить вывод в спулер, и потом поднять из него.
+Будет примерно то же самое что сначала в файл, потом из него,
+только через глобаль.
+ 
+С уважением,
+Евгений Каратаев.
+Фирма Эскейп
+ 
+ 
+________________________________________________________________________
+_______________
+ */ 

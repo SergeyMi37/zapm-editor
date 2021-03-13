@@ -1,0 +1,473 @@
+ROUTINE %ZAPM.ed.BSC4base
+%BSC4base ; пpогpамма управления БД ; 14:38   17.09.2002
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+PRO ;ПРОЕКТЫ
+ W BK,BK
+ D pin
+ D BEG1^%ZAPM.ed.BSC4  Q:pi=""
+ W "<form action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ S BSLABEL="ActPR01^~BSC4base"
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+   W "<div align='right'>" 
+      S BSLABEL="ENTER^~BSC4cfg" W " <a class=u1 onclick='open("""_$$1^%ZAPM.ed.BSC4rout("CfgPro","^"_pi)_""","""",""toolbar=no,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"NWO1")_",status=1,resizable=1"");' >"_$$param_"</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+   W $$HelpB
+   S BSLABEL="help^~BSC4" W " <a class=u1 onclick='open("""_$$ADDBSGET^%ZAPM.ed.BSC4()_""","""",""toolbar=no,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"NWO1")_",status=1,resizable=1"");' ><img src='"_BSDOMAIN_"/img/help1.gif' ALT='Документация DHTML, JavaScript, COS, SQL, Errors'></a> "
+   W "</div>"_BK
+ W "<table border=0 width=100%>"
+ W "<tr><td class=s1 width=5%>"_$$projimg^%ZAPM.ed.BSC4_RED_$G(BSPRO)_EF_"</td><td class=s1  width=75%><strong>"_$$LNG^%ZAPM.ed.BSC4("ПРОЕКТЫ",50)_"</strong></td><td class=s1  width=20%></td></tr>",BK
+ N I,N,BD,Sort
+ S Sort=+$$GETOPT^%ZAPM.ed.BSC4cfg("^"_pi_"(""CfgPro"")","Sort1") I 'Sort S Sort=-1
+ W "<tr><td class=s3 title='"_pi_"'>"_$$LNG^%ZAPM.ed.BSC4("ИМЯ",51)_"</td><td class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ОПИСАНИЕ ПРОЕКТОВ",52)_"</td><td class=s3 ></td></tr>"
+ I '$D(@("^"_pi_".PRO")) S @$ZR="" W RED_$ZR_EF_" "_$$LNG^%ZAPM.ed.BSC4("Нет проектов ! Обратитесь к Администратору",53) g PROe
+ W "<tr><td class=s1 ><input type=""text"" size=8 maxlength=8 name='Proj' value='"_$$NewProj("NewProj")_"'></td><td class=s1 > " D OPro() W "</td><td class=s1 >" W "<input type=""submit"" name=""newOK"" value='&gt;&gt;"_$$LNG^%ZAPM.ed.BSC4("Создать проект",54)_"'></td></tr>",BK
+ S N="",I=0,Co=0
+ F  S N=$O(@("^"_pi_".PRO")@(N),Sort) Q:N=""  D
+ .S Co=Co+1
+ .W "<input type=""hidden"" name='Proj"_Co_"' value="""_N_""">"
+ .W "<tr><td class=s1 >"_N_"</td><td class=s1 ><input type=""text"" size=40 maxlength=148 name='Desc"_Co_"' value='"_$G(@("^"_pi_".PRO")@(N,"REM"))_"'></td><td class=s1 >" W "<input type=""submit"" name='ActOK"_Co_"' value='&gt;&gt;'>" D ACT W "</td></tr>"
+ W "<input type=""hidden"" name='ProjCount' value="""_Co_""">"
+PROe  W " </table>"
+ W "</form>"
+ D InfoSess^%ZAPM.ed.BSC4rout,END^%ZAPM.ed.BSC4
+ Q
+param() q "<img src='"_BSDOMAIN_"/img/opt.gif' width=2% ALT='"_$$LNG^%ZAPM.ed.BSC4("настройка",49)_"'>"
+NewProj(N) N NN ;НОВОЕ ИМЯ ПРОЕКТА
+ F NN=1:1 I '$D(@("^"_pi_".PRO")@(N_NN)) Q
+ Q N_NN
+OPro() N I,P,T,BD ;ВСЕ ПРОЕКТЫ ДОСТУПНЫЕ КАК ШАБЛОН
+ W "<select name=""newPR"" size=1>"
+ W "<option value=''>"_$$LNG^%ZAPM.ed.BSC4("взять за основу ...",55)_"</option>"
+ I $D(@GTmp@(BSLOGIN,"PRO")) W "<option value='"_$ZR_"'>"_$$LNG^%ZAPM.ed.BSC4("Копировать из буфера",56)_"</option>"
+ W "<option value='1'>"_$$LNG^%ZAPM.ed.BSC4("Импорт из ODBC",57)_"</option>"
+ W "<option value='2'>"_$$LNG^%ZAPM.ed.BSC4("Связь с ODBC",58)_"</option>"
+ W "<option value='4'>----- "_$$LNG^%ZAPM.ed.BSC4("Типовые проекты",322)_"</option>"
+ s IC=+$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"Conc")
+ S I="",BD="^[""%SYS""]BSC4.CFG.Projects"
+ F  S I=$O(@BD@(I)) Q:I=""  D
+ .I $E(I,1)="*",'IC Q  //КОНКУРСНЫЕ ПРОЕКТЫ ОТМЕНИТЬ
+ .W "<option value='"_I_"'>"_$G(@BD@(I,"Descr"),"*?")_"</option>"
+ ;W "<option " W " value='DOCUM'>"_$$LNG^%ZAPM.ed.BSC4("Документация",59)_"</option>"
+ ;W "<option " W " value='*DOCUM*'>"_$$LNG^%ZAPM.ed.BSC4("*СтатСчетчик")_"</option>"
+ ;W "<option " W " value='*DOCUM*'>"_$$LNG^%ZAPM.ed.BSC4("*Гост.Книга")_"</option>"
+ ;W "<option " W " value='*DOCUM*'>"_$$LNG^%ZAPM.ed.BSC4("*ЧатКомната")_"</option>"
+ ;W "<option " W " value='*DOCUM*'>"_$$LNG^%ZAPM.ed.BSC4("*Анкетирование")_"</option>"
+ ;W "<option " W " value='*DOCUM*'>"_$$LNG^%ZAPM.ed.BSC4("*ПрайсЛисты")_"</option>"
+ ;S P="^%ZAPM.ed.BSC4E" W "<option " W " value='"_$NA(@P)_"'>"_$P($G(@P),"@",2)_"</option>"
+ ;.I I=+$G(T) W "selected"
+ I 'IC Q  //КОНКУРСНЫЕ ПРОЕКТЫ ОТМЕНИТЬ
+ W "</select>"
+ W "<select name=""Complet"" size=1>"
+ W "<option value=''></option>"
+ W "<option value=''>"_$$LNG^%ZAPM.ed.BSC4("Конкурсные проекты")_"</option>"
+ W "<option value=''>...</option>"
+ W "</select>"
+ Q
+ActPR01 ;ДЕЙСТВИЕ С ПРОЕКТОМ
+ D pin
+ I $D(newOK) G CreatPro
+ F I=1:1:$G(ProjCount) I $D(@("ActOK"_I)) Q
+ I $D(@("Proj"_I)) D
+ .I $G(@("Act"_I))=2 D KILLPRO^%ZAPM.ed.BSC4rout(pi,@("Proj"_I)) G PRO
+ .I $G(@("Act"_I))=1 D EditP(@("Proj"_I)) Q
+ .I $G(@("Act"_I))=3 D CopyP2B(@("Proj"_I)) G PRO
+ Q
+TR(S) Q $TR(S,$C(34)_"@'","`^`")
+IntEditPro(pi,P) S I=1,Desc1=$G(@("^"_pi_".PRO")@(P,"REM")) D EditP(P) //внутренняя точка входа для редактирвания проекта
+ Q
+EditP(P) N x     S BSPRO=P,@BDSES@(BSSES,"PROJ")=P
+ I $G(@("^"_pi_".PRO")@(P,"REM"))'=@("Desc"_I) S @("^"_pi_".PRO")@(P,"REM")=$$TR(@("Desc"_I))
+ N %ZName S %ZName="^"_pi_"." S x=$$GetDirectTabN1^%ZAPM.ed.BSC4r(BSPRO,"Param","NOTE","V") I x="" S x=$$GetDirectTabN1^%ZAPM.ed.BSC4r(BSPRO,"Param","NOTE","Val")
+ W x
+ D TAB G ROU^%ZAPM.ed.BSC4base1
+CreatPro ;СОЗДАТЬ ПРОЕКТ
+ i $d(@("^"_pi_".PRO")@(Proj)) W $$LNG^%ZAPM.ed.BSC4("Проект с именем",60)," '",RED,Proj,EF,"' ",$$LNG^%ZAPM.ed.BSC4("уже существует",61),BK G:$G(newPR)="" PRO G MERGE^%ZAPM.ed.BSC4r2
+ I $G(newPR)="" D NEWPRO^%ZAPM.ed.BSC4rout(Proj,$$LNG^%ZAPM.ed.BSC4("ПРОЕКТ ДЛЯ ",317)_"`"_BSLOGIN_"`")
+CreatMERG D pin
+ I $G(newPR)="4"  w RED,$$LNG^%ZAPM.ed.BSC4("Типовые проекты находятся ниже",323),EF G PRO
+ I $G(newPR)="1"  D ODBC2P(Proj) q
+ I $G(newPR)="2"  D ODBC2P(Proj) q
+ I $G(newPR)=""  G PRO
+ N BDP,PP,PP1,PP2 S BDP="^[""%SYS""]BSC4.CFG.Projects"
+ I $D(@BDP@(newPR)) D  G PRO
+ .S PP=$G(@BDP@(newPR,"Prog"),"*?"),PP1=$G(@BDP@(newPR,"Descr"),"*?")
+ .s PP2=$G(@BDP@(newPR,"Request"),"*?"),PP3=$G(@BDP@(newPR,"Award"),"*?"),PP4=$G(@BDP@(newPR,"Conc"),"*?")
+ .I PP'="*?" D @(PP_"(pi,Proj)")
+ D COPYPRO(newPR,Proj)
+ G PRO
+CreatNewPro(a,b) s IC=+$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"Conc")
+ w "<H3>",RED,$$LNG^%ZAPM.ed.BSC4("Типовые проекты находятся в стадии разработки"),EF,"</H3>" I 'IC Q
+ w "<H3>",RED,$$LNG^%ZAPM.ed.BSC4(" и выставлены на конкурс"),EF,"</H3>"
+ w BBK,RED,$$LNG^%ZAPM.ed.BSC4("Название проекта"),EF," :","<br>",$G(PP1),"<br>"
+ w BBK,RED,$$LNG^%ZAPM.ed.BSC4("Требуемый функционал проекта"),EF," :","<br><PRE>",$G(PP2),"</PRE><br>"
+ w BBK,RED,$$LNG^%ZAPM.ed.BSC4("Условия конкурса"),EF," :","<br><PRE>",$G(PP4),"</PRE><br>"
+ w BBK,RED,$$LNG^%ZAPM.ed.BSC4("Награда 3 победителям"),EF," :","<br>",$G(PP3),"<br>"
+ q
+COPYPRO(newPR,p) ;КОПИРОВАТЬ ПРОЕКТ ИЗ БУФЕРА В НОВЫЙ
+ N pin S pin=pi_"."_p
+ D Copy^%ZAPM.ed.BSF8($P(newPR,""")")_".ROU"")","^"_pin_".ROU")
+ M @("^"_pin)=@newPR
+ S N="" F  S N=$O(@("^"_pin)@(N)) Q:N=""  I $P($G(@("^"_pin)@(N)),"@",17)=2 D
+ .S @("^"_pin)@(N,"Compile")="Create "_$$TD
+ .S @("^"_pin)@(N,"KEY")="^"_pin_"."_N
+ .I $D(@("^"_pin)@(N,"GLOBAL")) M @("^"_pin_"."_N)=@("^"_pin)@(N,"GLOBAL") K @("^"_pin)@(N,"GLOBAL")
+ S @("^"_pi_".PRO")@(p,"REM")=$P($G(@newPR),"@",2)
+ Q
+CopyP2B(BSPRO,DEST) ;КОПИРОВАТЬ ПРОЕКТ В БУФЕР
+ N pin,N
+ S pin=pi_"."_BSPRO I '$D(DEST) S DEST=$NA(@GTmp@(BSLOGIN))
+ K @DEST@("PRO"),@DEST@("PRO.ROU")
+ ;M @DEST@("PRO.ROU")=@("^"_pin_".ROU")
+ S N="" F  S N=$O(@("^"_pin_".ROU")@(N)) Q:N=""  D R2B^%ZAPM.ed.BSC4base1(N,$NA(@DEST@("PRO.ROU",N)))
+ M @DEST@("PRO")=@("^"_pin)
+ S p="" F  S p=$O(@("^"_pin)@(p)) Q:p=""  I $P($G(@("^"_pin)@(p,"B4I")),"@",2) D  ;И ДАННЫЕ ТОЖЕ ПОЛОЖИТЬ
+ .M @DEST@("PRO",p,"GLOBAL")=@(@("^"_pin)@(p,"KEY"))
+ Q
+DSN() I $G(DSN)="" W $$LNG^%ZAPM.ed.BSC4("Вы не определили 'Data Sours Name'",62),BK Q 0
+ Q 1
+TABODBC I TABODBC="" W $$LNG^%ZAPM.ed.BSC4("Вы не определили ТАБЛИЦУ",63) G TAB
+ I '$$DSN G TAB
+ D Tab2TOBD^%ZAPM.ed.BSCBD(DSN,$G(USER),$G(PASS),TABODBC,TOBD) K:$D(ErroR) @TOBD
+ I $D(ODBCD),'$D(ErroR) J JTB2TOBD^%ZAPM.ed.BSCBD(DSN,$G(USER),$G(PASS),TABODBC,TOBD)
+ I '$D(ErroR) W BK,$$LNG^%ZAPM.ed.BSC4("Таблица из ODBC источника будет создана в фоновом режиме",64)
+ G TAB
+ODBC ;ЗАГРУЗКА ПРОЕКТА ИЛИ ТАБЛИЦЫ
+ N ErroR,part,PxPUSTO
+ I $D(TABODBC) G TABODBC
+ I '$$DSN G PRO
+ D NEWPRO^%ZAPM.ed.BSC4rout(Proj,"ПРОЕКТ из ODBC `"_DSN_"`") S part="^"_pin
+ I $D(ODBCD) J JOBODBS(DSN,$G(USER),$G(PASS),part)
+ I $D(ODBCS) D
+ .D Stream1^%ZAPM.ed.BSCBD(DSN,$G(USER),$G(PASS),part)
+ .D PART2BSD^%ZAPM.ed.BSCRG(part) i $G(Errors) W !,"Произошла ошибка конвертации таблиц",!,BK q
+ I '$D(ErroR) W BK,$$LNG^%ZAPM.ed.BSC4("Проект из ODBC источника будет создан в фоновом режиме",65)
+ G PRO
+JOBODBS(DSN,USER,PASS,part) ;DEMON ДЛЯ ВСЕГО ДСН-ПРОЕКТА+ДАННЫЕ
+ D Stream^%ZAPM.ed.BSCBD(DSN,$G(USER),$G(PASS),part,"")
+ Q
+ODBC2P(Proj,TOBD) ;импортировать из ODBC
+ n aa,Cm D pin   D BEG1^%ZAPM.ed.BSC4
+ W "<div align='right'>"_$$HelpB_"</div>"_BK
+ S Cm=$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"Commerce")
+ s aa=$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"ImportODBC")
+ I $G(newPR)="2" s aa=0 ;пока так - это линк
+ I $G(newTP)="2" s aa=0 ;пока так - это линк
+ i 'aa D
+ .I Cm=1 W $$LNG^%ZAPM.ed.BSC4("Режим связи или импорта таблиц из ODBC источников доступны при тарифном плане КОРПОРАТИВНЫЙ, или при согласовании условий с администратором при тарифном плане ПРОФЕССИОНАЛЬНЫЙ.",66) Q
+ .E  W $$LNG^%ZAPM.ed.BSC4("Режим связи не включен в данной версии")
+ W "<form action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ W "<input type=""hidden"" name='Proj' value="""_Proj_""">"
+ I $G(TOBD)'="" W "<input type=""hidden"" name='TOBD' value='"_TOBD_"'>"
+ S BSLABEL="ODBC^~BSC4base"
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ W "<table border=0 width=100%>"
+ W "<tr><td  width=30% align='right' class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Имя DSN",67)_"</td><td align='left' class=s1 ><input type=""text"" size=20 maxlength=48 name='DSN' "_$s('aa:"disabled",1:"")_" value=''></td></tr>"
+ W "<tr><td align='right' class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Имя пользователя",68)_"</td><td  align='left' class=s1 ><input type=""text"" size=20 maxlength=48 name='USER' value=''></td></tr>"
+ W "<tr><td align='right' class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Пароль",69)_"</td><td  align='left' class=s1 ><input type=""text"" size=20 maxlength=48 name='PASS' value=''></td></tr>"
+ I $G(newTP)=1 W "<tr><td align='right' class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Таблица",70)_"</td><td  align='left' class=s1 ><input type=""text"" size=20 maxlength=48 name='TABODBC' value='"_Table_"'></td></tr>"
+ W " </table>"
+ W "<input "_$s('aa:"disabled",1:"")_" type=""submit"" name='ODBCS' value='"_$$LNG^%ZAPM.ed.BSC4("Загрузить только структуру таблиц",71)_"'><br>",BK
+ w "<input type=""submit"" "_$s('aa:"disabled",1:"")_" name='ODBCD' value='"_$$LNG^%ZAPM.ed.BSC4("Загрузить структуру и данные таблиц",72)_"'><br><input type=""reset"" name='ESC' value='"_$$LNG^%ZAPM.ed.BSC4("отмена",73)_"'>",BK
+ W "</form>"_BBK d BACK^%ZAPM.ed.BSCh
+ D InfoSess^%ZAPM.ed.BSC4rout,END^%ZAPM.ed.BSC4
+ q
+pin I $G(BSPRO)="",$G(BSSES)'="" S BSPRO=$G(@BDSES@(BSSES,"PROJ"))
+ i '$d(pi) D
+ .I $G(BSPIN)'="" S pi=BSPIN Q
+ .S (BSPIN,pi)=$g(@BDUSE@(BSLOGIN,"PIN")) //?????
+ S pin=pi_"."_$G(BSPRO,"DFLT")
+ S BSNSP=$G(@BDPIN@(BSPIN,"NSP"),$ZU(5)) I $ZU(5)'=BSNSP I $$ZU^%ZAPM.ed.BSF4(BSNSP) //ТО ПЕРЕШЛИ //?????
+ Q
+SQL(IM) S BSLABEL="MAIN^~BSCGH"
+ Q "<a class=u1 onclick='open("""_$$ADDBSGET^%ZAPM.ed.BSC4()_""",""RESULT3"",""toolbar=yes,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"NWT1")_",status=1,resizable=1"");' >"_IM_"</a>"
+ ///scripts/mgwms32.dll?BSG=SQL
+TAB ;ВСЕ ТАБЛИЦЫ PIN
+ D BEG1^%ZAPM.ed.BSC4
+ D pin
+ I $G(BSPRO)="" W $$LNG^%ZAPM.ed.BSC4("Сначало определите ПРОЕКТ",74) G PRO
+ W "<form action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ S BSLABEL="ActT1^~BSC4base"
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ W $$SERVIS("TAB^~BSC4base","CfgTab","NWT1")
+ W "<table border=0 width=100%>"
+ W "<tr><td width=10% align='right' class=s1 ><strong TITLE='"_$G(BSNSP,"?")_"'>"_$$LNG^%ZAPM.ed.BSC4("ТАБЛИЦЫ",75)_"</strong></td><td width=70% class=s1 >"_$$LNG^%ZAPM.ed.BSC4("текущего проекта ",76)_RED_pin_EF_"</td><td width=20% class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Групповое действие над всеми",77)_"</td></tr>"
+ N I,N,BD,Sort,WebEditDT1,NWT1
+ S Sort=+$$GETOPT^%ZAPM.ed.BSC4cfg("^"_pi_"(""CfgTab"")","Sort1") I 'Sort S Sort=-1
+ W "<tr><td width=10% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ИМЯ",51)_"</td><td  width=70% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ОПИСАНИЕ ТАБЛИЦЫ БАЗЫ ДАННЫХ",78)_"</td><td width=20% class=s3 >" D ACT0 W $$Che(0)_"<input type=""submit"" name='ActOK0' title='"_$$LNG^%ZAPM.ed.BSC4("Групповое действие",79)_"' value='&gt;&gt;'></td></tr>"
+ S N="",I=0 I '$D(@("^"_pin)) W $$LNG^%ZAPM.ed.BSC4("Нет раздела ! Обратитесь к Администратору",80) Q
+ ;
+ W "<tr><td class=s1 ><input type='text' size=13 maxlength=13 name='Table' value='"_$$NewTable("NewTable")_"'></td><td class=s1 > "
+ D OT() W "</td><td class=s1 >" W "<input type=""submit"" name=""newOK"" value='&gt;&gt;"_$$LNG^%ZAPM.ed.BSC4("Создать таблицу",81)_"'></td></tr>",BK
+ S Co=0,NWT1=$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"NWT1"),WebEditDT1=$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"WebEditDT")
+ F  S N=$O(@("^"_pin)@(N),Sort) Q:N=""  I $P($G(@("^"_pin)@(N)),"@",17)=2 D
+ .I N="ROU"!($E(N,1)="@") Q
+ .S Co=Co+1
+ .W "<input type='hidden' name='Table"_Co_"' value="""_N_""">" s sta=$G(@("^"_pin)@(N,"Compile"))
+ .W "<tr><td width=20% class=s1 ><a title='"_$$NameTab_"'>"_$$RedStar^%ZAPM.ed.BSC4rou($e(sta,1,2)'="OK")
+ .w N_"</a></td><td class=s1 >"
+ .I $e(sta,1,2)="OK" D
+ ..W $$PAform^%ZAPM.ed.BSCm()
+ ..W $$PAframe^%ZAPM.ed.BSCm()
+ ..;W " <A title='форма редактирования таблицы' "_$$AN^%ZAPM.ed.BSCm("^"_pin,N,"T^~BSCm4")_"><img src='"_BSDOMAIN_"/img/form.gif'></A>"
+ ..;W "<a title='"_$$NameTab_"'><img src='"_BSDOMAIN_"/img/const.gif'></A>"
+ .W " "_$$BP1_AF_$P($G(@("^"_pin)@(N)),"@",1)_EF
+ .W "</td><td class=s1 ><input type=""submit"" name='ActOK"_Co_"' value='&gt;&gt;'>" D ACT W $$Che(Co,N)_"</td></tr>"_BK
+ W "<input type='hidden' name='TableCount' value="""_Co_""">"_BK
+ W " </table>"_BK
+ W "</form>"
+ D InfoSess^%ZAPM.ed.BSC4rout D END^%ZAPM.ed.BSC4
+ Q
+NameTab() N S,BSLABEL,BSDJS,T,P
+ I $e(sta,1,2)'="OK" S S=$$LNG^%ZAPM.ed.BSC4("не компилирована",316) Q S
+ S BSLABEL="EDIT^~BSChT1",BSDJS=BSDOMAIN,P="^"_pin,T=N
+ S S=$$LNG^%ZAPM.ed.BSC4("компилирована")_$P(sta,"OK",2) I 'WebEditDT1 Q S
+ S S=S_"' class=u1 onclick='open("""_$$1^%ZAPM.ed.BSC4rout(T,P)_""","""",""toolbar=no,menubar=no,scrollbars=yes,"_NWT1_",status=1,resizable=1"");"
+ Q S
+NewTable(N) N NN ;НОВОЕ ИМЯ
+ F NN=1:1 I '$D(@("^"_pin)@(N_NN)) Q
+ Q N_NN
+CompTab ;КОМПИЛИРОВАТЬ
+ I $G(NoFON) D FTAB^%ZAPM.ed.BSC4base("^"_pin,TabName,MainOpt) Q
+ J FTAB^%ZAPM.ed.BSC4base("^"_pin,TabName,MainOpt)::0 I  W $$LNG^%ZAPM.ed.BSC4("Таблица '",82)_RED,TabName,EF_$$LNG^%ZAPM.ed.BSC4("' будет откомпилирована",83),BBK I 1
+ E  W $$LNG^%ZAPM.ed.BSC4("Неудачная компиляция Таблицы '",84)_RED,TabName,EF
+ Q
+FTAB(BSR,BST,MainOpt) ;ФОРМАТИРОВАТЬ И КОМПИЛИРОВАТЬ
+ N ErroR,OK,NOKILLER,PxPUSTO
+ S $ZT="ErrComp^"_$ZN
+ D TAB^%ZAPM.ed.BSF1
+ S PxPUSTO="" ;,NOKILLER=1
+ D START^%ZAPM.ed.BSCBD($NA(@BSR@(BST)),1,"")
+ Q
+ErrComp S $ZT="",@BSR@(BST,"Compile")=$ZE
+ Q
+ErrSave S $ZT="",ze1=$p($ZE,"^")  W RED,"Error: "_$$TRa^%ZAPM.ed.BSCh0(ze1),EF,BBK
+ I $G(A)'="" W "'",A,"' "_$$LNG^%ZAPM.ed.BSC4("Некорректный идентификатор",85),BBK,BBK
+ G BACK^%ZAPM.ed.BSCh
+ Q
+helpkeywords() q " "_$$NEWIN^%ZAPM.ed.BSC4base1($$LNG^%ZAPM.ed.BSC4("Список ключевых, зарегистрированных слов",86),"1",$$LNG^%ZAPM.ed.BSC4("загрузить cписок запрещенных слов в новом окне браузера",87),"KeyWord^~BSC4r")
+CtrlKeyWord(A) ;контроль на зарезервированные имена
+ i $d(^%ZAPM.ed.BSC4KWD($$LITL^%ZAPM.ed.BSsFUNM(A))) W $$LNG^%ZAPM.ed.BSC4("Имя поля",88)," '",A,"' ",$$LNG^%ZAPM.ed.BSC4("зарезервировано системой",89),$$helpkeywords,BBK q 0
+ q 1
+SaveTab ;СОХРАНИТЬ КОРРЕКЦИЮ
+ D pin
+ k ze1 D SaveTab2 i $d(ze1) q
+ I Y<2 W $$LNG^%ZAPM.ed.BSC4("Таблица модифицирована.",90),RED,$$LNG^%ZAPM.ed.BSC4("Но она не имеет полей !",91),EF,BK G SaveTab1
+ I $D(CompTab) D CompTab G TAB
+ W $$LNG^%ZAPM.ed.BSC4("Таблица модифицирована.",90),BK
+SaveTab1 D Edit(TabName)
+ Q
+SaveTab2
+ N BDorig
+ S PT=$NA(@("^"_pin)@(TabName)),PR=$NA(@("^"_pin)@("ROU"))
+ S $P(@PT@("B4I"),"@",1)=$S($D(SuffSave):1,1:0)
+ S $P(@PT@("B4I"),"@",2)=$S($D(InsD):1,1:0)
+ I '$D(@PT) W $$LNG^%ZAPM.ed.BSC4("Таблица '",82),PT,$$LNG^%ZAPM.ed.BSC4("' не существует",92),BKK ZT "errorName"
+ S $ZT="ErrSave^"_$ZN
+ S BD="^"_pin_"."_TabName
+ I $E($G(Suff),1)="!" S BD=$E($G(Suff),2,999) I 1 S BDorig=1
+ E  I $G(Suff)'="" S BD="^"_pin_"."_Suff
+ ;//КОНТРОЛЬ НА ИМЕНА ПОЛЯ И ИНДЕКСЫ
+ S A=BD,@A=1 i '$$CtrlKeyWord(A) ZT "errorName"
+ I $D(Suff),$E($G(Suff),1)'="!" S A=Suff,@A=1
+ I '$D(FCount) G Sa
+ K S F I=1:1:FCount I $G(@("Field"_I))'="" S A=@("Field"_I),@A=1 D  i '$$CtrlKeyWord(A) ZT "errorName"
+ .I '$D(S(A)) S S(A)="" Q
+ .E  W $$LNG^%ZAPM.ed.BSC4("ИМЕНА ПОЛЕЙ НЕ ДОЛЖНЫ ПОВТОРЯТЬСЯ",93)," '",A,"'",BBK ZT "errorName"
+ K A,a N TT
+ I $G(Desc)'="" S $P(@PT,"@",1)=$$TR($G(Desc))
+ S Y=1 F I=1:1:FCount I $G(@("Field"_I))'="" S A=@("Field"_I) D
+ .S Y=Y+1
+ .I '$D(@PT@(Y)) S @PT@(Y,1)=@PR@(2,1),@PT@(Y,2)=@PR@(2,2)
+ .;индекс
+ .I $G(@("Ind"_I))'="" S $P(@PT@(Y,2),"@",15)=@("Ind"_I),InDx=1 I 1
+ .E  S $P(@PT@(Y,2),"@",15)=""
+ .S $P(@PT@(Y,2),"@",17)=$$TR($G(@("Desc"_I)))
+ .S $P(@PT@(Y,1),"@",15)=$$TR($G(@("Desc"_I)))
+ .S TT=$G(@("TIP"_I)),$P(@PT@(Y,2),"@",21)=TT D
+ ..I "86"[TT D SETOPT^%ZAPM.ed.BSC4cfgP($NA(@PT@("ParmsCell",A)),"xRO","V",1)
+ ..I TT=4 D SETOPT^%ZAPM.ed.BSC4cfgP($NA(@PT@("ParmsCell",A)),"fTRN","V","$$TXTD^%ZAPM.ed.BSsFUNR(d)")
+ .S $P(@PT@(Y,2),"@",18)=A
+ F I=(Y+1):1 Q:'$D(@PT@(I))  K @PT@(I)
+Sa ;F I="KEY","FTR","RTR","FCL","COL" K @PT@(I)
+        F I="FTR","RTR","FCL","COL" K @PT@(I)
+ S $P(@PT,"@",19)="2,2"
+ S @PT@("DSN")="Создана B4I "_$ZD($H,3)
+ I '$D(SuffSave) K @BD
+ I '$D(BDorig) S @BD="BSD - MSW@"_"^"_pin_"@"_TabName
+ S @PT@("KEY")=BD
+ D
+ .N Y D TA2BD^%ZAPM.ed.BSCRG("^"_pin,TabName,1,$G(InDx)) ;1 НЕ ПРИСВАИВАТЬ ИМЯ ПО-УМОЛЧАНИЮ
+ S @("^"_pin)@(TabName,"Compile")="Save "_$$TD
+ Q
+TD(H) I '$D(H) S H=$H
+ I H="" Q "время/дата пустое"
+ ;Q H
+ Q $ZT($P(H,",",2),1)_" "_$ZD(H,3)
+Edit(TAB) ;РЕДАКТИРОВАТЬ
+ D BEG1^%ZAPM.ed.BSC4
+ ;W "рабочей области '"_$zu(5)_"' "_pin_","_TAB
+ N Y,STa,SuffSave,ti,de,SuffKEY,in,AllTip
+ S STa=$G(@("^"_pin)@(TAB,"Compile"))
+ I STa["Begin " W $$LNG^%ZAPM.ed.BSC4("Таблица '",82)_RED,TAB,EF_$$LNG^%ZAPM.ed.BSC4("' еще компилируется",94),BBK G TAB
+ W $$SERVIS("TAB^~BSC4base","CfgTab")
+ W "<form action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ S BSLABEL="SaveTab^~BSC4base"
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ W "<table border=0 width=100%>"
+   W "<input type=""hidden"" name='TabName' value="""_TAB_""">"
+ W "<tr><td align='CENTER' width=40% class=s1 >"_$$LNG^%ZAPM.ed.BSC4("РЕДАКТИРОВАНИЕ ТАБЛИЦЫ",95)_"</td><td  width=60% class=s1 >"_RED_BSPRO_"."_EF_TAB_"</td></tr>",BK
+ W "<tr><td width=30% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ОБЩИЕ ПАРАМЕТРЫ",96)_" "_$$ParmTab_"</td><td  width=70% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ЗНАЧЕНИЯ",97)_"</td></tr>",BK
+   W "<tr><td class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Описание",98)_"</td><td class=s1 ><input type=""text"" size=45 maxlength=145 name='Desc' value='"_$P($G(@("^"_pin)@(TAB)),"@",1)_"'></td></tr>",BK
+ S SuffSave=$P($G(@("^"_pin)@(TAB,"B4I"),"1"),"@",1)
+ S InsD=$P($G(@("^"_pin)@(TAB,"B4I"),"1"),"@",2)
+ S SuffKEY=$P($G(@("^"_pin)@(TAB,"KEY")),pin_".",2) I SuffKEY="" S SuffKEY="!"_$G(@("^"_pin)@(TAB,"KEY"))
+   W "<tr><td class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Суффикс массива данных",99)_" <input type=""text"" size=10 maxlength=25 name='Suff' value='"_SuffKEY_"'></td>"
+    W "<td class=s1 ><input type=""checkbox"" title='"_$$LNG^%ZAPM.ed.BSC4("",100)_"' name=""SuffSave"" value="""_SuffSave_""" "_$$ch^%ZAPM.ed.BSC4cfg(SuffSave)_" >"_$$LNG^%ZAPM.ed.BSC4("сохранять при перекомпиляции")
+     W " <input type=""checkbox"" title='"_$$LNG^%ZAPM.ed.BSC4("При копировании в буфер обмена включать данные в проект")_"' name=""InsD"" value="""_InsD_""" "_$$ch^%ZAPM.ed.BSC4cfg(InsD)_" >"_$$LNG^%ZAPM.ed.BSC4("включать в шаблон проекта")_" </td></tr>",BK
+   W "<tr><td class=s1 >"_$$LNG^%ZAPM.ed.BSC4("Статус таблицы",101)_"</td><td class=s1 ><input type=""text"" size=45 maxlength=145 name='StatTab' value='"_STa_"'></td></tr>",BK
+ W "</table>"
+ W " <table border=0 width=100%>"
+ W "<tr><td width=20% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ИМЕНА ПОЛЕЙ",102)_"</td><td  width=10% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ТИП ПОЛЯ",103)_"</td><td  width=10% class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ИНДЕКС",104)_"</td><td width=* class=s3 >"_$$LNG^%ZAPM.ed.BSC4("ОПИСАНИЕ ПОЛЯ",105)_"</td></tr>",BK
+ F Y=2:1 Q:'$D(@("^"_pin)@(TAB,Y))  D
+ .W "<tr><td class=s1 >" S NameField2=$P($P(@("^"_pin)@(TAB,Y,2),"@",18),"#")
+ .W "<input type=""text"" tabindex='"_Y_"' size=13 maxlength=13 name='Field"_Y_"' value='"_NameField2_"'> "_$$ParmField_"</td><td class=s1 >"
+ .s ti=$P(@("^"_pin)@(TAB,Y,2),"@",21) //ТИП
+ .S in=$P(@("^"_pin)@(TAB,Y,2),"@",15) //ИНДЕКС
+ .s de=$P(@("^"_pin)@(TAB,Y,1),"@",15) //ОПИСАНИЕ ПОЛЯ
+ .d TIPS(ti) w "</td><td class=s1 >"
+ .D IND(in)
+ .W "</td><td class=s1 ><input type=""text"" size=45 maxlength=2000"
+ .i ti=2 w " title='"_$$LNG^%ZAPM.ed.BSC4("Для поля типа Radio текст вариантов введите в описании поля, разделенными ~",106)_"' " i de'["~" s de=$tr(de," ","~")
+ .i ti'=2 w " title='В описании поля в вертикальных скобках || можно ввести значение по-умолчанию' "
+ .w " name='Desc"_Y_"' value='"_de_"'></td></tr>",BK
+ W "<tr><td class=s1 ><input type=""text""  tabindex='"_Y_"' size=13 maxlength=13 name='Field"_Y_"' value=''></td><td class=s1 >"
+  d TIPS("") w "</td><td class=s1 >"
+  D IND("") W "</td><td class=s1 ><input type=""text"" size=45 maxlength=2000 name='Desc"_Y_"' value='"_$$LNG^%ZAPM.ed.BSC4("Новое описание поля",107)_"'></td></tr>",BK
+ W " </table>"
+ W "<input type=""hidden"" name='FCount' value="""_Y_""">"
+ W "<nobr><input type=""submit"" name=""SaveTab"" title='"_$$LNG^%ZAPM.ed.BSC4("Только сохранить изменения",108)_"' value='"_$$LNG^%ZAPM.ed.BSC4("Сохранить",109)_"'>"
+ w "<input type=""submit"" name=""CompTab"" title='"_$$LNG^%ZAPM.ed.BSC4("Создать объектное и SQL представление таблицы",110)_"' value='"_$$LNG^%ZAPM.ed.BSC4("Компилировать",111)_"'>"
+ w "<input type='RESET' title='"_$$LNG^%ZAPM.ed.BSC4("Отменить текущие изменения",112)_"' name='Reset1' value='"_$$LNG^%ZAPM.ed.BSC4("Отменить",73)_"'>"
+ W "</nobr></form>"
+ I STa["Begin" D BACK^%ZAPM.ed.BSCh
+ D InfoSess^%ZAPM.ed.BSC4rout,END^%ZAPM.ed.BSC4
+ Q
+TIPS(S) N i,t ;ТИПЫ ПОЛЕЙ ИЗ ТАБЛИЦЫ
+ W "<select name='TIP"_Y_"'>"
+ s i="" f  s i=$o(^%ZAPM.ed.BSC4TIP(i)) q:i=""  W "<option " D  W " value='"_i_"'>"_$g(^%ZAPM.ed.BSC4TIP(i,"Name"))_"</option>"
+ .I i=S W "selected"
+ ;I $D(AllTip) W $$AllTipProTab(S) //БЫСТРЕЕ РАБОТАТЬ С ЛОКАЛЬНЫМ МАССИВОМ ? НОСОВ!? ПРОТЕСТИРОВАТЬ ЧТО БЫСТРЕЕ!!! ПОТОМ
+ ;I '$D(AllTip) W $$TipProTab(S)
+ W "</select>"
+ Q
+IND(S) N I,T
+ W "<select name='Ind"_Y_"' size=1>"
+ F I="",1:1:9 W "<option " D  W " value='"_I_"'>"_I_"</option>"
+ .I I=S W "selected"
+ W "</select>"
+ Q
+Creat ;СОЗДАТЬ ТАБЛИЦУ
+ i $d(@("^"_pin)@(Table)) W $$LNG^%ZAPM.ed.BSC4("Таблица с именем",115)," '",RED,Table,EF,"' ",$$LNG^%ZAPM.ed.BSC4("уже существует",61),BK G TAB
+ S $ZT="ErrSave^"_$ZN
+ s A=Table,@A=1  i '$$CtrlKeyWord(A) ZT "errorName"
+ S $ZT=""
+ I newTP=1 D ODBC2P(BSPRO,$NA(@("^"_pin)@(Table))) Q
+ I newTP=2 D ODBC2P(BSPRO,$NA(@("^"_pin)@(Table))) Q  ;ПОКА ТАК
+ I newTP=3 D UPLOADF^%ZAPM.ed.BSC4r3(BSPRO,pin,Table) Q
+ d NewT(newTP,pin,Table)
+ G TAB
+NewT(newTP,pin,Table) ;новая таблица
+ M @("^"_pin)@(Table)=@newTP
+ I newTP'[pin S @("^"_pin)@(Table,"KEY")="^"_pin_"."_Table D
+ .I $D(@newTP@("GLOBAL")) M @("^"_pin_"."_Table)=@newTP@("GLOBAL") K @("^"_pin)@(Table,"GLOBAL")
+ S $P(@("^"_pin)@(Table),"@",17)=2
+ S @("^"_pin)@(Table,"Compile")="Create "_$$TD
+ q
+AcT(A,T,NoFON) ;Групповые операции
+ I A=2 D KILL(T) Q
+ I A=1 S TabName=T D  ;рекомпиляция
+ .N InsD,Desc,Suff,Y,PT,a,A,BD,Y,I,SuffSave,SuffKEY,FCount
+ .D Group
+ Q
+Group S SuffKEY=$P($G(@("^"_pin)@(T,"KEY")),pin_".",2) I SuffKEY="" S SuffKEY="!"_$G(@("^"_pin)@(T,"KEY"))
+ F Y=2:1 Q:'$D(@("^"_pin)@(T,Y))
+ S Suff=SuffKEY
+ S SuffSave=$P($G(@("^"_pin)@(T,"B4I"),"1"),"@",1) i 'SuffSave k SuffSave
+ s InsD=$P($G(@("^"_pin)@(T,"B4I"),"1"),"@",2) i 'InsD k InsD
+ D SaveTab2,CompTab
+ Q
+ActT1 ;ДЕЙСТВИЯ НАД ТАБЛИЦЕЙ
+ D pin
+ I $D(newOK) G Creat
+ I $D(ActOK0) D  G TAB ;ГРУППОВАЯ
+ .I $D(Check0) D  Q
+ ..F I=1:1:$G(TableCount) D AcT($G(Act0),@("Table"_I)) ;ВСЕ
+ .E  F I=1:1:$G(TableCount) I $D(@("Check"_I)) D AcT($G(Act0),@("Table"_I))
+ .q
+ F I=1:1:$G(TableCount) I $D(@("ActOK"_I)) Q
+ I $D(@("Table"_I)) D
+ .I $G(@("Act"_I))=3 D T2B(@("Table"_I)) G TAB
+ .I $G(@("Act"_I))=2 D KILL(@("Table"_I)) G TAB
+ .I $G(@("Act"_I))=1 D Edit(@("Table"_I)) Q
+ Q
+T2B(TAB,DEST) ;ТАБЛИЦУ В БУФЕР ОБМЕНА
+ I '$D(DEST) S DEST=$NA(@GTmp@(BSLOGIN,"TAB"))
+ K @DEST
+ M @DEST=@("^"_pin)@(TAB)
+ I $P($G(@("^"_pin)@(TAB,"B4I")),"@",2) M @DEST@("GLOBAL")=@(@("^"_pin)@(TAB,"KEY")) ;W $ZR КОПИРУЕМ И ДАННЫЕ
+ Q
+KILL(TAB) ;УДАЛИТЬ ТАБЛИЦУ
+ I $$Delete^%apiOBJ(pin_"."_TAB,,.ERR)
+ W $G(ERR),BK
+ S BD=@("^"_pin)@(TAB,"KEY")
+ K @("^"_pin)@(TAB),@BD
+ W $$LNG^%ZAPM.ed.BSC4("ТАБЛИЦА",116)," '",RED,TAB,EF,"' ",$$LNG^%ZAPM.ed.BSC4("УДАЛЕНА",117),BBK,BBK
+ Q
+ACT0 ;ГРУППОВЫЕ ДЕЙСТВИЯ
+ N I,T
+ S T=1 W "<select name='Act0' size=1>"
+ F I=$$LNG^%ZAPM.ed.BSC4("Рекомпилировать",118),$$LNG^%ZAPM.ed.BSC4("Удалить",119) W "<option value='"_T_"'>"_I_"</option>" S T=T+1
+ W "</select>"
+ Q
+ACT N I,T
+ S T=1 W "<select name='Act"_Co_"' size=1>"
+ F I=$$LNG^%ZAPM.ed.BSC4("Редактировать",120),$$LNG^%ZAPM.ed.BSC4("Удалить",119),$$LNG^%ZAPM.ed.BSC4("Копировать в буфер",121) W "<option value='"_T_"'>"_I_"</option>" S T=T+1
+ W "</select>"
+ Q
+OT() N I,P,T ;ВСЕ ТАБЛИЦЫ ДОСТУПНЫЕ КАК ШАБЛОН
+ W "<select name=""newTP"" size=1>"
+ S P="^%ZAPM.ed.BSC4E" F T="EMPTY" W "<option value='"_$NA(@P@(T))_"'>"_$$LNG^%ZAPM.ed.BSC4("Пустой шаблон",330)_"</option>"
+ I $D(@GTmp@(BSLOGIN,"TAB")) W "<option value='"_$ZR_"'>"_$$LNG^%ZAPM.ed.BSC4("Копировать из буфера",56)_"</option>"
+ W "<option value='1'>"_$$LNG^%ZAPM.ed.BSC4("Импорт из ODBC",57)_"</option>"
+ W "<option value='2'>"_$$LNG^%ZAPM.ed.BSC4("Связь с ODBC",58)_"</option>"
+ W "<option value='3'>"_$$LNG^%ZAPM.ed.BSC4("Загрузить из файла (*.txt *.csv)")_"</option>"
+ S P="^[""%SYS""]BSC4.CFG" F T="Param","UStatus","Dict" W "<option value='"_$NA(@P@(T))_"'>"_$P($G(@P@(T),"?@"),"@")_"</option>"
+ W "</select>"
+ Q
+Che(N,NN) Q "<input type=""checkbox"" title='"_$$LNG^%ZAPM.ed.BSC4("Групповая работа включая ",122)_$S(N=0:$$LNG^%ZAPM.ed.BSC4("всех",123),1:NN)_"' name='Check"_N_"' value=''>"
+ALLPART(PART) ;КОМПИЛИРОВАТЬ ВЕСЬ РАЗДЕЛ B4Y
+ N PP
+ D MAINVAR^%ZAPM.ed.BSC4
+ S pin=$P(PART,"^",2,99)
+ S PP="" F  S PP=$O(@PART@(PP)) Q:PP=""  I PP'="ROU" D
+ .I $P(@PART@(PP),"@",17)=2 D AcT(1,PP,1)
+ Q
+BP1() N G I '$P($G(@("^"_pin)@(N,"Parms")),"@",1) Q ""
+ S G=$$KBD^%ZAPM.ed.BSF12($NA(@("^"_pin)@(N))) I G="" Q ""
+ Q $$BP^%ZAPM.ed.BSC4cfgP("ПАРАМЕТРЫ "_N,"Редактировать параметры",G,G,1)
+ParmField()
+ Q $$BP^%ZAPM.ed.BSC4cfgP("Параметры "_NameField2,$$LNG^%ZAPM.ed.BSC4("дополнительные параметры поля"),"^[|~SYS|]BSC4.CFG.PropFields",$NA(@("^"_pin)@(TAB,"ParmsCell",NameField2)),1)
+ParmTab()
+ Q $$BP^%ZAPM.ed.BSC4cfgP("Параметры Таблицы",$$LNG^%ZAPM.ed.BSC4("дополнительные параметры таблицы"),"^[|~SYS|]BSC4.CFG.PropTables",$NA(@("^"_pin)@(TAB,"Parms")),1)
+SERVIS(A1,A2,A3) N BSLABEL,Q
+ S Q="<div align='right'>"_$$REFRESH(A1)_" "
+ I $D(A3) S BSLABEL="ENTER^~BSC4cfg" S Q=Q_" <a class=u1 onclick='open("""_$$1^%ZAPM.ed.BSC4rout(A2,"^"_pi)_""","""",""toolbar=no,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,A3)_",status=1,resizable=1"");' >"_$$param_"</a>"
+ S Q=Q_"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"_$$HelpB
+ S Q=Q_$$Help
+ Q Q_"</div>"_BK
+HelpB() Q $$SQL("<img src='"_BSDOMAIN_"/img/bssql.gif' ALT='"_$$LNG^%ZAPM.ed.BSC4("Загрузить SQL менеджер")_"'>")
+Help() S BSLABEL="help^~BSC4" Q "<a class=u1 onclick='open("""_$$ADDBSGET^%ZAPM.ed.BSC4()_""",""RESULT3"",""toolbar=no,menubar=no,scrollbars=yes,"_$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"NWO1")_",status=1,resizable=1"");' ><img src='"_BSDOMAIN_"/img/help1.gif' ALT='Документация DHTML, JavaScript, COS, SQL, Errors'></a>"
+REFRESH(A1) n BSLABEL S BSLABEL=A1
+ Q "<a href='"_$$ADDBSGET^%ZAPM.ed.BSC4()_"'><img border=0 src='"_BSDOMAIN_"/img/refr.gif' ALT='"_$$LNG^%ZAPM.ed.BSC4("обновить")_"'></a>"_BK

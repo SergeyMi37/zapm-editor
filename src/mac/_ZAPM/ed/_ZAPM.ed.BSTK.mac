@@ -1,0 +1,88 @@
+ROUTINE %ZAPM.ed.BSTK
+%BSTK ;РЕДАКТИРОВАНИЕ КЛЮЧЕЙ ; 14:07   20.01.2000
+E10 G:TIP=2 E10T I "1"[TIP S ls=" Вы ХОТИТЕ сделать вашу таблицу ,ТАБЛИЦЕЙ С БАЗОЙ ? " D YES^%ZAPM.ed.BSF G D:'YES,E10T
+ I TIP=3!(TIP=4) D Yes^%ZAPM.ed.BSXfun(" Для '"_BST_"' ключи определяются функцией "_$S(TIP=3:"$$TSP",1:"$$TSV")_", но можно ОПРЕДЕЛИТЬ СПЕЦИАЛЬНЫЕ ПАРАМЕРЫ ВЫБОРОК КЛЮЧЕЙ только для '"_BST_"'! ВЫ ЭТО ХОТИТЕ ?",2) G ^%ZAPM.ed.BSTKS:YES>0 I TIP=4 D Yes^%ZAPM.ed.BSXfun(" Для СВОДОК определим РЕЖИМЫ насчета ?",2) D:YES>0
+ .S Tmp=$$LineEdit^%ZAPM.ed.BSXfun($G(@BSR@(BST,"SVO"),"12"),"введите параметры насчета сводки..., для помощи введите F1","","","^%ZAPM.ed.BSHLP,SVO")
+ .Q:YES<1  S @BSR@(BST,"SVO")=Tmp
+ G D
+E10T I $D(@(BSR_"(BST,""KEY"")")) S kk=0 G E100
+ S OOO="^%ZAPM.ed.BS",OO=49 D 24^%ZAPM.ed.BSTM,^%ZAPM.ed.BSB,ZA^%ZAPM.ed.BSF G D:R1=27 S kk=%B
+ I %B=4 D RIT^%ZAPM.ed.BSF3 G:'YES E10T S CHUr=BSR,CHUt=BST,BSR=BSr,BST=BSt,kk=0
+E100 D SA^%ZAPM.ed.BSsBUF,Ed,RE^%ZAPM.ed.BSsBUF
+D G 0^%ZAPM.ed.BSTM
+Ed D BF I '$D(@(BSR_"(BST,""KEY"")")) D EDI G RES
+ S BSd=$G(@$ZR,"@"),$P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,6),"@",15)=$G(@(BSR_"(BST,""KEY"")"),"???"),f="RTR"
+ ;ИЗ КЛЮЧЕЙ В ТАБЛИЦУ ОПИСАНИЯ
+ S $P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,7),"@",15)=$G(@BSR@(BST,"DDR")) ;ССЫЛКА НА УЗЕЛ DDR
+ S $P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,8),"@",15)=$G(@BSR@(BST,"INDEX")) ;ССЫЛКА НА БД ПОИСКА
+ F i=0:1:13 I $D(@(BSR_"(BST,""KEY"",i)")) K l1 D
+ .F k=1:1:7,9,10,12:1:16,20 S @("k"_k)=$P(^(i),"@",k)
+ .I $D(@(BSR_"(BST,""KEY"",i,1)"))  S l1=@$ZR,l2=$G(^(2)) I l1'="" S ^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"RTR",i+2,5)=l1,^(5,1)=l2,$P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i+2,5),"@",16)=0
+ .I $D(@(BSR_"(BST,""KEY"",i,3)"))  S l1=@$ZR,l2=$G(^(4)) I l1'="" S ^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"FTR",i+2,5)=l1,^(5,1)=l2,$P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i+2,5),"@",8)=0
+ .I $D(@(BSR_"(BST,""KEY"",i,5)"))  S l1=@$ZR,l2=$G(^(6)) I l1'="" S ^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"COL",i+2,5)=l1,^(5,1)=l2,$P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i+2,5),"@",13)=0
+ .K KK F k=10:1 Q:'$D(@(BSR_"(BST,""KEY"",i,k)"))  S KK(k)=^(k),KK(k,1)=$G(^(k,1)),KK(k,2)=$G(^(2))
+ .S BSk(i)=1,$P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i+2,2),"@",15)=k6,$P(^(3),"@",15)=k15,$P(^(4),"@",10)=k10,$P(^(4),"@",15)=k5,$P(^(2),"@",14)=k7
+ .S $P(^(8),"@",15)=k2,$P(^(6),"@",15)=k1,$P(^(7),"@",15)=k4,$P(^(5),"@",15)=k3,$P(^(9),"@",15)=k12 I k9'="" S $P(^(1),"@",15)=k9
+ .D KK
+EDIT D EDI G RES
+KK S k="",$P(^(5),"@",13)=k13,$P(^(5),"@",14)=k14,$P(^(5),"@",20)=k20
+ F  S k=$O(KK(k)) Q:k=""  D  S $P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i+2,k),"@",15)=KK(k),^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"COL",i+2,k)=KK(k,1),^(k,1)=KK(k,2),$P(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i+2,k),"@",13)=0
+ .F ij=1:1:12 I '$D(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),ij,k)) S ^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),ij,k)=$G(^%ZAPM.ed.BSS("KEY0",ij,k),^%ZAPM.ed.BSS("KEY0",ij,15))
+ K KK Q
+BF K ^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15)),^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15)),BSd,BSk S BSt1="KEY"_kk,BSr1="^%ZAPM.ed.BSS",BSr2="^%ZAPM.ed.BSbufB",BSt2="@K"_$G(%BS(3),$P)_$J_"u"_%BS(15) D COPY
+ F jj=2,4,5 S $P(@(BSr2_"(BSt2)"),"@",jj)=""
+e Q
+COPY S %zT=$ZT,$ZT="ERCOPY^%ZAPM.ed.BSTK"
+ D Wait^%ZAPM.ed.BSXfun("дублируем.."_BSr1_","_BSt1_" в "_BSr2_","_BSt2)
+ K @(BSr2_"(BSt2)") I $P($ZV,"Version ",2)'<4 M @(BSr2_"(BSt2)")=@(BSr1_"(BSt1)") Q
+ I $D(@BSr2)["0" S:$D(@BSr1)=11 @BSr2=@BSr1
+ S j=BSr1_"(BSt1)" I $D(@j) S jj=$P($ZR,")")_",",@(BSr2_"(BSt2)")=@j
+ F  S j=$ZO(@j) Q:j'[jj  S @(BSr2_"(BSt2,"_$P(j,jj,2,9))=@j X $G(WA)
+ Q
+ERCOPY S ls=$$ErrSay^%ZAPM.ed.BSF8($ZE) D O^%ZAPM.ed.BSF7 S $ZT=$G(%zT),YES=0 Q
+TRDEV N vor U %DEV S vor="]" ;4.;=$S($P($ZV,"Version ",2)<4:"]",1:"|")
+ W:$D(@(TRe1_")"))'["0" (TRe1_")"),!,@(TRe1_")"),! U 0 W "." S j=TRe1_")",jj=$S(TRe1[vor:$P(TRe1,vor,2,99),1:$P(TRe1,"^",2,99))_","
+ U %DEV F  S j=$ZO(@j) Q:$S(j[vor:$P(j,vor,2,99),1:j)'[jj  W j,!,@j,!
+ U 0 Q
+TREE K:'$D(NOKILLER) @(TRe2_")") I $P($ZV,"Version ",2)'<4 M @(TRe2_")")=@(TRe1_")") Q
+ S:$D(@(TRe1_")"))'["0" @(TRe2_")")=@(TRe1_")") S ls="Копи..."_TRe1_" В "_TRe2_"..." D WAITS^%ZAPM.ed.BSF2 S j=TRe1_")",jj=$S(TRe1["]":$P(TRe1,"]",2,99),1:$P(TRe1,"^",2,99))_","
+ F  S j=$ZO(@j) Q:$S(j["]":$P(j,"]",2,99),1:j)'[jj  S @(TRe2_","_$P(j,jj,2,9))=@j X $G(WA)
+ Q
+TRE K:'$D(NOKILLER) @TRe2 I $P($ZV,"Version ",2)'<4 M @TRe2=@TRe1 Q
+ S:$D(@TRe1)'["0" @TRe2=@TRe1 S ls="Коп.мас..."_TRe1_" В "_TRe2_"..." D WAITS^%ZAPM.ed.BSF2 S j=TRe1,jj=$S(TRe1["]":$P(TRe1,"]",2,99),1:$P(TRe1,"^",2,99))_"("
+ F  S j=$ZO(@j) Q:$S(j["]":$P(j,"]",2,99),1:j)'[jj  S @(TRe2_"("_$P(j,jj,2,9))=@j X WA
+ Q
+EDI D SI^%ZAPM.ed.BSN N (%BS,vl) S BST=$S($D(^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15))):"@K"_$G(%BS(3),$P)_$J_"u"_%BS(15),1:"K"_$G(%BS(3),$P)_$J_"u"_%BS(15)) F k=1:1:9 S @("k"_k)=1
+ S BSR="^%ZAPM.ed.BSbufB" D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST Q
+RES N BSDDR,BSINDEX
+ I $D(CHUr) S BSR=CHUr,BST=CHUt K CHUt,CHUr
+ G:'$D(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,6)) END S BSD=$P(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,6),"@",15),%zT=$ZT,$ZT="E1^%ZAPM.ed.BSTK" D  S:BSD'["^" BSD="^"_BSD G:TIP=3!(TIP=4) REE I '$D(@BSD) S @$ZR="BSD - MSW@"_BSR_"@"_$E(BST,2,9) D CP^%ZAPM.ed.BSGCH(BSD,$P(%BS(22),",",3)) G RE
+ .S BSDDR=$P(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,7),"@",15)
+ .S BSINDEX=$P(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),12,8),"@",15)
+ S $ZT=$G(%zT) E  I $P($G(@$ZR),"@",2)'=BSR!($P($G(@$ZR),"@",3)'=$E(BST,2,9)) S ls=" БАЗА ДАННЫХ ЧУЖАЯ !!! ВЫ ХОТИТЕ НАЗНАЧИТЬ ЕЁ И НАШЕЙ ТАБЛИЦЕ ?" D YES^%ZAPM.ed.BSF G YES:'YES
+RE I BSD'=$G(BSd,BSD) D OkMsg^%ZAPM.ed.BSXfun("Старая База:"_BSd_" и новая:"_BSD_" не совпадает!") S ls="Редактируем снова?" D YES^%ZAPM.ed.BSF I YES G EDIT
+REE F i=2:1:11 I $P($G(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,2)),"@",15)'="" I $D(BSk(i-2)) S BSk(i-2)=0
+ K k0,Hidden F i=0:1:13 I $D(BSk(i)) I BSk(i) S k0=1
+ I $D(k0) S ls="Старые и новые ключи не совпадают! Cнова будем редактировать?" D YES^%ZAPM.ed.BSF I YES G EDIT
+ K @(BSR_"(BST,""KEY"")") S @(BSR_"(BST,""KEY"")")=BSD //!!! $$BSR^%ZAPM.ed.BSA(BSD)
+ S $ZT=$G(%zT),f="RTR" D  F k=0:1:6,10,12:1:16 K @("k"_k)
+ .I BSR="^%ZAPM.ed.BSS",BST="@USER" S %BS(18)=$$BSR^%ZAPM.ed.BSA(BSD)
+ .I $G(BSDDR)'="" S @BSR@(BST,"DDR")=BSDDR
+ .I $G(BSINDEX)'="" S @BSR@(BST,"INDEX")=BSINDEX
+ ;ИЗ ТАБЛИЦЫ ОПИСАНИЯ В КЛЮЧИ
+ F i=2:1:11 I $P($G(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,2)),"@",15)'="" S k0=i,k6=$P(^(2),"@",15),k7=$P(^(2),"@",14) D
+ .S k15=$P(^(3),"@",15),k10=$P(^(4),"@",10),k2=$P(^(8),"@",15),k1=$P(^(6),"@",15),k3=$P(^(5),"@",15),k16=$P(^(5),"@",16),k4=$P(^(7),"@",15)
+ .S k5=$P(^(4),"@",15),k14=$P(^(5),"@",14),k13=$P(^(5),"@",13),k12=$P(^(9),"@",15),k20=$P(^(5),"@",20),k9=$P(^(1),"@",15)
+ .F k=10:1 Q:'$D(^(k))  S zr=$ZR,l1=@$ZR I $D(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"COL",i,k)) S l2=@$ZR,l3=$G(^(k,1)),@(BSR_"(BST,""KEY"",i-2,k)")=$P(l1,"@",15),^(k,1)=l2,^(2)=l3 I @zr
+ .S $P(@(BSR_"(BST,""KEY"",i-2)"),"@")=k1 F k=2:1:7,9,10,12:1:16,20 S $P(@$ZR,"@",k)=@("k"_k)
+ .I $D(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"RTR",i,5)) S l1=@$ZR,l2=$G(^(5,1)),@(BSR_"(BST,""KEY"",i-2,1)")=l1,^(2)=l2
+ .I $D(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"FTR",i,5)) S l1=@$ZR,l2=$G(^(5,1)),@(BSR_"(BST,""KEY"",i-2,3)")=l1,^(4)=l2
+ .I $D(^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15),"COL",i,5)) S l1=@$ZR,l2=$G(^(5,1)),@(BSR_"(BST,""KEY"",i-2,5)")=l1,^(6)=l2
+ .I k6="HiddenLastKey",k15="" D ErrMsg^%ZAPM.ed.BSXfun("В режиме HiddenLastKey В 3 колоночку надо ввести СИМВОЛЬНОЕ ИМЯ ВЫВОДА идентификации последнего ключа") S Hidden=1
+ I $D(k0),($P(@(BSR_"(BST)"),"@",17)<2) S $P(@$ZR,"@",17)=2
+ I $G(Hidden) D Yes^%ZAPM.ed.BSXfun("Cнова будем редактировать?") I YES G EDIT
+END K ^%ZAPM.ed.BSbufB("K"_$G(%BS(3),$P)_$J_"u"_%BS(15)),^%ZAPM.ed.BSbufB("@K"_$G(%BS(3),$P)_$J_"u"_%BS(15)),k0,k1,k2,k3,k4,k5,k6,k10,k12,k16,k,k15,BSk,BSd,kk S $ZT=$G(%zT) Q
+ER S ls=" ОШИБКА В ИМЕНИ ТАБЛИЦЫ ИЛИ РАЗДЕЛА ! "_$$ErrSay^%ZAPM.ed.BSF8($ZE) D O^%ZAPM.ed.BSF7 G D
+E1 S ls=" ОШИБКА В ИМЕНИ БАЗЫ ДАННЫХ ! "_$$ErrSay^%ZAPM.ed.BSF8($ZE) D O^%ZAPM.ed.BSF7
+YES S ls=" Продолжим корректировать описание Ключей и Базы данных ? " D YES^%ZAPM.ed.BSF I YES G EDIT
+ S $ZT=$G(%zT) Q

@@ -1,0 +1,34 @@
+ROUTINE %ZAPM.ed.BSChA
+%BSChA ; пpогpамма ОПЦИЙ АДМИНИСТРАТОРА ; 15:16   25.01.2001
+ Q
+MAIL D TEST^%ZAPM.ed.BSCh0("ПОЧТA")
+ Q
+OPTION ;ТАБЛИЦА ОСНОВНЫХ ОПЦИЙ MainOpt=ИМЯ ТАБЛИЦЫ
+ D SETOPT^%ZAPM.ed.BSCh2(MainOpt,"ROOT",$G(%CGIEVAR("PATH_TRANSLATED")))
+ D TITLE^%ZAPM.ed.BSCh2(MainOpt)
+ D OPT^%ZAPM.ed.BSCh2(MainOpt)
+ w "<input type=""hidden"" name=""BSLABEL"" value=""SAVEOPT^~BSChA"">"
+ w "<input type=""SUBMIT"" name=""SubMit1"" value=""Запомнить Опции"">"
+ w "<input type=""RESET"" name=""Reset1"" value=""Очистить"">"
+ W "</form>"
+ D BACK^%ZAPM.ed.BSCh,END^%ZAPM.ed.BSCh("")
+ Q
+SAVEOPT ;СОХРАНИТЬ НОВЫЕ ПАРАМЕТРЫ
+ D SAVEOPT^%ZAPM.ed.BSCh2(MainOpt)
+ D BACK^%ZAPM.ed.BSCh,END^%ZAPM.ed.BSCh("")
+ Q
+NETOPT ;ТАБЛИЦА СЕТЕВЫХ ОПЦИЙ
+ S TBL="^%ZAPM.ed.BSETUP(""SERVER"")"
+ D TITLE^%ZAPM.ed.BSCh2(TBL)
+ D OPT^%ZAPM.ed.BSCh2(TBL)
+ w "<input type=""hidden"" name=""BSLABEL"" value=""SAVENOPT^~BSChA"">"
+ w "<input type=""SUBMIT"" name=""SubMit1"" value=""Запомнить Опции"">"
+ w "<input type=""RESET"" name=""Reset1"" value=""Очистить"">"
+ W "</form>"
+ D BACK^%ZAPM.ed.BSCh,END^%ZAPM.ed.BSCh("")
+ Q
+SAVENOPT ;СОХРАНИТЬ НОВЫЕ ПАРАМЕТРЫ
+ S TBL="^%ZAPM.ed.BSETUP(""SERVER"")"
+ D SAVEOPT^%ZAPM.ed.BSCh2(TBL)
+ D BACK^%ZAPM.ed.BSCh,END^%ZAPM.ed.BSCh("")
+ Q

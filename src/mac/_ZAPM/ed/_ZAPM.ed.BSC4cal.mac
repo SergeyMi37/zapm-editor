@@ -1,0 +1,345 @@
+ROUTINE %ZAPM.ed.BSC4cal
+%BSC4cal ;CALENDAR FUNCTION  ; Compiled February 22, 2002 23:26:36
+ ;
+ ;    Copyright (C) 2002 Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ; 
+ q
+A(d,T,Targ) ;ЯКОРЬ ;КАЛЕНДАРЬ d-дата предустановки, d="" - дата текущая d=YYYYMMDD
+ I d="" S d=$ZD($h,8)
+ Q $$a^%ZAPM.ed.BSC4rout($$CALGET(d),T,T,300,250)
+on(BSLABEL,W,H) q " onclick='open("""_$$ADDBSGET^%ZAPM.ed.BSC4()_""","""_$G(Targ,"calend")_""",""toolbar=no,menubar=no,scrollbars=no,width="_$G(W,640)_",height="_$G(H,480)_",status=1,resizable=1"");' "
+B(d,N,Targ,ROU,AN) ;кнопка/ЯКОРЬ В НОВОМ ОКНЕ
+ I d="" S d=$ZD($h,8)
+ N BSLABEL,BSDATE,Q,QQ S BSLABEL=$G(ROU,"CALDATE^~BSC4cal"),BSDATE=d,Q=""
+ I $G(AN)="" S Q=Q_"<BUTTON name='Calendar2' ",QQ="</BUTTON>"
+ E  S Q=Q_"<A name='Calendar2' ",QQ="</A>"
+ S Q=Q_$$on(BSLABEL,300,250)_" ><IMG src='"_BSDOMAIN_"/img/cal.gif' alt='"_$G(N,""_$$LNG^%ZAPM.ed.BSC4("календарь",156)_"")_"'>"
+ Q Q_QQ
+EDITDATE ;ВЫЗВАТЬ КАЛЕНДАРЬ
+ D CAL($E(BSDATE,1,4),$E(BSDATE,5,6)-1,+$E(BSDATE,7,8),"Календарь","",BS1,BS2,,1) //BS2=ПРОГРАММА ВОЗВРАТА
+ Q
+ //ПРИНЯТЬ ДАТУ ОТ КАЛЕНДАРЯ
+D4(N) S:N="" N=1 Q $S($L(N)=1:"0"_N,1:N)
+RETURN() ;ПРИНЯТЬ ДАТУ ОТ КАЛЕНДАРЯ
+ N D
+ I $D(Today) S D=$ZD($h,8)
+ I $D(Ok) S D=tbSelYear_$$D4(tbSelMonth)_$$D4(calSelectedDate)
+ I $D(Esc) S D=""
+ Q D //D=YYYYMMDD
+CALDATE ;ВЫЗВАТЬ КАЛЕНДАРЬ
+ D CAL($E(BSDATE,1,4),$E(BSDATE,5,6)-1,+$E(BSDATE,7,8),$$LNG^%ZAPM.ed.BSC4("Календарь",157))
+ Q
+CALGET(d) N BSLABEL,BSDATE S BSLABEL="CALDATE^~BSC4cal",BSDATE=d
+ Q $$ADDBSGET^%ZAPM.ed.BSC4()    
+CAL(Yy,Mm,Dd,TiT,BODY,BSG,BSLABEL,GRAY,NOCLOSE,YearOT,YearDO) ;//Календарь - RUS
+ ;Yy,- год по-умолчанию
+ ;Mm,- месяц по-умолчанию
+ ;Dd,- день по-умолчанию
+ ;TiT,- атрибут тага <title>
+ ;BODY,- атрибут тага <body>
+ ;BSG,- скрытая переменная ссылки на узел BS-WebLink
+ ;BSLABEL,- скрытая переменная ссылки на программу обработки выбора даты
+ ;GRAY,- цвета календаря
+ ;NOCLOSE,- не закрывать текущее окно браузера
+ ;YearOT,- нижний диапазон годов
+ ;YearDO- верхний диапазон годов
+ Write "  ",BK
+ Write "<html>",BK
+ Write "<head><title>"_TiT_"</title>",BK
+ W $$STYLE^%ZAPM.ed.BSC4
+ Write "<script language=""javascript"">",BK
+ W "<!--",BK
+ Write " //Скачано с cgi.ru",BK
+ Write " //Все скрипты : cgi.ru",BK
+ Write " //info@cgi.ru",BK
+ Write " // Идея и основная часть кода: Nick Korosi (nfk2000@hotmail.com).",BK
+ Write " // Дополнено:",BK
+ Write " //  1. Отображение порядка дней недели в соответствии с принятым в России;",BK
+ Write " //      2. Подсветка текущего дня месяца;",BK
+ Write " //      3. Возможность общей настройки цветового решения;",BK
+ Write " // Автор дополнений: Боронин Денис (bdv@freemail.ru). ",BK
+ Write " // Idea and main code part: Nick Korosi (nfk2000@hotmail.com) ",BK
+ Write " // Adds:",BK
+ Write " //  1. Russian week date order;",BK
+ Write " //      2. Current day illumination;",BK
+ Write " //      3. Simple color setting up.",BK
+ Write " // Author of adds: Denis Boronin (bdv@freemail.ru)",BK
+ Write "var dDate = new Date("_(Yy)_","_(Mm)_","_(Dd)_");",BK
+ Write "var dCurMonth = dDate.getMonth();",BK
+ Write "var dCurDayOfMonth = dDate.getDate();",BK
+ Write "var dCurYear = dDate.getFullYear();",BK
+ Write "var objPrevElement = new Object();",BK
+ Write "var bgcolor",BK
+ Write "var webgcolor",BK
+ Write "var wecolor",BK
+ Write "var nwecolor",BK
+ Write "var tbgcolor",BK
+ Write "var ntbgcolor",BK
+ Write "var sbgcolor",BK
+ Write "function fToggleColor(myElement) ",BK
+ Write "{",BK
+ Write " var toggleColor = ""#ff0000"";",BK
+ Write " if (myElement.id == ""calDateText"") ",BK
+ Write "  {",BK
+ Write "  if (myElement.color == toggleColor) ",BK
+ Write "   {",BK
+ Write "   myElement.color = """";",BK
+ Write "   } ",BK
+ Write "  else ",BK
+ Write "  {",BK
+ Write "  myElement.color = toggleColor;",BK
+ Write "  }",BK
+ Write " } ",BK
+ Write " else ",BK
+ Write "  if ((myElement.id == ""calCell"") || (myElement.id == ""calTodayCell""))",BK
+ Write "  {",BK
+ Write "  for (var i in myElement.children) ",BK
+ Write "   {",BK
+ Write "   if (myElement.children[i].id == ""calDateText"") ",BK
+ Write "    {",BK
+ Write "    if (myElement.children[i].color == toggleColor) ",BK
+ Write "     {",BK
+ Write "     myElement.children[i].color = """";",BK
+ Write "     } ",BK
+ Write "    else ",BK
+ Write "    {",BK
+ Write "    myElement.children[i].color = toggleColor;",BK
+ Write "    }",BK
+ Write "   }",BK
+ Write "  }",BK
+ Write " }",BK
+ Write "}",BK
+ Write "function fSetSelectedDay(myElement)",BK
+ Write "{",BK
+ Write " if (myElement.id == ""calCell"") ",BK
+ Write " {",BK
+ Write "  if (!isNaN(parseInt(myElement.children[""calDateText""].innerText))) ",BK
+ Write "   {",BK
+ Write "   myElement.bgColor = sbgcolor;",BK
+ Write "   objPrevElement.bgColor = ntbgcolor;",BK
+ Write "   document.all.calSelectedDate.value = parseInt(myElement.children[""calDateText""].innerText);",BK
+ Write "   objPrevElement = myElement;",BK
+ Write "   }",BK
+ Write "  }",BK
+ Write "}",BK
+ Write "function fGetDaysInMonth(iMonth, iYear) ",BK
+ Write "{",BK
+ Write " var dPrevDate = new Date(iYear, iMonth, 0);",BK
+ Write " return dPrevDate.getDate();",BK
+ Write "}",BK
+ Write "function fBuildCal(iYear, iMonth, iDayStyle) ",BK
+ Write "{",BK
+ Write " var aMonth = new Array();",BK
+ Write " aMonth[0] = new Array(7);",BK
+ Write " aMonth[1] = new Array(7);",BK
+ Write " aMonth[2] = new Array(7);",BK
+ Write " aMonth[3] = new Array(7);",BK
+ Write " aMonth[4] = new Array(7);",BK
+ Write " aMonth[5] = new Array(7);",BK
+ Write " aMonth[6] = new Array(7);",BK
+ Write " var dCalDate = new Date(iYear, iMonth-1, 1);",BK
+ Write " var iDayOfFirst = dCalDate.getDay();",BK
+ Write " var iDaysInMonth = fGetDaysInMonth(iMonth, iYear);",BK
+ Write " var iVarDate = 1;",BK
+ Write " var i, d, w;",BK
+ Write " if (iDayOfFirst==0)",BK
+ Write " {",BK
+ Write "  iDayOfFirst=6",BK
+ Write " }",BK
+ Write " else",BK
+ Write " {",BK
+ Write "  iDayOfFirst=iDayOfFirst-1",BK
+ Write " }",BK
+ Write " if (iDayStyle == 2) ",BK
+ Write "  {",BK
+ Write "  aMonth[0][0] = ""Понедельник"";",BK
+ Write "  aMonth[0][1] = ""Вторник"";",BK
+ Write "  aMonth[0][2] = ""Среда"";",BK
+ Write "  aMonth[0][3] = ""Четверг"";",BK
+ Write "  aMonth[0][4] = ""Пятница"";",BK
+ Write "  aMonth[0][5] = ""Суббота"";",BK
+ Write "  aMonth[0][6] = ""Воскресенье"";",BK
+ Write "  } ",BK
+ Write " else ",BK
+ Write "  if (iDayStyle == 1) ",BK
+ Write "  {",BK
+ Write "  aMonth[0][0] = ""Пон"";",BK
+ Write "  aMonth[0][1] = ""Вт"";",BK
+ Write "  aMonth[0][2] = ""Ср"";",BK
+ Write "  aMonth[0][3] = ""Чт"";",BK
+ Write "  aMonth[0][4] = ""Пт"";",BK
+ Write "  aMonth[0][5] = ""Сб"";",BK
+ Write "  aMonth[0][6] = ""Вск"";",BK
+ Write "  } ",BK
+ Write "  else ",BK
+ Write "   {",BK
+ Write "   aMonth[0][0] = ""Пн"";",BK
+ Write "   aMonth[0][1] = ""Вт"";",BK
+ Write "   aMonth[0][2] = ""Ср"";",BK
+ Write "   aMonth[0][3] = ""Чт"";",BK
+ Write "   aMonth[0][4] = ""Пт"";",BK
+ Write "   aMonth[0][5] = ""Сб"";",BK
+ Write "   aMonth[0][6] = ""Вс"";",BK
+ Write "   }",BK
+ Write " for (d = iDayOfFirst; d < 7; d++) ",BK
+ Write "  {",BK
+ Write "  aMonth[1][d] = iVarDate",BK
+ Write "  iVarDate++;",BK
+ Write "  }",BK
+ Write " for (w = 2; w < 7; w++) ",BK
+ Write "  {",BK
+ Write "  for (d = 0; d < 7; d++) ",BK
+ Write "   {",BK
+ Write "   if (iVarDate <= iDaysInMonth) ",BK
+ Write "    {",BK
+ Write "    aMonth[w][d] = iVarDate",BK
+ Write "    iVarDate++;",BK
+ Write "    }",BK
+ Write "   }",BK
+ Write "  }",BK
+ Write " return aMonth;",BK
+ Write "}",BK
+ Write "function fDrawCal(iYear, iMonth, iCellWidth, iCellHeight, sDateTextSize, sDateTextWeight, iDayStyle, ibgcolor, iwebgcolor, inwecolor, iwecolor, itbgcolor, intbgcolor, isbgcolor) ",BK
+ Write "{ ",BK
+ Write " bgcolor = ibgcolor;",BK
+ Write " webgcolor = iwebgcolor;",BK
+ Write " wecolor = iwecolor;",BK
+ Write " nwecolor = inwecolor;",BK
+ Write " tbgcolor = itbgcolor;",BK
+ Write " ntbgcolor = intbgcolor;",BK
+ Write " sbgcolor = isbgcolor;",BK
+ Write " var myMonth;",BK
+ Write " myMonth = fBuildCal(iYear, iMonth, iDayStyle);",BK
+ Write " document.write(""<table border='0'>"")",BK
+ Write " document.write(""<tr>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ bgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ nwecolor +""'>"" + myMonth[0][0] + ""</td>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ bgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ nwecolor +""'>"" + myMonth[0][1] + ""</td>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ bgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ nwecolor +""'>"" + myMonth[0][2] + ""</td>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ bgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ nwecolor +""'>"" + myMonth[0][3] + ""</td>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ bgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ nwecolor +""'>"" + myMonth[0][4] + ""</td>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ webgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ wecolor +""'>"" + myMonth[0][5] + ""</td>"");",BK
+ Write " document.write(""<td align='center' style='BACKGROUND-COLOR:""+ webgcolor +"";FONT-FAMILY:Arial;FONT-SIZE:12px;FONT-WEIGHT:bold;COLOR:""+ wecolor +""'>"" + myMonth[0][6] + ""</td>"");",BK
+ Write " document.write(""</tr>"");",BK
+ Write " for (w = 1; w < 7; w++) ",BK
+ Write "  {",BK
+ Write "  document.write(""<tr>"")",BK
+ Write "  for (d = 0; d < 7; d++) ",BK
+ Write "   {",BK
+ Write "   if (myMonth[w][d]==dCurDayOfMonth)",BK
+ Write "    {",BK
+ Write "    document.write(""<td id=calTodayCell bgcolor='""+ tbgcolor +""' align='center' valign='center' width='"" + iCellWidth + ""' height='"" + iCellHeight + ""' style='CURSOR:Hand;FONT-FAMILY:Arial;FONT-SIZE:"" + sDateTextSize + "";FONT-WEIGHT:"" + sDateTextWeight + ""' onMouseOver='fToggleColor(this)' onMouseOut='fToggleColor(this)' onclick=fSetSelectedDay(this)>"");",BK
+ Write "    }",BK
+ Write "   else",BK
+ Write "    {",BK
+ Write "    document.write(""<td id=calCell bgcolor='""+ ntbgcolor +""' align='center' valign='center' width='"" + iCellWidth + ""' height='"" + iCellHeight + ""' style='CURSOR:Hand;FONT-FAMILY:Arial;FONT-SIZE:"" + sDateTextSize + "";FONT-WEIGHT:"" + sDateTextWeight + ""' onMouseOver='fToggleColor(this)' onMouseOut='fToggleColor(this)' onclick=fSetSelectedDay(this)>"");",BK
+ Write "    }",BK
+ Write "  if (!isNaN(myMonth[w][d])) ",BK
+ Write "   {",BK
+ Write "   document.write(""<font id=calDateText onclick=fSetSelectedDay(this)>"" + myMonth[w][d]);",BK
+ Write "   } ",BK
+ Write "  else ",BK
+ Write "   {",BK
+ Write "   document.write(""<font id=calDateText onclick=fSetSelectedDay(this)>"");",BK
+ Write "   }",BK
+ Write "  document.write(""</td>"")",BK
+ Write "  }",BK
+ Write "  document.write(""</tr>"");",BK
+ Write "  }",BK
+ Write " document.write(""</table>"")",BK
+ Write " }",BK
+ Write "function fUpdateCal(iYear, iMonth) ",BK
+ Write "{",BK
+ Write " myMonth = fBuildCal(iYear, iMonth);",BK
+ Write " objPrevElement.bgColor = ntbgcolor;",BK
+ Write " if (((iMonth-1)==dCurMonth) && (iYear==dCurYear))",BK
+ Write "  {",BK
+ Write "  calTodayCell.bgColor = tbgcolor",BK
+ Write "  }",BK
+ Write " else",BK
+ Write "  {",BK
+ Write "  calTodayCell.bgColor = ntbgcolor",BK
+ Write "  }",BK
+ Write " document.all.calSelectedDate.value = """";",BK
+ Write " for (w = 1; w < 7; w++) ",BK
+ Write "  {",BK
+ Write "  for (d = 0; d < 7; d++) ",BK
+ Write "   {",BK
+ Write "   if (!isNaN(myMonth[w][d])) ",BK
+ Write "    {",BK
+ Write "    calDateText[((7*w)+d)-7].innerText = myMonth[w][d];",BK
+ Write "    } ",BK
+ Write "   else ",BK
+ Write "    {",BK
+ Write "    calDateText[((7*w)+d)-7].innerText = "" "";",BK
+ Write "    }",BK
+ Write "   }",BK
+ Write "  }",BK
+ Write "}",BK
+ Write "-->",BK
+ Write "</script>",BK
+ ;Write "<!-- ОКОНЧАНИЕ -->",BK
+ Write "</head>",BK
+ ;Write "<body ONUNLOAD='window.returnValue = frmCalendar.tbSelYear.value+"",""+frmCalendar.tbSelMonth.value+"",""+frmCalendar.calSelectedDate.value; YeaR=frmCalendar.tbSelYear.value; MontH=frmCalendar.tbSelMonth.value;'>",BK
+ Write "<body "_$G(BODY)_"  onkeyPress=""javascript: if (27 == event.keyCode) window.close(); "" ><center>",BK
+ ;Write "<!--",BK
+ ;Write " Вставить текст в необходимое место Вашей страницы",BK
+ ;Write "-->",BK
+ ;Write "<!-- НАЧАЛО -->",BK
+ Write "<script language=""JavaScript"" for=window event=onload>",BK
+ Write "<!--",BK
+ Write " var dCurDate = new Date("_(Yy)_","_(Mm)_","_(Dd)_");",BK
+ Write " frmCalendar.tbSelMonth.options[dCurDate.getMonth()].selected = true;",BK
+ Write " for (i = 0; i < frmCalendar.tbSelYear.length; i++)",BK
+ Write "  if (frmCalendar.tbSelYear.options[i].value == dCurDate.getFullYear())",BK
+ Write "  frmCalendar.tbSelYear.options[i].selected = true;",BK
+ Write "-->",BK
+ Write "</script>",BK
+ Write "<form name=""frmCalendar"" method=""post"" action="""_$$ADDLIB^%ZAPM.ed.BSC4_""">",BK
+ ;;;Write "<form name=""frmCalendar"" method=""post"" action="""">",BK     
+ Write "<input type=""hidden"" name=""calSelectedDate"" value="""">",BK
+ ;Write "<input type=""hidden"" name=""YeaR"" value="""">",BK
+ ;Write "<input type=""hidden"" name=""MontH"" value="""">",BK
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ Write "<table border=""0"" bgcolor=""white"">",BK
+ Write " <tr>",BK
+ Write " <td align=center>",BK
+ Write " <select name=""tbSelMonth"" onchange='fUpdateCal(frmCalendar.tbSelYear.value, frmCalendar.tbSelMonth.value)'>",BK
+ Write " <option value=""1"">Январь</option>",BK
+ Write " <option value=""2"">Февраль</option>",BK
+ Write " <option value=""3"">Март</option>",BK
+ Write " <option value=""4"">Апрель</option>",BK
+ Write " <option value=""5"">Май</option>",BK
+ Write " <option value=""6"">Июнь</option>",BK
+ Write " <option value=""7"">Июль</option>",BK
+ Write " <option value=""8"">Август</option>",BK
+ Write " <option value=""9"">Сентябрь</option>",BK
+ Write " <option value=""10"">Октябрь</option>",BK
+ Write " <option value=""11"">Ноябрь</option>",BK
+ Write " <option value=""12"">Декабрь</option>",BK
+ Write " </select>",BK
+ Write " <select name=""tbSelYear"" onchange='fUpdateCal(frmCalendar.tbSelYear.value, frmCalendar.tbSelMonth.value)'>",BK
+ F Y=$G(YearOT,$E($ZD($h,8),1,4)-3):1:$G(YearDO,$E($ZD($h,8),1,4)+2) Write "                         <option value="""_Y_""">"_Y_"</option>",BK
+ Write " </select>",BK
+ Write " </td>",BK
+ Write " </tr>",BK
+ Write " <tr>",BK
+ Write "  <td>",BK
+ Write "  <script language=""JavaScript"">",BK
+ Write "  <!--",BK
+ Write "  var dCurDate = new Date("_(Yy)_","_(Mm)_","_(Dd)_");",BK
+ Write "  fDrawCal(dCurDate.getFullYear(), dCurDate.getMonth()+1, 30, 16, ""12px"", ""bold"", 3, ""gray"", ""blue"", ""white"", ""white"", ""Aqua"", """_$g(GRAY,"silver")_""", ""Teal"");",BK
+ Write "  -->",BK
+ Write "  </script>",BK
+ Write " </td>",BK
+ Write " </tr>",BK
+ Write "</table>",BK
+ I $D(NOCLOSE) S NOC=""
+ E  S NOC="ONCLICK='window.close();'"
+ Write "<input type=""submit"" name=""Ok"" "_NOC_" value=""Выбрать"">",BK
+ Write "<input type=""submit"" name=""Today"" "_NOC_" value=""Сегодня"">",BK
+ Write "<input type=""submit"" name=""Esc"" "_NOC_" value=""Отмена"">",BK
+ Write "</center></form>",BK
+ Write "</body>",BK
+ Write "</html>",BK
+ Q

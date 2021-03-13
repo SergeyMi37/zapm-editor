@@ -1,0 +1,389 @@
+ROUTINE %ZAPM.ed.BSChT1
+%BSChT1 ; пpогpамма работы с ДАННЫМИ ТАБЛИЦ ; 21:44   21.12.2002
+ q
+JAVA(WI,HE) ;ТАБЛИЦА
+ N %BsWebL,%DEV,%BS,I,II,NSPACE,GL,P1,P2,P3,P9,PART,TABL,TIP,CFG,BS
+ N JAVA,W,H,BODY,STR,COL,TIT,TIX,TIY,BYTE,S1,S2
+ S %BsWebL=1 D JAVA^%ZAPM.ed.BSHTML1
+ Q
+EDIT ;РЕДАКТИРОВАНИЕ БАЗЫ ДАННЫХ
+ D BEG1^%ZAPM.ed.BSC4
+ w "<script LANGUAGE=""JavaScript"" SRC="""_BSDOMAIN_"/js/mfun.js""></script>",!
+ D VAR N KEYS
+ W "<title>"_TB_" : "_$P(@TB,"@",1)_" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>></title>",!
+ w "</head>",!
+ S KEYS=$O(@TB@("KEY",""),-1)
+ w "<frameset cols='30%,*,0%' border='false' frameborder=0 >",!
+ w "<frameset rows='"_(KEYS*60+40)_",*,0' border='false' frameborder=0 >",!
+ N BSROU,BSUSER,BSMENU,BSTOP
+ //S BSPART=$$%T^%ZAPM.ed.BSCh(BSPART),BSTABL=$$%T^%ZAPM.ed.BSCh(BSTABL)
+ S BSLABEL="EDIT1^~BSChT1",marg=5
+ w "  <frame name=""E1"" scrolling=""AUTO"" marginwidth="_marg_" marginheight="_marg_" src="""_$$ADDBSGET^%ZAPM.ed.BSC4_""">",!
+ S BSLABEL="EDIT4^~BSChT1"
+ w "  <frame name=""E4"" scrolling=""AUTO"" marginwidth="_marg_" marginheight="_marg_" src="""_$$ADDBSGET^%ZAPM.ed.BSC4_""">",!
+ w "  <frame name=""E5"" >",!
+ w "</frameset>",!
+ S BSLABEL="EDIT2^~BSChT1"
+ w "  <frame name=""E2"" scrolling=""AUTO"" marginwidth="_marg_" marginheight="_marg_" src="""_$$ADDBSGET^%ZAPM.ed.BSC4_""">",!
+ w "  <frame name=""E3"" >",!
+ w "</frameset>",!
+ D END^%ZAPM.ed.BSC4
+ Q
+VAR //СОЗДАТЬ ПЕРЕМЕННЫЕ
+ S pP=$$%^%ZAPM.ed.BSCh(BSPART),pT=$$%^%ZAPM.ed.BSCh(BSTABL) I $E(pP,1)'="^" S pP="^"_pP
+ S TB=$NA(@pP@(pT))
+ S BD=$$KBD^%ZAPM.ed.BSF12(TB)
+ S HTT=$$VARHTT()
+ S ArrOUT=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4SNX(""OUT"")")
+ S KOLK=$O(@TB@("KEY",""),-1)
+ Q
+VARHTT()
+ N BSROU,BSUSER,BSMENU,BSTOP
+ //S BSPART=$$%T^%ZAPM.ed.BSCh(P),BSTABL=$$%T^%ZAPM.ed.BSCh(T)
+ Q $$ADDBSGET^%ZAPM.ed.BSC4
+EDIT0 ;НАЧАЛО
+ D BEG1^%ZAPM.ed.BSC4
+ D JumpKey ;w "<script LANGUAGE=""JavaScript"" SRC=""/"_$G(BSDJS,"bs")_"/js/bsbd.js""></script>",!
+ w "</head>",!
+ D VAR
+ Q
+EDIT1 ;ФРэЙМ ИНДЕКСОВ
+ N BD,TB,HTT,KOLK
+ D EDIT0
+ W "<BODY>"
+ W BK,AF,"База данных "_RED_BD_EF_EF
+ w "<form name=""EE1"">"_BK
+ I $D(@TB@("KEY",0)) D KEYS(0) ;НУЛЕВОЙ ИМЕННОЙ КЛЮЧ
+ e  w "<input type=""hidden"" name=""k0"" value="""">",BK
+ F I=1:1:9 d
+ .i $D(@TB@("KEY",I)) D KEYS(I)
+ .e   w "<input type=""hidden"" name=""k"_I_""" value="""">",BK
+ w "</form>"
+ //w RED,"В индексах Запрещены символы ~%& ",EF
+ D END
+ Q
+KEYS(I) ;ВЫВОД КЛЮЧЕЙ
+ //W BK,"<BR> Key=",I," ",BLUE,$P(@TB@("KEY",I),"@",15),EF,"<BR>",BK
+ W "Ключ=",I," ",BLUE,$P(@TB@("KEY",I),"@",15),EF,"<BR>",BK
+ W " <INPUT name=b1u"_I_" title=""на первый ключ"" TYPE=""button"" VALUE=""&lt;&lt;"" onClick=""JumpKey("_I_",'BEG','"_HTT_"',EE1.k0.value,EE1.k1.value,EE1.k2.value,EE1.k3.value,EE1.k4.value,EE1.k5.value,EE1.k6.value,EE1.k7.value,EE1.k8.value,EE1.k9.value);"">",BK
+ W "<INPUT name=b2u"_I_" title=""на предыдущий ключ"" TYPE=""button"" VALUE=""&lt;"" onClick=""JumpKey("_I_",'MIN','"_HTT_"',EE1.k0.value,EE1.k1.value,EE1.k2.value,EE1.k3.value,EE1.k4.value,EE1.k5.value,EE1.k6.value,EE1.k7.value,EE1.k8.value,EE1.k9.value);"">",BK
+ W "<INPUT title=""Поле текущего ключа"" name=""k"_I_""" TYPE=""text"" SIZE=10 VALUE="""" " d  w "onClick=""JumpKey("_I_",'LIST','"_HTT_"',EE1.k0.value,EE1.k1.value,EE1.k2.value,EE1.k3.value,EE1.k4.value,EE1.k5.value,EE1.k6.value,EE1.k7.value,EE1.k8.value,EE1.k9.value);"">",BK
+ .w "onkeypress='if (13 == event.keyCode) return false;' "
+ W "<INPUT name=b3u"_I_" title=""на последущий ключ"" TYPE=""button"" VALUE=""&gt;"" onClick=""JumpKey("_I_",'MAX','"_HTT_"',EE1.k0.value,EE1.k1.value,EE1.k2.value,EE1.k3.value,EE1.k4.value,EE1.k5.value,EE1.k6.value,EE1.k7.value,EE1.k8.value,EE1.k9.value);"">",BK
+ W "<INPUT name=b4u"_I_" title=""на последний ключ"" TYPE=""button"" VALUE=""&gt;&gt;"" onClick=""JumpKey("_I_",'END','"_HTT_"',EE1.k0.value,EE1.k1.value,EE1.k2.value,EE1.k3.value,EE1.k4.value,EE1.k5.value,EE1.k6.value,EE1.k7.value,EE1.k8.value,EE1.k9.value);"">",BK
+ W "<INPUT name=b5u"_I_" title=""удалить ключ"" TYPE=""button"" VALUE=""del"" onClick=""if (confirm('Удаляем "_I_" узел ! Вы уверены ?')) { JumpKey("_I_",'DEL','"_HTT_"',EE1.k0.value,EE1.k1.value,EE1.k2.value,EE1.k3.value,EE1.k4.value,EE1.k5.value,EE1.k6.value,EE1.k7.value,EE1.k8.value,EE1.k9.value); }"">",BK
+ Q
+EDIT4 D BEG1^%ZAPM.ed.BSC4 W "<BODY><BR>" //"<center> Кликните 2 раза на ПОЛЕ КЛЮЧА для вывода перечня всех значений КЛЮЧА текущего уровня</center>"
+ D END^%ZAPM.ed.BSC4
+ Q
+refresh() q "JumpKey("_$O(@TB@("KEY",""))_",'BEG','"_HTT_"','','','','','','','','','','');"
+SAVECARD W "<input type=""submit"" value=""Сохранить изменения"" name=""BSB1"" onmouseover=""SaveKey();"">"
+    W "<BUTTON title='ESC' onclick=""javascript:"_$$refresh_""">Отменить изменения</BUTTON>"
+ q
+EDIT2 ;ФРЭЙМ КАРТОЧКИ БД
+ N BD,TB,Y,X,BS,st,dcell
+ D EDIT0
+ W BR,"<BODY ONLOAD="""_$$refresh_""">"
+ W BK,"<H2>",BLUE,$P(@TB,"@"),EF,"</H2>"
+ W "<form name='EE2' action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"" target='E5'>"
+ d SAVECARD
+ w "<table border=0>"
+ F Y=1:1 Q:'$D(@TB@(Y))  D
+ .W "<tr>"
+ .F X=1:1 Q:'$D(@TB@(Y,X))  D
+ ..W "<td class=s3 "_$S(X=1:"WIDTH=30%",1:"")_" >" S BS=@TB@(Y,X)
+ ..I $P(BS,"@",9)=1 D  ;S dcell=$E($$CELL^%ZAPM.ed.BSCt(TB,Y,X),1,$P(BS,"@",4)*$P(BS,"@",3)) W:dcell'?1N dcell  ;ДАННЫЕ КЛЕТКИ
+ ...S dcell=$$CELL^%ZAPM.ed.BSCt(TB,Y,X) W:dcell'?1N dcell
+ ..E  D
+ ...//I $P(BS,"@",21)=???
+ ...I $P(BS,"@",21)=1 W "<TEXTAREA name=""X"_Y_"x"_X_""" cols="_$P(BS,"@",4)_" rows="_$S($P(BS,"@",3)<4:4,1:$P(BS,"@",3))_" title='Y:"_Y_" X:"_X_" Field:"_$P($p(BS,"@",18),"#",1)_" Type:"_$P(BS,"@",21)_"'></TEXTAREA>" Q
+ ...W "<INPUT TYPE=""text"" name=""X"_Y_"x"_X_""" SIZE=115 VALUE="""" title='Y:"_Y_" X:"_X_" Field:"_$P($p(BS,"@",18),"#",1)_" Type:"_$P(BS,"@",21)_"'>" s st(Y)=$g(st(Y))_"'&y"_Y_"x"_X_"='+e(EE2.X"_Y_"x"_X_".value)+"
+ ..W "</td>"
+ .W "</tr>",BK
+ w "</table>"
+ S BSLABEL="HIDD^~BSChT1"
+ //w "<input type=""hidden"" name=""BSNSPACE"" value="""_BSNSPACE_""">",BK
+ //w "<input type=""hidden"" name=""BSROU"" value=""MAIN^~BSCh1"">",BK
+ //w "<input type=""hidden"" name=""BSLABEL"" value=""HIDD^~BSChT1"">",BK
+ //w "<input type=""hidden"" name=""BSPART"" value="""_BSPART_""">",BK
+ //w "<input type=""hidden"" name=""BSTABL"" value="""_BSTABL_""">",BK
+ w "<input type=""hidden"" name=""BSA"" value=""SAVE"">",BK
+ w "<input type=""hidden"" name=""BSK"" value="""_KOLK_""">",BK
+ F X=0:1:9 w "<input type=""hidden"" name=BSK"_X_" VALUE="""">",BK
+ N BSTOP,BS
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ d SAVECARD
+ w "</form>"
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function SaveKey() {",BK
+ W "parent.E2.EE2.BSK0.value=parent.E1.EE1.k0.value;",BK
+ W "parent.E2.EE2.BSK1.value=parent.E1.EE1.k1.value;",BK
+ W "parent.E2.EE2.BSK2.value=parent.E1.EE1.k2.value;",BK
+ W "parent.E2.EE2.BSK3.value=parent.E1.EE1.k3.value;",BK
+ W "parent.E2.EE2.BSK4.value=parent.E1.EE1.k4.value;",BK
+ W "parent.E2.EE2.BSK5.value=parent.E1.EE1.k5.value;",BK
+ W "parent.E2.EE2.BSK6.value=parent.E1.EE1.k6.value;",BK
+ W "parent.E2.EE2.BSK7.value=parent.E1.EE1.k7.value;",BK
+ W "parent.E2.EE2.BSK8.value=parent.E1.EE1.k8.value;",BK
+ W "parent.E2.EE2.BSK9.value=parent.E1.EE1.k9.value;",BK
+ ;W "alert(parent.E2.EE2.BSK1.value);",BK
+ W "}",BK
+ W "function SaveData(k,a,HTT,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9) {",BK
+ ;русские буквы
+ //W "var s=HTT+'&BSK='+k+'&BSA='+a+'&"_$$BSDJS()_"BSLABEL=HIDD^~BSChT1'+'&BSK0='+k0+'&BSK1='+k1+'&BSK2='+k2+'&BSK3='+k3+'&BSK4='+k4+'&BSK5='+k5+'&BSK6='+k6+'&BSK7='+k7+'&BSK8='+k8+'&BSK9='+k9+"
+ W "var s=HTT+'&BSK='+k+'&BSA='+a+'&BSLABEL=HIDD^~BSChT1'+'&BSK0='+k0+'&BSK1='+k1+'&BSK2='+k2+'&BSK3='+k3+'&BSK4='+k4+'&BSK5='+k5+'&BSK6='+k6+'&BSK7='+k7+'&BSK8='+k8+'&BSK9='+k9+"
+ ;%$@#^!
+ ;w "var s=HTT+'&BSK='+k+'&BSA='+a+'&"_$$BSDJS()_"BSLABEL=HIDD^~BSChT1'+'&BSK0='+k0+'&BSK1='+e(k1)+'&BSK2='+e(k2)+'&BSK3='+e(k3)+'&BSK4='+e(k4)+'&BSK5='+e(k5)+'&BSK6='+e(k6)+'&BSK7='+e(k7)+'&BSK8='+e(k8)+'&BSK9='+e(k9)+"
+ S I=$O(st(""),-1),st(I)=$E(st(I),1,$L(st(I))-1)
+ s i="" F  s i=$O(st(i)) Q:i=""  W st(i)
+ W BK,"parent.E3.location=s",BK
+ W "}",BK
+ W "</script>",BK
+END W "</BODY></HTML>",BK
+ Q
+RESET    W "<div align='right'><A HREF=""javascript:"_$$refresh_""">Отменить изменения</A></div>",BK
+ Q
+HIDD ;СКРЫТАЯ 3 ФОРМА = ДИСПЕТЧЕР
+ N BD,TB,Y,X,BS,I,KEY,CBD,STOP,KOLK,ER1
+ D BEG1^%ZAPM.ed.BSC4
+ D JumpKey
+ D VAR
+ ;--------------
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function DoAction() {",BK
+ ;W "alert(111);",BK
+ ;F I=0:1:9 I $D(@("BSK"_I)) S KEY(I)=$G(@("BSK"_I))
+ F I=0:1:9 S KEY(I)=$G(@("BSK"_I))
+ ;W "/*",BK
+ ;D WL("CBD")
+ ;ZW KEY
+ ;w BSK
+ ;W BK,"*/",BK
+ S CBD=BD
+ I BSK>0 S CBD=BD_$G(BSK0) D HKK(0)
+ F I=1:1:BSK-1  D HKK(I) D
+ .I KEY(I)'="" S CBD=$NA(@CBD@(KEY(I))) Q
+ .I KEY(I)="" S ER1=I_","_$G(ER1)
+ I KEY(BSK)="",BSA="SAVE" S ER1=BSK
+ I $D(ER1),BSA="SAVE" W "alert('Значение ключа #"_ER1_" пустое!'); ",BK
+ I BSA'="LIST",'$D(ER1) D HIDACT
+ W "}",BK
+ W "</script>",BK
+ ;--------------
+ w "</head>",!
+ W BK,"<BODY ONLOAD=""DoAction();"">"
+ I BSA="LIST" d LIST
+ D END
+ Q
+HKK(K) i BSA="LIST"!(BSA="DEL") q
+ I '$D(KEY(K)) Q  W "alert('НЕТ "_K_" КЛЮЧА!');" Q
+ W "parent.E1.EE1.k"_K_".value='"_KEY(K)_"';",BK
+ Q
+Keys2P3(BSK,BD,CBD)
+ i BSK=0 d
+ .S K=0,P0=$$GD^%ZAPM.ed.BSCp("","B") ;ТОЛЬКО БАЗЫ ДАННЫХ
+ .K P3 I BD["]" S BD="^"_$P(BD,"]",2)
+ .S i="" F  S i=$O(@P0@(i)) Q:i=""  S P1="^"_i I P1[BD,$P(P1,BD,2)'="" S P3($P(P1,BD,2))=""
+ i BSK'=0 d
+ .K P3
+ .s i="" f  s i=$O(@CBD@(i)) q:i=""  S P3(i)=""
+ Q
+LIST ;перечень ключей
+ W "<form name=""EE4"" action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"" target='E5'>"
+ w "<table width=100% border=0>"
+ w "<tr><td class=s1 align='right'>"_BSK_"</td>"
+ W "<td class=s1>уровень. Значений <INPUT TYPE=""text"" DISABLED name=KOL SIZE=3 VALUE="""" ></td>"
+ W "</tr>"
+ N P1,P2,P3,K
+ D Keys2P3(BSK,BD,CBD)
+ S K=0
+ s i="" f  s i=$O(P3(i)) q:i=""  D  S K=K+1
+ .I K=0 w "<tr><td class=s3>"_$$GroupC("","")_"</td><td class=s3>" D ACT0 W $$GroupA_"</td></tr>",BK
+ .w "<tr><td class=s1>"_$$GroupC(K,i)_"</td><td class=s1><a title='"_$G(@CBD@(i))_"' href=""javascript:NodeSet('"_i_"');"">",i,"</a></td></tr>",BK
+ w "</table>"
+ S BSLABEL="ActNode^~BSChT1",BSCBD1=$$%T^%ZAPM.ed.BSCh(BD)
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ W "</form>"
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ w "parent.E4.EE4.KOL.value="_K_";",BK
+ W "function NodeSet(i) {",BK
+    w "JumpKey("_(BSK+1)_",'BEG','"_HTT_"'"
+    F I=0:1:BSK-1 w ",'"_KEY(I)_"'"
+    w ",i"
+    F I=BSK+1:1:9 w ",''"
+ w ");",BK
+ W "}",BK
+ W "</script>",BK
+ q
+ActNode //групповое действие над узлом бд
+ N BD,TB,Y,X,BS,I,KEY,CBD,STOP,KOLK,ER1
+ D BEG1^%ZAPM.ed.BSC4
+ D VAR
+ N P1,P2,P3,K,MSG,AN
+ S (BD,CBD)=$$%^%ZAPM.ed.BSCh(BSCBD1)
+ I BSK>0 S CBD=BD_$G(BSK0)
+ F I=1:1:+BSK-1 I @("BSK"_I)'="" S CBD=$NA(@CBD@(@("BSK"_I)))
+ 
+ D Keys2P3(BSK,BD,CBD)
+ S K=0,K1=0,MSG="Никаких действий не произведено..."
+ I $G(Act0)=3 D  //...............УДАЛИТЬ
+ .I $D(CheckW) D  Q  //ВСЕ УЗЛЫ
+ ..K @CBD S MSG="Узел `"_CBD_"` удален" D SNX("K",$zr,TB)
+ .s i="" f  s i=$O(P3(i)) q:i=""  D  S K=K+1
+ ..I $D(@("CheckW"_K)) D CLEAR^%ZAPM.ed.BSCm4($NA(@CBD@(i)),TB) K @CBD@(i) D SNX("K",$zr,TB) S K1=K1+1
+ .S MSG="Удалено "_K1_" узлов"
+  /*
+ I $G(Act0)=2 D  //...............ПОСЛАТЬ
+ .I $D(CheckW) S AN=1
+ .s i="" f  s i=$O(P3(i)) q:i=""  D  S K=K+1
+ ..I $D(@("CheckW"_K))!($D(AN)) //S @CBD@(i) S K1=K1+1
+ .S MSG="Помечено "_K1_" узлов"
+ */
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function DoAction() {",BK
+ I $D(MSG) W "alert('"_MSG_"');",BK
+ ;W "/*",BK
+ ;D WL("CBD")
+ ;ZW KEY
+ ;W BK,"*/",BK
+ W "}",BK
+ W "</script>",BK
+ ;--------------
+ w "</head>",!
+ W BK,"<BODY ONLOAD=""DoAction();"">"
+ D END
+ Q
+ACT0 ;ГРУППОВЫЕ ДЕЙСТВИЯ
+ N I,T
+ S T=1 W "<select name='Act0' size=1>"
+ F I=" ",$$LNG^%ZAPM.ed.BSC4("..."),$$LNG^%ZAPM.ed.BSC4("Удалить",119) W "<option value='"_T_"'>"_I_"</option>" S T=T+1
+ W "</select>"
+ Q
+GroupC(N,NN) Q "<input type=""checkbox"" title='"_$$LNG^%ZAPM.ed.BSC4("Групповая работа включая ",122)_$S(N="":$$LNG^%ZAPM.ed.BSC4("всех ",123)_CBD,1:$NA(@CBD@(NN)))_"' name='CheckW"_N_"' value=''>"
+GroupA() Q "<input type=""submit"" name='ActOK0' title='"_$$LNG^%ZAPM.ed.BSC4("Групповое действие",79)_"' value='Выполнить'>"
+HIDACT ;ДЕЙСТВИЕ
+ N Er2,Er8
+ I BSA="SAVE" D  Q
+ .d CBD N N3 d SAVE
+ .W BK,"alert('СОХРАНИЛИ В УЗЛЕ "_CBD_" - "_N3_" ЗНАЧЕНИЙ');",BK
+ I BSA="DEL" D
+ .i KEY(BSK)="" W BK,"alert('УЗЕЛ "_$zr_" ПУСТОЙ!');",BK G DEL1
+ .I BSK=0 S Er8=$NA(@(CBD_KEY(BSK)))
+ .E  S Er8=$NA(@CBD@(KEY(BSK)))
+ .D CLEAR^%ZAPM.ed.BSCm4(Er8,TB)
+ .K @Er8
+ .W BK,"alert('УДАЛИЛИ УЗЕЛ "_$zr_" ');",BK
+ .D SNX("K",$zr,TB)
+DEL1 .S BSA="MIN"
+ ;НУЛЕВОЙ ИМЕННОЙ КЛЮЧ
+ I BSK=0,$D(@TB@("KEY",0)) W "parent.E1.EE1.k0.value='"_$$HKEY0(0)_"';",BK I $D(STOP) Q
+ ;ИНДЕКСНЫЕ КЛЮЧИ
+ S i=$S(BSK=0:1,1:BSK)
+ F I=i:1:KOLK W "parent.E1.EE1.k"_I_".value='"_$$HKEY(I)_"';",BK I $D(STOP) Q
+ I $D(Er2)       W "alert('"_Er2_"."_" Окно браузера будет закрыто.');",BK,"parent.window.close();"_BK Q
+ I '$D(STOP) D HDATA ;КАРТА БД
+ Q
+CBD S CBD=$NA(@CBD@(KEY(BSK)))
+ q
+WL(L) ;ВЫВЕСТИ ЗНАЧЕНИЕ ЛОКАЛИ
+ F I=1:1 Q:$P(L,",",I,I+1)=""  W "// ",$P(L,",",I),"=",$g(@$P(L,",",I),"undef..."),BK
+ W BK Q
+DI(N,Y) S Y=$S(Y=1:"YES",1:"") W "parent.E1.EE1.b"_N_"u"_I_".disabled='"_Y_"';",BK
+ Q
+DIS(G,U) ;ПРОВЕРКА
+ I $O(@G@(U))="" D DI(3,1),DI(4,1)
+ I $O(@G@(U))'="" D DI(3,0),DI(4,0)
+ I $O(@G@(U),-1)="" D DI(1,1),DI(2,1)
+ I $O(@G@(U),-1)'="" D DI(1,0),DI(2,0)
+ Q
+HKEY0(I) ;ИМЕННОЙ
+ N P1,P2,P3,K
+ S K=0,P0=$$GD^%ZAPM.ed.BSCp("","B") ;ТОЛЬКО БАЗЫ ДАННЫХ
+ K P3 I BD["]" S BD="^"_$P(BD,"]",2)
+ ;D WL("BD,P0")
+ S i="" F  S i=$O(@P0@(i)) Q:i=""  S P1="^"_i I P1[BD,$P(P1,BD,2)'="" S P3($P(P1,BD,2))=""
+ I '$D(P3) Q ""
+ I BSA="MAX" I $$ZK(1) S KEY(K)=$O(P3(KEY(K))) D DIS("P3",KEY(K)),HK0  D DI(5,$S(KEY(K)="":1,1:0))
+ I BSA="MIN" I $$ZK(-1) S KEY(K)=$O(P3(KEY(K)),-1) D DIS("P3",KEY(K)),HK0   D DI(5,$S(KEY(K)="":1,1:0))
+ I BSA="BEG" S KEY(K)=$O(P3("")) D DIS("P3",KEY(K)),HK0  D DI(5,$S(KEY(K)="":1,1:0))
+ I BSA="END" S KEY(K)=$O(P3(""),-1) D DIS("P3",KEY(K)),HK0  D DI(5,$S(KEY(K)="":1,1:0))
+ Q KEY(K)
+HKEY(K) ;ИНДЕКСЫ
+ I '$$Data^%ZAPM.ed.BSF12(CBD) S Er2="Нет доступа до "_$G(CBD,"?") Q ""
+ I K'=BSK D  Q KEY(K)
+ .S KEY(K)=$O(@CBD@("")) D DIS(CBD,KEY(K)),HK
+ ;I $D(KEY(K-1)),KEY(K-1)="" S KEY(K)="" Q ""
+ I BSA="MAX" I $$ZK(1) S KEY(K)=$O(@CBD@(KEY(K))) D DIS(CBD,KEY(K)),HK   D DI(5,$S(KEY(K)="":1,1:0))
+ I BSA="MIN" I $$ZK(-1) S KEY(K)=$O(@CBD@(KEY(K)),-1) D DIS(CBD,KEY(K)),HK   D DI(5,$S(KEY(K)="":1,1:0))
+ I BSA="BEG" S KEY(K)=$O(@CBD@("")) D DIS(CBD,KEY(K)),HK   D DI(5,$S(KEY(K)="":1,1:0))
+ I BSA="END" S KEY(K)=$O(@CBD@(""),-1) D DIS(CBD,KEY(K)),HK  D DI(5,$S(KEY(K)="":1,1:0))
+ Q KEY(K)
+HK I KEY(K)'="" S CBD=$NA(@CBD@(KEY(K)))
+ Q
+HK0 I KEY(K)'="" S CBD=CBD_KEY(K)
+ Q
+ZK(P) I KEY(K)="" G ZK1
+ I K=0,$O(P3(KEY(K)),P)'="" Q 1
+ I $O(@CBD@(KEY(K)),P)'="" Q 1
+ZK1 W BK,"alert('ДАЛЬШЕ НЕЛЬЗЯ !');",BK S STOP=1
+ Q 0
+JumpKey ;
+ w BK,"<script LANGUAGE=""JavaScript"">",BK
+ W "function JumpKey(k,a,HTT,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9) {",BK
+ W "//русские буквы",BK
+ W "var s=HTT+'&BSK='+k+'&BSA='+a+'&BSLABEL=HIDD^~BSChT1'+'&BSK0='+k0+'&BSK1='+k1+'&BSK2='+k2+'&BSK3='+k3+'&BSK4='+k4+'&BSK5='+k5+'&BSK6='+k6+'&BSK7='+k7+'&BSK8='+k8+'&BSK9='+k9;",BK
+ ;W "//%$@#^!"
+ ;W "//var s=HTT+"&BSK="+k+"&BSA="+a+"&BSLABEL=HIDD^~BSChT1"+"&BSK0="+k0+"&BSK1="+e(k1)+"&BSK2="+e(k2)+"&BSK3="+e(k3)+"&BSK4="+e(k4)+"&BSK5="+e(k5)+"&BSK6="+e(k6)+"&BSK7="+e(k7)+"&BSK8="+e(k8)+"&BSK9="+e(k9)
+ W "if (a==""LIST"") { parent.E4.location=s;",BK
+ ;   // alert(k+' '+a+' '+HTT);
+ W "     return true;",BK
+ W "     }",BK
+  ;//  alert(k+' '+a+' '+HTT);
+ W "parent.E3.location=s;",BK
+ W "}",BK
+ W "function e(S) { return escape(S);",BK
+ W "}",BK
+ W "function u(S) { return unescape(S);",BK
+ W "}",BK
+ W "</script>",BK
+ Q
+HDATA ;БД
+ N N1,N2,N3,Y,X,BS
+ F Y=1:1 Q:'$D(@TB@(Y))  D
+ .F X=1:1 Q:'$D(@TB@(Y,X))  D
+ ..S BS=@TB@(Y,X) I $P(BS,"@",9)=1 Q
+ ..S N1="X"_Y_"x"_X
+ ..I $P($P(BS,"@",18),"#")'="" S N2=$P($P(BS,"@",18),"#")
+ ..E  S N2=Y_","_X
+ ..S N3=$G(@CBD@(N2)),N3=$$CTRL^%ZAPM.ed.BSre(N3) ;УДАЛЕНИЕ УПРАВЛЯЮЩИХ СИМВОЛОВ из данных
+ ..I N3'="" W "parent.E2.EE2."_N1_".value='"_N3_"';",BK
+ ..E  W "parent.E2.EE2."_N1_".value='';",BK
+ Q
+SAVE ;сохранить
+ ;D WL("CBD")
+ I '$D(@(BD_KEY(0))) S @(BD_KEY(0))=$G(@BD,"BSD - MSW@")
+ N N1,N2,Y,X,BS S N3=0
+ F Y=1:1 Q:'$D(@TB@(Y))  D
+ .F X=1:1 Q:'$D(@TB@(Y,X))  D
+ ..S BS=@TB@(Y,X) I $P(BS,"@",9)=1 Q
+ ..S N1=$g(%KEY("X"_Y_"x"_X))
+ ..I $P($P(BS,"@",18),"#")'="" S N2=$P($P(BS,"@",18),"#")
+ ..E  S N2=Y_","_X
+ ..S N3=N3+$$DataSet(CBD,N2,N1)
+ I N3 S @CBD=$H_","_$G(BSLOGIN)_",1" D SNX("S",$zr,TB)
+ q
+DataSet(CBD,NODE,VAL) //ПРИСВОИТЬ НОВЫЕ ЗНАЧЕНИЯ В БАЗУ ДАННЫХ
+ N OLD   I NODE="" Q 0
+ S $ZT="ERRDataSet"
+ S OLD=$G(@CBD@(NODE))
+ I VAL=OLD Q 0
+ I VAL="" K @CBD@(NODE)
+ E  S @CBD@(NODE)=VAL
+ Q 1
+ERRDataSet W " Ошибка присвоения! " Q 0
+SNX(S,zr,PT,Arr) //ПРИСВОЕННЫЕ УЗЛЫ ДЛЯ СИСТЕМЫ СИНХРОНИЗАЦИИ
+ i '$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSC4SNX.Par","Aaa") q  //протокол выключен
+ I $D(Arr) S ArrOUT=Arr ;".."_$INCREMENT(@(%BS(24,1)_".I")) S (^mtempBSsinx,^mtempBSprot)=1
+ I '$D(ArrOUT) S ArrOUT=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4SNX(""OUT"")")
+ S @ArrOUT@(+$H,$P($H,",",2)_".."_$INCREMENT(^mtempBSsinx),zr,"A")=S,^("D")=PT,^("L")=$G(BSLOGIN),^("NS")=$zu(5)
+ Q

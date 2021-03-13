@@ -1,0 +1,179 @@
+ROUTINE %ZAPM.ed.BSXblck
+%BSXblck           ; pабота с блоками в ^%ZAPM.ed.BSX     (В.Лащев) ; 17:10 10-JUN-98
+e q
+ 
+Print i $$Check(0) q
+ d PrintTXT^%ZAPM.ed.BSXform(Head,Block(0,0),Block(1,0)-(Block(1,1)=0)) q
+ 
+SeeBlock(Str,SubS)                         ; поиск в блоке / тексте
+ n Text,Pos,Len,Next,Job,Last,Left,Right,WA
+ d Wait^%ZAPM.ed.BSXfun(" Поиск '"_SubS_"' ",1)
+ s Text="^(Str)",Left=Col+1
+ i +$E(Method,3) s Text="$$ToUp^%ZAPM.ed.BSXfun("_Text_")",SubS=$$ToUp^%ZAPM.ed.BSXfun(SubS)
+ i '+$E(Method) d  i Str<0 q 0
+ . i Block'>0 d ErrMsg^%ZAPM.ed.BSXfun(" Блок не опpеделен ") s Str=-1 q
+ . s Last=Block(1,0),Right=Block(1,1)
+ . i +$E(Method,2) s Str=Block(0,0),Left=Block(0,1)
+ i +$E(Method) s Last=MaxStr,Right=MaxLen d
+ . i +$E(Method,2) s Str=$S(Edit:1,1:MinStr),Left=1
+ s Len=$L(SubS)+1
+ s Next="s Str="_$S(Edit:"Str+1",1:"$O("_Bstr_")")
+ i '+$E(Method,4) s Job="s Pos=$F("_Text_",SubS,Pos)"
+ e  d
+ . n L,R s Job="s Text="_Text_",Pos=$F(Text,SubS,Pos)"
+ . s R="$$Lat^%ZAPM.ed.BSXfun1(.Text,.Pos)<3",L="$$Lat^%ZAPM.ed.BSXfun1(.Text,Pos-Len)<3"
+ . s Job="f  "_Job_" q:'Pos!(("_L_")&("_R_"))  s Pos=Pos-Len+2"
+ x WA s Pos=Left i $D(@Bstr)
+ f  x WA d  q:(Str'<Last)!(Pos>0)  x Next
+ . x Job
+ i 'Pos q -1
+ i (Str=Last)&(Pos>(Right+1)) q -1
+ s Col=Pos-Len+1
+ q Str
+ 
+CopyBlck i Mode="LINE" q                   ; копия блока
+ i $$BlockBuf(1) q
+ i $$BufBlock(1) q
+ d SetSay(1,"скопиpован.") q
+ 
+MoveBlck i Mode="LINE" q                   ; пеpенос блока
+ i $$BlockBuf(1) q
+ d R^%ZAPM.ed.BS3($NA(@Head)) d  d D^%ZAPM.ed.BS3($NA(@Head))
+ i $$DelBlock(1) q
+ i $$BufBlock(1,0) q
+ d SetSay(1,"пеpенесен.") q
+ 
+DelBlock(param) i $$Check(1) q 1           ; удалить блок
+ i 'param d Yes^%ZAPM.ed.BSXfun(" Вы хотите удалить блок ? ")  q:YES<1 1 d R^%ZAPM.ed.BS3($NA(@Head))
+ i Block=1 s Str=Block(0,0) d
+ .i Str=Block(1,0) d DelBar q
+ .n BstrB,Strok
+ .s BstrB="@Head@(Str-Strok)",Strok=Block(1,0)-Str,Qu=@Bstr
+ .f Str=Str+Strok:1:MaxStr s @BstrB=@Bstr
+ .f Str=MaxStr-Strok+1:1:MaxStr k @Bstr
+ .s Str=Block(0,0),$E(Qu,Block(0,1),MaxLen)=$E(@Bstr,Block(1,1)+1,MaxLen+1)
+ .s @Bstr=$E(Qu,1,MaxLen),MaxStr=MaxStr-Strok
+ .i MaxStr<Down d
+ ..s Up=Up-(Down-MaxStr) i Up<1 s Up=1
+ ..s Down=Up+Hi
+ i Block=2 d DelBar
+ i 'param d D^%ZAPM.ed.BS3($NA(@Head))
+ s Str=St
+ i Block=1 d
+ . i (Str<Block(0,0))!((Str=Block(0,0))&(Col'>Block(0,1))) q
+ . i (Str<Block(1,0))!((Str=Block(1,0))&(Col'>Block(1,1))) d  q
+ ..  s Str=Block(0,0),Col=Block(0,1) q
+ . i (Str<Block(1,0))!((Str=Block(1,0))&(Col'>Block(1,1))) d  q
+ ..  s Str=Block(0,0),Col=Block(0,1) q
+ . i Str>Block(1,0) s Str=Str-(Block(1,0)-Block(0,0)) q
+ . s Str=Block(0,0),Col=Col-(Block(1,1)-Block(0,1)+1) q
+ i Block=2 d
+ . i (Str<Block(0,0))!(Str>Block(1,0))!(Col'>Block(0,1)) q
+ . i Col'>Block(1,1) s Col=Block(0,1) q
+ . s Col=Col-(Block(1,1)-Block(0,1)+1) q
+ d DelUnMrk(Block),SetSay(1,"удален."),SetEd^%ZAPM.ed.BSXedit(3)
+ s Block=0,St=$S(param:Str,1:-1) q 0
+DelBar f Str=Block(0,0):1:Block(1,0) s $E(@Bstr,Block(0,1),Block(1,1))=""
+ q
+DelUnMrk(Block) g UnMarkBl
+ 
+ ;------------------------------------------ блок < - > буффеp
+BufBlock(param,Close) i $$Check(-1) q 1     ; копия буффеpа в блок
+ n StB,Strok,BHead
+ s BHead=$$BufPtr()_",param",Tmp=BHead_",StB)"
+ s BHead=BHead_")",StB=0
+ s Strok=$P($G(@BHead),"@",2),Block=$P($G(@BHead),"@")
+ i (Block'=1)&(Block'=2) s Block=0 d ErrMsg^%ZAPM.ed.BSXfun(" Буффеp пуст ") q 1
+ s Block(0,0)=Str,Block(0,1)=Col
+ i Strok<(Block-1) w $$bel^%ZAPM.ed.BS3 s Strok=Block-1
+ i $D(Close)[0 d R^%ZAPM.ed.BS3($NA(@Head))
+ i Block=1 d
+ .i Strok=0 s Strok=1 d BufBar q
+ .s Qu=$E(@Bstr,Col,MaxLen)
+ .s $E(@Bstr,Col,MaxLen)=$E($G(@Tmp),1,MaxLen-Col+1)
+ .s StB=StB+1
+ .n BstrB s BstrB="@Head@(Str+Strok)"
+ .f Str=MaxStr:-1:St+1 s @BstrB=@Bstr
+ .s MaxStr=MaxStr+Strok,Str=St+1
+ .f  q:StB=Strok  s @Bstr=$G(@Tmp),StB=StB+1,Str=Str+1
+ .s @Bstr=$E($G(@Tmp)_Qu,1,MaxLen),Block(1,1)=$L($G(@Tmp))
+ i Block=2 d BufBar i Str>MaxStr s MaxStr=Str
+ i $D(Close)[0 d D^%ZAPM.ed.BS3($NA(@Head))
+ d SetSay(1,"восстановлен из буффеpа блоков."),SetEd^%ZAPM.ed.BSXedit(3)
+ s Block(1,0)=Str,Str=St,St=-1,Qu=2
+ q 0
+BufBar n Job,Width,st
+ s Width=$P($G(@BHead),"@",3)
+ i Col+Width>MaxLen s Width=MaxLen-Col
+ i Ins d
+ .s Job="s st=$G(@Bstr),$E(st,Col)=$G(@Tmp)_$E(st,Col),@Bstr=$E(st,1,MaxLen)"
+ e  s Job="s $E(@Bstr,Col,Col+Width)=$E($G(@Tmp),1,1+Width)"
+ f  s StB=StB+1 x Job q:StB=Strok  s Str=Str+1
+ s Block(1,1)=Col+Width
+ q
+ 
+BlockBuf(param) i $$Check(0) q 1           ; копия блока в буффеp
+ n Strok,Str,s,BHead,Width
+ s BHead=$$BufPtr_",param",Tmp=BHead_",Strok)",BHead=BHead_")"
+ s Str=Block(0,0),Strok=0,Width=0
+ k @BHead
+ i Block=1 d
+ .i Block(0,0)=Block(1,0) d BarBuf s Strok=0 q    ; в одной стpоке
+ .s @Tmp=$E(@Bstr,Block(0,1),MaxLen)
+ .f  s Strok=Strok+1,Str=$O(@Bstr) q:Str=Block(1,0)  s @Tmp=@Bstr
+ .s Width=Block(1,1) i Width>0 s @Tmp=$E(@Bstr,1,Width)
+ i Block=2 d BarBuf
+ s @BHead=Block_"@"_Strok_"@"_Width
+ d SetSay(1,"скопиpован в буффеp для блоков.") q 0
+BarBuf s Width=Block(1,1)-Block(0,1)
+ f  s Strok=Strok+1 d  q:Str=Block(1,0)  s Str=$O(@Bstr)
+ .s s=$E(@Bstr,Block(0,1),Block(1,1))
+ .s @Tmp=s_$J("",Width+1-$L(s))
+ q
+ 
+MarkBlck k %GO                             ; Пометка блока
+Mark i Mode="LINE" q                       ; вход по ключевым клавишам
+ i Block'<0 d  q
+ .i $D(%GO)[0 i $$Menu^%ZAPM.ed.BSXfun("^%ZAPM.ed.BSX",2)=0 q
+ .i Block>0 s Qu=2
+ .s Block=-%GO,Block(0,0)=Str,Block(0,1)=Col
+ .s Tmp=" Начало "_$S(Block=-1:"потокового",1:"пpямоугольного")_" блока в "
+ .d SetSay(0,Tmp_Str_","_Col) q
+ s Block=-Block,Qu=2                                    ; конец блока
+ i Block=2 d
+ .i Block(0,0)>Str s Block(1,0)=Block(0,0),Block(0,0)=Str
+ .e  s Block(1,0)=Str
+ .i Block(0,1)>Col s Block(1,1)=Block(0,1),Block(0,1)=Col
+ .e  s Block(1,1)=Col
+ i Block=1 d  i Qu=0 q
+ .i Block(0,0)=Str s Block=2,Block(1,0)=Str d  q
+ ..i Col>Block(0,1) s Block(1,1)=Col-1 q
+ ..i Col<Block(0,1) s Block(1,1)=Block(0,1)-1,Block(0,1)=Col q
+ ..s (Block,Qu)=0 d SetSay(0," Блок пуст - пометка снята.") q
+ .i Block(0,0)<Str s Block(1,0)=Str,Block(1,1)=Col-1 q
+ .s Block(1,0)=Block(0,0),Block(0,0)=Str,Block(1,1)=Block(0,1)-1,Block(0,1)=Col
+ s Tmp=Block(0,0)_","_Block(0,1)_" - "_Block(1,0)_","_Block(1,1)
+ d SetSay(1,"помечен "_Tmp)
+ q
+ 
+UnMarkBl i Mode="LINE" q                       ; отмена блока
+ i Block=0 q
+ i Block>0 s Qu=2
+ d SetSay(0," Пометка блока снята ") s Block=0 q
+ 
+ToBegEnd(What) q:$$Check(0)  s Str=Block(What,0),Col=Block(What,1) q
+ 
+ ;-------------------------------------------------------------------
+BufPtr() q "^%ZAPM.ed.BSbufB(2,"_$G(%BS(3),$P)_",4"
+ 
+Check(param) ; param=0 - можно во VIEWER / на выходе 0 - все O'key
+ i param>-1,Block'=1,Block'=2 d ErrMsg^%ZAPM.ed.BSXfun(" Блок не помечен ") q 1
+ i Edit x PutS q 0
+ i param d NoJob^%ZAPM.ed.BSXFkey q 1
+ q 0
+ 
+SetSay(pre,s) s Typ="" i pre d
+ .i Block=1 s Typ="Потоковый"
+ .i Block=2 s Typ="Пpямоугольный"
+ .s Typ=" "_Typ_" блок "
+ d Say^%ZAPM.ed.BSXfun(Typ_s) q

@@ -1,0 +1,198 @@
+ROUTINE %ZAPM.ed.BSChT
+%BSChT ; пpогpамма РАБОТЫ С ТАБЛИЦЕЙ ; 20:48   03.06.2000
+ Q  ;17 ТИП -ТИП =.1 - ТАБЛИЦА БЕЗ БАЗЫ ДАННЫХ (САМА ПО СЕБЕ) (ПО УМОЛЧАНИЮ)
+   ;              2 - -- / -- С БАЗОЙ ДАННЫХ (ОПИСАНИЕ БАЗ В ^BSR(BST,"KEY")
+   ;              3 - ТАБЛИЦА-СПИСОК
+   ;              4 - ТАБЛИЦА-СВОДКА
+   ;              .5 - ТЕКСТ
+   ;              6 - БЛАНК --- нет
+   ;              7 - МЕНЮ ПОЛЬЗОВАТЕЛЯ
+   ;              8 - ПАНЕЛЬ С КНОПКАМИ
+   ;             
+CurTBS() Q $$CurT($$%^%ZAPM.ed.BSCh(%KEY("BSNSPACE")),$$%^%ZAPM.ed.BSCh(%KEY("BSPART")),$$%^%ZAPM.ed.BSCh(%KEY("BSTABL")))
+CurT(NS,PR,TB) I PR["^["_$C(34) Q $NA(@PR@(TB))
+ Q $NA(@("^["""_NS_"""]"_$P(PR,"^",2))@(TB))
+CFGTAB ;ЗАПИСАТЬ CFG
+ N BS,CFG
+ I $G(%KEY("C1")) S CFG="1,0,0,9,9,9,"_$G(%KEY("C2"))_","_$G(%KEY("PRESS"))_",1,1" D CFGTA Q
+ I '$G(%KEY("C1")),$G(%KEY("STR"))=0,$G(%KEY("COL"))=0 S CFG="0,"_$P($$0^%ZAPM.ed.BSCh(28),"=",2)_","_$P($$0^%ZAPM.ed.BSCh(29),"=",2)_",9,9,9,"_$G(%KEY("C2"))_","_$G(%KEY("PRESS"))_",1,1" D CFGTA Q
+ I $G(%KEY("STR"))=0,$G(%KEY("COL"))=0 S CFG="1,0,0,9,9,9,"_$G(%KEY("C2"))_","_$G(%KEY("PRESS"))_",1,1" D CFGTA Q
+ S CFG="0,"_$G(%KEY("STR"))_","_$G(%KEY("COL"))_",578,578,578,"_$G(%KEY("C2"))_","_$G(%KEY("PRESS"))_",1,1"
+CFGTA S BS=$$CurTBS(),@BS@("HTML","CFG")=CFG
+GOM D TABBEGIN^%ZAPM.ed.BSCh1
+ D TIP1
+ D RETURN^%ZAPM.ed.BSCh0($$ESC())
+ D END^%ZAPM.ed.BSCh(7) Q
+ Q
+GOMAP ;ДВИГАТЬ ТАБЛИЦУ
+ N BS,CFG,GO,TX,TY,Limit
+ S BS=$$CurTBS(),CFG=$G(%KEY("BSTABCFG")),GO=$G(%KEY("BSMAP")) D TITUL
+ ;ИЗМЕНИМ 9-10 В CFG
+ I GO'=""&(CFG)'="" D @($TR($E(GO,1,2),"КСТ","CPT")_"^%ZAPM.ed.BSChT0")
+ G GOM
+TITUL ;ТИТУЛ
+ N T S T=$P(@BS,"@",19) I 'T S T=$P(@BS,"@",50)
+ S TY=+$P(T,",",1),TX=+$P(T,",",2) S:'TY TY=1 S:'TX TX=1
+ Q
+WR ;ВЫВОД ТАБЛИЦЫ
+ N T,I,J,II,JJ,X,Y,CurH,CurW,KolStr,KolP,KolX
+ D TITUL
+ S Y=$P(CFG,",",9),X=$P(CFG,",",10)
+ I TY I $P(CFG,",",9,10)="1,1" S Y=TY,X=TX D  ;УГЛОВЫЕ ТОЧКИ ВЫВОДА
+ .S $P(CFG,",",9)=TY
+ .S $P(CFG,",",10)=TX
+ S (CurH,CurW,KolStr)=0,KolX=$P(@BS,"@",29),KolP=$$0^%ZAPM.ed.BSCh(30) K S,CurWW,Limit
+ I TY F I=1:1:TY-1 Q:'$D(@BS@(I))  Q:$$CurH(I)  D WRBS(I)
+ F I=Y:1 Q:'$D(@BS@(I))  Q:$$CurH(I)  D WRBS(I)
+ S $P(CFG,",",11)=I-1
+ S $P(CFG,",",12)=$S($D(CurWW):CurWW-1,1:KolX)
+ Q
+WRITE ;ВЫВОД ТАБЛИЦЫ
+ W BK,"<TT>" D RETRY($P(CFG,",",8),"<SMALL>")
+ S I="" F  S I=$O(S(I)) Q:I=""  S J="" F  S J=$O(S(I,J)) Q:J=""  W "<NOBR>",$$CTRL($$SPA(S(I,J))),"</NOBR>",BR,BK
+ ;S I="" F  S I=$O(S(I)) Q:I=""  S J="" F  S J=$O(S(I,J)) Q:J=""  W $$CTRL($$SPA(S(I,J))),BR,BK
+ ;W "<TABLE BORDER=0>" D  W "</TABLE>" ;ВЫВОД ТАБЛИЦЕЙ
+ ;.S I="" F  S I=$O(S(I)) Q:I=""  S J="" F  S J=$O(S(I,J)) Q:J=""  W "<TR>" D  W "</TR>"
+ ;..F II=1:1 Q:$P(S(I,J),$C(0),II,II+1)=""  W "<TD>",$P(S(I,J),$C(0),II),"</TD>"
+ W "<NOBR>Текущие строка ",$P(CFG,",",11)," Колонка ",$P(CFG,",",12),". Из - (",$P(@BS,"@",28),"x",$P(@BS,"@",29),") ",$P(@BS,"@"),"</NOBR>",BR,BK
+ W "</TT>" D RETRY($P(CFG,",",8),"</SMALL>") K S
+ I '$P(CFG,",",2) W "<NOBR>" D NAVIG W "</NOBR>" ;КОГДА ВСЯ ТАБЛИЦА
+ Q
+NAVIG W "Навигация по Таблице "
+ I TY<$P(CFG,",",9) D  W "<a href="""_$$A^%ZAPM.ed.BSCh_$$ATAB_""">В_Начало</A> "
+ .S I=1,II="N"
+ I TY<$P(CFG,",",9) D  W "<a href="""_$$A^%ZAPM.ed.BSCh_$$ATAB_""">Назад</A> "
+ .S I=2,II="N"
+ I $D(Limit) D  W "<a href="""_$$A^%ZAPM.ed.BSCh_$$ATAB_""">Вперед</A> "
+ .S I=3,II="N"
+ I $P(@BS,"@",28)'=$P(CFG,",",11) D  W "<a href="""_$$A^%ZAPM.ed.BSCh_$$ATAB_""">В_Конец</A> "
+ .S I=4,II="N"
+ Q
+RETRY(U,T) I U F I=1:1:U W T
+ Q
+WRC(I,J,BS,T) ;КЛЕТКА
+ N d1,BSF
+ S d1=$$CELL^%ZAPM.ed.BSCt(T,I,J) ;ДАННЫЕ КЛЕТКИ
+ S l=$P(BS,"@",3)*$P(BS,"@",4)
+ F BSF=1:1:$P(BS,"@",3) S S(I,BSF)=$G(S(I,BSF))_$E(d1_$J("",l),BSF*$P(BS,"@",4)-$P(BS,"@",4)+1,$P(BS,"@",4)+($P(BS,"@",4)*(BSF-1)))_$C(0)
+ Q
+WRBS(I) ;УГОЛ-ШАПКА-БОКОВИНА-СТРОКИ
+ I TX F J=1:1:TX-1 Q:$$CurW(J)  D WRC(I,J,@BS@(I,J),BS)
+ F J=X:1 Q:$$CurW(J)  D WRC(I,J,@BS@(I,J),BS)
+ Q
+SPA(S) S S=$$TR^%ZAPM.ed.BSsFUNM(S,"<","&lt;")
+ S S=$$TR^%ZAPM.ed.BSsFUNM(S,">","&gt;")
+ Q $$TR^%ZAPM.ed.BSsFUNM(S," ","&nbsp;") ;ПРОБЕЛЫ
+CTRL(S) Q $TR(S,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31),"")
+CurH(I) I '$P(CFG,",",2) D  Q:$D(Limit) 1 Q 0
+ .S KolStr=KolStr+1 I KolP,(KolStr*KolX)>KolP S Limit=I Q
+ S CurH=CurH+$P(@BS@(I,1),"@",3)
+ I $P(CFG,",",2)<CurH Q 1
+ Q 0
+CurW(J) I '$D(@BS@(I,J)) S CurWW=J Q 1
+ I '$P(CFG,",",3) Q 0
+ I $D(CurWW) Q:J<CurWW 0 Q 1
+ S CurW=$G(CurW)+$P(@BS@(1,J),"@",4)
+ I $P(CFG,",",3)<CurW S CurWW=J Q 1
+ Q 0
+TIP1 ;ПРОСТАЯ                    4  5  6           9  10 11 12
+ ;ЕСЛИ СТАТУС ТАБЛИЦЫ C1,STR,COL,AT,AP,AC,C2,PRESS,CY,CX,EY,EX
+ I $G(CFG)="" S CFG="0,"_$P($$0^%ZAPM.ed.BSCh(28),"=",2)_","_$P($$0^%ZAPM.ed.BSCh(29),"=",2)_",578,578,578,0,0,1,1"
+ N S,T,I,J,II,JJ,X,Y,CurH,CurW,Limit
+ D WR I '$P(CFG,",",1) D Q^%ZAPM.ed.BSChT0
+ D FORM
+ D WRITE
+ Q
+FORM D FORM^%ZAPM.ed.BSCh
+ N I,II,III
+ w "<input type=""hidden"" name=""BSLABEL"" value=""CFGTAB^~BSChT"">",BK
+ w "<input type=""hidden"" name=""BSROU"" value="""_$G(MainRef,"MAIN^~BSCh1")_""">",BK
+ w "<input type=""hidden"" name=""BSNSPACE"" value="""_$$%^%ZAPM.ed.BSCh(%KEY("BSNSPACE"))_""">",BK
+ w "<input type=""hidden"" name=""BSPART"" value="""_$$%^%ZAPM.ed.BSCh(%KEY("BSPART"))_""">",BK
+ w "<input type=""hidden"" name=""BSTABL"" value="""_$$%^%ZAPM.ed.BSCh(%KEY("BSTABL"))_""">",BK
+ W "<table bBorder=""0"" width=""100%"">",BK
+ W "<tr>"
+ W "<td width=""28%""><input type=""checkbox"" name=""C1"" value=""1""" D  W ">Таблицу показывать всю"
+ .I $P(CFG,",",1) W " CHECKED "
+ 
+ W "<p><select name=""STR"" size=""1"">",BK
+ S II=$P(CFG,",",2) F I=$P($$0^%ZAPM.ed.BSCh(28),":"):$P($$0^%ZAPM.ed.BSCh(28),":",2):$P($P($$0^%ZAPM.ed.BSCh(28),":",3)," ") W "<option " D:I=II  W " value="""_I_""">"_I_"</option>",BK
+ .W "selected"
+ W "<option value=""0""" D  W " >..</option>",BK
+ .I $P(CFG,",",2)=0 W " selected"
+ W "</select>"
+ 
+ W "строк<select name=""COL"" size=""1"">",BK
+ S II=$P(CFG,",",3) F I=$P($$0^%ZAPM.ed.BSCh(29),":",1):$P($$0^%ZAPM.ed.BSCh(29),":",2):$P($P($$0^%ZAPM.ed.BSCh(29),":",3)," ") W "<option " D:I=II  W " value="""_I_""">"_I_"</option>",BK
+ .W "selected"
+ W "<option value=""0""" D  W " >..</option>",BK
+ .I $P(CFG,",",3)=0 W " selected"
+ W "</select>симв. </td>",BK
+ 
+ W "<td width=""34%""><p><CENTER>" I $P(CFG,",",2) W "Таблица Страница Клетка",BR
+ W "<MAP NAME=""AT"">",BK S II="ТАБЛИЦУ"
+ I $P(CFG,",",4)=0 F I=1:1:8 D AREA(I)
+ E  F I=1:1:$L($P(CFG,",",4)) D AREA($E($P(CFG,",",4),I))
+ W "</MAP>"
+ I $P(CFG,",",4)'=9 W "<IMG SRC="""_$$G($P(CFG,",",4))_""" BORDER=0 usemap=""#AT"">"
+ 
+ W "<MAP NAME=""AP"">",BK S II="СТРАНИЦУ"
+ I $P(CFG,",",5)=0 F I=1:1:8 D AREA(I)
+ E  F I=1:1:$L($P(CFG,",",5)) D AREA($E($P(CFG,",",5),I))
+ W "</MAP>",BK
+ I $P(CFG,",",5)'=9 W "<IMG SRC="""_$$G($P(CFG,",",5))_""" BORDER=0 usemap=""#AP"">"
+ 
+ W "<MAP NAME=""AC"">",BK S II="КЛЕТКУ"
+ I $P(CFG,",",6)=0 F I=1:1:8 D AREA(I)
+ E  F I=1:1:$L($P(CFG,",",6)) D AREA($E($P(CFG,",",6),I))
+ W "</MAP>",BK
+ I $P(CFG,",",6)'=9 W "<IMG SRC="""_$$G($P(CFG,",",6))_""" BORDER=0 usemap=""#AC"">"
+ E  D NAVIG
+ W "</CENTER></p></td>",BK
+ 
+ W "<td width=""38%"">",BK
+ 
+ W "<input type=""checkbox"" name=""C2"" value=""1""" D  W ">Убрать заголовок и сравнения.",$$ESC,BK
+ .I $P(CFG,",",7) W "CHECKED "
+ 
+ W "<p><select name=""PRESS"" size=""1"">",BK
+ S II=$P(CFG,",",8) F I=0:1:2 W "<option " D:I=II  W " value="""_I_""">"_$S(I=0:"норма",I=1:"сжать",I=2:"сильнее")_"</option>",BK
+ .W "selected"
+ W "</select> "
+ 
+ W "<input type=""submit"" value=""Запомнить"" name=""B1""></p></td>",BK
+ W "</tr></table></FORM><HR>",BK
+ Q
+ESC() Q "<a TITLE=""Вернуться назад"" href="""_$$A^%ZAPM.ed.BSCh_"BSNSPACE="_$$%T^%ZAPM.ed.BSCh(%KEY("BSNSPACE"))_"&BSMENU=3&BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSPART="_$$%T^%ZAPM.ed.BSCh(%KEY("BSPART"))_"""> &lt;== </a>"
+G(F) ;ФАЙЛ НАПРАВЛЕНИЯ
+ I F=0 Q $$0^%ZAPM.ed.BSCh(26)
+ N I,E S I=$$0^%ZAPM.ed.BSCh(26),E=$P(I,".",2),I=$P(I,".")
+ Q I_F_"."_E
+SELe(I) Q $S(I=1:"ВЛЕВО-ВВЕРХ",I=2:"ВВЕРХ",I=3:"ВПРАВО-ВВЕРХ",I=4:"ВЛЕВО",I=5:"ВПРАВО",I=6:"ВЛЕВО-ВНИЗ",I=7:"ВНИЗ",I=8:"ВНИЗ-ВПРАВО",1:"")
+ATAB() ;ССЫЛКА НА ТАБЛИЦУ
+ Q "BSMAP="_I_II_"_"_$$SELe(I)_"&BSNSPACE="_$$%T^%ZAPM.ed.BSCh(%KEY("BSNSPACE"))_"&BSPART="_$$%T^%ZAPM.ed.BSCh(%KEY("BSPART"))_"&BSTABL="_$$%T^%ZAPM.ed.BSCh(%KEY("BSTABL"))_"&BSROU="_$G(MainRef,"MAIN^~BSCh1")_"&BSLABEL=GOMAP^~BSChT"_"&BSTABCFG="_$G(CFG)
+AREA(I) ;ЧУСТВИТЕЛЬНАЯ ОБЛАСТЬ
+ Q:I=9  W "<AREA TITLE="""_II_" "_$$SELe(I)_""" SHAPE=""RECT"" COORDS=""" D  W """ HREF="""_$$A^%ZAPM.ed.BSCh_$$ATAB_""">"
+ .W $S(I=1:"0, 0, 25, 22",I=2:"27, 0, 50, 22",I=3:"55, 0, 79, 22",I=4:"0, 24, 25, 47",I=5:"52, 24, 79, 47",I=6:"0, 50, 25, 73",I=7:"27, 50, 50, 73",I=8:"52, 50, 79, 73",1:"")
+ Q
+TIP2 ;БАЗА ДАННЫХ
+ W "??? "
+ W $$ESC,BK
+ Q
+TIP3 ;3 - ТАБЛИЦА-СПИСОК
+ G TIP11
+TIP4 ;4 - ТАБЛИЦА-СВОДКА
+ G TIP11
+ Q
+TIP ;НЕИЗВЕСТНЫЙ НАУКЕ ЗВЕРЬ
+TIP5 ;5 - ТЕКСТ
+ F I=1:1 Q:'$D(@BS@(I))  W @BS@(I),BR,BK
+ W $$ESC,BK
+ Q
+TIP6 ;
+TIP7 ;
+TIP8 ;
+TIP9 ;
+TIP10 ;
+TIP11 W "Данный тип объекта пока не поддерживается"
+ Q

@@ -1,0 +1,34 @@
+ROUTINE %ZAPM.ed.BSCSVG
+%BSCSVG ;ПРОГРАММА РАБОТЫ С SVG
+ ;
+ ;    Copyright Serge Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ ;
+ Q
+SVG ;ВЫВЕСТИ ВСЕ ГЛОБАЛЬНЫЕ БУФЕРА
+ D BEG1^%ZAPM.ed.BSC4
+ S BSLABEL="GET^~BSCSVG"
+ D BSVG
+ w "</HTML>",BK
+ q
+BSVG W "<BUTTON onclick=""open('"_$$ADDBSGET^%ZAPM.ed.BSC4_"','','toolbar=no,menubar=no,scrollbars=yes,width=800,height=600,status=1,resizable=1')"" title='Открыть SVG'>ЗАГРУЗИТЬ ФАЙЛ SVG</BUTTON>"
+ Q
+GET  W "HTTP/1.0 200 OK"_BK
+ W "Content-type: image/svg+xml"_BK
+ ;W "Set-Cookie: cookie_name=cookie_value; path=/;",CRLF
+ ;W "Window-target: main_window",CRLF
+ W BK
+ D SVGOUT
+ Q
+SVGOUT I '$D(BK) S BK=$C(13,10)
+ N M,MM
+ ;S F="N:\InfoPortal\WebNodes\vv\svg\sample\anim[1].svg"
+ S F="N:\InfoPortal\WebNodes\vv\svg\sample\mgwms32[4].svg"
+ D File2Arr^%ZAPM.ed.BSCEXE(F,.M)
+ d STR2MAS^%ZAPM.ed.BSCmail(.M,.MM,BK)
+ S I="" F  S I=$O(MM(I)) Q:I=""  D
+ .;W !,I,"-->>>>>>>>>",MM(I)_BK
+ .I MM(I)'["<circle fill" W MM(I)_BK
+ Q
+ 

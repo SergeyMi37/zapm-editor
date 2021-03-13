@@ -1,0 +1,47 @@
+ROUTINE %ZAPM.ed.BSD2
+%BSD2 ; СТОППОР %BS  ; 10:18   15.02.2000
+ Q
+S D M,BUY S (%BSssdO,AUTO)=2 G SSD ;ОСТАНОВ БЕЗУСЛОВНЫЙ
+SS D M,BUY S (%BSssdO,AUTO)=1 G SSD ;ОСТАНОВ ЕСЛИ НЕТ АКТИВНЫХ ЛИНИЙ DDP
+M G MGR^%ZAPM.ed.BS
+SSD I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ D M N YYY
+ S YYY=$P($P($G(^%ZAPM.ed.BSETUP("SERVER",6,4)),"@",15),"\",4) I YYY'="N" D CLEAR
+ I $D(%BS)["0" D LV^%ZAPM.ed.BSF4 ;ОСТАНОВ СО ВСЕМИ ОСТАНОВКАМИ
+ I $G(^%ZAPM.ed.BSS("XECUTE","KEY"))'="" D XEC^%ZAPM.ed.BSF10($$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSS(""XECUTE"")"),9)
+ D Int^%ZAPM.ed.BSERV("D KILLS^%ZAPM.ed.BSERVER(G,S)") G:$G(%BSssdO)=2 SSSD
+ U 0::%BS(32) D CHECK W $$atr^%ZAPM.ed.BS3(0) I YES<1 S Tmp="" Q
+ D OP^%ZAPM.ed.BSF4 D CHEKPRN^%ZAPM.ed.BSJPRN I YES<1 S Tmp="" Q
+SSSD D ERASER^%ZAPM.ed.BSJPRN(1),ALLKILLB^%ZAPM.ed.BS1
+ I $$4() D CONTINUE^SSD
+ G ^SSD
+BUY W !!!!!!!!!!!!,"До Свидания.. ",$G(%BS(38)) Q
+4() Q $P($ZV,"Version ",2)'<4
+CHECK 
+ N CIR,CIRNAME,CIRSTA,EADR,I,ID,J,LCB,LNK,LNKSTA,PROTN,RTYTM,SV,UPDATE,VG,X
+ D VERIFDDP
+ S YES=1 I $G(VG)="" Q
+ D CHECKDDP("ALL") Q
+CHECKDDP(V) ;V-НОМЕР ГРУППЫ ТОМОВ
+ Q:'%BS(23)  D EnterP^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""SSD"",""BUT"")") S YES=$S(d=1&(R1=13):1,1:0)
+ I YES,$E(%BS(1),6)=1 S YES=0 D EnterP^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""MSM-SERVER"",""BUT"")") S YES=$S(d=1&(R1=13):1,1:0) I YES D PASCHECK^%ZAPM.ed.BS1("^%ZAPM.ed.BSETUP","SETUP",2,"Введите пароль Администратора Системы","Tmp") I YES W # Q
+ Q
+PA D DosRead^%ZAPM.ed.BSS1(51,$$AddFile^%ZAPM.ed.BSDOS2($$DIR^%ZAPM.ed.BSMSMF_"%BS-FULL.XXX")) Q:'$D(%FN)
+ X "U %DEV R R X R H  "
+ Q
+VERIFDDP ;ПРОВЕРКА АКТИВНОСТИ DDP
+ W #,$$clr^%ZAPM.ed.BS3(10)
+ I $$4() N (VG) S ID=2,UPDATE=1 D CIRSTA^DDPCIR Q
+ N (VG) S UPDATE=1,ID=1,SV=33566904 D CIRSTA^DDPCIR
+ Q
+CLEAR ;ЗАЧИСТКА ДО DKFUL
+ I $ZV["Cach"||($ZV["IRIS") Q
+ G CLE:YYY="A" I "Y"[YYY D Yes^%ZAPM.ed.BSXfun("Будем затирать мусор на томе "_$P($$ZU^%ZAPM.ed.BS3(0),",",2)_" ?",2) I YES>0 G CLE
+ Q
+CLE N zS,zJ,zM
+ I $ZV["Cach"||($ZV["IRIS") Q
+ S $ZT="END^%ZAPM.ed.BSD2",zM="^cccccccc" W !,"WipeInfo in "_$P($$ZU^%ZAPM.ed.BS3(0),",",2)
+ S zS=$TR($J("",$$LNG^%ZAPM.ed.BSF12)," ","c") F zJ=1:1 S @zM@(zJ)=zS I '(zJ#100) W "."
+ Q
+END K @zM
+ Q

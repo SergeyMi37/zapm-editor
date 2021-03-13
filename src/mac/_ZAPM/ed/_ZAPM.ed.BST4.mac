@@ -1,0 +1,60 @@
+ROUTINE %ZAPM.ed.BST4
+%BST4 ;ПРИКРЕПЛЕННЫЕ ТАБЛИЦЫ К БАЗЕ ДАННЫХ;MTBD;KEYPAS ; 18:56   09.06.99
+MTBD S $ZT="ErrMT^%ZAPM.ed.BST4",YES=1,li=$$GLOBAL^%ZAPM.ed.BSF9(IMQ) I $G(@li@("KEY",key,5))'["$MTBD^" Q
+ ;!!!S MaS=$$TR^%ZAPM.ed.BSsFUNM("^"_$P($P(@$ZR,"^",2),$C(34)_")"),$C(34)_$C(34),$C(34)) I MaS="^" S ls=" МАССИВ для MTBD НЕ ОПРЕДЕЛЕН " G O
+ X "S MaS="_$P(@$ZR,"I ",2,99) I $P(MaS,"!",2)=""&($P(MaS,"!",3)="") S ls="И СЕЛЕКТОР ,и ФОРМУЛА для MTBD НЕ ОПРЕДЕЛЕНЫ. "_$P(MaS,"!",4)_" ! "_$P(MaS,"!",5),YES=0 G O
+ I $P(MaS,"!",2)'="" S li=$G(@$P(MaS,"!",2)@(1,d)) I li="" G:$P(MaS,"!",3)'="" MTBF S ls=" Узел '"_$ZR_"' в Мультибазовом Селекторе НЕ ОПРЕДЕЛЕН ",YES=0 G O
+ I $P(MaS,"!",2)="" G MTBF:$P(MaS,"!",3)'=""
+MTB S MTr=$P(li,",",1,$L(li,",")-1),MTt=$P(li,",",$L(li,",")),IMQ=li Q
+MTBF X "S li="_$P(MaS,"!",3) G MTB
+ErrMT S ls=$$ErrSay^%ZAPM.ed.BSF8($ZE) G O
+K5 S k66=$P(k6,","),k666=$P(k6,",",2) S:k66>5 k66=5 S:k666>79 k666=79 S:'k66 k66=1 S:'k666 k666=70 S k6=k66_"@"_k666 K k66,k666 Q
+TAB I key=0 S ls=" К ИМЕННОМУ КЛЮЧУ ТАБЛИЦУ НЕ ПРИКРЕПИТЬ " D O G D
+ D TA G D:'YES D TIR,RIT^%ZAPM.ed.BSF3 G D:'YES I li="",YES S ls=" ДЛЯ УДАЛЕНИЯ ИСПОЛЬЗУЙТЕ F8 " D O G D
+ S Ta=$P($G(@(BSr_"(BSt)"),2),"@",17) I "2,3,4"[Ta&(Ta'="") S ls=" НЕЛЬЗЯ ПРИКРЕПИТЬ К КЛЮЧУ СПИСОК,СВОДКУ,ТАБЛ.C БАЗОЙ " D O G D
+ S (TaB,IYI)=BSr_","_BSt D OkMsg^%ZAPM.ed.BSXfun("Вводить данные в прикрепленную таблицу  можно  только после          факта    прикрепления")
+ D NE^%ZAPM.ed.BSN,TAB1 S R1=27
+ G D
+O D O^%ZAPM.ed.BSF7 Q
+TA N %ddd S Tta=1,YES=0 S:ny>2 %ddd=d D TAB1 D:$D(%ddd) DDD I '$D(@(%NAm_"""@%BS"")")) D  Q:'YES
+ .I $E(%NAm,$L(%NAm))="(" D ECT Q
+ .I $D(@($E(%NAm,1,$L(%NAm)-1)_")")) D ECT Q
+ .S (li,TaB)=$G(@(%NAm_"""@%BS"")")),YES=1 K Tta Q
+D K Ta,TaB,Tab,PRr,%ddd Q
+RaT(li) D RIT Q BSr_"("_BSt
+TaR(li) D TIR Q li
+ECT S ls=" У КЛЮЧА УЖЕ ЕСТЬ ПОТОМКИ " D O^%ZAPM.ed.BSF7 S YES=0 Q
+RIT S MaS=1 D RII^%ZAPM.ed.BSF3 Q
+ ;;;TIR S:li?.N1",".N li="" S BSr=$P(li,",",1,$L(li,",")-1),BSt=$P(li,",",$L(li,",")) D  S li=BSt_","_BSr_","_BSu_","_BSs Q
+ ;;;.I BSr["]" S BSu=$P(BSr,$C(34),2),BSs=$P(BSr,$C(34),4),BSr=$P(BSr,"]",2) Q
+ ;;;.S (BSu,BSs)="",BSr=$P(BSr,"^",2)
+TIR S:li?.N1",".N li="" I li'[")" S BSr=$P(li,",",1,$L(li,",")-1),BSt=$P(li,",",$L(li,",")) D  S li=$S(li[",<>":li,1:(BSt_","_BSr_","_BSu_","_BSs)) Q
+ .I BSr["]" S BSu=$P(BSr,$C(34),2),BSs=$P(BSr,$C(34),4),BSr=$P(BSr,"]",2) Q
+ .S (BSu,BSs)="",BSr=$P(BSr,"^",2)
+ S BSr=$P(li,"("),BSt=$P($P(li,"(",2),")") S BSt=$S(BSt=+BSt:BSt,1:$E(BSt,2,$L(BSt)-1)),BSt=$$TR^%ZAPM.ed.BSsFUNM(BSt,$C(34,34),$C(34)) ;```$P(BSt,$C(34),2))
+ S BSu=$P(BSr,$C(34),2),BSs=$P(BSr,$C(34),4) S:BSr["]" BSr=$P(BSr,"]",2) ;4.;S:BSr["|" BSr=$P(BSr,"|",3)
+ S li=BSt_","_BSr_","_BSu_","_BSs Q
+TAB1 I '$D(%w(3)) D PASDD^%ZAPM.ed.BST1 E  Q
+ D %NAm Q:$D(Tta)
+TAB2 S ls=" Повесить на:"_%NAm_" таблицу ,Вы уверены ? " D YES^%ZAPM.ed.BSF I 'YES Q
+ D L^%ZAPM.ed.BS3(%NAm) I LOC S @(%NAm_"""@%BS"")")=TaB
+ D U^%ZAPM.ed.BS3(%NAm) Q
+%NAm I '$D(%KEYS) S YES=0 Q
+ S %NAm=$$BSD^%ZAPM.ed.BSA(BSD,$G(%KEYS(0))) F ii=1:1:%KEYS Q:'$D(%KEYS(ii))  S %NAm=%NAm_$S(%KEYS(ii)=+%KEYS(ii):%KEYS(ii),1:$C(34)_%KEYS(ii)_$C(34))_","
+ Q
+DDD S %NAm=%NAm_$S(%ddd=+%ddd:%ddd,1:$C(34)_%ddd_$C(34))_"," Q
+PBD I $G(%BS("Tmp","AKBD",BSD),"RWD")="P" D ErrMsg^%ZAPM.ed.BSXfun("ПОЛЬЗОВАТЕЛЮ `"_$G(%BS(12))_"` ВХОД В ПРИКРЕПЛЕННУЮ ТАБЛИЦУ ЗАПРЕЩЕН !") S ny=0 Q
+ S ls="НАСЧЕТ БУФЕРА ДЛЯ ПРИКРЕПЛЕННОЙ ТАБЛИЦЫ " D WAITS^%ZAPM.ed.BSF2,Key^%ZAPM.ed.BST1
+ S IYI=@$ZR,PRr=BSR,PRt=BST,BSR=$P(IYI,",",1,$L(IYI,",")-1),BST=$P(IYI,",",$L(IYI,",")),B=@(BSR_"(BST)"),se=$P(B,"@",28),ke=$P(B,"@",29)
+ K ^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)) D FOR^%ZAPM.ed.BSF3 X I_" D BSD^%ZAPM.ed.BST1" D CALC^%ZAPM.ed.BSF3,COL^%ZAPM.ed.BSF3,ENTER^%ZAPM.ed.BSN,BDS S BSR=PRr,BST=PRt K PRr,PRt Q
+ Q
+ERR D O^%ZAPM.ed.BSF7 X "I 0" S YES=0,$ZT=$G(%zT) Q
+BDS Q:'$P($G(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15))),"@",2)  N tIm S ls=" Записываем в Базу Данных результаты коррекции пpикpепленной таблицы ? " D YES^%ZAPM.ed.BSF I 'YES K ^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)) Q
+ D %NAm^%ZAPM.ed.BST1,FOR^%ZAPM.ed.BSF3 X I_" D 3333" S tIm=$P($G(@($E(%NAm,1,$L(%NAm)-1)_")")),",",5,6),@($E(%NAm,1,$L(%NAm)-1)_")")=$$h^%ZAPM.ed.BS3()_","_$G(%BS(12))_",1,"_tIm
+ K ^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)) Q
+3333 Q:$P(@(BSR_"(BST,ny,nx)"),"@",9)<2  I $D(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),ny,nx)) S zr=@$ZR D  Q
+ .I $P($P(@(BSR_"(BST,ny,nx)"),"@",18),"#")'="" S nynx=$P($P(^(nx),"@",18),"#")
+ .E  S nynx=ny_","_nx
+ .I zr="" K @(%NAm_"nynx)") Q
+ .S @(%NAm_"nynx)")=zr ;ЗАПИСЬ В Б.Д.
+ Q

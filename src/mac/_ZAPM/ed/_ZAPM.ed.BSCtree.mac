@@ -1,0 +1,641 @@
+ROUTINE %ZAPM.ed.BSCtree
+%BSCtree ; пpогpамма работы с деревом
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ Q
+TreeStyle(LAB,GLO,ROU,frn,ico,open) //ВЫВЕСТИ СТИЛИ
+  //LAB - программа формирования дерева
+  //GLO - массив который будем редактировать
+  //ROU - программа вызываемая по левому клику
+  //frn - имя фрэйма куда выводить результат
+  //ico - поддиректория иконок для узлов дерева
+  i $G(ico)="" s ico="ico_plus"
+  Write "",!
+	Write "<STYLE>",!
+	Write ".button_light {",!
+	Write "        BORDER-RIGHT: #bfcfde 1px solid; BORDER-TOP: #bfcfde 1px solid; FONT-SIZE: 12px; BORDER-LEFT: #bfcfde 1px solid; COLOR: #000000; BORDER-BOTTOM: #bfcfde 1px solid;",!
+	Write "}",!
+	Write ".text_light {",!
+	Write "        FONT-SIZE: 14px; COLOR: #000000;",!
+	Write "}",!
+	Write ".body_grey {",!
+	Write "        BACKGROUND-COLOR: #85C0F2; FONT-SIZE: 14px; COLOR: #000000;",!
+	Write "}",!
+	Write ".tbl_list_user_uti1l {",!
+	Write "        FONT-SIZE: 8pt; COLOR: #000000;",!
+	Write "}",!
+	Write ".body_grey1 {",!
+	Write "        BACKGROUND-COLOR: #85C0F2; FONT-SIZE: 8px; COLOR: #000000;",!
+	Write "}",!
+	Write ".text {",!
+	Write "        FONT-SIZE: 9pt; COLOR: #5679af; FONT-FAMILY: Verdana, arial",!
+	Write "}",!
+	Write ".tariftext {",!
+	Write "        FONT-SIZE: 9px; FONT-FAMILY: Verdana, arial; BACKGROUND-COLOR: #f1f1f1",!
+	Write "}",!
+	Write ".tarif {",!
+	Write "        FONT-SIZE: 9px",!
+	Write "}",!
+	Write ".cmstarif {",!
+	Write "        FONT-SIZE: 9px; BACKGROUND-COLOR: #f1f1f1",!
+	Write "}",!
+	Write ".cmstarif2 {",!
+	Write "        FONT-SIZE: 9px; BACKGROUND-COLOR: #e1e1e1",!
+	Write "}",!
+	Write ".as {",!
+	Write "        PADDING-RIGHT: 10px; PADDING-LEFT: 10px; FONT-SIZE: 8pt; PADDING-BOTTOM: 10px; COLOR: #5679af; PADDING-TOP: 10px; FONT-FAMILY: Verdana, arial; align: justify",!
+	Write "}",!
+	//Write "BODY {",!
+	//Write "        BACKGROUND-IMAGE: url(images/bg2.gif); BACKGROUND-REPEAT: repeat-x",!
+	//Write "}",!
+	Write "A {",!
+	Write "        COLOR: #26497f; TEXT-DECORATION: none",!
+	Write "}",!
+	Write "A:visited {",!
+	Write "        COLOR: #26497f; TEXT-DECORATION: none",!
+	Write "}",!
+	Write "A:hover {",!
+	Write "        COLOR: #7699cf; TEXT-DECORATION: none",!
+	Write "}",!
+	Write "A:active {",!
+	Write "        COLOR: #7699cf; TEXT-DECORATION: none",!
+	Write "}",!
+	Write ".off {",!
+	Write "        DISPLAY: none",!
+	Write "}",!
+	Write ".menu {",!
+	Write "        FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #494949; FONT-FAMILY: Tahoma; valign: top",!
+	Write "}",!
+	Write ".menu:visited {",!
+	Write "        COLOR: #494949",!
+	Write "}",!
+	Write ".menu:hover {",!
+	Write "        COLOR: #494949",!
+	Write "}",!
+	Write ".menu:active {",!
+	Write "        COLOR: #494949",!
+	Write "}",!
+	Write "IMG.blackBorder {",!
+	Write "        BORDER-RIGHT: #000 1px solid; BORDER-TOP: #000 1px solid; BORDER-LEFT: #000 1px solid; BORDER-BOTTOM: #000 1px solid",!
+	Write "}",!
+	Write ".linkator_td {",!
+	Write "        FONT-SIZE: 10px; FONT-FAMILY: Verdana",!
+	Write "}",!
+	Write ".linkator_a {",!
+	Write "        FONT-SIZE: 12px; FONT-FAMILY: Verdana",!
+	Write "}",!
+	Write ".linkator_url {",!
+	Write "        FONT-SIZE: 12px; FONT-FAMILY: Verdana",!
+	Write "}",!
+	Write ".linkator_table {",!
+	Write "        BORDER-TOP: #000000 1px solid",!
+	Write "}",!
+	Write "</STYLE>",!
+ 
+ 	Write "<TABLE id='list' border='0'>",!
+	Write "<TR><TD></TD></TR>",!
+	Write "</TABLE>",!
+    //////////////////////////////////////////////////////////////////////
+	Write " <SCRIPT>",!
+	Write " var Tree = '';var widgetWidth = 12;var widgetHeight = 12;var CurrentElementOfTree=-1; var Prev1='1';",!
+	Write "var fillerImg = new Image(1,1);fillerImg.src = '"_BSDOMAIN_"/img/"_ico_"/filler.gif';minus = new Image(widgetWidth,widgetHeight);minus.src = '"_BSDOMAIN_"/img/"_ico_"/minus.gif';var plus = new Image(widgetWidth,widgetHeight);plus.src = '"_BSDOMAIN_"/img/"_ico_"/plus.gif';",!
+ 
+	w "var end = new Image(widgetWidth,widgetHeight);end.src = '"_BSDOMAIN_"/img/"_ico_"/end.gif';var pCell=document.getElementById('list').rows[0].cells[0];var BR='';",!
+	Write "var db = new Array();",!
+	
+	Write "function GetOpen()",!
+	Write "{",!
+	Write "    var open=';';",!
+	Write "    for(var i=0;i<countRow;i++)",!
+	Write "              {",!
+	Write "                  open+=db[i].id+'='+db[i].open+';';",!
+	Write "              }",!
+	Write "    open=open.substr(1);",!
+	Write "    return open;",!
+	Write "};",!
+	
+	Write "function SetVisible(i)",!
+	Write "{",!
+	Write "    db[i].open==0?db[i].open=1*1:db[i].open=0*1;Tree='';GetChild(0,0);pCell.innerHTML=Tree;",!
+	Write "};",!
+	
+	Write "function dbRecord(id,name,parent,open,tit)",!
+	Write "{",!
+		W "    this.id = id;",!
+	Write "    this.name = name;",!
+	Write "    this.parent = parent;",!
+	Write "    this.open = open*1;",!
+	Write "    this.tit = tit;",!
+	//Write "     if (this.tit==undefined) {this.tit='id узла:'+id;} ",!  
+	Write "     if (this.tit==undefined) {this.tit='Выберите требуемый режим';} ",!  
+	//Write "     if (this.tit==undefined) {this.tit='Правой кнопкой мыши выберите требуемый режим';} ",!  
+	Write "    return this;",!
+	Write "};",!
+ 
+	Write "function DOclick()",!
+	Write "    {",!  
+	//w "alert(' ='+CurrentElementOfTree+' ='+CurrentI+' ='+db[CurrentI].name);",!
+	W " window.open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,ROU)_"&TrID=""+CurrentElementOfTree,"""_$g(frn)_""","""");",!
+	Write "    };",!
+ 
+	Write "function Cur(tt)",!
+	Write "    {",!  
+	W "        if (Prev1=='2') {Prev.style.fontWeight='normal';}"_BK
+	W "        tt.style.fontWeight='800';"_BK
+	W "        Prev=tt; Prev1='2';",!
+	Write "    };",!
+	
+	Write "function GetChild(id,level)",!
+	Write "{",!
+	Write "   var onclk;",!
+	Write "   for(var i=0;i<countRow;i++)",!
+	Write "          {",!
+	Write "                 if(db[i].parent==id)",!
+	Write "      {",!
+	Write "      isHaveChild(db[i].id)?(db[i].open==1?ico='minus':ico='plus'):ico='end';",!
+	Write "      ico=='end'?onclk='':onclk='SetVisible('+i+');';",!
+	Write "      Tree+=(""<IMG SRC='"_BSDOMAIN_"/img/"_ico_"/filler.gif' HEIGHT='1' WIDTH='""+level*15+""'>"");",! //картинка отступа
+	             //картинка ветки дерева
+	W "    if (ico=='plus')  {tle='Раскрыть узел';}",!
+	W "    if (ico=='minus')  {tle='Закрыть узел';}",!
+		W "    if (ico=='end')  {tle='';}",!
+	w "          Tree+=(""<IMG style='cursor:hand;' onclick='""+onclk+""hidemenuie5();' oncontextmenu='hidemenuie5();return false;' SRC='"_BSDOMAIN_"/img/"_ico_"/""+ico+"".gif' HEIGHT='18' WIDTH='18' BORDER='0' title='""+tle+""'>"");",! //12
+	
+	//Write "      Tree+=(""<IMG style='cursor:hand;' onclick='""+onclk+""hidemenuie5();' SRC='"_BSDOMAIN_"/img/"_ico_"/""+ico+"".gif' HEIGHT='12' WIDTH='12' BORDER='0'>"");",!
+                 //снова отступ	
+	Write "      Tree+=(""<IMG SRC='"_BSDOMAIN_"/img/"_ico_"/filler.gif' HEIGHT='1' WIDTH='5'>"");",!
+	             //узел дерева
+	//Write "      Tree+=""<SPAN title='""+db[i].tit+""'  style='cursor:hand;' ONCLICK='alert(CurrentElementOfTree=""+db[i].id+"");' oncontextmenu='CurrentElementOfTree=""+db[i].id+"";showmenuie5();return false;'>""+db[i].name+'</SPAN><BR>'+'\r\n';",!
+	Write "      Tree+=""<SPAN title='""+db[i].tit+""' style='cursor:hand; text-decoration:underline;' ONCLICK='Cur(this); CurrentI=""+i+""; CurrentElementOfTree=""+db[i].id+""; DOclick();' oncontextmenu='Cur(this); CurrentI=""+i+""; CurrentElementOfTree=""+db[i].id+""; DOclick(); showmenuie5(); return false;'>""+db[i].name+'</SPAN><BR>'+'\r\n';",!
+	
+	Write "      if(db[i].open==1){GetChild(db[i].id,level+1)};",!
+	Write "      }",!
+	Write "    }",!
+	Write "    return 0;",!
+	Write "};",!
+	
+	Write "function isHaveChild(id)",!
+	Write "{",!
+	Write "   for(var i=0;i<countRow;i++)",!
+	Write "          {",!
+	Write "                 if(db[i].parent==id){return 1;}",!
+	Write "          }",!
+	Write "return 0;",!
+	Write "}",!
+  D @LAB //А ЗДЕcЬ СФОРМИРУМЕМ ДЕРЕВО, КАК ПРАВИЛО ПО МАССИВУ GLO
+	Write "countRow=db.length;",!
+	Write "GetChild(0,0);",!
+	//W "alert(Tree);",!
+	W "pCell.innerHTML=Tree;</SCRIPT>",!
+    Q
+CMenuJS(ROU,frn,BSrouLoop) //ROU - программа вызываемая по правому клику
+    //ON - флаг...
+    //frn - имя фрэйма куда отправить результат
+	Write "<STYLE>",! //СТИЛИ КОНТЕКСТНОГО МЕНЮ
+	Write "#ie5menu{",!
+	Write "position:absolute;",!
+	Write "border:1px solid black;",!
+	Write "background-color:#BBBBBB;",!
+	Write "font-family:Arial;",!
+	Write "font-size:10px;",!
+	Write "line-height:10px;",!
+	//Write "cursor:default;",!
+	Write "cursor:hand;",!
+	Write "visibility:hidden;",!
+	Write "}",!
+	Write ".menuitems{",!
+	Write "padding-left:10px;",!
+	Write "padding-right:10px;",!
+	Write "}",!
+	Write "</STYLE>",!
+   
+   // D Exec^%ZAPM.ed.BSCp
+	
+	Write "<SCRIPT language=JavaScript1.2>",!
+	Write "var display_url=1;",!
+	
+	Write "function showmenuie5(){",!
+	/* MSW
+	Write "var rightedge=document.body.clientWidth-event.clientX;",!
+	Write "var bottomedge=document.body.clientHeight-event.clientY;",!
+	;W "alert(document.body.clientWidth+'W-X'+event.clientX+'--'+document.body.clientHeight+'H-Y'+event.clientY);",!
+	Write "if (rightedge<ie5menu.offsetWidth)",!
+	Write "ie5menu.style.left=document.body.scrollLeft+event.clientX-ie5menu.offsetWidth;",!
+	Write "if (rightedge >= ie5menu.offsetWidth)",!
+	Write "ie5menu.style.left=document.body.scrollLeft+event.clientX;",!
+	Write "if (bottomedge<ie5menu.offsetHeight)",!
+	Write "ie5menu.style.top=document.body.scrollTop+event.clientY-ie5menu.offsetHeight;",!
+	Write "else",!
+	Write "ie5menu.style.top=document.body.scrollTop+event.clientY;",!
+	*/
+	Write "ie5menu.style.top=document.body.scrollTop+event.clientY;",!
+	Write "ie5menu.style.left=document.body.scrollLeft+event.clientX;",!
+	
+	Write "ie5menu.style.visibility='visible';",!
+	Write "return false;",!
+	Write "}",!
+	
+	Write "function hidemenuie5(){",!
+	Write "ie5menu.style.visibility='hidden';",!
+	Write "}",!
+	
+	Write "function ReturnFalse(){",!
+	Write "return false;",!
+	Write "}",!
+	
+	Write "function highlightie5(){",!
+	Write " if (event.srcElement.className=='menuitems'){",!
+	Write " event.srcElement.style.backgroundColor='highlight';",!
+	Write " event.srcElement.style.color='white';",!
+	Write " if (display_url==1)",!
+	Write " window.status=event.srcElement.url;",!
+	Write " }",!
+	Write "}",!
+	
+	Write "function lowlightie5(){",!
+	Write " if (event.srcElement.className=='menuitems'){",!
+	Write " event.srcElement.style.backgroundColor='';",!
+	Write " event.srcElement.style.color='black';",!
+	Write " window.status='';",!
+	Write " }",!
+	Write "}",!
+	
+	Write "function jumptoie5(){",!
+	Write " if (event.srcElement.className=='menuitems')",!
+	Write " window.location=event.srcElement.url;",!
+	Write "}",!
+  
+	Write "function DO(param)",!
+	Write "    {",!  
+	//w "alert(param+' '+CurrentElementOfTree);",!
+	Write "    window.open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,ROU)_"""+param+""&TrID=""+CurrentElementOfTree,"""_$g(frn)_""","""");",!
+	//W " "_$$OpenWeb^%ZAPM.ed.BSCp2("http://"_$$ADDSN^%ZAPM.ed.BSC4_$$ADDBSGET^%ZAPM.ed.BSC4(,ROU)_"'+param"_$S($G(ON):"+'&TrID='+CurrentElementOfTree",1:""))
+	Write "    };",!
+	
+	Write "</SCRIPT>",!
+	Q
+Context(LAB) //ПУНКТЫ КОНТЕКСТНОГО МЕНЮ
+	Write "<DIV id=ie5menu onmouseover=highlightie5() style='LEFT:207px; VISIBILITY:hidden; TOP:78px' onmouseout=lowlightie5()>",!
+	D @LAB //РЕЖИМЫ КОНТЕКСТНОГО МЕНЮ (см.пример в ^%ZAPM.ed.BSCrr)
+	Write "</DIV>",!
+	Write "<SCRIPT language=JavaScript1.2>",!
+	Write "document.body.onclick=hidemenuie5;",!
+	Write "</SCRIPT>",!
+	Write "",!
+ Q
+RESTGLO  I $G(BSnumber)="" Q
+ s GLO=$G(@BDSES@(BSSES,"VAR","IDNumber",BSnumber))
+ I $G(GLO)="" Q
+ S GB=$NA(@BDSES@(BSSES,"VAR","ID",GLO))
+ Q  //
+PClick ////РЕЖИМЫ РЕДАКТИРОВАНИЯ ДЕРЕВА; D locvar^%ZAPM.ed.BSCh0("",1)
+ I $G(TrID)="" W "идентификатор массива пустой" Q
+ I $G(Mode)="" W "имя режима пусто" Q
+ D RESTGLO
+ S GL=@GB@(TrID) 
+ D @Mode 
+ G @BSrouLoop
+Copy D A S @BDSES@(BSSES,"VAR","IDExpand",GLO)=GL K @BDSES@(BSSES,"VAR","TreeCopy") M @BDSES@(BSSES,"VAR","TreeCopy")=@GL //,$QS(GL,$QL(GL)))=@GL 
+ Q
+Paste D A M @GL=@BDSES@(BSSES,"VAR","TreeCopy") 
+ Q
+KILL D A K @GL q 
+Edit D A
+ M @A@(Node)=@GL K @GL
+ Q
+A S A=$P(GL,"(") F I=1:1:$QL(GL)-1 S A=$NA(@A@($QS(GL,I)))
+ S @BDSES@(BSSES,"VAR","IDExpand",GLO)=A //УСТАНОВИМ УКАЗАТЕЛЬ ДЛЯ РАСКРЫТИЯ ДЕРЕВА, НА РОДИТЕЛЬСКИЙ УЗЕЛ 
+ Q
+Ins D A
+ S @A@(Node)=""
+ q
+InsC D A
+ S @GL@(Node)=""
+ q
+EDITGLO 
+    //CurrentI - текущий номер массива db
+    W $$i(),!
+    W $$mi("Изменить","var Node=prompt(""Введите имя узла"",db[CurrentI].name); if (Node!=""""&&Node!=null) {DO(""&Mode=Edit&Node=""+Node);}","Изменить текст текущего узла"),!
+	;Write "<DIV class=menuitems style='COLOR: black' onclick='if(confirm(""Вы уверены?"")){location=""?LBL_=INDEX_tree_editor*tree_editor&TBL_=oldtree&OPEN_=1=0;2=0;3=0;4=0;5=0;6=0;7=0;8=0;9=0;10=0;11=0;12=0;13=0;14=0;15=0;21=0;19=0;20=0;28=0;29=0;30=0;31=0;92=0;81=0;79=0;91=0;90=0;86=0;74=0;88=0;89=0;83=0;93=0;85=0;94=0;95=0;96=0;97=0;98=0;99=0;100=0;101=0;102=0;103=0;104=1;105=0;&SESS=1144240589*41985476&OPENER_RELOAD_=1&TBL_=oldtree&SPEC=DELROW&ID_=""+CurrentElementOfTree+""&OPEN_=""+GetOpen();}' >Удалить</DIV>",!
+	W $$i(1),!
+	W $$mi("Добавить узел","var Node=prompt(""Введите имя узла"",""""); if (Node!=""""&&Node!=null) {DO(""&Mode=Ins&Node=""+Node);}","Добавить новый узел"),!
+	W $$i(1),!
+	W $$mi("Добавить уровень","var Node=prompt(""Введите имя узла для нового уровня"",""""); if (Node!=""""&&Node!=null) {DO(""&Mode=InsC&Node=""+Node);}","Добавить новый уровень"),!
+	W $$i(3),!
+	W $$mi("Копировать","DO(""&Mode=Copy"");","Копировать ветку в буфер обмена"),!
+	W $$i(1),!
+	W $$mi("Вставить","DO(""&Mode=Paste"");","Вставить ветку из буфера обмена"),!
+	W $$i(3),!
+	W $$mi("Удалить","if(confirm(""Удалить узел со всеми потомками! `""+db[CurrentI].name+""` Вы уверены?"")){DO(""&Mode=KILL"");}","Удалить текущий узел"),!
+	W $$i(),!
+	Q
+i(S) N HR I $G(S)'="" S HR="<HR size="_$G(S,1)_" color=BLACK>" 
+ Q "<DIV>"_$G(HR,"&nbsp;")_"</DIV>"
+mi(TEXT,JSonCLICK,TIT)
+ Q "<DIV title='"_$G(TIT)_"' class=menuitems style='COLOR: black' onclick='"_JSonCLICK_"' >"_TEXT_"</DIV>"
+ 
+Exp(id) i $g(open) q 1 //открыто все дерево сразу 
+ Q $S($G(@BDSES@(BSSES,"VAR","IDExpand",GLO))[$P($G(@GL@(id)),")"):1,1:0)
+Create //Формируем дерево по массиву GLO (Ограничено 9 уровнями) 
+ N ID,GL,I,I1,I2,I3,I4,I5,I6,I7,I8,I9
+ I '$D(@GLO) Q
+ K @BDSES@(BSSES,"VAR","ID",GLO) S GL=$ZR,@GL=10 
+ S I1="" F  S I1=$O(@GLO@(I1)) Q:I1=""  D
+ .S ID1=$I(@GL),@GL@(ID1)=$NA(@GLO@(I1))
+ .W "db[db.length] = new dbRecord('"_ID1_"', '"_I1_"', '0', "_$$Exp(ID1)_");",!
+ .S I2="" F  S I2=$O(@GLO@(I1,I2)) Q:I2=""  D
+ ..S ID2=$I(@GL),@GL@(ID2)=$NA(@GLO@(I1,I2))
+ ..W "db[db.length] = new dbRecord('"_ID2_"', '"_I2_"', '"_ID1_"', "_$$Exp(ID2)_");",!
+ ..S I3="" F  S I3=$O(@GLO@(I1,I2,I3)) Q:I3=""  D
+ ...S ID3=$I(@GL),@GL@(ID3)=$NA(@GLO@(I1,I2,I3))
+ ...W "db[db.length] = new dbRecord('"_ID3_"', '"_I3_"', '"_ID2_"', "_$$Exp(ID3)_");",!
+ ...S I4="" F  S I4=$O(@GLO@(I1,I2,I3,I4)) Q:I4=""  D
+ ....S ID4=$I(@GL),@GL@(ID4)=$NA(@GLO@(I1,I2,I3,I4))
+ ....W "db[db.length] = new dbRecord('"_ID4_"', '"_I4_"', '"_ID3_"', "_$$Exp(ID4)_");",!
+ ....S I5="" F  S I5=$O(@GLO@(I1,I2,I3,I4,I5)) Q:I5=""  D
+ .....S ID5=$I(@GL),@GL@(ID5)=$NA(@GLO@(I1,I2,I3,I4,I5))
+ .....W "db[db.length] = new dbRecord('"_ID5_"', '"_I5_"', '"_ID4_"', "_$$Exp(ID5)_");",!
+ .....S I6="" F  S I6=$O(@GLO@(I1,I2,I3,I4,I5,I6)) Q:I6=""  D
+ ......S ID6=$I(@GL),@GL@(ID6)=$NA(@GLO@(I1,I2,I3,I4,I5,I6))
+ ......W "db[db.length] = new dbRecord('"_ID6_"', '"_I6_"', '"_ID5_"', "_$$Exp(ID6)_");",!
+ ......S I7="" F  S I7=$O(@GLO@(I1,I2,I3,I4,I5,I6,I7)) Q:I7=""  D
+ .......S ID7=$I(@GL),@GL@(ID7)=$NA(@GLO@(I1,I2,I3,I4,I5,I6,I7))
+ .......W "db[db.length] = new dbRecord('"_ID7_"', '"_I7_"', '"_ID6_"', "_$$Exp(ID7)_");",!
+ .......S I8="" F  S I8=$O(@GLO@(I1,I2,I3,I4,I5,I6,I7,I8)) Q:I8=""  D
+ ........S ID8=$I(@GL),@GL@(ID8)=$NA(@GLO@(I1,I2,I3,I4,I5,I6,I7,I8))
+ ........W "db[db.length] = new dbRecord('"_ID8_"', '"_I8_"', '"_ID7_"', "_$$Exp(ID8)_");",!
+ ........S I9="" F  S I9=$O(@GLO@(I1,I2,I3,I4,I5,I6,I7,I8,I9)) Q:I9=""  D
+ .........S ID9=$I(@GL),@GL@(ID9)=$NA(@GLO@(I1,I2,I3,I4,I5,I6,I7,I8,I9))
+ .........W "db[db.length] = new dbRecord('"_ID9_"', '"_I9_"', '"_ID8_"', "_$$Exp(ID9)_");",!
+ Q
+SavePost2Tree //СОХРАНИТЬ ДАННЫЕ ПО ШАБЛОНУ ТАБЛИЦЫ-ПАРАМЕТРОВ (OO) В В УЗЕЛ ДЕРЕВА (GL)
+ S StopSave=2,val=""
+ N STOP,mp s mp=$g(aMp,"&")
+ S I="" F  S I=$O(@OO@(I)) Q:I=""   S val=val_I_"="_$G(@OO@(I,"V"))_mp I $G(@OO@(I,"V"))[mp S STOP(I)="Ошибка! Запрещенный символ "_mp
+ I $D(STOP) W RED ZW STOP W EF Q 
+ D RESTGLO^%ZAPM.ed.BSCtree
+ S GL=@GB@(BSTrID)
+ S @GL=TBL_mp_val_"zDataSave="_$tr($ZD($H,3),"-")_" "_$ZT($P($H,",",2),1)_" "_$g(BSLOGIN,"?")
+ 
+ W GREEN_"Сохранено"_EF
+ Q
+PreOpen
+PreOpn  //ПОДГОТОВКА ПАРАМЕТРОВ
+ N G,I,V,D
+  F I=2:1 Q:$P(val,"&",I,I+1)=""  i $P(val,"&",I)'="" S V=$P($P(val,"&",I),"="),D=$P($P(val,"&",I),"=",2,999) D
+  .S @BSBD1@(V,"V")=D
+ Q
+PreOpnAmpFree(w)  //ПОДГОТОВКА ПАРАМЕТРОВ, амперсант разрешен
+ N G,I,V,D
+  F I=2:1 Q:$P(val,w,I,I+1)=""  i $P(val,w,I)'="" S V=$P($P(val,w,I),"="),D=$P($P(val,w,I),"=",2,999) D
+  .S @BSBD1@(V,"V")=D
+ Q
+ 
+PreSaveAmpFree(aMp) //ЛОГИКА ПРОВЕРОК
+ D BEG1^%ZAPM.ed.BSC4
+ D SavePost2Tree^%ZAPM.ed.BSCtree
+ D END^%ZAPM.ed.BSC4
+ q
+PreSave //ЛОГИКА ПРОВЕРОК
+ D BEG1^%ZAPM.ed.BSC4
+ D SavePost2Tree^%ZAPM.ed.BSCtree
+ D END^%ZAPM.ed.BSC4
+ q
+GetValTree(NOD,V,w) Q $P($P(NOD,$g(w,"&")_V_"=",2),$g(w,"&")) //получить значение показателя из узла дерева
+SetValTree(val,V1,NewVal,w) //Присвоить новое значение
+ n a,I,V,D 
+ F I=2:1 Q:$P(val,$g(w,"&"),I,I+1)=""  i $P(val,$g(w,"&"),I)'="" S V=$P($P(val,$g(w,"&"),I),"="),D=$P($P(val,$g(w,"&"),I),"=",2,999) s V(V)=$tr(D,$g(w,"&"))
+ s V(V1)=NewVal
+ s a=$p(val,$g(w,"&"))_$g(w,"&") S I="" F  S I=$O(V(I)) Q:I=""   S a=a_I_"="_$G(V(I))_$g(w,"&") 
+ Q a //и возвратить значение всего узла
+GetA(R) I R="" S R=2 //ПОКА ТАК
+ Q $S(+R<2:"N",R=2:"R",R=3:"W",1:"X")
+ ////////////////////////////////////////////////////////////////
+GetSQL(sql,Col,R,ns) //возвратить sql утверждения и положить его в лок.массив по ссылке
+ n curns,ErrOR,Res,Sc,COL,i,j,J,ret,%ROWCOUNT,SQLCODE,%ROWID
+ s ns=$g(ns,"ASU") s curns=$zu(5)
+ i $zu(5)'=ns zn ns
+ S Res=##Class(%ResultSet).%New()
+ s Sc=Res.Prepare(sql) I 'Sc S ErrOR=$$Status^%ZAPM.ed.BSCtree(Sc) G DSNend31
+ I 'Res.QueryIsValid() S ErrOR="Недопустимый Запрос" G DSNend31
+ s Sc=Res.Execute()
+ I 'Sc S ErrOR=$$Status^%ZAPM.ed.BSCtree(Sc) G DSNend31
+ f i=1:1 q:'Res.Next()  f j=1:1:Col s R(i,j)=Res.GetData(j)
+DSNend31 ;zw ErrOR
+ k Res ;d Res.%Close()
+ i curns'=$zu(5) zn curns
+ i $d(ErrOR) q $g(ErrOR)
+ q $g(i) //количкство найденных строк
+GetF(T,F1,D1,F,ns) //возвратить значение поля F для первой найденной записи из таблицы T при условии F1=D1
+ n curns,ErrOR,Res,Sc,sql,COL,i,J,ret,%ROWCOUNT,SQLCODE,%ROWID
+ s ns=$g(ns,"ASU") s curns=$zu(5)
+ i $zu(5)'=ns zn ns
+ S Res=##Class(%ResultSet).%New()
+ s sql="select "_F_" from "_T_" where "_F1_"='"_D1_"'" ;s ^%zz=sql
+ s Sc=Res.Prepare(sql) I 'Sc S ErrOR=$$Status^%ZAPM.ed.BSCtree(Sc) G DSNend3
+ I 'Res.QueryIsValid() S ErrOR="Недопустимый Запрос" G DSNend3
+ s Sc=Res.Execute()
+ I 'Sc S ErrOR=$$Status^%ZAPM.ed.BSCtree(Sc) G DSNend3
+ f i=1:1 q:'Res.Next()  s ret=Res.GetData(1) q 
+DSNend3 ;zw ErrOR
+ k Res ;d Res.%Close()
+ i curns'=$zu(5) zn curns
+ i $d(ErrOR) q $g(ErrOR)
+ q $g(ret,"?.")
+Status(sc) ;СТАТУС
+ N err,i,st1
+ I ('sc) D  Q st1
+ .D DecomposeStatus^%apiOBJ(sc,.err)
+ .S st1="" F i=1:1:err S st1=st1_err(i)_". "
+ Q ""  
+GetASUOpt(name,BSLOGIN) //параметры ИП и пользователя, если они совпадают
+ n u
+ s u=$$GETOPT^%ZAPM.ed.BSC4cfgP($na(@"^[""PRG""]BSc4uSERS"@(BSLOGIN,"FNM","ASU")),name,,"^[""PRG""]MSM.ASURP.OPTuser")
+ i u="" q $$GETOPT^%ZAPM.ed.BSC4cfgP("^[""PRG""]MSM.ASURP.OPTOIN",name)
+ q u
+ //"ASUEHGm.opt","NameOpt","NarIdDir","ValOpt","ASU"
+GetOpt(Packet,sc,NameOpt) //функция, специально для получения значений опции для ИП
+ n r,%objlasterror,%msg
+ s r=$$GetF(Packet_".opt","NameOpt",NameOpt,"ValOpt","ASU")
+ i $d(%objlasterror) m sc=%objlasterror s r=""
+ e  s sc="1 ок"
+ i r="?." s sc="2 undef",r=""
+ q r
+SetOpt(Packet,sc,NameOpt,ValOpt) //функция, специально для присвоения значения опции для ИП
+ n id,cur,ns,curns
+ s id=$$GetF(Packet_".opt","NameOpt",NameOpt,"ID","ASU")
+  s ns=$g(ns,"ASU") s curns=$zu(5)
+ i $zu(5)'=ns zn ns
+  x "s cur = ##class("_Packet_".opt).%OpenId(id)"
+	s cur.ValOpt = ValOpt
+	s sc = cur.%Save()
+	k cur
+	i curns'=$zu(5) zn curns
+	 i 'sc q sc
+ q id
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+WebTreeEdit(BSns,BSgl,BSglMode) //редактор массивов в виде дерева
+ i $g(ns)'="" s ns=$$%^%ZAPM.ed.BSCh(ns)
+ e  s ns=$zu(5)
+ n BSNSP i ns'=$zu(5) zn ns
+ s BSNSP=$zu(5)
+ D BEG1^%ZAPM.ed.BSC4
+ w "<table border=0>"_BK
+ w "<tr>"_BK
+ w "<td ><DIV class=s3 id='span1'>Рабочая область/Глобал/Индексы:"_BLUE_ns_EF_"</DIV></td>"_BK
+ w "<td ><DIV class=s3 id='span2'>Характеристики</DIV></td>"_BK
+ w "</tr><tr>"_BK
+ W "<td valign=top >"_$$Tree1("Str","Tree12^%ZAPM.ed.BSCtree",450,400)
+ w "</td>"
+ W "<td valign=top >"_$$Tree1("Atr","Tree0^%ZAPM.ed.BSCtree",450,400)
+ W "<td valign=top >"_$$Tree1("Wrk","Tree0^%ZAPM.ed.BSCtree",450,400)
+ w "</td>"
+ W "</tr>"_BK
+ W "</table>"
+ w "<DIV class=s3 id='spanStaus' >...</DIV>"
+ D END^%ZAPM.ed.BSC4 
+ q
+Tree1(IDIF,ROU,H,W) //ВЫВОД ИФРЭЙМА
+ Q BK_"<IFRAME HEIGHT='"_H_"px' "_$s($g(W):"width='"_W_"px'",1:"")_" SRC='"_$$ADDBSGET^%ZAPM.ed.BSC4(,ROU)_"' name='"_IDIF_"' SCROLLING='auto'></IFRAME><BR>"_BK 
+Tree0
+ D BEG1^%ZAPM.ed.BSC4 D END^%ZAPM.ed.BSC4
+ q
+bb  i $d(BDSES) s bb=$na(@BDSES@(BSSES,"VAR","str"_$g(BSns)_$g(BSgl))) //буферный массив идентификаций узлов дерева
+ q
+Tree12 //первый уровень редактора глобала
+ D BEG1^%ZAPM.ed.BSC4 
+ n LIST,noSay,mm,i,ii
+ d bb s mm=1
+ i $g(BSgl)="" s noSay=1 d addGlo^%ZAPM.ed.BSC4r4("*")  S i="" F ii=1:1 S i=$O(LIST(i)) Q:i=""  d AddGl(ii,"^"_$p(i,".GBL"))
+ i $g(BSgl)'=""  d AddGl(1,BSgl)
+ d Lev1^%ZAPM.ed.BSCtree(.mm,"Level^%ZAPM.ed.BSCtree(2)","","ClickImg2^%ZAPM.ed.BSCtree","ClickTxt^%ZAPM.ed.BSCtree("_$g(BSglMode)_")")
+ q
+AddGl(ii,g) s mm(ii)=BLUE_g_EF,mm(ii,1)=g i $o(@g@(""))="" s mm(ii,0)=1
+ q
+ClickTxt(Mode) d bb s s=@bb@(id)
+ D BEG1^%ZAPM.ed.BSC4 
+ w RED_@bb@(id,1)_EF_"="_MAROON_$g(@@bb@(id,1))_EF
+ i $g(Mode,0)=0 g ClickTxtEnd
+ //Редактировать
+ s gg=@bb@(id,1),i=$p(gg,$qs(gg,0)_"(",2)
+ w "<hr>" w "<BODY>" w "<form action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ S BSLABEL="SaveEditGlo^~BSCtree" D ADDBSPOST^%ZAPM.ed.BSC4reg
+ D TABL^%ZAPM.ed.BSCp
+ D TR21^%ZAPM.ed.BSCp W "Рабочая область" D TR22^%ZAPM.ed.BSCp w " <input size=33 type=textbox name=nameGln value='"_$zu(5)_"' title='Редактируйте'>"  D TR23^%ZAPM.ed.BSCp
+ D TR21^%ZAPM.ed.BSCp W "Имя массива" D TR22^%ZAPM.ed.BSCp w " <input size=33 type=textbox name=nameGl value='"_$p($qs(gg,0),"^",2)_"' title='Редактируйте имя массива'>"  D TR23^%ZAPM.ed.BSCp
+ D TR21^%ZAPM.ed.BSCp W "Индексы " D TR22^%ZAPM.ed.BSCp w " <input  size=33 type=textbox name=nameGli value='"_$e(i,1,$l(i)-1)_"' title='Редактируйте индексы'>" D TR23^%ZAPM.ed.BSCp
+ s i=$$Quote^%cspQuote($g(@gg,"<undef>"))
+ D TR21^%ZAPM.ed.BSCp W "Данные в узле " D TR22^%ZAPM.ed.BSCp w " <input  size=43  type=textbox name=nameGld value='"_$e(i,1,$l(i)-1)_"' title='Редактируйте индексы'>" D TR23^%ZAPM.ed.BSCp
+ D TABLE^%ZAPM.ed.BSCp
+ w "<input type=submit name=sDUB value='Copy' title='copy...'>"_BK
+ w "</form>"
+ClickTxtEnd D END^%ZAPM.ed.BSC4
+ q
+SaveEditGlo //сохранение изменений
+ D BEG1^%ZAPM.ed.BSC4
+ w 1,nameGld,1
+ W "записано" 
+ D END^%ZAPM.ed.BSC4
+ q
+ClickImg2 //раскрытие\закрытие любого уровня
+  D bb d ClickImg^%ZAPM.ed.BSCtree
+  q
+Level(l)  n i,mm,g
+  S mm=l,g=@bb@(id,1)
+  s i="" F  S i=$O(@g@(i)) Q:i=""  d
+  .s mm(i)=$tr(i,"'"_$c(34),"``")  //текст узла
+  .s mm(i,1)=$na(@g@(i)) 
+  .s mm(i,2)=$tr($na(@g@(i)),"'"_$c(34),"``") //всплывающий текст ссылки на узел
+  .i $o(@g@(i,""))="" s mm(i,0)=1 //если дальше нет, то заглушим
+  d Lev2^%ZAPM.ed.BSCtree(l-1,.mm,"Level^%ZAPM.ed.BSCtree("_(l+1)_")",(l-1)_" индекс масива")
+  q
+ ////////////////////////////новое правильное дерево
+Lev1(mm,L2,Tit,RouImg,RouTxt) //%%%%%%%%%%%%цикл по первому уровню
+ //bb - буфер от сессии
+ D BEG1^%ZAPM.ed.BSC4 k @bb
+  S i="" F i1=1:1 S i=$O(mm(i)) Q:i=""  d
+  .s id=$i(@bb) s @bb@(id)=$g(mm)_"&"_i_"&"_1_"&"_L2_"&0&"
+  .i $d(mm(i,1)) s @bb@(id,1)=mm(i,1)
+  .w "<div id='s"_id_"'>" s ico="plus",tit="Раскрыть узел",on="onclick=""ClickImg("_id_");"" "
+  .i $d(mm(i,0)) s ico="end",tit="Узел не имеет потомков",on=""
+  .i $d(mm(i,2)) s Tit=$TR(mm(i,2),"'"_$C(34),"``")
+  .s ti="title='"_Tit_"'>"_mm(i)
+  .s $p(@bb@(id),"&",8)=ti 
+  .w "<img border=0 src='"_BSDOMAIN_"/img/ico_plus/"_ico_".gif' ALT='"_tit_"' "_on_" >" 
+  .w " <SPAN  class=u1 onclick=""Cur(this); ClickTxt("_id_");"" "_ti_"</SPAN>"
+  .w "</div>"_BK
+ w BK
+ D JS^%ZAPM.ed.BSCp
+  W "function ClickImg(id) {"_BK
+  w "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,RouImg)_"&id=""+id,""Wrk"","""");"_BK
+  w "}"_BK
+  W "function ClickTxt(id) {"_BK
+  w "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,RouTxt)_"&id=""+id,""Atr"","""");"_BK
+  w "}"_BK
+    w "var Prev1='1';"_BK
+  	Write "function Cur(tt)"_BK
+	Write "    {"_BK
+	W "        if (Prev1=='2') {Prev.style.fontWeight='normal';}"_BK
+	W "        tt.style.fontWeight='800';"_BK
+	W "        //alert(Prev1);"_BK
+	w "        Prev=tt; Prev1='2';"_BK
+	Write "    };"_BK
+	
+ D JSE^%ZAPM.ed.BSCp
+ D END^%ZAPM.ed.BSC4
+ q
+ClickImg //%%%%%%%%%%% раскрытие\закрытие любого уровня
+ n s,rou,i
+ s s=$g(@bb@(id)) i s="" w "!!!!!!" q
+ D JS^%ZAPM.ed.BSCp
+ w "var s1="""_$$sp($p(s,"&",5))_"<img border=0 src='"_BSDOMAIN_"/img/ico_plus/"_$$icon_".gif' onclick='ClickImg("_id_");'  >""; "_BK 
+ w " s1=s1+"" <SPAN class=u1 onclick='Cur(this); ClickTxt("_id_");' "_$p(s,"&",8)_"</SPAN>"";"_BK
+ i '$p(s,"&",3) s $p(@bb@(id),"&",3)=1 g CC //вкл\выкл
+ s rou=$p(s,"&",4) i rou'="" d @rou //подключается программа добавления узлов ноовго уровня
+ s $p(@bb@(id),"&",3)=0
+CC W "parent.Str.s"_id_".innerHTML=s1;"_BK
+ D JSE^%ZAPM.ed.BSCp
+ q 
+ //&#160;
+sp(n) n i,s s s="" i 'n q ""  //%%%%%% n-номер уровня
+ f i=1:1:n  s s=s_"<img border=0 src='"_BSDOMAIN_"/img/ico_plus/empty.gif' >"
+ q s
+icon() i '$p(s,"&",3) q "plus" //%%%% имя картинки
+  i $p(s,"&",3) q "minus"
+ q "end"
+ 
+Lev2(Lev,mm,L3,Tit) //%%%%% второй, и все последующие уровени
+ i '$d(mm) w " s1=s1+""<div>"_$$sp(1)_"...пусто</div>"";"_BK q
+ n id,i,q
+  S i="" F  S i=$O(mm(i)) Q:i=""  d
+  .s id=$i(@bb) 
+  .s @bb@(id)=$g(mm)_"&"_i_"&"_1_"&"_L3_"&"_Lev_"&"
+  .i $g(mm(i))="" s mm(i)="_"
+  .i $d(mm(i,1)) s @bb@(id,1)=mm(i,1)
+  .i $d(mm(i,2)) s Tit=$TR(mm(i,2),"'"_$C(34),"``")
+  .s ti="title='"_Tit_"'>"_mm(i)_" "
+  .s $p(@bb@(id),"&",8)=ti
+  .s q="<div id='s"_id_"'>" s ico="plus",tit="Раскрыть узел",on="onclick='ClickImg("_id_");' "
+  .i $d(mm(i,0)) s ico="end",tit="Узел не имеет потомков",on="" 
+  .s q=q_$$sp(Lev)_"<img border=0 src='"_BSDOMAIN_"/img/ico_plus/"_ico_".gif' ALT='"_tit_"' "_on_" >" 
+  .s q=q_" <SPAN  class=u1 onclick='Cur(this); ClickTxt("_id_");' "_ti_"</SPAN>"
+  .w " s1=s1+"" "_q_"</div> "";"_BK
+ q
+GetTemplateUrl(pack,ParName) //получить ТК-WEB url шаблона из Инфотеки из параметра
+ n gl,url,err
+ ZN $$v^%ZAPM.ed.BSCp("vASU")
+ s gl=$$GetOpt^%ZAPM.ed.BSCtree(pack,.err,ParName) //шаблон
+ i +err'=1 w RED_err_EF  q ""
+ n BSDOMAIN,BSFRM2,BSGRANT,BSLABEL,BSLABEL2,BSNSP,BSNSP2,BSac,BSarm,BSdebug,BStyle,BSpath
+ s BSNSP="ASU"
+ s url=$$GetIpUrl^%ZAPM.ed.BSCp(gl)
+ i url["size(0)" w RED_"В Инфотеке в карточке №"_gl_" расположен пустой файл!"_EF g GetTemplateUrl2
+ i url["Error:" w RED_"Ошибка загрузки файла из Инфотеки в карточке №"_gl_".<b>"_BBK_$ZCVT(url,"O","HTML")_"</b>"_EF g GetTemplateUrl2
+ W "Формируем ... и выводим его в MS-Excel - шаблон :"_RED_url_EF_"<hr>" 
+ q url
+GetTemplateUrl2
+ q "" 
+ 
+ 

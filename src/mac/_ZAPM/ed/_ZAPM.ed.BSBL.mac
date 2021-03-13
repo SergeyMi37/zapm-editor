@@ -1,0 +1,47 @@
+ROUTINE %ZAPM.ed.BSBL
+%BSBL ;СОЗДАНИЕ БЛОКА,ОТКРЫТИЕ HFS,EXPORT DOS-FILE;;[ 30/09/93 11:17 ] ; 14:45   02.03.99
+ K ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15)),^%ZAPM.ed.BSbufB("L"_$G(%BS(3),$P)_$J_"u"_%BS(15)) I '$P(@(BSR_"(BST)"),"@",3) S ls="А блок-то где ?" D O^%ZAPM.ed.BSF7 Q
+BL1 ;ОТБОР БЛОКА С ТИТУЛОМ
+ S BS=@(BSR_"(BST)"),^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15))=BS S:$P(BS,"@",19) %TIT=$P(BS,"@",19),i1=$P(%TIT,",")-1,j1=$P(%TIT,",",2)-1
+ ;ТИТУЛ ДЛЯ ПЕЧАТИ```MSW
+ S:$P(BS,"@",50) %TIT=$P(BS,"@",50),i1=$P(%TIT,",")-1,j1=$P(%TIT,",",2)-1
+ F i=1:1 Q:'$D(@(BSR_"(BST,i)"))  F j=1:1 Q:'$D(@(BSR_"(BST,i,j)"))  I $P(^(j),"@",12) S BS=^(j) D
+ .D OBR S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)=BS
+ .S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),0,j)=@(BSR_"(BST,i,j)"),^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,0)=@(BSR_"(BST,i,j)")
+ .I '$D(%TIT) Q
+ .F i2=1:1:i1 S I=i,BS=@(BSR_"(BST,i2,j)"),i=i2 D OBR S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i2,j)=BS,i=I
+ .F j2=1:1:j1 S J=j,BS=@(BSR_"(BST,i,j2)"),j=j2 D OBR S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j2)=BS,^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),"0",j2)=@(BSR_"(BST,i,j2)"),j=J
+ I '$D(%TIT) G BL2
+ F i2=1:1:i1 F j2=1:1:j1 S BS=@(BSR_"(BST,i2,j2)"),i=i2,j=j2 D OBR S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i2,j2)=BS,^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i2,0)=@(BSR_"(BST,i2,j2)")
+BL2 ;СОЗДАНИЕ ТАБЛИЦЫ
+ S i=0,(BS,BS1,BS2)=0,BS3=1 F  S i=$O(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i)) Q:i=""  D  X WA S BS3=BS3+BS2 ;ПРИВЕДЕНИЕ КООРДИНАТ
+ .S BS=^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,0),BS1=$P(BS,"@"),BS2=$P(BS,"@",3) S:BS1>BS3 $P(BS,"@")=BS3 S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,0)=BS
+ S j=0,(BS,BS1,BS2)=0,BS3=1 F  S j=$O(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),0,j)) Q:j=""  D  S BS3=BS3+BS2
+ .S BS=^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),0,j),BS1=$P(BS,"@",2),BS2=$P(BS,"@",4) S:BS1>BS3 $P(BS,"@",2)=BS3 S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),0,j)=BS
+ S i1=1,i=0 F  S i=$O(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i)) Q:i=""  D  S i1=i1+1 ;ПОДЖАТИЕ
+ .S j1=1,j="" F  S j=$O(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),0,j)) Q:j=""  S BS1=^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,0),BS11=$P(BS1,"@"),BS12=$P(BS1,"@",3),BS2=^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),0,j),BS21=$P(BS2,"@",2),BS22=$P(BS2,"@",4) D  S j1=j1+1
+ ..I '$D(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)) D  S BS=BS11_"@"_BS21_"@"_BS12_"@"_BS22_"@@@@@1@@@@@@",^%ZAPM.ed.BSbufB("L"_$G(%BS(3),$P)_$J_"u"_%BS(15),i1,j1)=BS Q
+ ..S BS=^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j),$P(BS,"@")=BS11,$P(BS,"@",2)=BS21,^%ZAPM.ed.BSbufB("L"_$G(%BS(3),$P)_$J_"u"_%BS(15),i1,j1)=BS
+ S ^%ZAPM.ed.BSbufB("L"_$G(%BS(3),$P)_$J_"u"_%BS(15))=^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15)) K ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15))
+ ;I $D(@(BSR_"(BST,""PRN"")")) S ^%ZAPM.ed.BSbufB("L"_$G(%BS(3),$P)_$J_"u"_%BS(15),"PRN")=@(BSR_"(BST,""PRN"")") Q
+ Q
+OBR ;ОБРАБОТКА ДАННЫХ КЛЕТКИ
+ I $P(BS,"@",9)=1 S (d1,d,d0)=$P(BS,"@",15)
+ E  S (d1,d,d0)=$G(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j))
+ I d0="" S d0=0
+ I $P(BS,"@",8)'="" S nx=j,ny=i D  ;
+ .I '$P(BS,"@",8) X @(BSR_"(BST,""FTR"",i,j)") Q
+ .X $G(@(BSR_"(BST,""FTR"","_$P(BS,"@",8)_")"))
+ S $P(BS,"@",8)="",$P(BS,"@",15)=d1,$P(BS,"@",9)=1
+e Q
+BF ;ОПЦИИ ВЫВОДА
+BFB D SA^%ZAPM.ed.BSsBUF D BF2 D RE^%ZAPM.ed.BSsBUF Q
+BF2 I $D(@(BSR_"(BST,""HFS"")")) S PRA1=@(BSR_"(BST,""HFS"")") F i=1:1:8 S @("PR"_i)=$P(PRA1,"@",i) G:i=8 BF1
+ F ii=2:1:9 S i=ii-1,@("PR"_i)=$P(^%ZAPM.ed.BSS("HFS",ii,2),"@",15) G:ii=9 BF1
+BF1 K BSd,BSk S (BSt1,kk)="HFS",BSr1="^%ZAPM.ed.BSS",BSt2="fTS"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSr2="^%ZAPM.ed.BSbufB" D COPY^%ZAPM.ed.BSTK S ii=@(BSr2_"(BSt2)") F jj=2,4,5,12,13,14,15 S $P(ii,"@",jj)=""
+ S @(BSr2_"(BSt2)")=ii F PRB=2:1:9 S i=PRB-1,$P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u"_%BS(15),PRB,2),"@",15)=@("PR"_i) Q:PRB=9
+ S yyy1=BSR,yyy2=BST D  K ^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u"_%BS(15)) Q
+ .D SI^%ZAPM.ed.BSN N (%BS,vl,%zT,%KAT,%File,yyy1,yyy2,BSB,PRA1)
+ .S BST="fTS"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSR="^%ZAPM.ed.BSbufB" D ^%ZAPM.ed.BST Q:R1=27  F PRB=2:1:9 S i=PRB-1,@("PR"_i)=$P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u"_%BS(15),PRB,2),"@",15) Q:PRB=9
+ .D  I PR8="Y" S $P(PRA1,"@",8)="N" S @(yyy1_"(yyy2,""HFS"")")=PRA1
+ ..S PRA1="" F i=1:1:8 S PRA1=PRA1_@("PR"_i)_"@" Q:i=8

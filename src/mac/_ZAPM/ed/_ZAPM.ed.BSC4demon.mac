@@ -1,0 +1,95 @@
+ROUTINE %ZAPM.ed.BSC4demon
+%BSC4demon ; ФОНОВЫЙ ПРОЦЕС СИСТЕМНЫХ РАБОТ (СУПЕРВИЗОР,МУСОРЩИК...) ; 15:36   05.09.2002
+ ;
+ ;    Copyright (C) 2002 Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ Q
+START D GTmp
+ L +%BSDemon:0 E  H
+ S CFG="^[""%SYS""]BSC4.CFG.DemonCFG"
+ S CMD="^[""%SYS""]BSC4.CFG.DemonCMD"
+ k @GTmp 
+ ;S $ZT="Err"
+ s $P(@GTmp,"~",1)=$$TD^%ZAPM.ed.BSC4base($H) //ВРЕМЯ СТАРТА ДЕМОНА
+ S BDSES=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""SESSIONS"")")
+ S BDRouRef=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""RouRef"")")
+ S BSPIN="%BSdemon"
+ I $D(BSLOGIN) S BSLOGIN="%BSdeamon"
+  S @GTmp@(1)=BDSES
+ D MAINVAR^%ZAPM.ed.BSC4
+  S @GTmp@(2)=RED
+1 HANG $G(@CFG@("Interval","Val"),1) //ЦИКЛ С ИНТЕРВАЛОМ
+ S C="" F  S C=$O(@CMD@(C))  Q:C=""  D
+ .I $$HoldActivate Q
+ .S If=$G(@CMD@(C,"If"),0),Cmd=$G(@CMD@(C,"Cmd"),"Dummy")
+ .w "." D
+ ..;w !,"CMD: "_"I "_If_" D "_Cmd  ;S @GTmp@($H)="CMD: "_"I "_If_" D "_Cmd 
+ ..X "I "_If_" D "_Cmd_" w !,$$TD^%ZAPM.ed.BSC4base($H)_"" ""_Cmd" //КОМАНДА ПРИ УСЛОВИИ
+ G 1
+ ;Err S @GTmp@($H)=$ZE
+ Q
+GTmp S GTmp="^[""%SYS""]mtemp.Demon"
+ Q       
+Report //сделать новый отчет по ресурсам
+ ;ЗАПУСК ПОДСЧЕТА У КОГО СКОЛЬКО БАЙТ НАТИКАЛО
+ D RR^%ZAPM.ed.BSC4rout
+ Q
+ReportNewDay() S BDSTAT="^[""%SYS""]BSC4.CFG.UStatus("""_$ZD($H,8)_""")"
+ i '$d(@BDSTAT) q 1
+ Q 0
+NewDay(BDS) I $G(BDS)="" Q 0
+ i '$d(@BDS) S @BDS=$H q 1
+ Q 0
+RouRefCheck //Контроль потерянных ссылок на программы
+ S I="" F  S I=$O(@BDRouRef@(I)) Q:I=""  S n1=$G(@BDRouRef@(I,"Name")),n2=$G(@BDRouRef@(I,"Namespace")) D
+ .I $$EXIST^%R(n1_".MAC",n2) Q
+ .I $$EXIST^%R(n1_".INT",n2) Q
+ .k @BDRouRef@(I)
+ q
+SessCheck //Контроль незакрытых сессий
+ S KS=$G(@CFG@("Sess","Val"),20)*60 //Сколько минут не закрывать насильно, брошенную сессию
+ S KD=$G(@CFG@("SessDay","Val"),3) //Сколько дней не удалять ссылку на сессию
+ I $D(BSLOGIN) S BSLOGIN="%BSdeamon"
+ S I="" F  S I=$O(@BDSES@(I)) Q:I=""  S CHR=$G(@BDSES@(I,"CHR")),CUR=$G(@BDSES@(I,"CUR")) D
+ .w !,"ceссия "_I  
+ .i CHR'="" w " закрыта "_$$TD^%ZAPM.ed.BSC4base(CHR)
+ .e  w " не закрыта"
+ .I CHR'="" D  Q  //УДАЛЕНИЕ ЗАКРЫТЫХ СЕССИЙ
+ ..s ra=$H-CHR w " if "_ra_">"_KD
+ ..I (ra>KD) D  K @BDSES@(I) w " удаляем ",$zr D DelUser^%ZAPM.ed.BSCp("",I) Q
+ ...//СУММИРОВАНИЕ СЧЕТЧИКОВ В БАЗУ ДАННЫХ ВИЗИТОВ
+ ...D Tex^%ZAPM.ed.BSMSMF("EraseSess",$G(@BDSES@(I,"OHR"))_","_$G(@BDSES@(I,"COUNT"))_","_$G(@BDSES@(I,"CUR"))_","_$G(BSLOGIN)_","_$G(I))
+ .s ra1=$H*86400+$P($H,",",2),ra2=(CUR*86400+$P(CUR,",",2)) w " if ("_ra1_"-"_ra2_")>"_KS
+ .I (ra1-ra2)>KS S @BDSES@(I,"CHR")=$H w " закрываем ",$zr D DelUser^%ZAPM.ed.BSCp("",I) //НАСИЛЬНОЕ ЗАКРЫТИЕ СЕССИИ
+ q
+ ;S (^mtempBSsinx,^mtempBSprot)=1 //СБРОС СИСТЕМНЫХ СЧЕТЧИКОВ
+RJCheck() //проверить есть ли команды в глобали
+ n i
+ s i="" f  s i=$O(@GTmp@(i)) q:i=""   i $G(@GTmp@(i))=0 j RJExe^%ZAPM.ed.BSC4demon($na(@GTmp@(i)))::0 //Запустить процесс
+ q 1
+RJExe(zr) //выполнить команду
+ i $I(@zr)=1 x $g(@zr@("cmd"))
+ Q       
+SessTimeHour() //Срабатывать в начале каждого часа
+ S CT=$P($h,",",2)\3600
+ I CT'=$G(CTIME) S CTIME=CT Q 1
+ Q 0
+EvTimeSec(CTIMEm,M) //Срабатывать КАЖДЫЕ М СЕКУНД
+ S CTm=$P($h,",",2)\$G(M,60)
+ I CTm'=$G(@CTIMEm) S @CTIMEm=CTm Q 1
+ Q 0
+HoldActivate() Q $G(@CFG@("Hold","Val"),0) //задержать работу Демона
+Halt H  //остановить Демон - задание снять
+HaltActivate() Q $G(@CFG@("Halt","Val"),0)
+Check(S) //проверка подвисших заданий (сек разрешено выполняться)
+ Q
+CheckKJ(JOB) N ONSP S ONSP=$ZU(5) I $$ZU^%ZAPM.ed.BSF4("%SYS")
+ S RET=$$INT^RESJOB(JOB) //УДАЛИТЬ ПОДВИСШЕЕ ЗАДАНИЕ
+ I $$ZU^%ZAPM.ed.BSF4(ONSP)
+ Q
+Dummy Q
+STATUS ;СТАТУС ТАЙМЕРА
+ L +%BSDemon:0 I  W !,"%BS-Demon NOT ACTIVE." Q
+ W !,"%BS-Demon ALLREADY STARTED."
+ Q

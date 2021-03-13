@@ -1,0 +1,200 @@
+ROUTINE %ZAPM.ed.BSC4cfgP
+%BSC4cfgP ;БИБЛИОТЕКА ФУНКЦИЙ РАБОТЫ С ТАБЛИЦАМИ ПАРАМЕТРОВ ; 21:44   21.12.2002
+ ;
+ ;    Copyright (C) 2002 Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ Q
+A(TIT,BSBD,BSBD1,d,W,H) ;ЯКОРЬ
+ N BSLABEL,BSMODE S BSLABEL="ENTER^~BSC4cfgP",BSMODE=d
+ Q "<a name='Param1' title='"_BSBD_"' class=u1 "_$$on(BSLABEL)_" >"_TIT_"</a>"
+on(BSLABEL) I $G(BSBD1)="" K BSBD1
+ q " onclick='open("""_$$ADDBSGET^%ZAPM.ed.BSC4()_""",""Button"_$TR($G(BSSES),".","")_""",""toolbar=no,menubar=no,scrollbars=yes,width="_$G(W,800)_",height="_$G(H,500)_",status=1,resizable=1"");' "
+B(TIT,BSBD,BSBD1,d,W,H) ;кнопка
+ N BSLABEL,BSMODE,Q S BSLABEL="ENTER^~BSC4cfgP",BSMODE=d,Q=""
+ S Q=Q_"<BUTTON name='Param1' "_$$on(BSLABEL)_" >"_TIT_"</BUTTON>"
+ Q Q
+BP(A1,A2,G1,G2,M,AN,IMG) //УНИВЕРСАЛЬНЫЙ ВЫЗОВ ПАРАМЕТРОВ
+ N BSTITLE S BSTITLE=$$TR^%ZAPM.ed.BSsFUNM(A1," ","%20")
+ I $G(AN)="" Q $$B("<img src='"_BSDOMAIN_"/img/"_$G(IMG,"param.gif")_"' ALT='"_A2_"'>",$$%T^%ZAPM.ed.BSCh(G1),$$%T^%ZAPM.ed.BSCh(G2),M)
+ Q $$A("<img src='"_BSDOMAIN_"/img/"_AN_"' ALT='"_A2_"'>",$$%T^%ZAPM.ed.BSCh(G1),$$%T^%ZAPM.ed.BSCh(G2),M)
+VARI //СОЗДАНИЕ ЛОКАЛЬНЫХ ПЕРМЕННЫХ
+ S O=$$SW^%ZAPM.ed.BSF12($$%^%ZAPM.ed.BSCh(BSBD)),OO=$$SW^%ZAPM.ed.BSF12($$%^%ZAPM.ed.BSCh($G(BSBD1)))
+ ;S ^%ZZZ(1)=O,^%ZZZ(2)=OO
+ ;S ArrOUT=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4SNX(""OUT"")")
+ Q
+ENTER //
+ D VARI
+ D OPEN(O,OO,$G(BSMODE,0))
+ Q
+OPEN(O,OO,BSMODE) ;основной вход в таблицу опций
+ ;MODE=0  ТОЛЬКО СМОТРЕТЬ ПАРАМЕТРЫ
+ ;MODE=1  РЕДАКТИРОВАТЬ ПАРАМЕТРЫ
+ ;MODE=2  РЕДАКТИРОВАТЬ И САМУ ТАБЛИЦУ ПАРАМЕТРОВ
+ I OO="" S OO=O
+ D BEG1^%ZAPM.ed.BSC4
+ W "<TITLE> "_$$place(OO)_$$TITLE(OO)_" _________________________________</TITLE></HEAD>",BK
+ W "<BODY onkeyPress=""javascript: if (27 == event.keyCode) window.close(); "">"_BK
+ W "<CENTER>"
+ D  //ПРОГРАММЫ ПРЕДОБРАБОТКИ
+ .N OP,p1 
+ .S OP="" F  S OP=$O(@O@(OP)) Q:OP=""  I $G(@O@(OP,"T"))="HR" S p1=$G(@O@(OP,"V")) I p1["^" D @p1
+ D OPT(O,OO,BSMODE)
+ ;w "<BR><input type=""hidden"" name=""BSNSP"" value="""_BSNSP_""">"
+ ;w "<BR><input type=""hidden"" name=""BSLABEL"" value=""SAVE^~BSC4cfg"">"
+ I '$D(NoBU2) D BU2 //ВЫВОДИТЬ ВТОРОЙ РАЗ КНОПКУ СОХРАНЕНИЯ
+ W "</form></CENTER>"
+ D END^%ZAPM.ed.BSC4 Q
+ENTE D END2^%ZAPM.ed.BSCh
+ Q
+BU2 ;I BSMODE w "<input type=""SUBMIT"" name=""SubMit1""  value=""Запомнить""> "
+ ;w "<input type=""RESET"" name=""Reset1""  ONCLICK=""window.close();""  value=""Отменить"">"
+ ;w "<INPUT name=bSAV title='сохранить текущую коррекцию' TYPE='submit' VALUE='Запомнить'>"_BK
+ w "<BUTTON tabindex=0 onclick='submit();' title='сохранить текущую коррекцию' VALUE='сохранить' ><IMG SRC='"_BSDOMAIN_"/img/save.gif'></BUTTON>"_BK
+ W "<BUTTON onclick='window.close();' title='отменить текущее изменение'><IMG SRC='"_BSDOMAIN_"/img/del.gif' ></BUTTON>"_BK
+ q
+GetAcc(L,A) //ВОЗВРАТИТЬ ПРАВА ДОСТУПА ДЛЯ ПОЛЬЗОВАТЕЛЯ L К ПРИЛОЖЕНИЮ A 
+ N BD,D,U
+ ;S BD="^%ZAPM.ed.BSc4uSERS" ;
+ S BD=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""PROTECT"")")
+ S D=$$GETOPT($NA(@BD@(L,"FNM")),A,,"^[""%SYS""]BSC4.ISS.Access")
+ I D'="" Q D  //СВОИ ПРАВА ИМЕЮТ НАИВЫСШИЙ ПРИОРИТЕТ
+ S U=$G(@BD@(L,"ARRAY")) I U="" Q D
+ I $G(GetAccLU(L))>2 Q D
+ S GetAccLU(L)=$G(GetAccLU(L))+1 ;
+ ;S ^%ZZZ($I(^%ZZZ))=A
+ S U=$$GetAcc(U,A) //ПРАВА ЭКВИВАЛЕНТНОГО ПОЛЬЗОВАТЕЛЯ
+ I D?1N,U?1N,D>U Q D  //ПРАВ ТОТ У КОГО БОЛЬШЕ ПРАВ
+ I D?1N,U?1N,D'>U Q U
+ Q U
+place(T) Q $ZU(110)_"/"_$QS(T,-1)_"/"_$QS(T,0)_"/"_$QS(T,1)_"/"
+TITLE(TBL) ;вывести заголовок БАЗЫ ДАННЫХ ТАБЛИЦЫ ПАРАМЕТРОВ
+  N A S A=$P($G(@TBL),"@",4) I A="" S A=$G(BSTITLE)
+  ;I A="" S A=$QS(TBL,1)
+  Q A
+OPT(TBL,OO,BSMODE) ;ФОРМА С ПАРАМЕТРАМИ
+ W "<form name='first1' action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ N BSLABEL,BSTOP,BSNSP1,FirstNam
+ I BSMODE S BSLABEL="SAVE^~BSC4cfgP"
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ D BU2 W "<HR>"
+ I $O(@TBL@(""))="" W "<DIV title='"_TBL_"'>В ШАБЛОНЕ опций '"_TBL_"' отсутствуют данные</DIV>"_BBK G ENTE
+ N I,II,P1,P2,P3,P4,P5,X,Y,S,D,D2,D3,D4,OP,DIS
+ w BK,"<table border=0>",BK
+ S OP="",DIS="" I 'BSMODE S DIS=" disabled "
+ F  S OP=$O(@TBL@(OP)) Q:OP=""  S P4=$G(@TBL@(OP,"O")),P3=$G(^("T")),D5=$G(^("D")),P1=$G(@OO@(OP,"V")) D
+ .I P3="HR" W "</table><table width=100% border=0><tr><td align='center' class=s5>"_P4_"</td></tr></table><table>" Q
+ .S D3=+P3,P2=$S(D3=1:"textarea",D3=2:"radio",D3=3:"checkbox",1:"text"),P5=OP I P1="" S P1=D5
+ .S P3=$P(P3," ",2,99),D4=" title='"_OP_"' "_DIS I P3="" S P3=" size=50 "
+ .D TAB
+ w "</table><HR>"
+ I '$D(FirstNam) Q
+ W BK D JS^%ZAPM.ed.BSCp W BK
+ w "first1."_FirstNam_".focus();"_BK
+ D JSE^%ZAPM.ed.BSCp
+ Q
+TAB ;ТЕКУЩАЯ СТРОКА
+ I D3=6 D  Q  //COMBOBOX
+ .W BK_BK_"<tr><td align=""right"" class=s1 ><SELECT name="_$$name(P5,1)_" >"  D  W "</SELECT></td><td class=s1 >"_$P($$TEGS^%ZAPM.ed.BSre($P(P4,"~",1)),":")_"</td></tr>"
+ ..N p4 S p4=P4 I P4[":" S p4=$P(P4,":",2,99) 
+ ..F II=1:1:$L(p4,"~") W "<OPTION value="_II_" "_P3_D4_" "_$S(P1=II:"SELECTED",1:"")_" >"_$$TEGS^%ZAPM.ed.BSre($P(p4,"~",II))_"</OPTION>",BK
+  I P2="textarea" D  Q
+ .W "<tr><td align=""right"" class=s1 ><textarea name="_$$name(P5,1)_" "_$S(P3["size=50":" cols=50 rows=3 ",1:P3)_D4_" >"_P1_"</textarea></td><td class=s1 >",$$TEGS^%ZAPM.ed.BSre(P4),"</td></tr>"
+ I P2="text" D text(P1,P3,P5) Q
+ I P2="checkbox" D  Q
+ .W "<tr><td align=""right"" class=s3 ><input type=""checkbox"" name="_$$name(P5)_" value="""_P1_""" "_P3_D4_$$ch(P1)_"></td><td class=s3 >",$$TEGS^%ZAPM.ed.BSre(P4),"</td></tr>"
+ I P2="radio" w "<p>",BK D  Q
+ .F II=1:1:$L(P4,"~") W "<tr><td align=""right"" class=s4 ><input type=""radio"" name="_$$name(P5)_" value="_II_" "_P3_D4_$$ch(P1=II)_"></td><td class=s4 >",$$TEGS^%ZAPM.ed.BSre($P(P4,"~",II)),"</td></tr>",BK
+ .w "</p>"
+ Q
+text(P1,P3,P5) W "<tr><td align=""right"" class=s2 ><input type=""text"" name="_$$name(P5,1)_" "_P3_D4_" value='"_P1_"'></td><td class=s2 >",$$TEGS^%ZAPM.ed.BSre(P4),"</td></tr>"
+ Q
+name(P,T) ;ИМЯ КОМПОНЕНТЫ
+ I P="" S P=$QS(TBL,1)_I
+ I '$D(FirstNam),$d(T) S FirstNam=P
+ Q "'"_P_"'"
+ch(P) I P q " checked "
+ q ""
+SAVE ;СОХРАНИТЬ НОВЫЕ ПАРАМЕТРЫ
+ D VARI
+ D SAVEOPT(O,OO,$G(BSMODE,0))
+ D END2^%ZAPM.ed.BSCh
+ q
+SAVEOPT(TBL,OO,BSMODE) ;ПРИСВОЕНИЕ
+ I OO="" S OO=TBL
+ N C,N,S,LABPRE,LABPOST,StopSave
+ N I,II,P1,P2,P3,P4,P5,X,Y,S,D,D2,D3,D4,OP
+ W "<BODY >",BK
+ ;W "<BODY onload='window.close();'>",BK
+ ;W "<CENTER>"
+ ;W "<H3>"_$$LNG^%ZAPM.ed.BSC4("Опции запомнены",161)_"</H3>"
+ ;W "<HR></CENTER>"
+ Q:BSMODE<1
+ S OP="" F  S OP=$O(@TBL@(OP)) Q:OP=""  S P4=$G(@TBL@(OP,"O")),D3=$G(^("T")),D5=$G(^("D")),P1=$G(@OO@(OP,"V")) D
+ .I D3="HR" I D5["^" S LABPOST=D5 //ПОЛЬЗОВАТЕЛЬСКАЯ ПРОГРАММА ПОСТ-СОХРАНЕНИЯ ПАРАМЕТРОВ
+ .S C=$S(D3=1:"textarea",D3=2:"radio",D3=3:"checkbox",1:"text"),N=OP
+ .I C="checkbox" D SE($NA(@OO@(N,"V")),$S($D(%KEY(N)):1,1:0)) Q
+ .D SE($NA(@OO@(N,"V")),$G(%KEY(N)))
+ D SNX^%ZAPM.ed.BSChT1("S",OO,TBL,$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4SNX(""OUT"")"))
+ I $G(LABPOST)'="" D  Q:$G(StopSave)=2  I $G(StopSave) G ENTER
+ .;D locvar^%ZAPM.ed.BSCh0("")
+ .D @LABPOST
+ W BK D JS^%ZAPM.ed.BSCp W BK
+ w "window.close();"_BK
+ D JSE^%ZAPM.ed.BSCp
+ Q
+SE(G,S) I S="" K @G Q
+ S @G=S Q
+GETOPT(TBL,NO,NK,SH) ;ВОЗВРАТИТЬ ЗНАЧЕНИЕ ОПЦИИ NO 
+ ;NO - ИМЯ ПОКАЗАТЕЛЯ
+ ;NK - другие поля параметра V D,O,T  имеет значение если TBL - ШАБЛОН
+ ;SH - ШАБЛОН ОТКУДА БРАТЬ ЗНАЧЕНИЯ ПО-УМОЛЧАНИЮ
+ I TBL=""!(NO="") Q ""
+ S TBL=$$SW^%ZAPM.ed.BSF12(TBL)
+ S NK=$G(NK,"V")
+ I $D(SH),'$D(@TBL@(NO,NK)) Q $G(@SH@(NO,"D"))
+ Q $G(@TBL@(NO,NK))
+SETOPT(TBL,NO,NK,VAL) ;ПРИСВОИТЬ ЗНАЧЕНИЕ ОПЦИИ NO
+ ;NO - ИМЯ ПОКАЗАТЕЛЯ
+ ;NK - другие поля параметра V D,O,T имеет значение если TBL - ШАБЛОН
+ I TBL=""!(NO="") Q ""
+ I $G(NK)="" S NK="V"
+ S NK=$G(NK,"V")
+ S TBL=$$SW^%ZAPM.ed.BSF12(TBL)
+ D SE($NA(@TBL@(NO,NK)),VAL)
+ Q
+Save123 //СОХРАНЕНИЕ ОБЩЕСИСТЕМНЫХ ПАРАМЕТРОВ (СИНИЙ МОЛОТОК)
+ S A=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Atkweb")
+ I A'="" S $P(^%ZAPM.ed.BSpgWEBC("Control"),",",7)=A
+ S A=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Aterm")
+ I A'="" S $P(^%ZAPM.ed.BSpgBS("Control"),",",7)=A
+ S A=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Atmdapi")
+ I A'="" S ^%ZAPM.ed.BSCmdapicfg("port")=A
+ S A=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Atkmail")
+ I A'="" D
+ .K ^%ZAPM.ed.BSpgWEM("HOST"),^%ZAPM.ed.BSpgWEMM("HOST") S ^%ZAPM.ed.BScSMTP($ZCONVERT($ZU(110),"U"),"POP")=$P(A,",",2),^%ZAPM.ed.BScSMTP($ZCONVERT($ZU(110),"U"),"SMTP")=$P(A,",",1)
+ .S ^%ZAPM.ed.BSpgWEM("HOST",$ZCONVERT($ZU(110),"U"))=A,^%ZAPM.ed.BSpgWEMM("HOST",$ZCONVERT($ZU(110),"U"))=A
+ .S ^%ZAPM.ed.BSpgWEM("HOST")=$ZCONVERT($ZU(110),"U"),^%ZAPM.ed.BSpgWEMM("HOST")=$ZCONVERT($ZU(110),"U")
+ i $P($g(%BS(44)),",",1) D SYSMSG^%ZAPM.ed.BSCek("User: "_$g(BSLOGIN)_" Change System Parametrs.","W")
+ // w $$w2f^%ZAPM.ed.BSCp2("N:\!\FnameSYS.LOG")
+ D Tex^%ZAPM.ed.BSMSMF("ChangeSysParametrs","")
+ Q
+Save1234 //СОХРАНЕНИЕ ПАРАМЕТРОВ ПРАВ ДОСТУПА ПОЛЬЗОВАТЕЛЯ (ЧЕРНЫЙ МОЛОТОК)
+ S A=$G(@OO@("Amail","V")),NM=$QS(OO,1),NMU=$ZCONVERT($QS(OO,1),"U") //?????
+ S SN=$ZCONVERT($ZU(110),"U")
+ I A D
+ .S ^%ZAPM.ed.BSpgWEM("USER",NM)=$QS(OO,1)
+ .S ^%ZAPM.ed.BSpgWEM("USER",NMU)=$QS(OO,1)
+ .S ^%ZAPM.ed.BSpgWEM("HOST")=SN
+ I 'A K ^%ZAPM.ed.BSpgWEM("USER",NM),^%ZAPM.ed.BSpgWEM("USER",NMU) ;В ПРОТИВНОМ СЛУЧАЕ УДАЛИМ ...
+ 
+ K ^%ZAPM.ed.BSpgWEMM("HOST"),^%ZAPM.ed.BSpgWEMM("USER") 
+ M ^%ZAPM.ed.BSpgWEMM("HOST")=^%ZAPM.ed.BSpgWEM("HOST")
+ M ^%ZAPM.ed.BSpgWEMM("USER")=^%ZAPM.ed.BSpgWEM("USER")
+ i $P($g(%BS(44)),",",1) D SYSMSG^%ZAPM.ed.BSCek("User: "_$g(BSLOGIN)_" ChangeUserParametrs For: "_NM_".","W")
+ 
+ // w $$w2f^%ZAPM.ed.BSCp2("N:\!\Fname.LOG")
+ 
+ D Tex^%ZAPM.ed.BSMSMF("ChangeUserParametrs","For: "_NM)
+ Q
+ 

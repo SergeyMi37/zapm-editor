@@ -1,0 +1,100 @@
+ROUTINE %ZAPM.ed.BSF7
+%BSF7 ;ФУНКЦИИ %BS ; 14:22   05.03.2001
+%BSUSER() ;ПЕРЕОПРЕДЕЛЕНИЕ ИМЕНИ ПОЛЬЗОВАТЕЛЯ
+ S YES=1 D PPP^%ZAPM.ed.BS1 I '$D(%BS(12)) S YES=0 Q $C(0)
+ I %BS(12)'="",$G(@%BS(18)@(%BS(12),0,"9,4"))'="" S %BS(37)=@$ZR
+ Q %BS(12)
+e ;
+ENTERPAS(B) N i ;ОПРЕДЕЛЕНИЕ ПАРОЛЕЙ ТАБЛИЦЫ
+ F i=2,4,5 K %w(i) S %w(i)=$P(B,"@",i) I %w(i)'="" D
+ .I $G(%BS(12))="" K %w(i) Q
+ .I $G(@%BS(18)@(".@PASSWORD",%BS(12)),"¤")=%w(i) Q
+ .K %w(i)
+ Q
+ ;???? K KEYPAS S li=IMQ D TIR S:BSr'["^" BSr="^"_BSr I $G(@(BSr_"(BSt,""KEY"",key,6)"))["$KEYPAS(" S KEYPAS='$$KEYPAS^%ZAPM.ed.BSF7(BSD,.%KEYS)
+CHECK(GL) N GL1 I $G(%BS(12))'="",$G(@%BS(18)@(".@PASSWORD",%BS(12)),"¤@")=@GL Q 1
+ I $G(@GL)="" D L^%ZAPM.ed.BS3(GL) K @GL D U^%ZAPM.ed.BS3(GL) Q 1
+ D PASCHECK^%ZAPM.ed.BS1(GL,"",1,"На Узел существует пароль ! Введите ","GL1") I '$D(GL1) Q 0
+ Q 1
+PASS(G,K) N GL,GL1 ;ПАРОЛИРОВАНИЕ УЗЛОВ БАЗЫ ДАННЫХ
+ S G=$$BSD^%ZAPM.ed.BSA(G,$G(K(0))) I $D(K) F ii=1:1:key-1 Q:'$D(K(ii))  S G=G_$S(K(ii)'=+K(ii):$C(34)_K(ii)_$C(34),1:K(ii))_","
+ S G=G_$S(d'=+d:$C(34)_d_$C(34),1:d)_","
+ I $D(@(G_"""@PASSWORD"")")) S GL=$ZR D PASCHECK^%ZAPM.ed.BS1(GL,"",1,"На Узел '"_d_"' существует пароль ! Введите ","GL1") I '$D(GL1) Q
+ S:'$D(GL) GL=$ZR S ls=" Будем вводить новый пароль на Узел '"_d_"'" D YES^%ZAPM.ed.BSF I 'YES Q
+ D L^%ZAPM.ed.BS3(GL),PASSWORD^%ZAPM.ed.BSF4(GL,"",1,"Вводите пароль На Узел '"_d_"'","GL1"),U^%ZAPM.ed.BS3(GL) I '$D(GL1) Q
+ Q
+O I $G(%BS(13))="%BS-PC" d ErrMsg^%ZAPM.ed.BSXfun(ls) Q  ;СООБЩЕНИЕ ОБ ОШИБКЕ
+OSH n x I $ZV'["Cach"&&($ZV'["IRIS") ;U $I:(0::::#10080)
+ W $$bel^%ZAPM.ed.BS3,/CUP(23,1),$$clr^%ZAPM.ed.BS3($G(CoLoR,10)),$E(ls,1,153),$$atr^%ZAPM.ed.BS3(0),$J("",153-$L($E(ls,1,153)))
+ W $$clr^%ZAPM.ed.BS3($G(CoLoR,10))," <Ok>",$$atr^%ZAPM.ed.BS3(0),$$rt^%ZAPM.ed.BS3(9999),/CUP(23,1) X "I 0" I R1=0,R2=140 D x^%ZAPM.ed.BS3("Ловушка...пользователя")
+ W $$atr^%ZAPM.ed.BS3(0),/CUP(23,1),/EL(0),/CUP(24,1),/EL(0),/CUP(25,1),/EL(0)
+ Q
+CHNAME ;СМЕНА ИМЕНИ
+ S ls=" ВАШЕ ТЕКУЩЕЕ ИМЯ :"_%BS(12)_" ,ХОТИТЕ РАБОТАТЬ ПОД ДРУГИМ ? " D YES^%ZAPM.ed.BSF
+ I YES D OP^%ZAPM.ed.BSF4 S Me=%BS(12),MeCtO=$$%BSUSER D CL^%ZAPM.ed.BSF4 S %BS(12)=Me Q:MeCtO=$C(0)  S %BS(12)=MeCtO
+ Q
+AF ;ВЫЗОВ АНАЛИТИЧЕСКИХ ФОРМ
+ N MeCtO,FLAG S FLAG=$E(%BS(1),11)
+AFin S MeCtO=$$ZU^%ZAPM.ed.BS3(0) I $$ZU^%ZAPM.ed.BSF4("MOL","VOI") D  S uci=MeCtO D %GU^%ZAPM.ed.BSF4 I 'YES H
+ .N MeCtO
+ .S IYI=$S('FLAG:"^[""MOL"",""VOI""]ENTER,M0",1:"^[""MOL"",""VOI""]ENTER,L")
+ .D NEB^%ZAPM.ed.BSN
+ Q
+DDR ;ВЫЗОВ DDR
+ N MeCtO,FLAG S FLAG=$E(%BS(1),11)
+DDRin S MeCtO=$$ZU^%ZAPM.ed.BS3(0) D MGR^%ZAPM.ed.BS
+ S IYI=$S('FLAG:"^%ZAPM.ed.BSDDR,DDRM0",1:"^%ZAPM.ed.BSMDDR,Z") D  S uci=MeCtO D %GU^%ZAPM.ed.BSF4
+ .N MeCtO,FLAG
+ .D NEB^%ZAPM.ed.BSN
+         I 'YES H
+ Q
+DDRint(FLAG) G DDRin
+SAY N I,QQ S QQ=$$SW^%ZAPM.ed.BSF12("^%ZAPM.ed.BSS(""OWNER"")")
+ W !,$G(@QQ@(1))," §",^%ZAPM.ed.BS F I=2:1 Q:'$D(@QQ@(I))  W !,@QQ@(I)
+ Q
+HIDON D R^%ZAPM.ed.BSF4(42,1) Q
+HIDOFF D R^%ZAPM.ed.BSF4(42,"") Q
+EdNumF S ls=" Вводите / Корректируйте Номер ПОЛЯ DBF",li=$P(@(BSR_"(BST,ny,nx)"),"@",6) D LE^%ZAPM.ed.BSTT I YES G:'YES EdNumF S $P(@(BSR_"(BST,ny,nx)"),"@",6)=li Q
+ Q
+CoNumF S li=$P(@(BSR_"(BST,ny,nx)"),"@",6),do="S $P(^(j),""@"",6)=li" D BLOK^%ZAPM.ed.BSF1
+ Q
+CtrDBF S YES=1 I '$D(@(BSR_"(BST,""DBF"")")) S YES=0 D ErrMsg^%ZAPM.ed.BSXfun("ДЛЯ ТАБЛИЦЫ ЕЩЁ НЕ ОПРЕДЕЛЕНА СТРУКТУРА DBF") Q
+ Q
+CtrNum S YES=1  I +$G(@(BSR_"(BST,""DBF"",4,1)"))<li G CtrNumEr
+ I li<1 G CtrNumEr
+ Q
+CtrNumEr S YES=0 D ErrMsg^%ZAPM.ed.BSXfun("В СТРУКТУРЕ DBF "_$G(@$ZR)_" ПОЛЕЙ ! А ВЫ ВВОДИТЕ "_li_" ?") Q
+ClearSpc(s) N i f i=$L(s):-1:0 q:$E(s,i)'=" "
+ q $E(s,i>0,i)
+WIND N x,y S ls=" Вводите / Корректируйте Размер Окна Коррекции Y,X ",li=$P(@(BSR_"(BST,ny,nx)"),"@",21)
+WIN D LE^%ZAPM.ed.BSTT I YES D:li'="" CtlWIND G:'YES WIN D  Q
+ .D Yes^%ZAPM.ed.BSXfun("В клетках ВСЕЙ таблицы ?",2) I YES D R^%ZAPM.ed.BSF4(26,li) Q
+ .S $P(@(BSR_"(BST,ny,nx)"),"@",21)=li
+CtlWIND S YES=1 I li="" Q
+ S y=$P(li,","),x=$P(li,",",2) I (x*y)>500 D ErrMsg^%ZAPM.ed.BSXfun("ОЧЕНЬ БОЛЬШОЕ ОКНО") S YES=0 Q
+ I (x*y)<1 D ErrMsg^%ZAPM.ed.BSXfun("ОЧЕНЬ МАЛЕНЬКОЕ ОКНО") S YES=0 Q
+ I x>70&(x<5) D ErrMsg^%ZAPM.ed.BSXfun("НЕПРАВИЛЬНЫЙ ДИАПАЗОН ПО X (от 5 до 70)") S YES=0 Q
+ I y>10&(x<2) D ErrMsg^%ZAPM.ed.BSXfun("НЕПРАВИЛЬНЫЙ ДИАПАЗОН ПО Y (от 2 до 10)") S YES=0 Q
+ Q
+BA S li=$$BigEdit^%ZAPM.ed.BSXuse(li,y1,x1,y2,x2,"@") K x,y,x1,x2,y1,y2 Q
+BAR(y,x) S y1=($P(BS,"@")+1-BS1+BSY1(BS0)),y2=($P(BS,"@")-BS1+BSY1(BS0)+$P(BS,"@",3))
+ ;~~~S y=+$P(BS,"@",21),x=$P($P(BS,"@",21),",",2)
+ I (y+2)<y1 S y1=2,y2=y1+y-1 D BARX G BA
+ I y<(24-y2) S y1=y2+2,y2=y1+y-1 D BARX G BA
+ S y1=8,y2=y1+y D BARX G BA
+BARX S x1=(79-x)\2,x2=x1+x Q
+UPG ;ПОВЫШЕНИЕ ВЕРСИИ ТАБЛИЦЫ
+ S Tab=$$DclTab^%ZAPM.ed.BSGFUN0("") Q:Tab=""
+ S Glo=$$TranTab^%ZAPM.ed.BSGFUN0(Tab) Q:Glo=""  I $D(@Glo) D Yes^%ZAPM.ed.BSXfun("ТАБЛИЦА "_Tab_" УЖЕ СУЩЕСТВУЕТ ! ПЕРЗАПИСЫВАЕМ ?",2) Q:YES<1
+ I $D(@(BSR_"(BST)")) S Tab=$ZR
+ I Tab=Glo D ErrMsg^%ZAPM.ed.BSXfun(" ТЕКУЩУЮ НЕЛЬЗЯ !!!") Q
+ D UpGraid^%ZAPM.ed.BSGFUN0(Tab,Glo) Q
+%BSU() ;Имя базы данных пользователей %BS
+ I $ZV["Cach"||($ZV["IRIS") Q "%BS(39)"
+ N RAZ S RAZ=0
+RAZ I $D(^%ZAPM.ed.BSS("USER","KEY")),$$Data^%ZAPM.ed.BSF12($NA(@$P(^%ZAPM.ed.BSS("USER","KEY"),"@"))) Q $ZR
+ I $G(%BS(23)) S RAZ=RAZ+1 I RAZ<5 W $$bel^%ZAPM.ed.BS3,$$bel^%ZAPM.ed.BS3 H 1 G RAZ
+ Q "^%ZAPM.ed.BSuDFLT"
+ ;
+ver() i $P($ZV,"Version ",2)'<4 Q "|" ;Полная ссылка в MSM 4.0
+ Q "]"

@@ -1,0 +1,104 @@
+ROUTINE %ZAPM.ed.BSout
+%BSout ;Опции вывода таблицы и параметры принтера (А.Тимофеев) ; 14:21  2-DEC-98
+ 
+OPout(%1,%2,%3) ;ОПЦИИ ВЫВОДА ; %1-PRN (1),DOS (2),TXT (3); %2 - BSR, %3 - BST
+ 
+ I $G(%1)="" Q
+ S:$G(%2)="" %2=$G(BSR) S:$G(%3)="" %3=$G(BST) I BSR=""!(BST="") Q
+ 
+0 N im,it,i,i1,BSRold,BSTold,BSr1,BSr2,BSt1,BSt2,zap,%zT
+ S %zT=$ZT,$ZT="1^%ZAPM.ed.BSout"
+ S im="^%ZAPM.ed.BSS",it="OPout"
+ K ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"),^%ZAPM.ed.BSbufB("zP"_$G(%BS(3),$P)_$J_"u")
+ 
+ S zap=$S(%1=1:"PRN",%1=2:"HFS",%1=3:"TXT",1:"COM"),BSR=%2,BST=%3
+ D
+ .I $D(@(BSR_"(BST,zap)")) S in=@(BSR_"(BST,zap)") I in["@" K @(BSR_"(BST,zap)"),in
+ .I $D(in) F i=1:1:7 S @("in"_i)=$P(in,"#",i) Q:i=7
+ .I $D(@(BSR_"(BST,zap)")) Q
+ .F i=1:1:7 S @("in"_i)=$P($P(^%ZAPM.ed.BSS("OPout1",%1+1,1),"@",15),"#",i)
+ 
+ ;Копирование таблицы опций в буфер
+ 
+ K ^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u")
+ S BSr1="^%ZAPM.ed.BSS",BSt1="OPout",BSr2="^%ZAPM.ed.BSbufB",BSt2="fTS"_$G(%BS(3),$P)_$J_"u" D COPY^%ZAPM.ed.BSTK
+ F i=1:1:7 S i1=i*2,$P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i1,2),"@",15)=$G(@("in"_i))
+ ;```S BSRold=BSR,BSTold=BST
+ ;```S BSR="^%ZAPM.ed.BSbufB",BST="fTS"_$G(%BS(3),$P)_$J_"u"
+ ;```S IYI=BSR_"("_BST D NE^%ZAPM.ed.BSN
+ S IYI="^%ZAPM.ed.BSbufB"_"("_"fTS"_$G(%BS(3),$P)_$J_"u" D NE^%ZAPM.ed.BSN
+ ;```S BSR=BSRold,BST=BSTold
+ 
+ ;Выборка новых настроек
+ I $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",16,2),"@",15)=0 K in G 1
+ S in=""
+ F i=1:1:7 S i1=i*2 S @("in"_i)=$P($G(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i1,2)),"@",15) S:i=1 in=@("in"_i) S:i'=1 in=in_"#"_@("in"_i)
+ I $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",16,2),"@",15)=1 G 1
+ S @(BSR_"(BST,zap)")=in
+ 
+1 ;The end
+  S $ZT=$G(%zT)
+  K ^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u")
+  Q
+ 
+OPprn(%2,%3) ;Параметры принтера ;%2 - BSR, %3 - BST
+ S:$G(%2)="" %2=$G(BSR) S:$G(%3)="" %3=$G(BST) I BSR=""!(BST="") Q
+ S BSR=%2,BST=%3
+ N i,st,str,BSRold1,BSTold1,%zT,S,SS,SSS,zBSR,zBST
+ S %zT=$ZT,$ZT="2^%ZAPM.ed.BSout"
+ 
+ K ^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u")
+ S BSr1="^%ZAPM.ed.BSS",BSt1="OPout0",BSr2="^%ZAPM.ed.BSbufB",BSt2="fTS"_$G(%BS(3),$P)_$J_"u" D COPY^%ZAPM.ed.BSTK
+ S BSRold1=BSR,BSTold1=BST
+ S zBSR="^%ZAPM.ed.BSbufB",zBST="fTS"_$G(%BS(3),$P)_$J_"u" ;```!!!!! НЕЛЬЗЯ ПЕРЕОПРЕДЕЛЯТЬ BSR,BST
+ I $D(@%2@(%3,"SHR")) S S=@$ZR I S'["27," F SS=1:1:3 I $P($P(S,$S(S["@":"@",1:"#"),SS),",") D
+ .S SSS=$P($P(S,$S(S["@":"@",1:"#"),SS),","),$P(@zBSR@(zBST,SSS-1,2),"@",15)="Y"
+ S IYI=zBSR_"("_zBST D NE^%ZAPM.ed.BSN ;```  ДЛЯ ТАКОГО ВЫЗОВА !!!!!
+ S BSR=BSRold1,BST=BSTold1
+ 
+ ;Установка новых настроек
+ K @(BSR_"(BST,""SHR"")")
+ S str="" F i=2:1:13 S st=$P($G(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,2)),"@",15) D
+ .I i<6 S:st="Y" $P(@(BSR_"(BST,""SHR"")"),"#")=$P($G(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,1)),"@",15) Q
+ .I i>5&(i<12) S:st="Y" $P(@(BSR_"(BST,""SHR"")"),"#",2)=$P($G(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,1)),"@",15) Q
+ .S:st="Y" $P(@(BSR_"(BST,""SHR"")"),"#",3)=$P($G(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,1)),"@",15) Q
+ 
+2 ;The end
+ S $ZT=$G(%zT)
+ K ^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u")
+ Q
+ 
+3 ;Обработка клавиш в таблице опций принтера
+ Q:R1>332
+ I R1=13&(R2=-1)&(R3=-1) D  S R1=-2 D W^%ZAPM.ed.BST Q
+ .I ny<6 D  S $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",ny,2),"@",15)="Y" Q
+ ..F i=1:1:5 S $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,2),"@",15)=""
+ .I "6,7,8,9"[ny!(ny=10)!(ny=11) D  S $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",ny,2),"@",15)="Y" Q
+ ..F i=6:1:11 S $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,2),"@",15)=""
+ .I ny=12!(ny=13) D  S $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",ny,2),"@",15)="Y" Q
+ ..F i=12,13 S $P(^%ZAPM.ed.BSbufB("fTS"_$G(%BS(3),$P)_$J_"u",i,2),"@",15)=""
+ I R1=27 Q
+ Q
+ 
+BLout ;Формирование блока и посылка на вывод блока
+ 
+ I $P(@(BSR_"(BST)"),"@",3)'=1 D ErrMsg^%ZAPM.ed.BSXfun(" Нет пометки блока !! ") Q
+ I '$D(%CAL) D CALC^%ZAPM.ed.BSF3             ;вычисления
+ S BsrO=BSR,BstO=BST,%zT=$ZT,$ZT="END^%ZAPM.ed.BSout"
+ I $$BL^%ZAPM.ed.BSout4(BSR,BST)=0 Q
+ S BSR="^%ZAPM.ed.BSbufB",BST="L"_$G(%BS(3),$P)_$J_"u"
+ D OkMsg^%ZAPM.ed.BSXfun("Блок готов !!!",6)
+ S OO=55,OOO="^%ZAPM.ed.BS" D ^%ZAPM.ed.BSB S LAB=$TR(%JB(%JB),",","")_%B
+ I LAB="111" D Kout^%ZAPM.ed.BSout0(1) K in G END   ;ТАБЛИЦА НА ПРИНТ.
+ I LAB="121" D Kout^%ZAPM.ed.BSout0(2) K in G END   ;        В ФАЙЛ
+ I LAB="131" D Kout^%ZAPM.ed.BSout0(3) K in G END   ;        В ТЕКСТ
+ I LAB="141" D Kout^%ZAPM.ed.BSout0(4) K in G END   ;        НА РТА
+ I LAB="21" D DTout^%ZAPM.ed.BSout3(1) G END   ;ДАННЫЕ НА ПРИНТ.
+ I LAB="22" D DTout^%ZAPM.ed.BSout3(2) G END   ;        В ФАЙЛ
+ I LAB="23" D DTout^%ZAPM.ed.BSout3(3) G END   ;        В ТЕКСТ
+ I LAB="24" D DTout^%ZAPM.ed.BSout3(4) G END   ;        НА РТА
+ 
+END ;The end
+ S $ZT=$G(%zT)
+ S BSR=BsrO,BST=BstO D W^%ZAPM.ed.BST
+ Q

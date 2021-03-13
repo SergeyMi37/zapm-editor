@@ -1,0 +1,41 @@
+ROUTINE %ZAPM.ed.BSA
+%BSA ;ПОЛНАЯ ССЫЛКА НА КЛЕТКУ ; 15:15   15.04.2003
+ ;{i,j,"TAB","^PAR","UCI","SYS",k0,k1,...k9}
+ ; 1 2   3      4     5     6    7  8 9 10...
+A(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16) S pp=$P($G(BSR),"^",2),ps=$S(pp'[",":$P($$ZU^%ZAPM.ed.BS3(0),",",2),1:$P(pp,$C(34),4))
+ S pu=$S(pp'["[":$P($$ZU^%ZAPM.ed.BS3(0),","),1:$P(pp,$C(34),2)),pt=$G(BST) I $E(pp,1)="[" S pp=$P(pp,"]",2)
+ S %zT=$ZT,$ZT="TRAP^%ZAPM.ed.BSA"
+ I $D(p4) S pp=p4 I pp["^" S pp=$P(pp,"^",2)
+ I $G(p3)'="" S pt=p3
+ I $G(p5)'="" S pu=$TR(p5,"[]|""","") I pu["," S ps=$P(pu,",",2),pu=$P(pu,",")
+ I $G(p6)'="" S ps=$TR(p6,"[]|""","") I ps["," S pu=$P(ps,","),ps=$P(ps,",",2)
+ ;I $E(pp,1)="%" S pp="^"_pp ;`BSA
+ S pp="^["""_pu_""","""_ps_"""]"_pp
+ I $D(@(pp_"(pt,p1,p2)"))
+ S bS=$ZR I $P(@(pp_"(pt,p1,p2)"),"@",9)=1 Q $P($G(@$ZR),"@",15)
+ I '$D(p8),BST=pt,$$BSR(BSR)=pp Q $G(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),p1,p2))
+ S pb=$$KBD^%ZAPM.ed.BSF12($NA(@pp@(pt))),pb=$$BSD(pb,$G(p7))
+ I $ZV["Cach"||($ZV["IRIS") F pi=1:1:9  Q:'$D(@("p"_(pi+7)))  S pb=pb_$S(@("p"_(pi+7))=+@("p"_(pi+7)):@("p"_(pi+7)),1:$C(34)_@("p"_(pi+7))_$C(34))_","
+ E  F pi=1:1:9  Q:'$D(@("p"_(pi+7)))  S pb=pb_$S(@("p"_(pi+7))=+@("p"_(pi+7)):@("p"_(pi+7)),1:$C(34)_@("p"_(pi+7))_$C(34))_","
+ S pij=p1_","_p2 I $P($G(@pp@(pt,"KEY",pi-1)),"@",6)="HiddenLastKey",$P($P(@(pp_"(pt,p1,p2)"),"@",18),"#",2)'="" D  Q $G(@$ZR,"<NO_VALUE>")
+ .S pij=$P($P(@$ZR,"@",18),"#",2) I $D(@(pb_$C(34)_pij_""")"))
+ I $P($P(@(pp_"(pt,p1,p2)"),"@",18),"#")'="" S pij=$P($P(@$ZR,"@",18),"#")
+ I $D(@(pb_$C(34)_pij_""")")) Q @$ZR
+ Q "<NO_VAL>" ;_$ZR
+BSD(BSD,%NAm) ;ССЫЛКА НА УЗЕЛ БАЗЫ ДАННЫХ
+ S %NAm=BSD_$G(%NAm)_$S(BSD["(":"",1:"(") I $E(%NAm,$L(%NAm))=")" S %NAm=$E(%NAm,1,$L(%NAm)-1)_","
+ Q %NAm
+BSR(bsr) N bs,A ;ПОЛНАЯ ССЫЛКА
+ I $E(bsr,1,2)="^%" Q $$%^%ZAPM.ed.BSF12(bsr)
+ ;4.;I $P($ZV,"Version ",2)'<4,bsr'["|" Q "^|"""_$P($$ZU^%ZAPM.ed.BS3(0),",")_""","""_$P($$ZU^%ZAPM.ed.BS3(0),",",2)_"""|"_$P(bsr,"^",2)
+ ;4.;I $P($ZV,"Version ",2)'<4,$P(bsr,"|",2)'["," S bs=$P($P(bsr,"|",2),$C(34),2) Q "^|"""_bs_""","""_$P($$ZU^%ZAPM.ed.BS3(0),",",2)_"""|"_$P(bsr,"|",2)
+ /*I $ZV["Cach"||($ZV["IRIS") D  Q A
+ .S A=bsr
+ .I bsr'["]" S A="^["""_$$ZU^%ZAPM.ed.BS3(0)_""",""""]"_$P(bsr,"^",2)
+ .I $P($P(bsr,"]"),"[",2)'["," S A="^["""_$$ZU^%ZAPM.ed.BS3(0)_""",""""]"_$P(bsr,"]",2)
+ .*/
+ I bsr'["]" Q "^["""_$P($$ZU^%ZAPM.ed.BS3(0),",")_""","""_$P($$ZU^%ZAPM.ed.BS3(0),",",2)_"""]"_$P(bsr,"^",2)
+ I $P($P(bsr,"]"),"[",2)'["," S bs=$P($P($P(bsr,"]"),"[",2),$C(34),2) Q "^["""_bs_""","""_$P($$ZU^%ZAPM.ed.BS3(0),",",2)_"""]"_$P(bsr,"]",2)
+ Q bsr
+TRAP S $ZT=$G(%zT) Q $ZE_" "_$ZR
+e Q

@@ -1,0 +1,25 @@
+ROUTINE %ZAPM.ed.BSCF2
+%BSCF2 ; пpогpамма длЯ ИМПОРТА ИЗ Cache' В EXCEL ; 16:41   06.03.2000
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+DIR Q
+TableString(G,Y,FORX,ANSI,DEL)
+ N VALUE,S1,S2,As2An1,As2An2
+ I '$$Data^%ZAPM.ed.BSF12(G) Q -1 ;ПОЛНАЯ ССЫЛКА НА ТАБЛИЦУ
+ I '$D(@G@(Y)) Q -2 ;ТАКОЙ СТРОКИ НЕТ
+ S DEL=$G(DEL,$C(1)) ;РАЗДЕЛИТЕЛЬ
+ S VALUE="" I $G(ANSI) D  Q VALUE ;НАДО ПЕРЕКОДИРОВАТЬ
+ .D INIT^%ZAPM.ed.BSre(1) X "F X="_FORX_" S VALUE=VALUE_$TR($P($G(@G@(Y,X)),""@"",15),S1,S2)_DEL"
+ X "F X="_FORX_" S VALUE=VALUE_$P($G(@G@(Y,X)),""@"",15)_DEL"
+ Q VALUE
+TextString(G,FORY,ANSI,DEL)
+ N VALUE,S1,S2,As2An1,As2An2
+ I '$$Data^%ZAPM.ed.BSF12(G) Q -1 ;ПОЛНАЯ ССЫЛКА НА ТЕКСТ
+ I '$D(@G@(Y)) Q -2 ;ТАКОЙ СТРОКИ НЕТ
+ S DEL=$G(DEL,$C(1)) ;РАЗДЕЛИТЕЛЬ
+ S VALUE="" I $G(ANSI) D  Q VALUE ;НАДО ПЕРЕКОДИРОВАТЬ
+ .D INIT^%ZAPM.ed.BSre(1) X "F Y="_FORY_" S VALUE=VALUE_$TR($G(@G@(Y)),S1,S2)_DEL"
+ X "F Y="_FORY_" S VALUE=VALUE_$G(@G@(Y))_DEL"
+ Q VALUE

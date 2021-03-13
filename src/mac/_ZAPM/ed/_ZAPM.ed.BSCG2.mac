@@ -1,0 +1,82 @@
+ROUTINE %ZAPM.ed.BSCG2
+%BSCG2 ; пpогpамма НА ПРАВАХ ПРИМЕРА ПОИСКОВОГО МОДУЛЯ (АНАЛОГ ASP :-) ; 16:06   16.10.2000
+ Q     ;ХОРОШЕЕ РЕШЕНИЕ НЕ В ПРИМЕР %BSCG1
+ ;KNH.DBF  SNAIM - СОКР. НАИМЕНОВАНИЕ ВЧ
+ ;         NWC - НОМЕР ВЧ
+ ;         KPD - КОД ДИСЛОКАЦИИ
+ ;         IMG - ПОЛНОЕ НАИМЕНОВАНИЕ ВЧ
+ ;KPD.DBF  KPD - САМ КОД
+ ;         HAR - ХАРАКТЕРИСТИКА НАСЕЛЕННОГО ПУНКТА
+ ;         IMJ - НАИМЕНОВАНИЕ
+ ;
+MAIN ;ГОЛОВНАЯ ПРОГРАММА - ДИСПЕТЧЕР
+ I $G(%KEY("FIND1"))'="" G FIND
+ G FIRST
+ ;!!! НЕ ЗАБУДЬТЕ СДЕЛАТЬ !..
+ ;ОПРЕДЕЛИТЕ  DSN="KSP" В CONTROL PANEL -- ODBC DRIVERS DBase IV
+ ;S ^MGWAPP("KSP")="MAIN^%ZAPM.ed.BSCG2"
+ ;ВЫЗОВ http://webserver/scripts/mgwms32.dll?MGWAPP=KSP
+ ;
+FIRST ;ПЕРВАЯ СТРАНИЦА
+ D VAR^%ZAPM.ed.BSCh
+ D FORM^%ZAPM.ed.BSCh
+ W "<P><strong>ВВЕДИТЕ КОНТЕКСТ ПОИСКА  </strong>"
+ w "<input type=""submit"" value="" Искать"" name=""FIND1"">"
+ W "<input type=""reset"" value="" Очистить текстовые поля"" name=""FIND2"">"
+ w BK,"<table border=""0"">",BK
+ w "<tr>",BK
+   w "<td align=""right""><strong>Номер В/Ч (4цифры)</strong></td>",BK
+   w "<td><input type=""text"" name=""NWC"" size=""17"">"
+   W "</td>",BK
+ w "</tr>"
+ w "<tr>"
+   w "<td align=""right""><strong>Действительное наименование</strong></td>",BK
+   w "<td><input type=""text"" name=""IMJ"" size=""17"">"
+   W "</td>",BK
+ w "</tr>"
+ w "<tr>"
+   w "<td align=""right""><strong>Дислокация (например:Саров)</strong></td>",BK
+   w "<td><input type=""text"" name=""DIS"" size=""17"">"
+   W "</td>",BK
+ w "</tr>"
+ w "</table>",BK
+ W "</FORM>"
+ Q
+FIND ;ИСКАТЬ...
+ N Errors,DNS,ErV,Break,Return,SQL,IF,TK,TD,TempK,TempD,KDS,KDS1,I,II
+ D VAR^%ZAPM.ed.BSCh
+ I $G(%KEY("NWC"))="",$G(%KEY("IMJ"))="",$G(%KEY("DIS"))="" W "ВСЕ ПОЛЯ ПУСТЫЕ !" Q
+ F I="NWC" I $G(%KEY(I))'="",$L($G(%KEY(I)))<2 W "ДЛИНА СТРОКИ КОНТЕКСТА<BR>ДОЛЖНА БЫТЬ БОЛЬШЕ ОДНОГО СИМВОЛА!" S II=1 Q
+ I $G(II) Q
+ S (Z1,Z2,Z3)=""
+ I $G(%KEY("NWC"))'="" S Z1="((KNH.nwc) LIKE '"_$G(%KEY("NWC"))_"%') AND "
+ I $G(%KEY("IMJ"))'="" S Z2="((KNH.SNAIM) LIKE '"_$G(%KEY("IMJ"))_"%') AND "
+ I $G(%KEY("DIS"))'="" S Z3="((KPD.IMJ) LIKE '"_$G(%KEY("DIS"))_"%') AND "
+ S TK="TempG"
+ S SQL="SELECT Knh.NWC, Knh.SNAIM, KPD.HAR, KPD.IMJ"
+ S SQL=SQL_" FROM Knh LEFT JOIN KPD ON Knh.KPD = KPD.KPD"
+ S SQL=SQL_" WHERE ((KNH.NWC IS NOT NULL) AND (KNH.NWC NOT LIKE '0%') AND "_Z1_" "_Z2_" "_Z3_" TRUE)"
+ ;W !,SQL,BK
+ D Read^%ZAPM.ed.BSCG("KSP",SQL,"",1,TK) I $D(Errors) W !,"<PRE>",Errors,"</PRE>" Q
+ I '$D(@TK) W !,"РЕЗУЛЬТАТ ВЫБОРКИ ПУСТОЙ" Q
+ I '$D(@TK@(1)) W !,"РЕЗУЛЬТАТ ВЫБОРКИ СОВСЕМ ПУСТОЙ" Q
+TAB D TABL1
+ F I=1:1 Q:'$D(@TK@(I))  D
+ .w "<tr>",BK
+ .w "<td>",$G(@TK@(I,1)),"</td>"
+ .w "<td>",$G(@TK@(I,2)),"</td>"
+ .w "<td>",$G(@TK@(I,3))_$G(@TK@(I,4)),"</td>"
+ .w "</tr>"
+ D TABL2
+ Q
+TABL1 ;НАЧАТЬ ТАБЛИЦУ
+  w BK,"<table border=""1"">",BK
+ w "<tr>",BK
+   w "<td align=""right""><strong>Номер В/Ч (4цифры)<BR>'"_$G(%KEY("NWC"))_"'</strong></td>",BK
+   w "<td align=""right""><strong>Действительное наименование<BR>'"_$G(%KEY("IMJ"))_"'</strong></td>",BK
+   w "<td align=""right""><strong>Дислокация<BR>'"_$G(%KEY("DIS"))_"'</strong></td>",BK
+ w "</tr>"
+ Q
+TABL2 ;ЗАКОНЧИТЬ
+ w "</table>",BK
+ Q

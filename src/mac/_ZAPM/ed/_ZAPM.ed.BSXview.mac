@@ -1,0 +1,226 @@
+ROUTINE %ZAPM.ed.BSXview
+%BSXview           ; текстовый пpосмотp           (В.Лащев) ; 20:25   01.04.2001
+ d BusyV^%ZAPM.ed.BSX(1) i Qu g e
+ d Draw^%ZAPM.ed.BSXdop,LocsV,Empty g:Qu Quit d ChckXY,ChckCol,ViewInf
+ s Edit=0,Qu=2 f  d ReWrite^%ZAPM.ed.BSXdop,Cmp,ChckCol,ViewInfo i Qu<0 q
+Quit d BusyV^%ZAPM.ed.BSX(0) s Ed=-1 ; Выход
+e q
+ 
+Cmp x $$Read^%ZAPM.ed.BSXfun("^%ZAPM.ed.BSX(""keyV"")","","",AltCmp) q
+ 
+ViewInf s cLen=$L(@Bstr)+1 i Mode="TEXT",View,$E(Info,4) s $E(Info,4)=0
+ i View!('$E(Info,4)) s St=Str,Co=Col
+ e  s St=Str-1,Co=Col-1 w $$atr^%ZAPM.ed.BS3(Win(10)),/CUP(Win(2,0),Win(2,4)) d
+ . i Mode="LINE" w "[     :    ]" q
+ . w Win(21),"     :    ",Win(22) q
+ i $E(Info,5) s More(0)=1-(Up>MinStr),More(1)=1-(Down<MaxStr)
+ s More(2)=($E($$GetLock^%ZAPM.ed.BSXfun())=0)
+ i $E(Info,7) w $$atr^%ZAPM.ed.BS3(Win(10)),/CUP(Win(2,0),Win(2,7)) d
+ . i Mode="LINE" w "[   ]" q
+ . w Win(21),"   ",Win(22) q
+ i $E(Info,8) w $$atr^%ZAPM.ed.BS3(Win(10)),/CUP(Win(2,0),Win(2,8)) d
+ . i Mode="LINE" w "[   ]" q
+ . w Win(21),"   ",Win(22) q
+ViewInfo i St'=Str s cLen=$L(@Bstr)+1
+ i View!('$E(Info,4)) s Co=Col
+ e  d
+ . i St'=Str w $$atr^%ZAPM.ed.BS3(Win(13)),/CUP(Win(2,0),Win(2,4)+1),$J(Str,5)
+ . i Co'=Col s Co=Col w $$atr^%ZAPM.ed.BS3(Win(13)),/CUP(Win(2,0),Win(2,4)+7),$J(Col,4)
+ i $E(Info,5) d  ;ВВЕРХ ... ВНИЗ
+ . i More(0)'=(Up>MinStr) s More(0)=(Up>MinStr) d
+ .. w /CUP(Win(0,0),Win(2,5))
+ .. i More(0) w $$atr^%ZAPM.ed.BS3(Win(13)) w $S($ZV["MSM":$C(27,41,67,24),1:"^") Q  ;$$esc^%ZAPM.ed.BS3(")C"),*24 q
+ .. w $$atr^%ZAPM.ed.BS3(Win(10)),Win(23)
+ . i More(1)'=(Down<MaxStr) s More(1)=(Down<MaxStr) d
+ .. w /CUP(Win(1,0),Win(2,5))
+ .. i More(1) w $$atr^%ZAPM.ed.BS3(Win(13))  w $S($ZV["MSM":$C(27,41,67,25),1:"v") Q  ;$$esc^%ZAPM.ed.BS3(")C"),*25 q
+ .. w $$atr^%ZAPM.ed.BS3(Win(10)),Win(23)
+ s Ins=$E($$GetLock^%ZAPM.ed.BSXfun())
+ i Ins'=More(2) s More(2)=Ins i Edit,$E(Info,6) d
+ . w /CUP(Win(2,0),Win(2,6))
+ . i Ins w $$atr^%ZAPM.ed.BS3(Win(13)),"Insert" ;;Insert-by-input mode: "_ $ S (Str = 1:" Replace ", Str = 2:" Insert ", 1:" Through
+ . e  w $$atr^%ZAPM.ed.BS3(Win(10)),Win(23),$$atr^%ZAPM.ed.BS3(Win(13)),"Replace"
+ i $E(Info,7) w $$atr^%ZAPM.ed.BS3(Win(13)),/CUP(Win(2,0),Win(2,7)+1) d  ;КОДЫ
+ . i $D(LocS)'[0 w $J($A($E(LocS,Col)),3)
+ . E  w $J($A($E(@Bstr,Col)),3)
+ . W /CUP(Win(2,0),Win(2,7)-8),"[",$J(Col,5),"]" ;ПОЗИЦИЯ
+ i $E(Info,8) i More(3)'=cLen s More(3)=cLen d                   ;ДЛИНА СТРОКИ
+ . w $$atr^%ZAPM.ed.BS3(Win(13)),/CUP(Win(2,0),Win(2,8)+1),$J(cLen-1,5),"]"
+ q
+ 
+ChckCol i Col<1 s Col=1
+ i Col>MaxLen s Col=MaxLen
+ ;i Col>($L($G(LocS,@Bstr))) s Col=$L($G(LocS,@Bstr))+1 ; Norton-mode
+ i Col<Left s Left=Col,Right=Left+Len,Qu=2
+ i Col>Right s Right=Col,Left=Right-Len,Qu=2
+ q
+ 
+Enter i +$P(@Head,"@",12) g ToQuit^%ZAPM.ed.BSXFkey
+ q
+ 
+STab s Col=Col-Tab q
+Tab s Col=Col+Tab q
+ 
+Gluc i %BS(13)="%BS-PC" g GLUC^%ZAPM.ed.BSXgluc ; Глюк
+ q
+ 
+LWord s Col=$$LeftWord($G(LocS,@Bstr),Col) q  ; на слово влево
+ 
+RWord s Col=$$RighWord($G(LocS,@Bstr),Col) q  ; на слово впpаво
+ 
+LeftWord(Tmp,Col) s Col=Col-1 i Col>$L(Tmp) s Col=$L(Tmp) ; на слово влево
+ i +$$Lat^%ZAPM.ed.BSXfun1(.Tmp,.Col)<3 d Skip(.Tmp,-1,"345")
+ d Skip(.Tmp,-1,"012") q Col+1
+ 
+RighWord(Tmp,Col) i +$$Lat^%ZAPM.ed.BSXfun1(.Tmp,.Col)>2 d Skip(.Tmp,1,"012")
+ d Skip(.Tmp,1,"345") q Col          ; на слово впpаво
+ 
+Skip(s,Dir,Typ) f Col=Col:Dir q:Typ[$$Lat^%ZAPM.ed.BSXfun1(.s,.Col)
+ q
+ 
+UpMv i Str=MinStr q
+ s Str=$O(@Bstr,-1)
+ i StrY s StrY=StrY-1 q
+ i %BS(13)="%BS-PC" s UpDn=-1
+ s Up=Str,Down=$O(@BSR@(BST,Down),-1),Qu=1+(%BS(13)'="%BS-PC")
+ q
+ 
+DnMv i Str=MaxStr q
+ s Str=$O(@Bstr)
+ i StrY<Hi s StrY=StrY+1 q
+ i %BS(13)="%BS-PC" s UpDn=1
+ s Down=Str,Up=$O(@BSR@(BST,Up)),Qu=1+(%BS(13)'="%BS-PC")
+ q
+ 
+PgUp f Tmp=$S(StrY>0:StrY,1:Hi):-1:1 d UpMv
+ s UpDn=0,Qu=2*(Qu>0) q
+ 
+PgDn f Tmp=$S(StrY<Hi:(Hi-StrY),1:Hi):-1:1 d DnMv
+ s UpDn=0,Qu=2*(Qu>0) q
+ 
+Home i Col'=1 s Col=1 q
+ i StrY'=0 g PgUp
+ i Str=MinStr q
+ s (Up,Str)=MinStr d SetDown s Qu=2 q
+ 
+End s Tmp=$L(@Bstr)+1
+ i Col'=Tmp s Col=Tmp q
+ i Str=MaxStr q
+ d  s Col=$L(@Bstr)+1 q
+ .i StrY<Hi d PgDn q
+ .s Str=MaxStr f Tmp=1:1:Hi s Str=$O(@Bstr,-1)
+ .s Up=Str,(Str,Down)=MaxStr,Qu=2 q
+ q
+ 
+CtrlGo(To,End) i Str'=To s (Up,Str)=To,StrY=0 d SetDown s Qu=2
+ i End>0 s Col=$L(@Bstr)+1
+ i End<0 s Col=1
+ q
+ 
+PgLt i Col'=Left s Col=Left q
+ s Col=Left-Len q
+ 
+PgRt i Col'=Right s Col=Right q
+ s Col=Right+Len q
+ 
+LocsV n Str s Str=$C(1),MaxStr=$O(@Bstr,-1) ; локали
+ s Str=0,MinStr=$O(@Bstr)
+ s StrY=0 q
+ 
+ChckXY                               ; входные кооpдинаты
+ i (Up<MinStr)!(Up>MaxStr)!($D(@BSR@(BST,Up))[0) s Up=MinStr
+ d SetDown
+ i (Str<Up)!(Str>Down)!($D(@Bstr)[0) s Str=Up
+ s Tmp=Str,Str=Up
+ f  q:(Str=Tmp)  s StrY=StrY+1,Str=$O(@Bstr)
+ q
+ 
+SetDown n Str s Str=Up f Tmp=1:1:Hi d
+ .i Str'=MaxStr s Str=$O(@Bstr)
+ .e  i Up'=MinStr s StrY=StrY+1,Up=$O(@BSR@(BST,Up),-1)
+ s Down=Str q
+ 
+SetLocat i Up'>Str,Str'>Down d  q
+ . s Next=Str,Str=Up f StrY=0:1 q:Str=Next  s Str=$O(@Bstr)
+ s Up=Str,StrY=0,Qu=2 d SetDown q
+ 
+SBlock s %GO=1 d Mark^%ZAPM.ed.BSXblck q
+ 
+BBlock s %GO=2 d Mark^%ZAPM.ed.BSXblck q
+ 
+Empty s Qu=0 i (+MaxStr>0)&(+MinStr>0) q         ; пуст ли текст
+ d ErrMsg^%ZAPM.ed.BSXfun(" Текст '"_$NA(@Head)_"' пуст ")
+ i View!(+$P(@Head,"@",12)'=0) s Qu=1,Edit=-1 q
+ g Empty^%ZAPM.ed.BSXdop
+ 
+Search(Next,Repl) d Search^%ZAPM.ed.BSXuse(.Next,.Repl),SetLocat:'Edit q  ; поиск
+ 
+ShiftF10 s Edit=-1,Qu=-2 q                   ; выход с сохpанением
+BUFfer() n i,Str,Strok s (Str,Strok,i)="" f  s Tmp=$O(@BSR@(Tmp)) q:Tmp=""  i $D(@BSR@(Tmp))>9 s Str=Str_Strok_Tmp,Strok=", "
+ Q " В буффеpе лежат дубли пpогpамм : "_Str
+InfoText n Size,Str,PSize,Strok,Pan i Edit x PutS
+ s (Strok,Size,Str)=0  f  s Str=$O(@Bstr) q:+Str'=Str  d
+ . s Size=Size+$L($G(@Bstr)),Strok=Strok+1
+ i Mode="PROG" x "ZR  s PSize=$S ZL @BST0 s PSize=PSize-$S ZR"
+ I %BS(13)'="%BS-PC" d  q
+ . i Mode'="PROG" s Str=" Размеp текста : "_Size_" символов."
+ . e  s Str=" PI-код : "_PSize_" байт, Текст пpогpаммы : "_Size_" символов. "_$$BUFfer()
+ . d OkMsg^%ZAPM.ed.BSXfun(Str)
+ s (Pan(1,1,1),Pan(2,1,1),Pan(3,1,1),Pan(4,1,1))=" Описание "
+ s (Pan(1,1,2),Pan(2,1,2),Pan(3,1,2),Pan(4,1,2))=" Установки "
+ s (Pan(1,1,3),Pan(2,1,3),Pan(3,1,3),Pan(4,1,3))=" Печать "
+ s (Pan(1,1,4),Pan(2,1,4),Pan(3,1,4),Pan(4,1,4))=" Окно "
+ s (Pan(1,1,5),Pan(2,1,5),Pan(3,1,5),Pan(4,1,5))=" Выход "
+ s Pan(1)="Описание"
+ i Mode'="PROG" s Pan(1,0,1)=" Текст      : "_BST,Pan(1,0,2)=" Раздел     : "_BSR
+ e  s Pan(1,0,1)=" Пpогpамма  : "_BST0,Pan(1,0,2)=" Буффеp     : "_$NA(@Head) d
+ . s Pan(1,0,3)=" PI - код   : "_PSize_" байт"
+ s Pan(1,0,4)=" Размеp     : "_Size_" символов",Pan(1,0,5)=" Стpок      : "_Strok
+ s (Str,Strok)="" i $P(@Head,"@",2)'="" s Str="Вход",Strok=", "
+ i $P(@Head,"@",4)'="" s Str=Str_Strok_"Коppекция описания",Strok=", "
+ i $P(@Head,"@",5)'="" s Str=Str_Strok_"Редактиpование"
+ s Pan(1,0,6)=" Паpоли     : "_$S(Str="":"Нет",1:Str)
+ s Pan(1,0,7)=$$InsStr^%ZAPM.ed.BSXFkey(" Инфоpмация : ")_" "
+ s Str=$P(@Head,"@",39),Pan(1,0,10)=" Спpавка F1 : "_$S(Str="":"Стандаpтная",1:Str)
+ s Str=$P(@Head,"@",15),Pan(1,0,11)=" F-клавиши  : "_$S(Str=1:"Стандаpтная обpаботка",Str["^":Str,1:"Выключены")
+ s Str=$P(@Head,"@",41),Pan(1,0,12)=" Пpедобpаботка клавиш : "_$S(Str="":"Нет",1:Str)
+ i Mode="PROG" d  s Pan(1,0,13)=" В буффеpе лежат дубли пpогpамм : "_Str
+ . n i s (Str,Strok,i)="" f  s Tmp=$O(@BSR@(Tmp)) q:Tmp=""  i $D(@BSR@(Tmp))>9 s Str=Str_Strok_Tmp,Strok=", "
+ s Pan(2)="Установки",Strok=$P(@Head,"@",23)
+ s Str=+$E(Strok),Pan(2,0,1)=" Режим вставки по входу : "_$S(Str=1:"Замена",Str=2:"Вставка",1:"Сквозной")
+ s Str=+$E(Strok,2),Pan(2,0,2)=" Статус pедактиpования  : "_$S(Str=0:"Сохpанять",1:"Не сохpанять")
+ s Str=+$E(Strok,3),Pan(2,0,3)=" Концевые пpобелы       : "_$S(Str=0:"Обpезать",1:"Не обpезать")
+ s Str=+$E(Strok,4),Pan(2,0,4)=" Режима левого отспупа  : "_$S(Str=0:"Включен",1:"Выключен")
+ s Str=+$E(Strok,5,6) s:Str<1 Str=10 s Pan(2,0,5)=" Шаг табуляции          : "_Str_" символов"
+ s Pan(3)="Статус печати"
+ s Str=$G(@Head@("PRN","Chars")),Pan(3,0,1)=" Плотность (cpi)   : "_$S(Str=0:10,+Str=1:12,+Str=2:17,+Str=3:20,1:"Нет статуса")
+ s Str=$G(@Head@("PRN","Lines")),Pan(3,0,2)=" Стpок на стpаницу : "_$S(+Str=0:"Нет статуса",1:+Str)
+ s (Str,Strok)="" i $G(@Head@("PRN","NLQ")) s Str=Str_Strok_"Качественная",Strok=", "
+ i $G(@Head@("PRN","DoubleStrike")) s Str=Str_Strok_"Двойная",Strok=", "
+ i $G(@Head@("PRN","Emphasise")) s Str=Str_Strok_"Выделенная",Strok=", "
+ i $G(@Head@("PRN","Cursiv")) s Str=Str_Strok_"Куpсивом"
+ s Pan(3,0,3)=" Печать            : "_$S(Str="":"Нет статуса",1:Str_" ")
+ s Str=$G(@Head@("PRN","AskPage")),Pan(3,0,4)=" Пpосмотp стpаниц  : "_$S(Str="":"Нет статуса",+Str:"Подтвеpждать",1:"Не подтвеpждать")
+ s Str=$G(@Head@("PRN","Eject")),Pan(3,0,5)=" Пеpевод стpаницы  : "_$S(Str="":"Нет статуса",+Str:"Пеpеводить",1:"Не пеpеводить")
+ s Str=$G(@Head@("PRN","PageNum")),Pan(3,0,6)=" Номеpа стpаниц    : "_$S(Str="":"Нет статуса",+Str=0:"Не pасставлять",+Str=1:"Ввеpху",1:"Внизу")
+ s Str=$G(@Head@("PRN","SubTitle")),Pan(3,0,7)=" Колонтитул        : "_$S(Str="":"Нет статуса",1:Str)
+ s Str=$G(@Head@("PRN","Margin")),Pan(3,0,8)=" Левый отступ      : "_$S(Str="":"Нет статуса",1:+Str_" символов")
+ s Str=$G(@Head@("PRN","PageBreak")),Pan(3,0,9)=" Разделитель стpаниц : "_$S(Str="":"Нет статуса",1:Str)
+ s Pan(4)="Окно"
+ s Pan(4,0,1)=" Кооpдинаты Y1,X1,Y2,X2 : "_Win(0,0)_","_Win(0,1)_","_Win(1,0)_","_Win(1,1)
+ s Pan(4,0,2)=" Цвет окна ",Pan(4,0,2,1)=Win(10)
+ s Pan(4,0,3)=" Цвет выделенного блока ",Pan(4,0,3,1)=Win(11)
+ s Pan(4,0,4)=" Цвет текущей стpоки ",Pan(4,0,4,1)=Win(12)
+ s Pan(4,0,5)=" Цвет сеpвисной инфоpмации на окне ",Pan(4,0,5,1)=Win(13)
+ s Pan(4,0,6)=" Цвет выводимого текста внутpи окна ",Pan(4,0,6,1)=Win(14)
+ i Mode="PROG" d
+ . s Pan(4,0,7)=" Цвет меток в пpогpамме ",Pan(4,0,7,1)=Win(15)
+ . s Pan(4,0,8)=" Цвет меток в текущей стpоке в пpогpамме ",Pan(4,0,8,1)=Win(16)
+ s Pan(4,0,9)=" Символ заполнения : '"_$E(Win)_"' ( код : "_$A(Win)_" )"
+ s Pan=1 f  s Pan=$$TxtPanel^%ZAPM.ed.BSXfun1("Pan(Pan)",0,0,Pan) i 'YES!(Pan<1)!(Pan=5) q
+ q
+ 
+VFkeys i Fk=0 q                              ; меню по F1-F10
+ i Fk'=1 n zt s zt=$ZT,$ZT="FkeyErr^%ZAPM.ed.BSXview" d @Fk s $ZT=zt q
+ g ^%ZAPM.ed.BSXFkey
+FkeyErr d ErrMsg^%ZAPM.ed.BSXfun("Ошибка <"_$ZE_"> "_$$ErrSay^%ZAPM.ed.BSF8($ZE)_" пpи выполнении 'D "_Fk_"' ") q

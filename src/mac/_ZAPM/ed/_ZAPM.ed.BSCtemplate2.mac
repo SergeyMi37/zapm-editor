@@ -1,0 +1,279 @@
+ROUTINE %ZAPM.ed.BSCtemplate2
+%BSCtemplate2 ; Портал B4I ; 14:50 12.01.2003
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ Q
+rou(ns,rou) i $g(ns)'="" ZN ns
+ D 1(rou) 
+ Q
+ROU(ns,rou,RN) ;ПОДГОТОВКА ПУНКТОВ ПРИМЕРОВ
+ I '$D(GREEN) D VAR^%ZAPM.ed.BSCh  D Gen^%ZAPM.ed.BSCtemplate3($g(RN))
+ N S,L,I,i,ii,X 
+ w "<hr>" d BSDOC w "<hr>" D rou($g(ns),$g(rou))
+ w "<h3>Примеры из программы : "_BLUE_$g(rou,"%BSCtemplate2")_EF_" Рабочей области : "_RED_$g(ns,"%SYS")_EF_"</H3>"
+ S I="" F  S I=$O(X(2,I)) Q:I=""  S L=X(2,I) D
+ .I L[";;" W "<HR>"_MAROON_$P(L,";;",2)_EF_"<HR>" Q
+ .W "<LI><INPUT NAME='NewTop' TYPE=Submit TITLE='"_$ZCVT($$RES(L),"O","HTML")_"' VALUE='"_L_"'>"_L(L) 
+ Q ""
+1(R) i $g(R)="" k R
+ X "ZL "_$G(R,"%BSCtemplate2")_" F I=1:1 S S(I)=$T(+I) Q:S(I)="""" "
+ F i=1:1:I-1 D
+ .I S(i)[";;" S L=$P(S(i)," ;;") S:L="" X(2,i)=S(i) I L'[" ",L'="" S L(L)=$P(S(i)," ;;",2,99) D
+ ..F ii=i+2:1 q:S(ii)["*///"!(S(ii)[";>>;")  S L(L,ii)=S(ii)
+ ..S X(2,i)=L,i=ii,X(1,L)=$S(S(ii)[";>>;":1,1:0)
+ Q
+RES(A) N Q S Q="",i="" F  S i=$O(L(A,i)) Q:i=""  S Q=Q_L(A,i)_$C(13,10)
+ Q Q
+Result(R,RN,NS,PR,ST,US,ns,rou,Clname,ModeSel,fn,proF) N S,L,I,i,ii,X //ВЫВОД ПРИМЕРОВ В ПРОРАММУ
+ i R="Генерить!" d rn^%ZAPM.ed.BSCtemplate3(Clname,ModeSel,proF) q  //генерация класса редактирования по его свойствам
+ i R="Генерить из CSV" d fn^%ZAPM.ed.BSCtemplate3(fn) q  //генерация класса из текстового файла
+ D rou($g(ns),$g(rou)) I 'X(1,R) W $$RES(R)
+ E  S i="" F  S i=$O(L(R,i)) Q:i=""  X $P(L(R,i),$C(13,10))
+ Q 
+Result2(R,RN,NS,PR,ST,US,ns,rou,fn) N S,L,I,i,ii,X
+ i R="Генерить" d fn^%ZAPM.ed.BSCtemplate3(fn) q  //генерация класса из текстового файла
+ q
+BSDOC D VAR^%ZAPM.ed.BSCh S %("HOST:")=1,HTT="http://"_$$ipS^%ZAPM.ed.BSCp2_":1962"_$$ADDBSGET^%ZAPM.ed.BSC4(,"BSDOC^~BSC4r3")
+ W "<A TITLE='Зарузить в новом окне документаию по порталу' Href='"_HTT_"'>Документация по порталу B4Y</A>"
+ Q
+ ///////////////////////////////////////////////////ПОКА НЕ ВСТАВЛЯТЬ КИРИЛИЦУ В ТЕКСТ ПРИМЕРОВ!!!///////////////////////////////////////
+ ;;Слова и заготовки
+FOR ;;M; Классическое начало FOR
+ /*
+  S i="" F  S i=$O(@a@(i)) Q:i=""
+ *///
+ Q  
+Kz ;;M; Ловушка через глобал
+ /*
+  k ^%z m ^%z=M
+ *///
+ Q  
+LOCAL ;;M; Посмотреть все локальные переменные
+ /*
+   D l^%ZAPM.ed.BSCp2
+ *///
+ Q  
+NewClass ;;M; Заготовка под новый класс
+ /*
+/// имя параметра;1;f;;160
+Property NameOpt As %String [ Required ];
+ 
+/// описание параметра;2;f;
+Property DescOpt As %String(MAXLEN = 1000);
+ 
+/// значение параметра;2;f;
+Property ValOpt As %String(MAXLEN = 1000);
+ 
+Index NameOptIndex On NameOpt [ Unique ];
+ *///
+ Q  
+ANY ;;M; Приглашение ввести любую клавишу
+ /*
+ D ANY^%ZAPM.ed.BSC4r4
+ *///
+ Q  
+align ;;W; Слово - Выравнивание
+ /*
+  align
+ *///
+ Q
+width ;;W; Слово - Длина
+ /*
+  width
+ *///
+ Q
+height ;;W; Слово - Высота
+ /*
+  height
+ *///
+ Q
+ //////////////////////////////////////////////////////
+Write2File ;;F; вывести все локальные переменные в файл
+ /*
+ $$w2f(Fname)
+ *///
+ q
+ ;;Функции
+ZV ;;F; Номер версии Каши
+ /*
+ $$ZV^%ZAPM.ed.BSCp
+ *///
+ q
+CbaseNS ;;F; Перейти в базовую рабочую область конфигурации
+ /*
+ $$CbaseNS^%ZAPM.ed.BSCp
+ *///
+ q
+BDSES ;;F; Обращение к бд СЕССИИ и запись в неё данных
+ /*
+ k @BDSES@(BSSES,"VAR","CheckDocs")
+ *///
+ q
+TRansLIT ;;F; транслитерация  (кирилицу переводим в латиницу)
+ /*
+ $$2LAT^%ZAPM.ed.BSCp(S,N)
+ *///
+ q
+ 
+base64 ;;F; Обратимая функция Base64
+ /*
+ $$b64e^%ZAPM.ed.BSCp2(s)
+ *///
+ q
+GetOpt ;;Sv; Функция получения значения параметра АРМ
+ /*
+ $$GetOpt^%ZAPM.ed.BSCtree(Packet,.sc,NameOpt) 
+ *///
+ q
+SetOpt ;;Sv; Функция присвоения значения параметра АРМ
+ /*
+ $$SetOpt^%ZAPM.ed.BSCtree(Packet,.sc,NameOpt) 
+ *///
+ q
+ 
+GetASUOpt ;;Sv; Функция получения значения параметра ИП и пользователя, если они совпадают  
+ /*
+ $$GetASUOpt^%ZAPM.ed.BSCtree("A2fileMaxSize",BSLOGIN)
+ *///
+ q
+GetVal ;;Sv; Функция получения значения параметра для узла дерева  
+ /*
+ $$GetValTree^%ZAPM.ed.BSCtree(ValNODe,NameVal)
+ *///
+ q
+SetVal ;;Sv; Функция изменения значения параметра для узла дерева  
+ /*
+ $$SetValTree^%ZAPM.ed.BSCtree(ValNODe,NameVal,NewVal)
+ *///
+ q
+GetSQL ;;Sv; Функция выполнения SQL запроса
+ /*
+ s r=$$GetSQL^%ZAPM.ed.BSCtree("select AnsKod, AnsMess from ASUNACm.Answer where AnswerUser='"_user_"' and LogID='"_BSoSel_"'",кол-во колонок2,.R,"ASU") //r=количество найденных строк
+ *///
+ q
+GetField ;;Sv; Функция получения значения поля из записи таблицы  
+ /*
+ $$GetF^%ZAPM.ed.BSCtree(T,F1,D1,F,ns) //возвратить значение поля F для первой найденной записи из таблицы T при условии F1=D1
+ //например :$$GetF^%ZAPM.ed.BSCtree("ASUEHGm","NameOpt","NarXlsTemplate","ValOpt","ASU")
+ ;$$GetOpt^%ZAPM.ed.BSCtree(Packet,status,NameOpt) //функция, специально для получения значений опции для ИП
+ ;$$SetOpt^%ZAPM.ed.BSCtree(Packet,status,NameOpt,ValOpt) //функция, специально для присвоения значения опции для ИП
+ *///
+ q
+ 
+GetA ;;Sv; Функция получения прав доступа на элемент доступа 
+ ;>;
+ w " S BSac=$$GetA^%ZAPM.ed.BSCtree($$GetValTree^%ZAPM.ed.BSCtree("_ST_",""B1""))",!
+ ;>>;
+ q
+ZCVRT ;;Ss; Функция конвертирования тегов HTML в специальные коды
+ ;>;
+ W " S str=$ZCVT("""_ST_""",""O"",""HTML"")",!
+ ;>>;
+ Q 
+norm ;;F; Добавить ведущие нули в число S. N=количество знаков
+ /*
+ s $$NORM^%ZAPM.ed.BSCrr(S,N)
+ *///
+ q
+RESALL ;;Sv; Восстановить все переменные %session, %request
+ /*
+ w $$RESTALL^%ZAPM.ed.BSCp2("s")_"<hr>"_$$RESTALL^%ZAPM.ed.BSCp2()
+ *///
+ q
+ ////////////////////////////////////////////////////
+ ;;Модули
+innerHTML ;;M; Управление динамическими html портала
+  /*
+ D JS^%ZAPM.ed.BSCp
+  W " parent.parent.logo.Ugol.innerHTML='...';",!
+  W " parent.parent.L1.BodyL1.innerHTML='...';",!
+ D JSE^%ZAPM.ed.BSCp
+ *///
+ComboBoxEdit ;;M; Пример применения редактируемого ComboBox
+  /*
+ D BEG1^%ZAPM.ed.BSC4
+ w "<head>"
+ d PreCBE^%ZAPM.ed.BSCp2("http://"_$$ADDSN^%ZAPM.ed.BSC4()_"/b4y/js/cb-edit/")
+ w "</head><body>"
+ w "<input type=text name=myText value='Norway' selectBoxOptions='Canada~Denmark~Finland~Mexico~Nor way~United States'>"_BK
+ w "<input type=text name=myText2 value='' selectBoxOptions='Amy;Andrew'>"_BK
+ D JS^%ZAPM.ed.BSCp
+ w "createEditableSelect(document.getElementById('myText'));"_BK
+ w "document.getElementById('myText2').selectBoxOptions='ZZZZZ~QQQQ~EEE             E       E    EEEEEE';"_BK
+ w "createEditableSelect(document.getElementById('myText2'));"_BK
+ D JSE^%ZAPM.ed.BSCp
+ D END^%ZAPM.ed.BSC4
+ *///
+ q
+IMG ;;M; Картинка портала
+  /*
+  W "<img border=0 src='"_BSDOMAIN_"/img/person.gif' ALT='Insert...'>"
+ *///
+IFRAME ;;M; Пример строки URL для B4Y портала и  IFRAME
+ /*
+ w "<IFRAME HEIGHT='98%' width='98%' SRC='"_$$ADDBSGET^%ZAPM.ed.BSC4(,"stub^~BSCrep")_"' name='RECEIVE' SCROLLING='auto'></IFRAME><BR>"
+ *///
+ Q
+TREE ;;M; Универсальный модуль организации редактирования массива как дерева
+ /*
+ D BEG1^%ZAPM.ed.BSC4
+ D TreeStyle^%ZAPM.ed.BSCtree("Create^%ZAPM.ed.BSCtree",GLO,"LClick^BSissJ","IDISS")
+ D CMenuJS^%ZAPM.ed.BSCtree("PClick^~BSCtree","FRAMETREE","TREE^BSissJ") 
+ d Context^%ZAPM.ed.BSCtree("EDITGLO^%ZAPM.ed.BSCtree")
+ D END^%ZAPM.ed.BSC4
+ Q  
+ *///
+Table2 ;;M; Обрамление элементов в таблицу (2 колонки) со текущими стилями
+ /*
+ D TABL^%ZAPM.ed.BSCp
+ D TR21^%ZAPM.ed.BSCp
+ D TR22^%ZAPM.ed.BSCp 
+ D TR23^%ZAPM.ed.BSCp
+ D TRHR
+ D TABLE^%ZAPM.ed.BSCp
+ Q
+TRHR W "<tr><td></td><td></td></tr>" Q 
+ *///
+WorkTel ;;M; ЗАГРУЗИТЬ ТЕРМИНАЛ
+ /*
+ ;%SYS"",""@"",""InfoSessi^^%ZAPM.ed.BSC4rout("_BSSES_")"",""Sessions""   - ЗАПУСК ПРОГРАММЫ ИЗ НС %SYS
+ ;"1","$","$","Terminal"  										  - ЗАПУСК ПОЛНОГО ТЕРМИНАЛА
+ ;""GLAVK"",""%BSJPRN"",""DPP"",""Устройства вывода""			  - ЗАПУСК ТАБЛИЦЫ
+ ;"""_N_""",""$"",""$"",""Namespace_"_N_"""						  - ЗАПУСК ТЕРМИНАЛА ИЗ НС 
+ d WorkTel^%ZAPM.ed.BSCp2(NS,PART,TABL,TITLE)
+ *///
+ 
+DirClientIPff ;;F; получение директории установки ClientIP - клиента ИнфоПортала
+ /*
+ =$$DirClientIPff(BSSES) //получение директории установки ClientIP - клиента ИнфоПортала
+ *///
+CacheSysDir ;;F;  получение директории установки Cache'
+ /*
+ $$CacheSysDir^%ZAPM.ed.BSCp("\Cache.cpf")
+ *///
+WorkRun ;;M; ЗАГРУЗИТЬ EXE программу
+ /*
+ d WorkRun^%ZAPM.ed.BSCp2("notepad.exe",$$CacheSysDir^%ZAPM.ed.BSCp("\Cache.cpf"),$$CacheSysDir^%ZAPM.ed.BSCp(""))
+ *///
+GetIpUrl ;;F; возвратить ссылку для закачки файла из инфотеки с сервера IP
+ /* 
+ s url=$$GetIpUrl^%ZAPM.ed.BSCp(gl)
+ */// 
+CspUrl ;;F; Правильно сформированный URL csp страницы с вызовом через IP адрес
+ /*
+ s url="http://"_$$ipS^%ZAPM.ed.BSCp2_":"_$$WebPort^%ZAPM.ed.BSCp2_"/"_Csp_"?"_$$addb^%ZAPM.ed.BSC4()
+ *///
+HttpUrl ;;F; Правильно сформированный URL с именем сервера ИП
+ /*
+ s url="http://"_$$ADDSN^%ZAPM.ed.BSC4()_$$ADDLIB^%ZAPM.ed.BSC4()
+ *///
+LoadExcel ;;M; Загрузка шаблона Excel и манипуляция с ним
+ /*
+  d LE^%ZAPM.ed.BSCp("1-видим шаблон сразу",$ZU(110)_":"_$$WebPort^%ZAPM.ed.BSCp2_"/csp/asu/html/asurp/docum/arm/24/xls/шаблон_наряда.xls","^mas",R,C,rou)
+ *///
+RecompileZen ;;M; Рекомпиляция всего пакета %ZEN
+ /*
+  Do $system.OBJ.CompilePackage("%ZEN") 
+ *///
+ 

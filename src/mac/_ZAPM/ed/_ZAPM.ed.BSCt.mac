@@ -1,0 +1,56 @@
+ROUTINE %ZAPM.ed.BSCt
+%BSCt ;ФУНКЦИИ ТАБЛИЦ И ТЕКСТОВ ; 0:20   22.01.2000
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+TEXT(G) ;ТЕКСТ
+ N I,II
+ S (II,P1)=""
+ F I=1:1 Q:'$D(@G@(I))  S II=II_@G@(I)_$C(13,10)
+ Q II
+TabColSize(T,D) ;РАЗМЕР КОЛОНОК В ТАБЛИЦЕ T
+ I +$G(D)=0 S D=$P(@T,"@",29)
+ S II="" F I=1:1:D S II=II_$P(@T@(1,I),"@",4)_","
+ S P1=D
+ Q II
+TabRowSize(T,D) ;РАЗМЕР СТРОК В ТАБЛИЦЕ T
+ I +$G(D)=0 S D=$P(@T,"@",28)
+ S II="" F I=1:1:D S II=II_$P(@T@(I,1),"@",3)_","
+ S P1=D
+ Q II
+TabShab(T) ;ШАПКА В ТАБЛИЦЕ T
+ N D,TS,K,S
+ I +$G(D)=0 S D=$P(@T,"@",29) ;КОЛИЕСТВО КОЛОНОК
+ S TS=+$P($P(@T,"@",19),",") I TS<2 Q "" ;ШАПКИ НЕТ
+ S II="" F S=1:1:TS-1 D  S II=II_$C(2) ;КОНЕЦ СТРОКИ
+ .F K=1:1:D S II=II_$$DATACELL(T,S,K)_$C(1)
+ Q II
+TabCell(T,OT,DO) ;ДАННЫЕ В ТАБЛИЦЕ T
+ N D,TS,K,S
+ I +$G(D)=0 S D=$P(@T,"@",29) ;КОЛИЕСТВО КОЛОНОК
+ S II="" F S=OT:1:DO D  S II=II_$C(2) ;КОНЕЦ СТРОКИ
+ .F K=1:1:D S II=II_$$DATACELL(T,S,K)_$C(1)
+ Q II
+DATACELL(T,S,K) ;ДАННЫЕ КЛЕТКИ РАЗБИТЫЕ _$C(13,10)
+ N D,W,I,II,H,J
+ S D=$$CELL(T,S,K),II=""
+ I $P(@T@(S,K),"@",3)=1 Q D
+ S H=$P(@T@(S,K),"@",3),W=$P(@T@(S,K),"@",4)
+ F I=1:1:H S II=II_$E(D,(I*W)-W+1,W+(W*(I-1)))_$C(13,10)
+ Q II
+CELL(T,ny,nx) ;ДАННЫЕ КЛЕТКИ
+ N BSR,BST,BS,B,d,d1,d0,st,ke,se
+ S se=+$O(@T@(" "),-1),ke=+$O(@T@(1,""),-1)
+ ;S BSR=$P(T,"("),BST=$O(@T),BST=$O(@BSR@(BST),-1)
+ S BSR=$P(T,"("),BST=$QS(T,1)
+ I '$D(@BSR@(BST,ny,nx)) Q ""
+ S BS=@BSR@(BST,ny,nx),B=@BSR@(BST)
+ I $P(BS,"@",9)=1 S (d1,d,d0)=$P(BS,"@",15)
+ E  S (d1,d,d0)=$G(^%ZAPM.ed.BSbufB("BB"_$J_"u1",ny,nx)) ;ДЛЯ БАЗ ДАННЫХ БУДЕТ ПО ДРУГОМУ
+ I d0="" S d0=" " ;????
+ I $P(BS,"@",8)'="" D
+ .I $P(BS,"@",8)=0 X $G(@(BSR_"(BST,""FTR"","_ny_","_nx_")")) S d0=d1 Q
+ .X $G(@(BSR_"(BST,""FTR"","_$P(BS,"@",8)_")")) S d0=d1
+ Q d1

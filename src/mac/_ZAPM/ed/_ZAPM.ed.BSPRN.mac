@@ -1,0 +1,79 @@
+ROUTINE %ZAPM.ed.BSPRN
+%BSPRN ;ВЫВОД НА ПЕЧАТЬ (А.Тимофеев) ; 14:48   02.03.99
+ I '$D(%CAL) D CALC^%ZAPM.ed.BSF3
+TWA S IMQ1=BSR_","_BST S:$D(%TIT) IMQ2=BSY2(1)_","_BSX2(2) D TWA1 D Q^%ZAPM.ed.BSN("%BS,PRF,%zT,%KAT,%File,k0,k1,k2,k3,k4,k5,IMQ1,IMQ2,BSB,PRN,DOS,SR,SR1,SR2,SR3,PRA,PRA1")
+ K SR,SR1,SR2,SR3 D TIT^%ZAPM.ed.BST,W^%ZAPM.ed.BST D:$D(%FN) C^%ZAPM.ed.BSBL1 G D^%ZAPM.ed.BS
+TWA1 D SI^%ZAPM.ed.BSN D N^%ZAPM.ed.BSN("%BS,PRF,%zT,%KAT,%File,k0,k1,k2,k3,k4,k5,IMQ1,IMQ2,BSB,PRN,DOS,SR,SR1,SR2,SR3,PRA,PRA1") D SI^%ZAPM.ed.BSN
+ D IMQ1 S:$D(IMQ2) BSY2(1)=$P(IMQ2,","),BSX2(2)=$P(IMQ2,",",2) S %I=$I
+SPR ;СОЗДАНИЕ ПЕРЕМЕННЫХ ИЗ ОПЦИИ ДЛЯ ПЕЧАТИ
+ I $D(PR2) G SK
+ I DOS=1 G SPR1
+ I $D(PRA) F ii=1:1:8 S @("PR"_ii)=$P(PRA,"@",ii) G:ii=8 OPR
+ I $D(@(BSR_"(BST,""PRN"")")) S PRA=@$ZR F i=1:1:8 S @("PR"_i)=$P(PRA,"@",i) G:i=8 OPR
+ F ii=2:1:9 S i=ii-1,@("PR"_i)=$P(^%ZAPM.ed.BSS("LPT",ii,2),"@",15) Q:ii=9
+OPR S PR2=PR2-PR5 F i=4,6,7,8 S @("PR"_i)=$S(@("PR"_i)="Y":1,@("PR"_i)="N":0,1:"") G:i=8 SK
+SPR1 ;ДЛЯ DOS-ФАЙЛА
+ I $D(PRA1) F ii=1:1:8 S @("PR"_ii)=$P(PRA1,"@",ii) G:ii=8 OPR1
+ I $D(@(BSR_"(BST,""HFS"")")) S PRA=@(BSR_"(BST,""HFS"")") F i=1:1:8 S @("PR"_i)=$P(PRA,"@",i) G:i=8 OPR1
+ F ii=2:1:9 S i=ii-1,@("PR"_i)=$P(^%ZAPM.ed.BSS("HFS",ii,2),"@",15) Q:ii=9
+OPR1 S:PR2="M" PR2=255 S PR2=PR2-PR5 F i=4,6,7,8 S @("PR"_i)=$S(@("PR"_i)="Y":1,@("PR"_i)="N":0,1:"") Q:i=8
+SK ;НАЧАЛО
+ I DOS=1 D DOSOPN^%ZAPM.ed.BSBL1 Q:'YES
+ I $D(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15))) S IMQ3=$G(^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15))) I IMQ3=IMQ1 S ls="ЕСТЬ ГОТОВЫЙ ФАЙЛ ВЫВОДА,БУДЕМ ВЫДАВАТЬ ?",%B=2 D YES^%ZAPM.ed.BSF I YES G:DOS'=1 PRN2^%ZAPM.ed.BSPRN1 D:DOS=1 DOSIN^%ZAPM.ed.BSBL1 U 0 Q
+ K ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15)) S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15))=IMQ1 I PRN=1 G KW^%ZAPM.ed.BSPRN1
+ ;ВЫВОД БЛОКА
+ I BSR="^%ZAPM.ed.BSbufB" S ls=" Это уже блок , извини , выводи всю ! " D O^%ZAPM.ed.BSF7 Q
+ S ls="ФОРМИРУЕТСЯ БЛОК" D WAITS^%ZAPM.ed.BSF2
+ D ^%ZAPM.ed.BSBL S BSR="^%ZAPM.ed.BSbufB",BST="L"_$G(%BS(3),$P)_$J_"u"_%BS(15) D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST K ^%ZAPM.ed.BSbufB("L"_$G(%BS(3),$P)_$J_"u"_%BS(15)) Q
+IMQ1 S BSR=$P(IMQ1,",",1,$L(IMQ1,",")-1),BST=$P(IMQ1,",",$L(IMQ1,",")) Q
+BEG ;ОСНОВНОЙ БЛОК ПОДГОТОВКИ ФАЙЛА ВЫВОДА
+ D IMQ1 S BS0=0,BSX(BS0)=BSWX,BSY(BS0)=BSWY,(BSUY,BSUX)=1 S:BSWX=1 BSUX=0 S:BSWY=1 BSUY=0
+WRITE S ls="ФОРМИРУЕТСЯ ФАЙЛ ВЫВОДА" D WAITS^%ZAPM.ed.BSF2,TIT ;PRN^%ZAPM.ed.BSPRN1
+ Q
+W S BSP=1 K BS1,BS2,BS  ;СОЗДАНИЕ БУФЕРНОГО ФАЙЛА ВЫВОДА
+ K ENDDN S BSI=BSY(BS0)-1,BSDOS=1*DOS*PR4*AN6,PRF1=0 S:BSWY'=1 BSI=BSI+1 F  S BSI=$O(@(BSR_"(BST,BSI)")) Q:'BSI  K AN2,AN5 D  S PRF1=PRF1+1 D AN S BSDOS=$S(BSDOS=1:0,BSDOS=0:1,1:"") Q:$D(ENDDN)
+ .K ENDRI S BSII=BSX(BS0)-1,BSDOS1=1*DOS*PR4 F  S BSII=$O(@(BSR_"(BST,BSI,BSII)")) Q:BSII=""  D WR S BSDOS1=$S(BSDOS1=1:0,BSDOS1=0:1,1:"")*DOS I $D(ENDRI)!($D(ENDDN)) Q
+ Q
+AN S BSF="",BSP0=$S(BS0=0:4,BS0=3:1,BS0=1:2,BS0=2:3,1:"") F  S BSF=$O(AN2(BSF)) Q:BSF=""  D  X WA
+ .I DOS=0 S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSIT,BSP0,BSP)=AN2(BSF),BSP=BSP+1 Q
+ .I PR4=0 S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSIT,BSP0,BSP)=AN2(BSF),BSP=BSP+1 Q
+ .S AN8=$S(AN7=1:" ",AN7=0:"",1:""),AN10=$S(AN7=1:"#",AN7=0:"",1:""),^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSIT,BSP0,0)=AN10_AN5(BSF) I BSDOS=0 S ^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSIT,BSP0,BSP)=AN8_AN2(BSF),BSP=BSP+1 Q
+ .S AN9=$S(AN7=1:"X",AN7=0:"",1:""),^%ZAPM.ed.BSbufB("uP"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSIT,BSP0,BSP)=AN9_AN2(BSF),BSP=BSP+1
+e Q
+WR S CLR="" I $D(@(BSR_"(BST,BSI,BSII)")) S BS=^(BSII) I '$D(BS1) S BS1=$P(BS,"@")+1,BS2=$P(BS,"@",2)+1
+ I (($P(BS,"@")+$P(BS,"@",3)-2)-BS1+2+(BSY1(BS0)*BSUY))*BSY2(BS0)>(BSY2(BS0)*BSY2(BS0)) S ENDDN=1,BSPY=BSI Q
+ I $D(PRF) I $P(@(BSR_"(BST,BSI,1)"),"@",15)=PRF D  I PRF1>1 S ENDDN=1,BSPY=BSI Q
+ .I BSWY=1 S PRF1=2 Q
+ I (($P(BS,"@",2)+$P(BS,"@",4)-2)-BS2+1+(BSX1(BS0)*BSUX))>BSX2(BS0) S ENDRI=1 Q
+ I $P(BS,"@",9)=1 S (d1,d,d0)=$P(BS,"@",15)
+ E  S (d1,d,d0)=$G(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSI,BSII))
+ I BSWY'=1&($G(PRF)<2)&(BSII=1)&(d=$G(PRF)) S (d,d0,d1)=" "
+ I d0="" S d0=0
+ I $P(BS,"@",8)'="" S ny=BSI,nx=BSII,%zT=$ZT,$ZT="FISH^%ZAPM.ed.BSPRN" D  S $ZT=$G(%zT)
+ .I '$P(BS,"@",8) X $G(@(BSR_"(BST,""FTR"","_BSI_","_BSII_")")) Q
+ .X $G(@(BSR_"(BST,""FTR"","_$P(BS,"@",8)_")"))
+ F BSF=1:1:$P(BS,"@",3) Q:($P(BS,"@")+BSF-BS1)*BSY2(BS0)>(BSY2(BS0)*BSY2(BS0))  D WRD S AN2(BSF)=AN2(BSF)_AN1,AN5(BSF)=AN5(BSF)_AN4
+ Q
+WRD S AN1=$E(d1,BSF*$P(BS,"@",4)-$P(BS,"@",4)+1,$P(BS,"@",4)+($P(BS,"@",4)*(BSF-1))),AN3=$S(BSDOS1=1:"X",BSDOS1=0:" ",1:""),AN4=$TR($J("",$P(BS,"@",4))," ",AN3)
+ I '$D(AN2(BSF)) S AN2(BSF)="",AN5(BSF)=""
+ I $L(AN1)<$P(BS,"@",4) S AN1=AN1_$J("",($P(BS,"@",4)-$L(AN1)))
+ Q
+TIT ;БЛОК ОПРЕДЕЛЕНИЯ ТИТУЛА И ГРАНИЧ. ТОЧЕК
+ ;S:PR3'=+PR3 PRF=PR3,PR3=0
+ I $P(@(BSR_"(BST)"),"@",19) S %TIT=$P(^(BST),"@",19)
+ I $P(@(BSR_"(BST)"),"@",50) S %TIT=$P(^(BST),"@",50) ;ТИТУЛ ПЕЧАТИ```MSW
+ E  K %TIT  ;G W
+ I $P(@(BSR_"(BST)"),"@",8) S:$D(%TIT) BSTIT=%TIT*PR6 D  ;
+ .I '$D(%TIT)!($G(BSTIT)=0) S BS0=0,BSY1(0)=$P(^(BST),"@",8),BSX1(0)=$P(^(BST),"@",9),BSY2(0)=PR3,BSX2(0)=PR2 S (AN6,AN7)=1 D W,PRN^%ZAPM.ed.BSPRN1 Q  ;ЕСЛИ БЕЗ ТИТУЛА
+ .S BS0=0,BSY2(BS0)=PR3,BSX2(BS0)=PR2 D  S BSY1(BS0)=$P(@(BSR_"(BST,"_%TIT_")"),"@"),BSX1(BS0)=$P(@$ZR,"@",2)
+ ..S BSY1(0)=+$P(^(BST),"@",8),BSX1(0)=+$P(^(BST),"@",9)
+ .S BS0=1,(BSY1(3),BSY1(BS0))=+$P(@(BSR_"(BST)"),"@",8),BSX1(BS0)=BSX1(0),(BSY2(3),BSY2(BS0))=BSY1(0)-1,BSX2(BS0)=+PR2
+ .S BS0=2,BSY1(BS0)=BSY1(0),(BSX1(3),BSX1(BS0))=+$P(^(BST),"@",9),BSY2(BS0)=PR3,(BSX2(3),BSX2(BS0))=BSX1(0)-1
+ .S (BSY(3),BSX(3),BSY(1),BSX(2))=1,BSY(2)=BSY(0),BSX(1)=BSX(0) D
+ ..I BSWX=1&(BSWY=1) S BS0=0,AN6=1,AN7=1 D W Q
+ ..I BSWY=1 I BSWX'=1 S BS0=2,AN6=1,AN7=1 D W S BS0=0,AN6=$S(BSDOS=1:0,BSDOS=0:1,1:""),AN7=0 D W Q
+ ..I BSWX=1 S BS0=1,AN6=1,AN7=1 D W S BS0=0,AN6=$S(BSDOS=1:0,BSDOS=0:1,1:""),AN7=1 D W Q
+ ..S BS0=3,(AN6,AN7)=1 D W S BS0=1,AN6=1,AN7=0 D W S BS0=2,AN6=$S(BSDOS=1:0,BSDOS=0:1,1:""),AN10=AN6,AN7=1 D W S BS0=0,AN6=AN10,AN7=0 D W Q
+ Q
+FISH W $$bel^%ZAPM.ed.BS3 I $ZE["<NOPGM" S @$ZR=""
+ S $ZT=$G(%zT) Q

@@ -1,0 +1,80 @@
+ROUTINE %ZAPM.ed.BSMSMG
+%BSMSMG(G) ;ПРОСМОТР МАССИВОВ ; 15:12   14.01.2000
+ I '$$AccesMSM^%ZAPM.ed.BSDOS2(1) G PROT^%ZAPM.ed.BSMSM
+ D LOCK^%ZAPM.ed.BSF4 I $G(%BS(13))="%BS-PC" d SaveWin^%ZAPM.ed.BSXfun(1,1,25,80),ClearDis
+ U $I::%BS(32) N IntRef
+ I $G(G)'="",G["^" S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7)=G K G
+0 K GL S li=$G(^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7))
+00 I $D(G),G'["^",G'="",$D(@G)>0 S GL=G,IntRef=G K G G 000
+ D GLO^%ZAPM.ed.BSF3 G:'$D(GL) EXIT G:'YES EXIT
+ I GL["~D" D ^%ZAPM.ed.BSMSMS(2,GL) G:dat="" 0 S GL="^"_dat
+000 S glo=GL I '$D(@GL) D Yes^%ZAPM.ed.BSXfun(" МАССИВ "_GL_" НЕ СУЩЕСТВУЕТ ! ,БУДЕМ СОЗДАВАТЬ ?",2) G:'YES ESHE F i=1,2,3 S @(GL_"(i)")=i
+ S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7)=GL
+ N Sp,FIL,L,Pg,Ha
+ S Sp=8000,FIL=$G(^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7,1)) D CL^%ZAPM.ed.BSF4 S L=0,LL=20 I FIL="" S FIL="I 1"
+H D HOME S L=0,g1=g
+ ;ОБЩИЙ ЦИКЛ
+L S g=$$ZO(g,Ha) I g="" S g=$S(Ha>0:glo,1:glo_"("""")"),L=0 W $$bel^%ZAPM.ed.BS3 G PAUSE:HHH,PAUSE:FIL'=1 D  G L
+ .I g["(" D HOME Q
+ .E  D END
+ W $$clr^%ZAPM.ed.BS3(8),g,$$atr^%ZAPM.ed.BS3(0),$$W(@g),$$atr^%ZAPM.ed.BS3(0),!
+ I Pg D LO I L>LL G PAUSE
+ I 'Pg,Sp F i=1:1:Sp S ii=123 ;ЗАДЕРЖКА
+READ R *r1:0,*r2:0,*r3:0 G L:r1<0
+ I r1=43,r2=-1 S Sp=Sp-1000 S:Sp<0 Sp=0 G L
+ I r1=45,r2=-1 S Sp=Sp+1000 S:Sp>8000 Sp=8000 G L
+PAUSE W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-ПОМОЩЬ <F4>-РЕДАКТ <F5>-ДЕРЕВО <F6>-ФИЛЬТР <F7>-ИНДЕКС <+->-SPEED: " D  W " ",$S(Pg:" ",Ha>0:"=",1:"=")," ",$$atr^%ZAPM.ed.BS3(0)
+ .W $S(Sp=8000:"MIN",Sp=7000:"MIn",Sp=6000:"Min",Sp=5000:"min",Sp=4000:"max",Sp=3000:"Max",Sp=2000:"MAx",1:"MAX")
+PA W $$rt^%ZAPM.ed.BS3(+$G(%BS(2),9999)) S HHH=0,L=0,LL=20 I R1=-1,%BS(13)="%BS-PC" D GLUC^%ZAPM.ed.BSXgluc G PA
+ I R1=27,R2=-1 K GL G:$D(IntRef) EXIT G 0
+ S L=0 I R1=27,R2=91,R3=66 S Pg=0,Ha=1 W ! G L ;ВНИЗ
+ I R1=27,R2=91,R3=65 S Pg=0,Ha=-1 W ! G L      ;ВВЕРХ
+ I R1=0,R2=71 D HOME G L
+ I R1=0,R2=79 D END G L
+ I R1=0,R2=81 S Pg=1,Ha=1,L=0 D P G L
+ I R1=0,R2=73 S Pg=1,Ha=-1,L=0 D P G L
+ I R1=27,R2=79,R3=84 D ^%ZAPM.ed.BSTREE(glo),HOME G L
+ I R1=27,R2=79,R3=83 D  G L
+ .I '$$AccesMSM^%ZAPM.ed.BSDOS2(2) D PROT^%ZAPM.ed.BSMSM Q
+ .D:Ha>0  D EDIT,CL^%ZAPM.ed.BSF4 S Pg=1,Ha=1,L=0 S:G'="" g=G W /CUP(1,1),/ED(2)
+ ..S GG=g F i=1:1:15 S GG=$$ZO(GG,-1) Q:GG=""  S g=GG
+ I R1=27,R2=79,R3=86 D INDX S Ha=1,L=0,Pg=1 W /CUP(1,1),/ED(2) G L
+ I R1=27,R2=79 D  G L:$ZV["Cach"||($ZV["IRIS"),PAUSE
+ .I R3=80 D HELP Q
+ .I R3=85 D FILT Q
+ G PAUSE
+e Q
+ ///z 
+ClearDis w $$esc^%ZAPM.ed.BS3(7),$$atr^%ZAPM.ed.BS3("2;37;44"),/CUP(1,1),/ED(2)
+ //zw /CUP(22,47),"%ZAPM.editor "_+^%ZAPM.ed.BS
+ w $$atr^%ZAPM.ed.BS3("2;37;40"),/CUP(23,1),/EL(0),/CUP(24,1),/EL(0),/CUP(25,1),/EL(0),/CUP(1,1) 
+ Q
+ZO(g,Ha) 
+Z1 I g[")("""")" S g=$$TR^%ZAPM.ed.BSsFUNM(g,")("""")",")")
+ S g=$ZO(@g,Ha) I g="" Q ""
+ X FIL I  Q g
+ G Z1
+W(g) //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
+ I $TR(g,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127),"")'=g W $$clr^%ZAPM.ed.BS3(10)
+ Q $TR(g,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127),$c(174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174))
+P W /ED(2),/CUP(1,1) Q
+LO S L=L+(($L(g)+$L($G(@g)))\79)+1 Q
+HI W /ED(2),/CUP(1,1),$$clr^%ZAPM.ed.BS3(12),g,$$atr^%ZAPM.ed.BS3(0) I $D(@g)'["0" W $$W(@g),$$atr^%ZAPM.ed.BS3(0)
+ W ! D LO Q
+HELP S IYI="^%ZAPM.ed.BSHLP(HELPGL" D N^%ZAPM.ed.BSN("IYI"),ENTER^%ZAPM.ed.BSN,Q^%ZAPM.ed.BSN("IYI") D  Q
+ .I $ZV["Cach"||($ZV["IRIS") D HOME
+EDIT S:g["("""")" g=$P(g,"(") D ^%ZAPM.ed.BSMSMGE(g) Q
+FILT S li=FIL,%hlp="^%ZAPM.ed.BSHLP(HELP_F",ls=" Введите Фильтp пpосмотpа (g=ссылка @g=данные) F1-ПОМОЩЬ "
+ S %HIS="^%ZAPM.ed.BSbufB(""HISARREYFILTR"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.ed.BSTT Q:'YES
+ S %zT=$ZT,$ZT="ERRF^%ZAPM.ed.BSMSMG" S:li="" li="I 1" X li
+ S $ZT=%zT,FIL=li I $ZV["Cach"||($ZV["IRIS") D HOME
+ Q
+INDX S li=$S($G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))[$P(g,"("):$G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8)),1:g),li=$$LineEdit^%ZAPM.ed.BSXfun(li,"Введите ссылку массива ","","","","^%ZAPM.ed.BSbufB(""HISARREYINDX"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")") Q:'YES!(li="")
+ S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMG" I $D(@li)'["0" S li=$$ZO(li,-1)
+ S $ZT=%zT,Ha=1,(g,^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))=li Q
+END S g=$$ZO((glo_"("""")"),-1),Ha=-1,Pg=1,HHH=1 D HI Q
+HOME S g=glo,Ha=1,Pg=1,HHH=1 D HI Q
+ESHE S li=GL G 00
+EXIT D OP^%ZAPM.ed.BSF4 D LoadWin^%ZAPM.ed.BSXfun W $$esc^%ZAPM.ed.BS3(8) Q
+ERRF S ls=$ZE D O^%ZAPM.ed.BSF7 G FILT
+ERR S ls=$ZE D O^%ZAPM.ed.BSF7 G INDX

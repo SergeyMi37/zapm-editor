@@ -1,0 +1,102 @@
+ROUTINE %ZAPM.ed.BSD1
+%BSD1 ;DDP идеология ; 11:11   29.04.99
+ Q
+O(%NAM) ;СЛЕДЮЩИЙ РАЗДЕЛ
+ S %zT=$ZT,$ZT="OOER^%ZAPM.ed.BSD1" X $G(WA)
+ I $ZV["Cach"||($ZV["IRIS") F  S %NAM=$$O^%ZAPM.ed.BSCp(%NAM) G:%NAM="" OQ I $P($G(@%NAM),"@")="BaSe MsW ",$P($G(@$ZR),"@",3)="",$$OU($P(%NAM,"^",2)) G OQ
+ I '$D(%BS("Tmp",4)) F  S %NAM=$O(@%NAM) G:%NAM="" OQ S %NAM="^"_%NAM I $P($G(@%NAM),"@")="BaSe MsW ",$P($G(@$ZR),"@",3)="",$$OU($P(%NAM,"^",2)) G OQ
+ I $D(%BS("Tmp",4)) F  S %NAM=$O(@%BS("Tmp",6)@(%NAM)) G:%NAM="" OQ I $$OOO(%NAM) G OQ
+OQ Q %NAM
+OQUIT Q ""
+OOER S $ZT=$G(%zT) Q ""
+OOO(%NAM) S %zT=$ZT,$ZT="OOER^%ZAPM.ed.BSD1"
+ I $P($G(@%NAM),"@")="BaSe MsW ",$P($G(@$ZR),"@",3)="",$$OU($P(%NAM,$E(%BS("Tmp",5),2),+%BS("Tmp",5))) Q 1
+ Q 0
+OU(N) I %BS(12)'="",'$D(@%BS(18)@(%BS(37),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",1),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",1),%BS("Tmp",2),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",1),%BS("Tmp",2),N)) Q 0
+ Q 1
+OBD(%NAM) ;СЛЕДЮЩИЙ ИМЕННОЙ КЛЮЧ
+ S %zT=$ZT,$ZT="OOER^%ZAPM.ed.BSD1" X $G(WA)
+ I $ZV["Cach"||($ZV["IRIS") N GLL S GLL=$P(%NAM,"]",2,999) F  S GLL=$$O^%ZAPM.ed.BSCp(GLL) G:GLL="" OQUIT S %NAM="^"_GLL I %NAM[("^"_$P(BSD,"]",2)),$P($G(@%NAM),"@")="BSD - MSW" D OBDDP(%NAM)
+ I '$D(%BS("Tmp",4)) F  S %NAM=$O(@%NAM) G:%NAM="" OQ S %NAM="^"_%NAM I %NAM[("^"_$P(BSD,$$ver^%ZAPM.ed.BSF9(2),2)),$P($G(@%NAM),"@")="BSD - MSW" D OBDDP(%NAM)
+ I $D(%BS("Tmp",4)) F  S %NAM=$O(@($P(BSD,"]")_"]BSdirddp")@(%NAM)) G:%NAM="" OQ I %NAM[BSD,$P($G(@%NAM),"@")="BSD - MSW" D OBDDP(%NAM)
+OBDQ Q %NAM
+OBDDP(%NAm) S i=i+1,ii=$P(%NAm,$P(BSD,$$ver^%ZAPM.ed.BSF9(2),2),2)
+ S ^%ZAPM.ed.BSbufB("0k"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,1)=LineT_ii_"@@@@"_$P(@%NAm,"@",4),ii3=1
+ Q
+TAB(K,T) ;ТАБЛИЦА ИЗ ОПИСАНИЯ КЛЮЧЕЙ
+ I '$$Data^%ZAPM.ed.BSF12(T) Q 0
+ N Ui S @K=@T,$P(@K,"@",17)=1,$P(@K,"@",16)=1,@K@(1,1)=@T@(1,1)
+ S @K@(2,1)=@T@(2,1),@K@(3,1)=$G(@T@(3,1),$G(@T@(2,1),@T@(1,1))),$P(@$ZR,"@",3)="",$P(@$ZR,"@",8)=0
+ S LineT=$P(@T@(1,1),"@",1,15),$P(LineT,"@",15)=""
+ S k14=$P(@K@(2,1),"@",14),$P(@K@(2,1),"@",14)=""
+ I $D(@T@("FTR",3,1)) S @K@("FTR",3,1)=@T@("FTR",3,1),$P(LineT,"@",8)="3,1" I kd1 S @K@("FTR",3,1)=@K@("FTR",3,1)_" I $P(BS,""@"",19)'="""" S d1=d1_$$KeyTime^%ZAPM.ed.BSsFUNR(BS)"
+ I $D(@T@("RTR",3,1)) S @K@("RTR",3,1)=@T@("RTR",3,1)
+ N Ui I $P(@K,"@",12)'="" S $P(@K,"@",12)="X MRMR"
+ I $D(@T@("AF2")) S @K@("AF2")=@T@("AF2")
+ I $P(@K,"@",13)'="" S $P(@K,"@",13)=1
+ I $P(@K,"@",15)'="" S $P(@K,"@",15)="%FKR^%ZAPM.ed.BST1"
+ S $P(@$ZR,"@",25)=1,$P(@$ZR,"@",39)=$S(k20="":"^%ZAPM.ed.BSHLP(KEY_BD",1:k20)
+ S Ui=$P($$IYI^%ZAPM.ed.BSF10(IMQ),"@",41) I Ui["TreeCopy^%ZAPM.ed.BSF10" Q 1
+ S $P(@K,"@",41)="TreeCopy^%ZAPM.ed.BSF10"_$S(Ui'="":","_Ui,1:"") Q 1
+KW K @$NA(@"^%ZAPM.ed.BSbufB"@("Video"_$G(%BS(3),$P)_$J_"u1",IMQ)) Q
+SW(key) ;СОХРАНИТЬ ЭКРАН ДЛЯ КЛЮЧА
+ d SaveWinV^%ZAPM.ed.BSXfun(1,1,25,80,$NA(@"^%ZAPM.ed.BSbufB"@("Video"_$G(%BS(3),$P)_$J_"u1",IMQ,key)),1) Q
+LW(key) ;ВОССТАНОВИТЬ ЭКРАН ДЛЯ КЛЮЧА
+ I $D(@$NA(@"^%ZAPM.ed.BSbufB"@("Video"_$G(%BS(3),$P)_$J_"u1",IMQ,key))) d LoadWinV^%ZAPM.ed.BSXfun($NA(@"^%ZAPM.ed.BSbufB"@("Video"_$G(%BS(3),$P)_$J_"u1",IMQ,key)),1)
+ Q
+DDPVOL ;ТОМА
+ Q:'$D(@%BS(18)@(%BS(37),1))  N d1,d2,d3
+ S d1=""
+ F  S d1=$O(@%BS(18)@(%BS(37),1,d1)) Q:d1=""  D UCIDDP(d1)
+ Q:'$D(d2)  S d1=""
+ F  S d1=$O(d2(d1)) Q:d1=""  D SYS(d1) S d3="" F  S d3=$O(d2(d1,d3)) Q:d3=""  D UCI(d3)
+ Q
+UCIDDP(us) ;ПОИСК ^BSdirddp
+ N bsd
+ Q:$$ZU^%ZAPM.ed.BS3($P(us,","),$P(us,",",2))
+ S %zT=$ZT,$ZT="ER1^%ZAPM.ed.BSD1"
+ S bsd=$$DDPGLO(us) I '$D(@bsd) G UCIQ
+ S d2($P(us,",",2),$P(us,","))=bsd
+UCIQ S $ZT=$G(%zT) Q
+DDPGLO(us) Q $$DDPGL(us)_"BSdirddp"
+DDPGL(us) Q "^["""_$P(us,",")_""","""_$P(us,",",2)_"""]"
+SYS(I) N B ;ТОМ
+ S j=j+1,^%ZAPM.ed.BSbufB("fT"_$G(%BS(3),$P)_$J_"u"_%BS(15),1,j)="@@1@9@@@@2,1@1@"_$P(%BS,"!",4)_"@@@@@"_I
+ S i=2,B="???" I $O(d2(d1,""))'="" S B=d2(d1,$O(d2(d1,""))),B=$P($P($G(@B),"@",2),",",2)
+ S ^%ZAPM.ed.BSbufB("fT"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,j)="@@1@9@@@@@1@@@@@@ ddp-"_B
+ Q
+UCI(J) ;КИП
+ S i=i+1,^%ZAPM.ed.BSbufB("fT"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)="@@1@9@@@@2,1@1@"_$P(%BS,"!",5)_"@@@@@"_d3
+ S:se<i se=i S:ke<j ke=j
+ Q
+ER1 G UCIQ
+NEWDIR ;НОВЫЙ DDP КАТАЛОГ
+ N PRO,%NAM,WA,COMD I '$$RP^%ZAPM.ed.BSGCH("^BSdirddp") Q  ;МЫ В RVG
+ Q:'$G(%BS(23))  D L^%ZAPM.ed.BS3("^BSdirddp")
+ S COMD=$P($G(^BSdirddp,"..."),"@") K ^BSdirddp
+ S %NAM="^",^BSdirddp=COMD_"@"_$$ZU^%ZAPM.ed.BS3(1,0) D Wait^%ZAPM.ed.BSXfun("Создаю DDP каталог")
+ F  S %NAM=$O(@%NAM) Q:%NAM=""  S %NAM="^"_%NAM X $G(WA) D NEWDI
+ D CP^%ZAPM.ed.BSGCH("^BSdirddp","4334")
+NEWQ S $ZT=$G(%zt) D U^%ZAPM.ed.BS3("^BSdirddp") Q
+NEWDI S %zt=$ZT,$ZT="ER2^%ZAPM.ed.BSD1"
+ S PRO=$$RP^%ZAPM.ed.BSGCH(%NAM) I +PRO>1,$E(PRO,2)>1 S ^BSdirddp($$DDPGL($$ZU^%ZAPM.ed.BS3(0))_$P(%NAM,"^",2))=""
+NEWDQ Q
+ER2 G NEWQ
+PST(P) N uc,Pddp
+ I P["%BSbufB" S %w(6,1)="%BSbufB",%w(6,2)=$P($$ZU^%ZAPM.ed.BS3(1,0),","),%w(6,3)=$P($$ZU^%ZAPM.ed.BS3(1,0),",",2) Q
+ D PS(P) S %w(6,1)=Pddp,%w(6,2)=%BS("Tmp",2),%w(6,3)=%BS("Tmp",1) Q
+PS(P) ;РАСЩЕПЛЕНИЕ ССЫЛОК
+ I P'[$$ver^%ZAPM.ed.BSF9(2) S %BS("Tmp",1)=$P($$ZU^%ZAPM.ed.BS3(0),",",2),(uc,%BS("Tmp",2))=$P($$ZU^%ZAPM.ed.BS3(0),","),Pddp=$P(P,"^",2) G PSQ
+ ;4.;I P["|" D  G PSQ
+ .I $P(P,"|",2)["," S %BS("Tmp",1)=$P(P,$C(34),4),(uc,%BS("Tmp",2))=$P(P,$C(34),2),Pddp=$P(P,"|",3) Q
+ .E  S (uc,%BS("Tmp",2))=$P(P,$C(34),2),Pddp=$P(P,"|",3),%BS("Tmp",1)=$P($$ZU^%ZAPM.ed.BS3(0),",",2) Q
+ I $P(P,"]")["," S %BS("Tmp",1)=$P(P,$C(34),4),(uc,%BS("Tmp",2))=$P(P,$C(34),2),Pddp=$P(P,"]",2)
+ E  S (uc,%BS("Tmp",2))=$P(P,$C(34),2),Pddp=$P(P,"]",2),%BS("Tmp",1)=$P($$ZU^%ZAPM.ed.BS3(0),",",2)
+PSQ I '$$ZU^%ZAPM.ed.BS3(%BS("Tmp",2),%BS("Tmp",1)) S %BS("Tmp",2)=%BS("Tmp",2)_","_%BS("Tmp",1),%BS("Tmp",1)=1
+ Q
+GDE(us) ;us="[""UCI"",""SYS""]"
+ N UC,SY,d2
+ S us=$TR(us,"[]""|",""),UC=$P(us,","),SY=$P(us,",",2)
+ Q:$$ZU^%ZAPM.ed.BS3(UC,SY) $$ZU^%ZAPM.ed.BS3(UC,SY) ;СМОНТИРОВАН us
+ D UCIDDP(us) I $D(d2) Q "DDP"
+ Q ""

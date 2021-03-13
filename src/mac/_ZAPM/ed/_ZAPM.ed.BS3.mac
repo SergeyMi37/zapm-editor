@@ -1,0 +1,108 @@
+ROUTINE %ZAPM.ed.BS3
+%BS3 ;ЛОКИРОВКА ГЛОБАЛЕЙ ; 9:13   09.10.2001
+BSR I $E(BSR,$L(BSR))="," S BSR=$E(BSR,1,$L(BSR)-1)_$S($E(BSR,$L(BSR))=",":")",1:"")
+ Q
+TRAP I k2=65 W #,!,k3 R R
+ Q
+FTRAP() D x("?") Q 1
+L(BSR,L) ;ЛОКИРОВКА ССЫЛКИ
+ D BSR I BSR="" D ERRBSR
+ S LOC=1
+ I $E(BSR,1,2)="^$" Q
+ L +@BSR:0 E  D DDPLOCK
+ Q
+DDPLOCK ;ОЖИДАНИЕ ЛОКИРОВКА ССЫЛКИ
+ S LOC=0 I $D(L) Q
+ F  S ls="Узел "_BSR_" занят !!!,<Esc>-назад" D WAITS^%ZAPM.ed.BSF2 S gi=$G(gi,1)+1 W " ",gi H 1 W $$rt^%ZAPM.ed.BS3(0) D:R1=27  Q:R1=27  L +@BSR:0 I $T S LOC=1 Q
+ .S ls="Узел "_BSR_" занят ,<Esc>-назад"
+ Q
+U(BSR) ;СНЯТИЕ ЛОКИРОВКИ
+ D BSR I BSR="" D ERRBSR
+ L -@BSR Q
+ERRBSR Q:$D(L)  D ErrMsg^%ZAPM.ed.BSXfun("ЛОКИРУЕТСЯ ПУСТАЯ ССЫЛКА !!!") Q
+R(BSR) D L(BSR) Q
+D(BSR) D U(BSR) Q
+  ;
+  ;   АНАЛОГИ !!!
+  ;
+ZF I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ ZF  Q
+ZU(K,T) ;АНАЛОГ $ZU
+  I $ZV["Cach"||($ZV["IRIS") Q $ZU(5)
+  I $D(T) Q $ZU(K,T)
+  E  Q $ZU(K)
+x(x) S %BS("Tmp","NameS")=x D x^%ZAPM.ed.BS7238(%BS("Tmp","NameS")) Q
+l() D WRITE^%ZAPM.ed.BS7238 Q ""
+pr() Q:$ZN=""  S %zN=$ZN D PRINT^%ZAPM.ed.BS7238 ;ZL @%zN X %z0 K %zN,%z0,%z1,%z2,%z3,%z4,%z5,%z6,%z7,%z8,%z9,%z10,%z11,%z12,%z13 Q
+atr(A) Q $C(27)_"["_A_"m"
+bel() Q "" /// $C(7)
+clear() Q $C(27)_"[0;0;25;80w"
+clr(C) Q $C(27)_"["_$P($G(%BS,"1;6;33;42!1;6;37;47!1;6;33;46!1;6;30;45!1;6;30;46!2;6;30;46!1;6;33;45!2;6;30;46!1;6;33;46!2;6;30;41!1;6;32;40"),"!",C)_"m"
+ed() Q $C(27)_"[2J" ;| W /ED(2)
+el() Q $C(27)_"[K"  ;| W /EL(0)
+esc(E) Q $C(27)_E
+setkod() Q ""
+r() N R,RR R *R,*RR:0,*RR:0 Q ""
+rt(R) I $ZV["Cach"||($ZV["IRIS") D  Q "" ;ANSI-TERMINAL
+ .X $G(%BS(43)) 
+ .O 0:(:"IS") R *R1:R,*R2:0 i R1>31,R2>31 s rr=$c(R1)_$c(R2) f  r *r:0 d:r'=-1  i r=-1,$l(rr)>1 d AddHist^%ZAPM.ed.BSXuse("^%ZAPM.ed.BSbufB(""HISCTL1"")",rr) q  ;,ReadToEL^%ZAPM.ed.BSXuse
+ ..s rr=rr_$c(r)  ;строка из буфера обмена Windows
+ .r *R3:0,*R4:0,*R5:0 
+ .;w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!  ;нужно узнать альт коды
+ .I R1=13 S R2=-1
+ .I '$E($G(%BS(1)),15),R1=3,R2=-1,R3=-1 ZT "INRP"
+ .i R1=5 s R1=0,R2=18,R3=-1,R4=-1,R5=-1 q  ;Ctr-E --> Alt-E
+ .i R1=4 s R1=0,R2=31,R3=-1,R4=-1,R5=-1 q  ;Ctr-D --> Alt-S
+ .if $g(%BS(2008))="1L" d  ;эмуляция ANSI-TERMINAL, если Linux
+ ..i R1=27,R2=91,R3=51,R4=126 s R1=127,R2=-1,R3=-1,R4=-1,R5=-1 q  ;del
+ ..i R1=27,R2=91,R3=50,R4=126 s R1=0,R2=82,R3=-1,R4=-1,R5=-1 q  ;ins
+ ..i R1=27,R2=91,R3=49,R4=126 s R1=0,R2=71,R3=-1,R4=-1,R5=-1 q  ;home
+ ..i R1=27,R2=91,R3=52,R4=126 s R1=0,R2=79,R3=-1,R4=-1,R5=-1 q  ;end
+ ..i R1=27,R2=91,R3=53,R4=126 s R1=0,R2=73,R3=-1,R4=-1,R5=-1 q  ;pu
+ ..i R1=27,R2=91,R3=54,R4=126 s R1=0,R2=81,R3=-1,R4=-1,R5=-1 q  ;pd 
+ ..i R1=27,R2=91,R3=49 d  q
+ ...i R4=53 s R1=27,R2=79,R3=84,R4=-1,R5=-1 q  ;f5
+ ...i R4=52 s R1=27,R2=79,R3=83,R4=-1,R5=-1 q  ;f4
+ ...i R4=51 s R1=27,R2=79,R3=82,R4=-1,R5=-1 q  ;f3
+ ...i R4=50 s R1=27,R2=79,R3=81,R4=-1,R5=-1 q  ;f2
+ ...i R4=49 s R1=27,R2=79,R3=80,R4=-1,R5=-1 q  ;f1
+ ...i R4=57 s R1=27,R2=79,R3=87,R4=-1,R5=-1 q  ;f8
+ ...i R4=56 s R1=27,R2=79,R3=86,R4=-1,R5=-1 q  ;f7
+ ...i R4=55 s R1=27,R2=79,R3=85,R4=-1,R5=-1 q  ;f6
+ .i $g(%BS(2008)) d  ;эмуляция ANSI-TERMINAL, если версия больше 2008.1.2
+ ..i R1=27,R2=91,R3=51,R4=126 s R1=127,R2=-1,R3=-1,R4=-1,R5=-1 q  ;del
+ ..i R1=27,R2=91,R3=50,R4=126 s R1=0,R2=82,R3=-1,R4=-1,R5=-1 q  ;ins
+ ..i R1=27,R2=91,R3=49,R4=126 s R1=0,R2=71,R3=-1,R4=-1,R5=-1 q  ;home
+ ..i R1=27,R2=91,R3=52,R4=126 s R1=0,R2=79,R3=-1,R4=-1,R5=-1 q  ;end
+ ..i R1=27,R2=91,R3=53,R4=126 s R1=0,R2=73,R3=-1,R4=-1,R5=-1 q  ;pu
+ ..i R1=27,R2=91,R3=54,R4=126 s R1=0,R2=81,R3=-1,R4=-1,R5=-1 q  ;pd 
+ ..i R1=27,R2=91,R3=49 d  q
+ ...i R4=57 s R1=27,R2=79,R3=87,R4=-1,R5=-1 q  ;f8
+ ...i R4=56 s R1=27,R2=79,R3=86,R4=-1,R5=-1 q  ;f7
+ ...i R4=55 s R1=27,R2=79,R3=85,R4=-1,R5=-1 q  ;f6
+ I $ZV["MSM-Workstation" R *R1:R,*R2:0,*R3:0 R *R4:0,*R5:0 D  Q ""
+ .I $D(%BS(35,$P(R1_","_R2_","_R3_","_R4_","_R5,",-1"))) S Tmp=%BS(35,$P(R1_","_R2_","_R3_","_R4_","_R5,",-1"))_"-1,-1,-1,-1",R1=$P(Tmp,","),R2=$P(Tmp,",",2),R3=$P(Tmp,",",3),R4=$P(Tmp,",",4),R5=$P(Tmp,",",5)
+ ;MSM-PC\PLUS & TERMINALS
+ R *R1:R s R2=R1 d  i R4 f  s R2=R2_","_R1 d  Q:R4=0
+ .f R3=1:1:30 r *R1:0 s R4=$t q:R4
+ S R5=$P(R2_",-1,-1,-1,-1",",",1,5) I $D(%BS(35)) D
+ .I $D(%BS(35,R5)) S R5=%BS(35,R5)_"-1,-1,-1,-1"
+ S R1=$P(R5,",",1),R2=$P(R5,",",2),R3=$P(R5,",",3),R4=$P(R5,",",4),R5=$P(R5,",",5)
+ Q ""
+ 
+yx(Y,X) I $ZV["MSM-Workstation",Y>22 S Y=Y-1 ;| W /CUP(Y,X)
+ S $X=Y-1,$Y=X-1 Q $C(27)_"["_Y_";"_X_"H"
+p() Q $p
+RE D ^%ZAPM.ed.BSXprog() Q
+GE D ^%ZAPM.ed.BSMSMG() Q
+h() Q $G(%BS(36),$P($H,","))_","_$P($H,",",2)
+SAY(Y,X) N q,QQ     ;ЧТО И КЕМ
+ S QQ=$$SW^%ZAPM.ed.BSF12("^%ZAPM.ed.BSS(""OWNER"")")
+ W:Y /CUP(Y,X) W:'Y ! W $G(@QQ@(1))_$$ver^%ZAPM.ed.BSC //," §",^%ZAPM.ed.BS
+ F I=2:1:5 W:Y /CUP(Y-1+I,X) W:'Y ! W $G(@QQ@(I))
+ S I=6 W:Y /CUP(Y-1+I,X) W:'Y ! W "Registred EndUser:  " //,$G(^%ZAPM.ed.BSinFL)
+ S I=7 W:Y /CUP(Y-1+I,X) W:'Y ! S q=$$GETOPT^%ZAPM.ed.BSC4cfg($$MainOpt^%ZAPM.ed.BSC4,"ENDUSER") S:q="?" q="MSW" W q
+ Q
+REGISTR ;РЕГИСТРАЦИЯ
+	///
+ Q

@@ -1,0 +1,127 @@
+ROUTINE %ZAPM.ed.BST
+%BST ;ВХОД В ТАБЛИЦУ ; 11:16   03.10.2000
+ W $$atr^%ZAPM.ed.BS3(0) I $ZV'["Cach"&&($ZV'["IRIS") ;U 0:(0::::#10080)
+ I $P($ZV,"Version ",2)<4 W $$clear^%ZAPM.ed.BS3
+ K STATUS D SI^%ZAPM.ed.BSN I $D(%BS)["0" D CLr^%ZAPM.ed.BSF4
+ ;N S,STATUS,VYC,BS0,BSX,BSY,B,BX,BY,BS1,BS2,MX,MY,x,t,zr,t1,%VDB,%CAL,%X1,%X2,%Y1,%Y2,%TIT,MR,%w(2),M1,BS,%w(4),%w(5),%DIA,%DI,%ZAP,%FK,i,j,ii,jj,se,ke,j1,j2,j3,MX,MY,M,BS1,BS2,BSF,BSX1,BSX2,BSY1
+ ;N BSY2,CLR,ENDLI,BSI,BSII,MR23,MR24,MR25,NAZAD,li,ls,lo,COLOR
+ ;N RA,PREDMOV,MxX,MyY,My,Mx,COLOR,EXITout,%FN,%DEV,%Cu,es,ek,h,hi,hl,%INV,%INV1,%INV2,v,vv,vvv,TIP,%FK,%ZAP,%VDB,MOV
+ S $ZT="PRO^%ZAPM.ed.BST"
+% K PredOb I '$D(@BSR@(BST))!($$TIP^%ZAPM.ed.BS($P($G(@BSR@(BST)),"@",17))["!!!") S ls="ОБЪЕКТ ~"_BST_" В РАЗДЕЛЕ "_BSR_" НЕ ОПОЗНАН " G STOP
+ S $ZT=$G(%zT) I $P(@$ZR,"@",39) Q  ;D Enter^%ZAPM.ed.BSGTab($ZR) Q  ;%BS Gamma Version
+ I ($P($$ZU^%ZAPM.ed.BS3(1,0),",",2)_$G(%BS(3),$P)_$J_"i"_$G(%BS(12)))'[$P(@$ZR,"@",30) S ls=" ТАБЛИЦА ЗАНЯТА ПОЛЬЗОВАТЕЛЕМ "_$P(@$ZR,"@",30) D  G STOP
+ .D Yes^%ZAPM.ed.BSXfun(" СНИМЕМ ЗАКРЫТИЕ ???",2) I YES D L^%ZAPM.ed.BS3($NA(@BSR@(BST))) I LOC S $P(@BSR@(BST),"@",30)="" D U^%ZAPM.ed.BS3($NA(@BSR@(BST)))
+ I BSR'["," S BSR=$$BSR^%ZAPM.ed.BSA(BSR)
+ I $P(@$ZR,"@",37) D CHECK^%ZAPM.ed.BSH I 'YES G STOP
+ D TIPP I '$D(%w(2)) D PASS^%ZAPM.ed.BST1 E  G END^%ZAPM.ed.BSF
+ G DoBSX:TIP=5,DoLINK^%ZAPM.ed.BSF13:TIP=6,DoButt^%ZAPM.ed.BSF8:TIP=8
+GOO I $E(%BS(1),20),%BS(12)="" D  H
+ .S BSR="^%ZAPM.ed.BSS",BST="LOGON" D ^%ZAPM.ed.BST,Echo^%ZAPM.ed.BSXfun(1) D:d=2 SS^%ZAPM.ed.BSD2 Q:d<0
+GO I $D(@(BSR_"(BST,""KEY"")")) D KEY^%ZAPM.ed.BST1:TIP=2,^%ZAPM.ed.BST2:TIP=3!(TIP=4) Q:'$D(F4)
+ I '$D(@(BSR_"(BST,""KEY"")")),'$P(B,"@",34) D L^%ZAPM.ed.BS3($NA(@BSR@(BST))) G:'LOC STOP
+KEY I '$D(STATUS) S BS0=0,(BSX(BS0),BSY(BS0))=1,(BSX1(BS0),BSY1(BS0))=1,BSX2(BS0)=79,BSY2(BS0)=22
+ W $$setkod^%ZAPM.ed.BS3 D LOCK^%ZAPM.ed.BSF4 D TIP   q:'$d(BSR)  //```msw 
+WRITE I $G(@BSR@(BST,"RSM"))'="" D XM^%ZAPM.ed.BSre(@$ZR) ;ВЫПОЛНИТЬ КОМАНДУ ВОССТАНОВЛЕНИЯ
+ I $D(@BSR@(BST,"FCL")) D CALC^%ZAPM.ed.BSF3
+ I $P(@BSR@(BST),"@",47) D CHECKF^%ZAPM.ed.BSF10($P(@BSR@(BST),"@",47)) ;АВТОФОРМАТ
+ I $P(@BSR@(BST),"@",24) D UNPRESS^%ZAPM.ed.BSSR I '$P(B,"@",24) G Wr
+ I $P(@BSR@(BST),"@",51) D PRESAUTO^%ZAPM.ed.BSSR($P(@BSR@(BST),"@",51)) ;АВТОПОДЖАТИЕ
+Wr I $P(B,"@",41)'="" S R1=333 D Pred^%ZAPM.ed.BSF12($P(B,"@",41)) ;ПРЕДОБР.ПОСЛЕ ВЫЧИСЛЕНИЯ
+ D TIT
+WRI I $ZV'["Cach"&&($ZV'["IRIS") ;U 0:(0::::#10080)
+ S ls="ЗАГРУЗКА" D WAITS^%ZAPM.ed.BSF2 D W,MR K %VDB S $ZT=$G(%zT) G ^%ZAPM.ed.BSTM
+VW D VT,W Q
+GW D GT,W Q
+TW D VT,GT,W Q
+W I $G(Mx,0)'=0!($G(My,0)'=0),%BS(13)="%BS-PC",$ZV'["Windows" G ^%ZAPM.ed.BST5
+MOV D:'$D(%VDB) CLEA K BS1,BS2,BY,BX S %BSTM=0
+ K ENDDN S BSI=BSY(BS0)-1 F  S BSI=$O(@(BSR_"(BST,BSI)")) Q:'BSI  S BS(1)=1 I $P(@(BSR_"(BST,BSI,1)"),"@",3) D  Q:$D(ENDDN)
+ .K ENDRI S BSII=BSX(BS0)-1 F  S BSII=$O(@(BSR_"(BST,BSI,BSII)")) Q:BSII=""  D WR I $D(ENDRI)!($D(ENDDN)) S BS(2)=0 Q
+e Q
+TRANS(BSR,BST,BS,BSI,BSII) N TranS,ny,nx,d,d0 S TranS=1 G TRAN
+WR W $$atr^%ZAPM.ed.BS3(0) S CLR=COLOR I $D(@(BSR_"(BST,BSI,BSII)")) S BS=^(BSII) Q:'$P(BS,"@",4)  I '$D(BS1) S BS1=$P(BS,"@")+1,BS2=$P(BS,"@",2)+1 I 'BS0 S (BS(1),BS(2))=1
+ I (($P(BS,"@")+$P(BS,"@",3)-2)-BS1+2+BSY1(BS0))>BSY2(BS0) S ENDDN=1 Q
+ I (($P(BS,"@",2)+$P(BS,"@",4)-2)-BS2+2+BSX1(BS0))>BSX2(BS0) S ENDRI=1 Q
+ I $P(BS,"@",10) S CLR=$P(BS,"@",10) I $E(%BS(1),19) S CLR=$P(%BS,"!",$E(%BS(1),19))
+ I $P(BS,"@",12) S CLR=$P(%BS,"!",3)
+TRAN I $P(BS,"@",9)=1 S (d,d1,d0)=$P(BS,"@",15)
+ E  S (d,d1,d0)=$G(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),BSI,BSII)) //```??
+ I $P(BS,"@",8)'="" S %zT=$ZT,$ZT="FFF^%ZAPM.ed.BST" D  S $ZT=$G(%zT)
+ .I d0="" S d0=0
+ .S ny=BSI,nx=BSII I '$P(BS,"@",8) X $G(@BSR@(BST,"FTR",BSI,BSII)) Q
+ .X $G(@(BSR_"(BST,""FTR"","_$P(BS,"@",8)_")"))
+ I $D(TranS) Q
+w I '$D(%VDB) S l=$J("",$P(BS,"@",3)*$P(BS,"@",4)) F BSF=1:1:$P(BS,"@",3) Q:($P(BS,"@")+BSF-BS1)>BSY2(BS0)  D  W $E(d1_l,BSF*$P(BS,"@",4)-$P(BS,"@",4)+1,$P(BS,"@",4)+($P(BS,"@",4)*(BSF-1)))
+ .W /CUP(($P(BS,"@")+BSF-BS1+BSY1(BS0)),($P(BS,"@",2)-BS2+1+BSX1(BS0))),$$atr^%ZAPM.ed.BS3(CLR) Q
+ Q:BS0  I BS(1) S BY($P(BS,"@")-BS1+1+BSY1(0))=BSI,BS(1)=0
+ I BS(2) S BX($P(BS,"@",2)-BS2+1+BSX1(0))=BSII
+ Q
+VT Q:'$D(%TIT)  S BS0=2,BSY(BS0)=BSY(0) D W S BS0=0 Q
+GT Q:'$D(%TIT)  S BS0=1,BSX(BS0)=BSX(0) D W S BS0=0 Q
+MR K %FK,%ZAP N i F i=12:1:14 S @("MR"_(i+11))="" I $P(@(BSR_"(BST)"),"@",i)'="" D
+ .I $P(^(BST),"@",i)=1 S @("MR"_(i+11))="D MR"_(i+11) Q
+ .S @("MR"_(i+11))=$P(^(BST),"@",i)
+ K %fk I $P(^(BST),"@",15)'="" S %FK=$P(^(BST),"@",15)
+ I $P(^(BST),"@",16) S %ZAP=1
+ I TIP=2,$G(%BS("Tmp","AKBD",BSD),"RWD")="R" S %ZAP=1
+ Q
+TIPP S B=@(BSR_"(BST)") S TIP=$P(B,"@",17) S:TIP="" TIP=1 D ENTERPAS^%ZAPM.ed.BSF7(B) Q
+TIP S:'$D(%Co) %Co=0    q:'$d(BSR)  S B=$G(@(BSR_"(BST)")) //$G(
+ S:$P(B,"@",3) %DIA=1 S:$P(B,"@",20) %CAL=$P(B,"@",20) S TIP=$P(B,"@",17) S:TIP="" TIP=1 D ENTERPAS^%ZAPM.ed.BSF7(B)
+ S COLOR=$S($E(%BS(1),19):$P(%BS,"!",$E(%BS(1),19)),1:$P(B,"@",31)) I COLOR="" S COLOR=0
+ S %Cu=$S($G(TIP)=7:"D KL","1"[$P(B,"@",25):"D KL",1:"D 24") K Ukaz I $P(B,"@",43) S Ukaz=1
+ I $P(B,"@",46)'="",'$D(ObOi) D OBWRITE^%ZAPM.ed.BSF10
+ S:$G(%BS(15))<1 %BS(15)=0 S se=$P(B,"@",28),ke=$P(B,"@",29) S Mouse=$S(ke=1:1,1:"") I $P(B,"@",38),'$D(RA) S RA=$P(B,"@",38) D Ramka^%ZAPM.ed.BSXfun($P(B,"@",8)-1,$P(B,"@",9)-1,$P(B,"@",10)+1,$P(B,"@",11)+1,RA,COLOR,1)
+ S POSt=%BS(16) I $P(B,"@",44)'="" S POSt=$P(B,"@",44)
+ I $P(B,"@",41)'="" S PredOb=$P(B,"@",41)
+ I $D(BSR) D PST^%ZAPM.ed.BSD1(BSR)
+ I TIP=2,$D(BSD),$G(%BS("Tmp","AKBD",BSD),"RWD")="R" S %ZAP=1
+ Q
+TIT I $P(@(BSR_"(BST)"),"@",19) S %TIT=$P(^(BST),"@",19) K:'$D(@(BSR_"(BST,"_%TIT_")")) %TIT
+ E  K %TIT
+ I $D(@BSR@(BST)) D  ;
+ .I '$D(%TIT) S BS0=0,BSY1(0)=$P(^(BST),"@",8),BSX1(0)=$P(^(BST),"@",9),BSY2(0)=$P(^(BST),"@",10),BSX2(0)=$P(^(BST),"@",11) D:$E($G(%BS(14)),2) TRM Q
+ .S BS0=0,BSY2(BS0)=+$P(^(BST),"@",10),BSX2(BS0)=+$P(^(BST),"@",11) D  S BSY1(BS0)=$P(@(BSR_"(BST,"_%TIT_")"),"@")+BSY1(0)-1,BSX1(BS0)=$P(@$ZR,"@",2)+BSX1(0)-1 I $G(STATUS)'=BST S BSY(0)=+$P(%TIT,","),BSX(0)=+$P(%TIT,",",2),STATUS=BST
+ ..S BSY1(0)=+$P(^(BST),"@",8),BSX1(0)=+$P(^(BST),"@",9)
+ .S BS0=1,(BSY1(3),BSY1(BS0))=+$P($G(@(BSR_"(BST)"),1),"@",8),BSX1(BS0)=BSX1(0),(BSY2(3),BSY2(BS0))=BSY1(0)-1,BSX2(BS0)=+$P(^(BST),"@",11)
+ .S BS0=2,BSY1(BS0)=BSY1(0),(BSX1(3),BSX1(BS0))=+$P(^(BST),"@",9),BSY2(BS0)=+$P(^(BST),"@",10),(BSX2(3),BSX2(BS0))=BSX1(0)-1
+ .S (BSY(3),BSX(3),BSY(1),BSX(2))=1,BSY(2)=BSY(0),BSX(1)=BSX(0),BS0=3 D:$E($G(%BS(14)),2) TRM D W S BS0=1 D W S BS0=2 D W S BS0=0
+ Q
+TRM I TIP'=7 F i=0,1,2 D
+ .I $D(BSX2(i)),BSX2(i)>64,ke'=1 S BSX2(i)=64
+ .I $D(BSY2(i)),BSY2(i)>21 S BSY2(i)=21
+ Q
+FFF W $$bel^%ZAPM.ed.BS3 I $ZE["<NOPGM" S @$ZR=""
+ S $ZT=$G(%zT) G w
+CLEA I TIP=7 S ColrMenu=$S($P(B,"@",31)="":"1;6;30;47",1:$P(B,"@",31)) D  K BFL,% Q
+ .I $D(^%ZAPM.ed.BSR(2,1)) D
+ ..W /ED(2),/CUP(1,1) W $$atr^%ZAPM.ed.BS3(ColrMenu)
+ ..I $E($G(%BS(14)),6)=3 D  Q  ;ДЛЯ АРМ-ТЕРМ
+ ...F i=1:1:25 W /CUP(i,1),$E($TR(^(i),"x",""),1,80-(i=25))
+ ..F i=1:1:25 W /CUP(i,1),$E($TR(^(i),"x",""),1,80)
+ .W /CUP(24,3) W:%BS(13)["%BS-PC" $$atr^%ZAPM.ed.BS3(ColrMenu) W ^%ZAPM.ed.BS(26),/CUP(4,3+((77-$L($P(B,"@")))\2)),$P(B,"@")
+ .D MENU
+ I '($D(ObOi)!($D(RA))) D
+ .I $G(%BS(14)),((BSY1(BS0)<3&(BSX1(BS0)<3))!($E(BST,1,2)="fT")) W /CUP(BSY1(BS0),BSX1(BS0)),$C(27),"[0J" Q
+ .W $$atr^%ZAPM.ed.BS3(0) F i=BSY1(BS0):1:BSY2(BS0) W /CUP(i,BSX1(BS0)),$J("",BSX2(BS0)-BSX1(BS0)+1)
+ Q
+MENUU() ;ТИТУЛ МЕНЮ
+ I $G(%BS(38))="" Q $E($ZV,1,28)
+ Q $E("Работает: "_$G(%BS(38)),1,28)
+MENU I '$D(ColrMenu) G UNDOMENU^%ZAPM.ed.BSF11
+ W $$atr^%ZAPM.ed.BS3(ColrMenu),/CUP(2,3),$$MENUU()," ",$$WEEKEND^%ZAPM.ed.BSsFUNR(1,$$h^%ZAPM.ed.BS3())," ",$$ESDAY^%ZAPM.ed.BSsFUNR(8,$$h^%ZAPM.ed.BS3())," %BS Version ",+^%ZAPM.ed.BS," " Q
+RAM(Y1,X1,Y2,X2,RA,COLOR) W $$atr^%ZAPM.ed.BS3(COLOR) S ii=$S(RA=1!(RA=""):"-----|",RA=2:"=====|",RA=" ":"      ",1:"§§§§§§")
+ W /CUP(Y1,X1),$E(ii,1),$TR($J("",X2-X1-1)," ",$E(ii,2)),$E(ii,3)
+ F i=Y1+1:1:Y2-1 W /CUP(i,X1),$E(ii,6),$J("",X2-X1-1),$E(ii,6)
+ W /CUP(Y2,X1),$E(ii,4),$TR($J("",X2-X1-1)," ",$E(ii,2)),$E(ii,5) Q
+P I $ZE'["<PRO" S ls=$ZE D O^%ZAPM.ed.BSF7 S $ZT=$G(%zT) Q
+ S $ZT=$G(%zT) G GO
+STOP D O^%ZAPM.ed.BSF7 S d="",R1=27,ny=1 G END^%ZAPM.ed.BSF
+PRO S ls=$$ErrSay^%ZAPM.ed.BSF8($ZE) G STOP
+STA ;ВОССТАНОВЛЕНИЕ ПО "STATUS ME"
+ S $ZT="PRO^%ZAPM.ed.BST"
+ G %:'$D(@(BSR_"(BST,""STA"")")) S S=^("STA"),STATUS=BST,zr=$ZR
+ S BS0=0,BSX(BS0)=$P(S,"@",3),BSY(BS0)=$P(S,"@",2),MX=$P(S,"@",8),MY=$P(S,"@",7) I $D(%BS)["0" D CLr^%ZAPM.ed.BSF4
+ G %
+DoBSX D L^%ZAPM.ed.BS3($NA(@BSR@(BST))),^%ZAPM.ed.BSX("TEXT",BSR,BST),U^%ZAPM.ed.BS3($NA(@BSR@(BST))),U^%ZAPM.ed.BS3($NA(@BSR@("@"_BST))) q
+IN(%w) ;ВХОД ПО ПОЛНОЙ ССЫЛКЕ ИЗ BSN

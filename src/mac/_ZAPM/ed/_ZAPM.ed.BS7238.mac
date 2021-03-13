@@ -1,0 +1,72 @@
+ROUTINE %ZAPM.ed.BS7238
+%BS7238 ;СПЕЦИАЛЬНЫЕ NAMESPACE к ТЕРМИНАЛАМ и /l /p /x ; 17:43 27-FEB-99
+SETCLR N n F n=1,2,9 S $P(%BS,"!",n)=7
+ F n=3,4,10 S $P(%BS,"!",n)=1
+ F n=5:1:8,11 S $P(%BS,"!",n)=0
+ Q
+PCPC N n I R1'=27 R *R2:0,*R3:0 Q
+ I R1'=0 R *R2:0,*R3:0 Q
+ F n=1:1:99 R *R2:0 Q:R2'=-1
+ F n=1:1:99 R *R3:0 Q:R3'=-1
+ Q
+PCT N n I R1'=27 R *R2:0,*R3:0 Q
+ F n=1:1:99 R *R2:0 Q:R2'=-1
+ F n=1:1:99 R *R3:0 Q:R3'=-1
+ Q
+RT N R4,n,kO I R1'=27 R *R2:0,*R3:0 Q
+ F n=1:1:99 R *R2:0 Q:R2'=-1
+ F n=1:1:99 R *R3:0 Q:R3'=-1
+ I R3>48&(R3<55) D
+ .F n=1:1:99 R *R4:0 Q:R4'=-1
+ .Q:R4=126
+ .F n=1:1:99 R *R5:0 Q:R5'=-1
+ .S R3=R3_R4 Q
+ S kO=$P(%BS(11),"!",$L($P(%BS(10),(R1_","_R2_","_R3_"!")),"!")) I kO["," S R1=$P(kO,","),R2=$P(kO,",",2),R3=$P(kO,",",3)
+ Q
+%BPD N o,kO S R2=-1 F o=1:1:30 R *R3:0 Q:R3'=-1
+ S kO=$P(%BS(11),"!",$L($P(%BS(10),(R1_","_R2_","_R3_"!")),"!")) I kO["," S R1=$P(kO,","),R2=$P(kO,",",2),R3=$P(kO,",",3)
+ Q
+%BCM7209 N o,kO S R2=-1 F o=1:1:30 R *R3:0 Q:R3'=-1
+ S kO=$P(%BS(11),"!",$L($P(%BS(10),(R1_","_R2_","_R3_"!")),"!")) I kO["," S R1=$P(kO,","),R2=$P(kO,",",2),R3=$P(kO,",",3)
+ Q
+ ;W /x
+CMD1 S $ZT="ERCMD^%ZAPM.ed.BS7238" N N
+ F  D  Q:cmd="."!(cmd="ESC")!(YES=0)  G:cmd="DOS"!(cmd="dos") ^%SSD G:cmd="ALLWAY" ALLWAY D:cmd="WAYKILL" WAYKILL W $$atr^%ZAPM.ed.BS3(0),/CUP(1,1),/ED(2) X cmd
+ .S %BSenter=1 W !!,/CUP(24,1),"<<<ЛОВУШКА>>> (",$G(x),") ",$$ZU^%ZAPM.ed.BS3(0),">" S cmd=$$Edit^%ZAPM.ed.BSXuse("",25,1,25,70,"","","^%ZAPM.ed.BSHLP(TRAP")
+ .I cmd'="" D
+ ..I cmd?.N S cmd=$G(%BS("Tmp","cmd",cmd)) Q
+ ..S N=$O(%BS("Tmp","cmd",""),-1)+1,%BS("Tmp","cmd",N)=cmd
+ .I cmd="LI"!(cmd="li") W /CUP(1,1),/ED(2) D
+ ..F N=1:1 Q:'$D(%BS("Tmp","cmd",N))  W !,N,"=",%BS("Tmp","cmd",N)
+ ..W $$r^%ZAPM.ed.BS3 S cmd=""
+ .I cmd="/l"!(cmd="/L") W $$l^%ZAPM.ed.BS3,$$r^%ZAPM.ed.BS3 S cmd=""
+ .I cmd="LT"!(cmd="lt") W /CUP(1,1),/ED(2) D LOCKTAB^%ZAPM.ed.BSF6 W $$r^%ZAPM.ed.BS3 S cmd=""
+CMD2 S $ZT=$G(%zT) D CL^%ZAPM.ed.BSF4,RE^%ZAPM.ed.BSsBUF I $D(%ZREFERE),%ZREFERE'["""",$$Data^%ZAPM.ed.BSF12(%ZREFERE)
+e Q
+ALLWAY S %BS("Tmp","AllWay",$G(%BS(3),$P),x)="" G CMD2
+WAYKILL K %BS("Tmp","AllWay",$G(%BS(3),$P)) S cmd="" Q
+x(x) N %ZREFERE,cmd,%BSenter I x'="",$D(%BS("Tmp","AllWay",$G(%BS(3),$P),x)) Q
+ S %zT=$ZT,%ZREFERE=$ZR D OP^%ZAPM.ed.BSF4,SA^%ZAPM.ed.BSsBUF W /ED(2),$$bel^%ZAPM.ed.BS3
+ERCMD W /CUP(1,1),$$bel^%ZAPM.ed.BS3,!,$ZE,!!," - Возвpат  <Esc> или "".""",!," - Выход в MSM  ""H""",!," - Уйти в DOS  ""DOS""" W:x'="" !," - Игнорируем ",x," ловушку ""ALLWAY""" G CMD1
+WRITE N %zz1,%zz0,%zz2,%zz3,%zz4,%zz5 ;ПОЭКРАННОЕ ЛИСТАНИЕ W /l
+ W !,"------------- Локальные пеpеменные : ---------------"
+ I $ZV["MSM" ;S %zz1=$O()
+ I $ZV["Cach"||($ZV["IRIS") S %zz1="",%zz1=$O(@%zz1)
+ S %zz0=0 F  Q:%zz1=""  D:%zz1'["%zz"  S %zz1=$O(@%zz1)
+ .I "11"[$D(@%zz1) D W(%zz1)
+ .I $D(@%zz1)>9 S %zz3=%zz1 F  S %zz3=$Q(@%zz3) Q:%zz3=""  D W(%zz3)
+ W !,"-------- Конец списка локальных пеpеменных --------"
+ Q
+W(%z) S %zz5=$L(%z)+1,%zz4=79-%zz5 W !,%z,"=",$E(@%z,1,%zz4) S %zz4=%zz4+1
+WW S %zz0=%zz0+1 I '(%zz0#22) W !,"--------- Press <Enter> >" R *%zz2,*%zz2:0,*%zz2:0
+ Q:%zz4'<$L(@%z)  W $E(@%z,%zz4,%zz4+78) S %zz4=%zz4+79 G WW
+PRINT ;ПОЭКРАННОЕ ЛИСТАНИЕ ПРОГРАММЫ W /p
+ S %z0="S %z10=0 X %z1,%z3,%z2"
+ S %z1="W !,""------------- Листинг пpогpаммы "",$ZN,"" ---------------"""
+ S %z3="F %z3=1:1 Q:$T(+%z3)=""""  S %z4=$T(+%z3) X %z5"
+ S %z2="W !,""------------- Конец листинга пpогpаммы -----------------"""
+ S %z5="S %z6=$P(%z4,"" ""),%z4=%z6_$J("" "",9-$L(%z6))_$P(%z4,"" "",2,9999) X %z7"
+ S %z7="S %z8=80,%z13=0 W !,$E(%z4,1,%z8-1) F  X %z9 Q:%z13"
+ S %z9="S %z10=%z10+1 R:'(%z10#22) !,""--------- Press <Enter> >"",*%z11,*%z11:0,*%z11:0 X %z12"
+ S %z12="S:%z8'<$L(%z4) %z13=1 I '%z13 W !,""........."",$E(%z4,%z8,%z8+69) S %z8=%z8+70" Q
+ ;

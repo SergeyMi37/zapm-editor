@@ -1,0 +1,39 @@
+ROUTINE %ZAPM.ed.BSFTF
+%BSFTF ;БЫСТРАЯ ТРАНСЛЯЦИЯ ФОРМУЛ ; 15:24  4-DEC-97
+ ;li-ИСХОДНЫЙ ТЕКСТ
+ ;li1-ОТТРАНСЛИРОВАННЫЙ ТЕКСТ
+ ;f-тип ФУНКЦИИ f="FCL"-Calc ;f="FTR"-Tran ;f="COL"-Logs ;f="RTR" Read
+ ;ft - ПАРАМЕТР ИСПОЛНЯЕМОСТИ ФУНКЦИИ =1 ДА   ВСЁ ОСТАЛЬНОЕ - НЕТ
+ N i0,i,d3,d,d0,d1,l
+ S (li1,i0)=li,ft=1
+ I i0["$$FCl" S ft=4 D TST(9,"БЫСТРЫМ СПИСКОМ") Q  ;БЫСТРЫЙ НАСЧЕТ
+ I i0["$$FCs" S ft=5 D TST(10,"БЫСТРОЙ СВОДКОЙ") Q  ;БЫСТРЫЙ НАСЧЕТ
+ I i0["$$TSP" S ft=2 G TSP^%ZAPM.ed.BSFT ;D TST(3,"СПИСКОМ") Q
+ I i0["$$TSV" S ft=3 G TSV^%ZAPM.ed.BSFT ;D TST(4,"СВОДКОЙ") Q
+ S %zT=$ZT,$ZT="ERRO^%ZAPM.ed.BSFTF"
+ S YES=0,li1=$$FunTrans(i0,f)
+ S (d3,d,d0,d1)=1 X li1 S ^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),5)=li1,$ZT=$G(%zT),YES=1 Q
+FunTrans(li,f) N i
+ I li["$$" S i="" F  S i=$O(^%ZAPM.ed.BSFUN(i)) Q:i=""  I $D(^%ZAPM.ed.BSFUN(i,"11,4")) S l="$$"_i_"(",li=$$TR^%ZAPM.ed.BSsFUNM(li,l,"$$"_@$ZR_"(")
+ I li["{" D
+ .S li=$$TR^%ZAPM.ed.BSsFUNM(li,"{{","$$A^%ZAPM.ed.BSA("),li=$$TR^%ZAPM.ed.BSsFUNM(li,"}}",")")
+ .S li=$$TR^%ZAPM.ed.BSsFUNM(li,$C(34)_"{",$C(0,1)),li=$$TR^%ZAPM.ed.BSsFUNM(li,"}"_$C(34),$C(2,3))
+ .S li=$$TR^%ZAPM.ed.BSsFUNM(li,"{","$$A^%ZAPM.ed.BSA("),li=$$TR^%ZAPM.ed.BSsFUNM(li,"}",")")
+ .S li=$$TR^%ZAPM.ed.BSsFUNM(li,$C(0,1),$C(34)_"{"),li=$$TR^%ZAPM.ed.BSsFUNM(li,$C(2,3),"}"_$C(34))
+ Q $S(f="COL":"I "_li,1:"S d1="_li)
+TST(TI,S) G:f'="FCL" OTL I TIP=TI G TS
+ I TIP>1 S ls=" ВАША ТАБЛИЦА УЖЕ НЕ МОЖЕТ БЫТЬ "_S G OTLUP
+ I TIP<2 S ls=" Вы хотите что-бы ваша таблица стала "_S_" ? Вы уверены ? " D YES^%ZAPM.ed.BSF I 'YES S ls=" ОТМЕНА " G OTLUP
+ S TIP=TI
+TS S $P(@BSR@(BST),"@",17)=TIP
+ S %zT=$ZT,$ZT="ERRO^%ZAPM.ed.BSFTF",li1=li I li1["$$" S i="" F  S i=$O(^%ZAPM.ed.BSFUN(i)) Q:i=""  I $D(^%ZAPM.ed.BSFUN(i,"11,4")) S l="$$"_i_"(",li1=$$TR^%ZAPM.ed.BSsFUNM(li1,l,"$$"_@$ZR_"(")
+ S li1="S YES="_li1
+ X li1 S $ZT=$G(%zT),li1=li Q
+ERRO S ls="" I $ZE["<MXSTR" S ls=" ДЛИНА СТРОКИ ПОСЛЕ ТРАНСЛЯЦИИ БОЛЬШЕ ДОПУСТИМОЙ "
+ I $ZE["PARM>"!($ZE["<FUN") S ls=" ОШИБКА В ПАРАМЕТРАХ ФУНКЦИИ ИЛИ НЕВЕРНЫЙ АДРЕС КЛЕТКИ "
+ I $ZE["LINER>" S ls=" ОШИБКА В ИМЕНИ ФУНКЦИИ "
+ S ls=ls_$ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE) D O^%ZAPM.ed.BSF7 S ls=$G(li1,"???")
+ERR D O^%ZAPM.ed.BSF7 S YES=0,li1="" Q
+OTL S ls="СПИСКОВЫЕ И СВОДКОВЫЕ ФУНКЦИИ РАЗРЕШЕНЫ ТОЛЬКО В ФОРМУЛАХ ВЫЧИСЛЕНИЯ !"
+OTLUP D O^%ZAPM.ed.BSF7 S (ft,li,li1)="" Q
+ Q

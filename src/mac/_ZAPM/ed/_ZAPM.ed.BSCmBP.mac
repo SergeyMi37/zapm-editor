@@ -1,0 +1,31 @@
+ROUTINE %ZAPM.ed.BSCmBP
+%BSCmBP ;ПРОГРАММА ФУНКЦИЙ И МОДУЛЕЙ ДЛЯ БОЕВЫХ ПОТЕРЕЙ
+ ;
+ ;    Copyright Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ Q
+1 //ВЫГРУЗКА КЛАССИФИКАТОРОВ
+ I $ZU(5,"GLAVK")
+ F KD1="KPPOT","BPRBD","k056" D KD(KD1)
+ Q
+KD(KD) N %FN,%DEV
+ S PR1="L:\!\"_KD D DOSOPN^%ZAPM.ed.BSBL1 I '$D(%FN) Q
+ U %DEV W "KOD|TEXT|",!
+ S KOD="^"_KD,S="" F  S S=$O(@KOD@(1,S)) Q:S=""  W S,"|",$G(@KOD@(1,S)),"|",!
+ C %DEV
+ Q
+2 	//ВЫГРУЗИМ В ФАЙЛ
+	S N="L:\!\U"
+	O N:("WNS"):3 U N W ^%CDUaf,!
+	S S="" F  S S=$O(^%CDUaf(S)) Q:S=""  W S,$C(0),$G(^%CDUaf(S)),!
+	C N
+	Q
+3 //В ДРУГОЙ СНОВА ЗАГРУЗИМ
+ K ^%CDUaaaa
+ S A=$$File2Arr^%ZAPM.ed.BSCEXE("L:\!\U",.M) ;ЗАГРУЗИМ ФАЙЛ В ЛОКАЛЬ
+ D STR2MAS^%ZAPM.ed.BSCmail(.M,.AA,$C(13,10)) ;ЛОКАЛЬ ПРИЧЕШЕМ
+ S S="" F  S S=$O(AA(S)) Q:S=""  D
+ .I S=1 S ^%CDUaaaa=AA(S) Q
+ .S S1=$P(AA(S),$C(0),1),S2=$P(AA(S),$C(0),2),^%CDUaaaa(S1)=S2
+ Q

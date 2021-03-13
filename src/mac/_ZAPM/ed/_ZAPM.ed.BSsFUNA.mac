@@ -1,0 +1,48 @@
+ROUTINE %ZAPM.ed.BSsFUNA
+%BSsFUNA ;ФУНКЦИИ АТРИБУТОВ КЛЕТОК И ТАБЛИЦ ; 11:27 15-APR-94
+S Q:'$D(bS)  S bs=$G(@bS) Q:bs=""  S bd=$P(bS,",",1,$L(bS,",")-2),b=@(bd_")") Q
+SB Q:'$D(bd)  S bd=$P($G(@(bd_",""KEY"")")),"@") Q
+AC(%1) N bs,b,bd D S ;ЦВЕТ КЛЕТКИ %1
+ S %0=$P($G(bs),"@",10) Q %0
+AD(%1) N bs,b,bd D S ;ДЛИНА
+ S %0=$P($G(bs),"@",4) Q %0
+AH(%1) N bs,b,bd D S ;ВЫСОТА
+ S %0=$P($G(bs),"@",3) Q %0
+AP(%1) N bs,b,bd D S ;ПОМЕЧЕНА =1
+ S %0=+$P($G(bs),"@",12) Q %0
+AX(%1) N bs,b,bd D S ;АБСОЛЮТНАЯ КООРДИНАТА X
+ S %0=$P($G(bs),"@",2) Q %0
+AY(%1) N bs,b,bd D S ;...Y
+ S %0=$P($G(bs),"@",1) Q %0
+AT(%1,%2) N bs,b,bd,nf D S ;ТРАНС
+ S nf=$P($G(bs),"@",8) I nf="" Q ""
+ I nf,nf?.N1",".N Q $G(@(bd_",""FTR"","_nf_$S($G(%2):",1)",1:")"))) 
+ S nf=$P($P(bS,",",$L(bS,",")-1,$L(bS,",")),")") Q $G(@(bd_",""FTR"","_nf_$S($G(%2):",1)",1:")"))) 
+AR(%1,%2) N bs,b,bd,nf D S ;СИНТ
+ S nf=$P($G(bs),"@",16) I nf="" Q ""
+ I nf,nf?.N1",".N Q $G(@(bd_",""RTR"","_nf_$S($G(%2):",1)",1:")"))) 
+ S nf=$P($P(bS,",",$L(bS,",")-1,$L(bS,",")),")") Q $G(@(bd_",""RTR"","_nf_$S($G(%2):",1)",1:")"))) 
+AL(%1,%2) N bs,b,bd,nf D S ;ЛОГ
+ S nf=$P($G(bs),"@",13) I nf="" Q ""
+ I nf,nf?.N1",".N Q $G(@(bd_",""COL"","_nf_$S($G(%2):",1)",1:")"))) 
+ S nf=$P($P(bS,",",$L(bS,",")-1,$L(bS,",")),")") Q $G(@(bd_",""COL"","_nf_$S($G(%2):",1)",1:")"))) 
+AF(%1,%2) N bs,b,bd,nf D S ;ВЫЧ
+ S nf=$P($G(bs),"@",7) I nf="" Q ""
+ I nf,nf?.N1",".N Q $G(@(bd_",""FCL"","_nf_$S($G(%2):",1)",1:")"))) 
+ S nf=$P($P(bS,",",$L(bS,",")-1,$L(bS,",")),")") Q $G(@(bd_",""FCL"","_nf_$S($G(%2):",1)",1:")"))) 
+AB(%1) N bs,b,bd D S ;ХРАНИТСЯ В БАЗЕ=1
+ S %0=$P($G(bs),"@",9) Q %0
+AU(%1,%2) N bs,b,bd D S ;%2=# PICE
+ S %0=$P($G(bs),"@",%2) Q %0
+ATB(%1) N bs,b,bd D S,SB ;ИМЯ БАЗЫ ДАННЫХ
+ S %0=$G(bd) Q %0
+ATK(%1) N bs,b,bd D S ;КОЛ-ВО КОЛОНОК У ТАБЛИЦЫ %1
+ S %0=$P($G(b),"@",29) Q %0
+ATU(%1,%2) N bs,b,bd D S ;%2=# PICE
+ S %0=$P($G(b),"@",%2) Q %0
+ATS(%1) N bs,b,bd D S ;...СТРОК
+ S %0=$P($G(b),"@",28) Q %0
+ATC(%1) N bs,b,bd D S ;ОБЩИЙ ЦВЕТ
+ S %0=$P($G(b),"@",31) Q %0
+ Q ""
+e Q

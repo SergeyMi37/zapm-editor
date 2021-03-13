@@ -1,0 +1,7 @@
+ROUTINE %ZAPM.ed.BSMDDR0
+%BSMDDR0() ; пpогpамма ДЛЯ ТРАНСФОРМАЦИИ ОШИБОЧЕК ; 12:03  6-JAN-98
+ N I,ZR W /CUP(11,1),$$atr^%ZAPM.ed.BS3(0) F I=1:1:12 W /EL(0),!
+ I $D(@%BS("Tmp","BSD")@(ny)) S ZR=$ZR W $$clr^%ZAPM.ed.BS3(11),/CUP(11,1) D  W $$atr^%ZAPM.ed.BS3(0)
+ .F I=1:1:12 W /EL(0),!
+ .W /CUP(11,1) F I=1:1 Q:'$D(@ZR@(I))  W @$ZR,! Q:$Y>23
+ Q d1

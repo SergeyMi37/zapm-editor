@@ -1,0 +1,22 @@
+ROUTINE %ZAPM.ed.BSPK1
+%BSPK1 ;КАРТА ВЫВОДА И ПЕЧАТЬ ДЛЯ ПАКЕТОВ ```ОТЛАДКА; 16:52 10-JUN-98 ; 14:01 24-FEB-99
+ Q
+OUTCARDS ;КАРТА ВЫВОДА
+ N CARD
+ S CARD=$NA(^%ZAPM.ed.BSbufB("TmpCardOut"_$G(%BS(3),$P)_$J_"u1"))
+ D FC(BSR,BST,$G(@BSR@(BST,"PRN"),$P(^%ZAPM.ed.BSS("OPout1",2,1),"@",15)),CARD)
+ D Table^%ZAPM.ed.BSN(BSR,BST)
+ D Yes^%ZAPM.ed.BSXfun("Запомним Карту вывода") I YES>0
+ Q
+PACKCARD ;КАРТА ВЫВОДА ПАКЕТ
+ N CARD
+ S CARD=$NA(^%ZAPM.ed.BSbufP("Card§"_BSR_"§"_BST_"§"))
+ D FC(BSR,BST,$G(@BSR@(BST,"PRN"),$P(^%ZAPM.ed.BSS("OPout1",2,1),"@",15)),CARD)
+
+ Q
+ 
+FC(P,T,O,C) ;ФОРМИРОВАНИЕ КАРТЫ
+ I $D(@P@(T,"CRD"))
+ D ErrMsg^%ZAPM.ed.BSXfun("РЕЖИМ НА ОТЛАДКЕ") Q
+ ;D x^%ZAPM.ed.BS3("19+PK1")     ;---//--- для msm 4.x.x
+ Q

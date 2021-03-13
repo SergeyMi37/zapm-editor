@@ -1,0 +1,93 @@
+ROUTINE %ZAPM.ed.BSSR
+%BSSR ;ПОДЖАТИЕ ТАБЛИЦЫ, КАЛЬКУЛЯТОР  (А.Тимофеев) ; 16:52   15.09.99
+ G D
+D G 0^%ZAPM.ed.BSTM ;
+SVO() N I,II
+ I $G(@BSR@(BST,"PER")) Q @$ZR ;КОЛИЧЕСТВО ПЕРИОДОВ У СВОДКИ
+ F I=ny:1:ny+9 I $G(@BSR@(BST,I)),(+$G(II)<+@$ZR) S II=@$ZR
+ Q $G(II)
+PRESSCFG ;КОНФИГУРИРОВАТЬ ОПЦИИ
+ S li=$P(@BSR@(BST),"@",51) I li="" S li="1,1\"_ny_","_nx_"\1"
+CFGAGAIN S li=$$LineEdit^%ZAPM.ed.BSXfun(li,"ВВЕДИТЕ ПАРАМЕТРЫ ПОДЖАТИЯ В ФОРМАТЕ: RY,RX\TY,TX\S   (F1-ПОМОЩЬ)","","","^%ZAPM.ed.BSHLP(""PRESS"")") Q:YES<1  I li'="",li'?1N.N1","1N.N1"\"1N.N1","1N.N1"\"1N D ErrMsg^%ZAPM.ed.BSXfun("ОШИБКА ФОРМАТА ! СМОТРИ F1") G CFGAGAIN
+ D R^%ZAPM.ed.BSF4(51,li)
+ Q
+APRESS(G) ;АВТОПОДЖАТИЕ СВОДОК
+ ;ЕСЛИ НАДО СДЕЛАТЬ НА АВТОМАТЕ ДЛЯ ПАКЕТОВ
+ Q
+PRESAUTO(R) ;АВТОПОДЖАТИЕ
+ I $P(@(BSR_"(BST)"),"@",24) Q  ;УЖЕ ПОДЖАТА
+ N is,js,RX,RY,O,Titul,MOD,%DIA,se,ke
+ S MOD=$P(R,"\",3) D GR,AUTO
+ S $P(@(BSR_"(BST)"),"@",24)=1,B=@$ZR
+ D TAB^%ZAPM.ed.BSF1,TIT^%ZAPM.ed.BST Q
+PRESS ;ПОДЖАТИЕ
+ N is,js,RX,RY,O,Titul,MOD S MOD=%B I $P(B,"@",51) S R=$P(B,"@",51),$P(R,"\",3)=MOD G AUT
+ I '$P(B,"@",19)&('$P(B,"@",50)) D Yes^%ZAPM.ed.BSXfun("ТИТУЛ НЕ УСТАНОВЛЕН !!! ПРОДОЛЖИМ ПОДЖАТИЕ ?",2) Q:YES<1
+ S R=+$$SVO_",1\"_$S($P(B,"@",19):$P(B,"@",19),$P(B,"@",50):$P(B,"@",50),1:ny_","_nx)
+AUT S R=$$LineEdit^%ZAPM.ed.BSXfun(R,"ВВЕДИТЕ ПАРАМЕТРЫ ПОДЖАТИЯ В ФОРМАТЕ: RY,RX\TY,TX\MODE    (F1-ПОМОЩЬ)","","","^%ZAPM.ed.BSHLP(""PRESS"")") Q:YES<1
+AUTO S ls="идет поджатие" D WAITS^%ZAPM.ed.BSF2 S Titul=$P(R,"\",2) D GR
+ I $D(%DIA) D Yes^%ZAPM.ed.BSXfun("В ТАБЛИЦЕ ЕСТЬ ПОМЕЧЕННЫЕ КЛЕТКИ. Будем поджимать ВСЕ ПОМЕЧЕННЫЕ "_$S(%B=1:"СТРОКИ",%B=2:" КОЛОНКИ",1:"СТРОКИ И КОЛОНКИ")_" ! (И пустые, и с данными) ?") Q:YES<1  D PRESP(MOD,"I $P(BOS,""@"",12)") S YES=1 Q
+ D PRESSING(MOD) S YES=1
+ Q
+PRESSING(O) ;САМ ПРЕССИНГ
+ N I,J,PR,ST,NB D GR S RX=$P(R,",",2)+1,RY=$P(R,",")+1,ST=0,NB=is
+ F I=is:1:se X WA I ((I-is+1)#RY) F J=js:1:ke I ((J-js+1)#RX) I $$A^%ZAPM.ed.BSA(I,J)'="" D PR(1,I,1),PR(2,J,1)
+ I "13"[O F I=is:1:se X WA D
+ .I '((I-is+1)#RY) D:'ST  S ST=0,NB=I+1 Q
+ ..F i=NB:1:I I i'=se D ERASY(i)
+ .I $$PRI(1,I) S ST=1
+ S ST=0,NB=js
+ I "23"[O F J=js:1:ke X WA D
+ .I '((J-js+1)#RX) D:'ST  S ST=0,NB=J+1 Q
+ ..F i=NB:1:J I i'=ke D ERASX(i)
+ .I $$PRI(2,J) S ST=1
+ Q
+PR(U,J,S) ;ПРИСВОЕНИЕ В ЛОКАЛЬ PR БАЙТА S В ПОЗИЦИЮ J УРОВНЯ U
+ S $E(PR(U,J\4000),J-((J\4000)*4000)+1)=S Q
+PRI(U,J) ;ВЕРНУТЬ БАЙТ ПО НОМЕРУ J УРОВНЯ U
+ Q $E($G(PR(U,J\4000)),J-((J\4000)*4000)+1)
+ 
+PRESP(O,USL) ;ПОМЕЧЕННЫЕ
+ N I,J D GR
+ F i=is:1:se X WA F j=js:1:ke S BOS=@BSR@(BST,i,j) X USL D:$T
+ .I O=1 D ERASY(i) S j=ke+1 Q
+ .I O=2 D ERASX(j) Q
+ .D ERASY(i),ERASX(j) Q
+ Q
+ERASY(i) I $P(@BSR@(BST,i,1),"@",3)["X" Q
+ N j F j=1:1:ke S $P(@BSR@(BST,i,j),"@",3)="X"_$P(@BSR@(BST,i,j),"@",3)
+ Q
+ERASX(j) I $P(@BSR@(BST,1,j),"@",4)["X" Q
+ N i F i=1:1:se S $P(@BSR@(BST,i,j),"@",4)="X"_$P(@BSR@(BST,i,j),"@",4)
+ Q
+UNPRESS I TIP'=2 D Yes^%ZAPM.ed.BSXfun("Таблица Поджата. Снимем поджатие ?",2) Q:YES<1
+ S ls="СНЯТИЕ ПОДЖАТИЯ" D WAITS^%ZAPM.ed.BSF2,UNPRES,TAB^%ZAPM.ed.BSF1 S $P(@(BSR_"(BST)"),"@",24)="",B=@$ZR Q
+UNPRES N BOS,BOS1,i,j
+ D GR F i=1:1:se X WA F j=1:1:ke S (BOS1,BOS)=@BSR@(BST,i,j) D  I BOS'=BOS1 S @BSR@(BST,i,j)=BOS
+ .I $E($P(BOS,"@",3),1)="X" S $P(BOS,"@",3)=$P($P(BOS,"@",3),"X",2)
+ .I $E($P(BOS,"@",4),1)="X" S $P(BOS,"@",4)=$P($P(BOS,"@",4),"X",2)
+ Q
+GR S TIT=$P(@(BSR_"(BST)"),"@",19),(is,js)=1 S:$D(Titul) TIT=Titul I TIT S is=$P(TIT,","),js=$P(TIT,",",2)
+ D:'$D(ke) REND^%ZAPM.ed.BSF2 D:'$D(se) DEND^%ZAPM.ed.BSF2 ;ОПРЕД.КОНЕЧНЫХ ТОЧЕК
+ Q
+QQ G D^%ZAPM.ed.BS
+CALK ;Калькулятор
+ N i,i1,i2,i3,i4,%KAT,sEt
+ S %zT=$ZT,$ZT="ERCA^%ZAPM.ed.BSSR"
+ S li=$S($D(Bstr):@Bstr,1:$G(d)) I $D(%DIA) S li="",do="S sEt=$S($P(^(j),""@"",9)=1:$P(^(j),""@"",15),1:$G(^%ZAPM.ed.BSbufB(""BB""_$G(%BS(3),$P)_$J_""u""_%BS(15),i,j))) i +sEt s li=li_""+""_+sEt" D BLOK^%ZAPM.ed.BSF1
+ I $L(li)>($$LNG^%ZAPM.ed.BSF12-1) D Yes^%ZAPM.ed.BSXfun("Получается очень длинная строка! Посчитаем Сразу ?") I YES>0 G C2
+C1 S li=$$LineEdit^%ZAPM.ed.BSXfun($TR(li," ",""),"Пиши, например: 123+34 или 23/45+(98+67*34) выполнение-последовательное !","","","^%ZAPM.ed.BSHLP(CAL",$NA(^%ZAPM.ed.BSbufB("HISCALC"_$G(%BS(3),$P))),"Exit^%ZAPM.ed.BSSR")
+ I $D(%KAT) S YES=1 Q
+ I 'YES Q
+ I li="" Q
+ S i4="" F i2=1:1 S i3=$E(li,i2) Q:i3=""  D  Q:i4=1
+ .I "1234567890+-/*.\)("'[i3 S i4=1 Q
+ I i4=1 D ErrMsg^%ZAPM.ed.BSXfun("Никаких букв и = тоже ни к чему !!") G C1
+C2 S i1="S i="_li X i1 S li=i G C1
+ Q
+Exit ;ВЫХОД ИЗ КАЛЬКУЛЯТОРА
+ i R1=27,R2=79,R3=89 S %KAT=li,(R2,R3)=-1
+ Q
+ERCA I $ZE'["SINT" S ls="Ты шо !!!" D O^%ZAPM.ed.BSF7
+  S ls="Нельзя же так писать !!!" D O^%ZAPM.ed.BSF7 X "I 0" S YES=0,$ZT=$G(%zT)
+  Q

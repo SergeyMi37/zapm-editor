@@ -1,0 +1,570 @@
+ROUTINE %ZAPM.ed.BSCmdapi
+%BSCmdapi ;; MAPI v0.05 Copyright 2004 Maksim Merzhvinsky
+ ;	Based on MDAPI v0.05 by Maksim Merzhvinsky
+ ;	Модифицировано Евгением Колупаевым. cci.ocx
+ Q 
+start
+  Set ^%ZAPM.ed.BSCmdapicfg("stopsig")=0
+  Job server
+  Write "MDAPI started..."_$ZTIME($PIECE($HOROLOG,",",2),1)
+  Quit
+stop
+  Set ^%ZAPM.ed.BSCmdapicfg("stopsig")=1
+  Write "MDAPI stoped..."_$ZTIME($PIECE($HOROLOG,",",2),1)  
+  Quit
+showstatus(St,ROU,DEV) S St=""
+  New pid,name,ns,dev,user Set pid=""
+  For  Set pid=$O(^$JOB(pid)) Quit:pid=""  Do
+    .Set name=$ZU(67,5,pid),ns=$ZU(67,6,pid),dev=$ZU(67,7,pid),user=$ZU(67,11,pid)
+    .If (name=$G(ROU,$ZN)) && ($JOB'=pid) && (dev=$G(DEV,dev)) S St=$G(St)+1,St(pid)="PID="_pid_", rtn="_name_", namespace="_ns_", device="_dev_", user="_user
+    .;W !,St
+  Quit $G(St) //КОЛИЧЕСТВО ПРОЦЕССОВ АКТИВНО 
+clear
+  Kill ^%ZAPM.ed.BSCmdapilog
+  Quit
+  // config set server port
+setport(newport)
+  Set ^%ZAPM.ed.BSCmdapicfg("port")=+$Get(newport,10001)
+  Write "Setting up new port... ", newport
+  Quit
+  // If yes then use direct socket instead of spool
+setnospool(yes)
+  Set ^%ZAPM.ed.BSCmdapicfg("nospool")=$S($Get(yes,0)=0:0,1:1)
+  Quit
+  // add system user
+adduser(user,pass)
+  If ($G(user)="") || (user["*/?.,") Write "Bad user name!",! Quit
+  If ($G(pass)="") Write "Bad password!",! Quit
+  If ($L(pass)<6) Write "Password is less than 6 symbols !",! Quit
+  Set ^%ZAPM.ed.BSCmdapicfg("users",user,"pass")=$$CRC^%ZAPM.ed.BSCp(user,pass)
+  Quit
+  // delete system user
+deluser(user)
+  If ($G(user)="") Write "Bad user name!",! Quit
+  Kill ^%ZAPM.ed.BSCmdapicfg("users",user)
+  Quit
+  // 
+setdefault(noauth)
+  Set ^%ZAPM.ed.BSCmdapicfg("noauth")=$Get(noauth,0)
+  Quit
+  // Set default access rights: 0 - all deny, 1 - all allow
+setdefrights(deny)
+  Set ^%ZAPM.ed.BSCmdapicfg("dr")=$S($Get(deny,0)=0:0,1:1)
+  Quit
+  // set default command access rights
+setdefcmdrights(cmdid,deny)
+  If ($Get(cmdid)="") Write "Bad cmdid!",! Quit
+  Set ^%ZAPM.ed.BSCmdapicfg("dr","cmd",+$Get(cmdid))=$S($Get(deny,0)=0:0,1:1)
+  Quit 
+  // set users command access rights
+setusercmdrights(cmdid,user,deny)
+  If ($Get(cmdid)="") Write "Bad cmdid!",! Quit
+  If ($Get(user)="") Write "Bad user name!",! Quit
+  Set ^%ZAPM.ed.BSCmdapicfg("users",user,"r","cmd",+cmdid)=$S($Get(deny,0)=0:0,1:1)  
+  Quit
+  // Function return true if command "cmdid" allowed
+  // defr - default rights loaded by thread
+  // user - user name
+iscmdallowed(cmdid,defr,user)
+  New res
+  Set res=$S($G(defr,0)=0:+$Get(^%ZAPM.ed.BSCmdapicfg("dr","cmd",+$G(cmdid)),0),1:+$Get(^%ZAPM.ed.BSCmdapicfg("dr","cmd",+$G(cmdid)),1))
+  If ($Get(user)'="") && ($D(^%ZAPM.ed.BSCmdapicfg("users",user,"r","cmd",+$G(cmdid)))) Do
+	.Set res=$S($G(defr,0)=0:+$Get(^%ZAPM.ed.BSCmdapicfg("users",user,"r","cmd",+$G(cmdid)),0),1:+$Get(^%ZAPM.ed.BSCmdapicfg("users",user,"r","cmd",+$G(cmdid)),1))
+  Quit res
+isglobalallowed(globname,defr,user)
+  New res Set res=+$Get(defr,0)
+  If $Get(globname)="" Quit 0
+  If $Get(user)="" Quit +res
+  If $D(^%ZAPM.ed.BSCmdapicfg("users",user,"r","glb",globname)) Quit (+^%ZAPM.ed.BSCmdapicfg("users",user,"r","glb",globname)>0)
+  If $D(^%ZAPM.ed.BSCmdapicfg("dr","glb",globname)) Quit (^%ZAPM.ed.BSCmdapicfg("dr","glb",globname)>0)
+  Quit res
+isprocallowed(procname,defr,user)
+  New res Set res=+$Get(defr,0)
+  If $Get(procname)="" Quit 0
+  If $Get(user)="" Quit +res
+  If $D(^%ZAPM.ed.BSCmdapicfg("users",user,"r","proc",procname)) Quit (+^%ZAPM.ed.BSCmdapicfg("users",user,"r","proc",procname)>0)
+  If $D(^%ZAPM.ed.BSCmdapicfg("dr","proc",procname)) Quit (^%ZAPM.ed.BSCmdapicfg("dr","proc",procname)>0)
+  Quit res
+isuciallowed(uciname,defr,user)
+  New res Set res=+$Get(defr,0)
+  If $Get(uciname)="" Quit 0
+  If $Get(user)="" Quit +res
+  If $D(^%ZAPM.ed.BSCmdapicfg("users",user,"r","uci",uciname)) Quit (+^%ZAPM.ed.BSCmdapicfg("users",user,"r","uni",uniname)>0)
+  If $D(^%ZAPM.ed.BSCmdapicfg("dr","uci",uciname)) Quit (^%ZAPM.ed.BSCmdapicfg("dr","uci",uniname)>0)
+  Quit res
+showusers()
+  New u Set u=""
+  W !,"Users ------ mdapi ------",!
+  For i=1:1  Set u=$O(^%ZAPM.ed.BSCmdapicfg("users",u)) Quit:u=""  Write i,". User mdapi: ",u,!
+  W !,"Users ------- ip -------- access grand",!
+  N BDSES,P9,noPASS,WW,GC
+  S GC=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""PROTECT"")")
+  For i=1:1 Set u=$O(@GC@(u)) Quit:u=""  Write i,". User ip: ",$$JF^%ZAPM.ed.BSC4r4(u,20),"  ",$G(@GC@(u,"GRANT")),!
+  Quit
+  /*
+    Server thread
+  */
+server
+  New dev,port,cli,ip
+  //Set P0=""
+  //Set P1=""
+  Set $ZTrap="serr"
+  Set port=$Get(^%ZAPM.ed.BSCmdapicfg("port"),10001)
+  L ^%ZAPM.ed.BSpgWEBC(port):0 E  H
+  Set dev="|TCP|"_port
+  Open dev:(:port:"A"):5
+  If '$T Quit
+  Set ^%ZAPM.ed.BSCmdapicfg("CurSrvPid")=$JOB
+  Do log(0,"Server started (port="_port_")...")
+  For  Use dev Read cli:1  Do:$T   Quit:$Get(^%ZAPM.ed.BSCmdapicfg("stopsig"),0)
+ 	.Set ip=$A($ZU(111,0),1)_"."_$A($ZU(111,0),2)_"."_$A($ZU(111,0),3)_"."_$A($ZU(111,0),4)_":"_($A($ZU(111,0),5)*256+$A($ZU(111,0),6))
+	.Do log(3,"Server new connection IP="_ip)
+    .Job thread:(:5:dev:dev) If $ZCHILD=0 Do log(1,"Server can't create new JOB!")	 
+  Close dev
+  Set ^%ZAPM.ed.BSCmdapicfg("CurSrvPid")=""
+  Do log(0,"Server stopped.")
+  Quit
+serr
+  Set $ZTrap=""
+  If $D(dev) Close dev
+  Do log(1,"Server error: $ZE="_$ZE_"; $ZC="_$ZC)
+  Quit
+ /*
+   Client thread
+   first - read sinchro signal, then read packet
+   Packet format:    
+    ofs | size | description
+     0  |   1  | MAPI version
+     1  |   1  | command ID
+     2  |   1  | 0..99 
+     3  |   1  | param count
+     1
+     ...
+     N - params:
+     size | description
+       1  | type
+      1..4| length
+      0..N| param
+ */
+thread
+  New s,mver,cmd,pktseq,pcount,auth,logout,seq,user,dr,nospool
+  Do log(3,"Client thread started... "_$P)
+  Set logout=0,seq=0,user=""  
+  Set dr=+$Get(^%ZAPM.ed.BSCmdapicfg("dr"),0)  // Get default rights
+  Set auth=+$Get(^%ZAPM.ed.BSCmdapicfg("noauth"),0)  // If ini noauth=1 then no ask login
+  Set nospool=+$Get(^%ZAPM.ed.BSCmdapicfg("nospool"),0)  // Don't use spool but use socket direct
+tnxt
+  Set $ZTrap="terr"
+  For  Do:$$twaitsinh(10)   Quit:(logout || ($Get(^%ZAPM.ed.BSCmdapicfg("stopsig"),0)))  W !
+    .// read header		  
+	.If $$tread(.s,4,1) Do  Quit
+	  ..Set seq=seq+1
+	  ..Set mver=$A(s,1),cmd=$A(s,2),pktseq=$A(s,3),pcount=$A(s,4)
+	  ..Do log(3,"Client: cmd="_cmd_", pktseq="_pktseq_", params="_pcount)
+	  ..Do $CASE(cmd,0:cmdnull,1:cmdlogin,2:cmdlogout,3:cmdget,4:cmdset,5:cmdkill,6:cmdorder,7:cmddata,8:cmddo,9:cmdxecute,10:cmdcversion,11:cmdlock,12:cmdunlock,14:cmdgetuci,13:cmdsetuci,20:cmdtstart,21:cmdtrollback,22:cmdtcommit,23:cmdinc,101:cmdFSend,102:cmdFRecv,103:cmdFListSend,104:cmdSetP,105:cmdGetP,:cmdunknown)	  
+    .If (s'="") Do log(3,"len="_$L(s)_", hdr="_s)    
+  Lock
+  Close $P
+  Quit
+cmdlogin
+  New pass
+  Do log(3,"cmdlogin.")
+  //If auth Do log($$$LogLvlInfo,"Already logged in") Quit
+  //If (pcount<2) Do log($$$LogLvlInfo,"Too little params") Quit
+  If auth Do sendanswear(3,"Already logged in") Quit
+  If (pcount<2) Do sendanswear(5,"Too little params") Quit
+  If '$$treadparam(.user,10) Do sendanswear(5,"Bad user name") Quit
+  If '$$treadparam(.pass,1) Do sendanswear(5,"Bad password") Quit
+  Do log(3,"cmdlogin: user="_user_", pass=******")
+  Set auth=$$auth(user,pass),pass=""
+  Do sendanswear($S(auth:0,1:4),$S(auth:"",1:"Bad user name or password"))
+  Quit
+cmdlogout
+  Do log(3,"cmdlogout.")
+  Set logout=1
+  Do sendanswear(0,"Bye")
+  Quit
+  /*
+---------------------------------------------------------------------
+  */
+cmdSetP
+  New PNum, DataLen, DataBuf, act
+  Do log(3, "cmdSetP")
+  Do treadparam(.PNum, 1)
+  Do treadparam(.DataLen, 1)
+  if (DataLen>0) D
+  	.Do sendanswear(13, "Ready to recieve.")
+  	.Read DataBuf#DataLen:15
+  	.Set act="P"_PNum
+  	.Set @act=DataBuf
+  Else  D
+    .Set act="P"_PNum
+    .Set @act=""
+  Quit
+cmdGetP
+  New PNum, PEntry
+  Do log(3, "cmdGetP")
+  Do treadparam(.PNum, 1)
+  Set PEntry="P"_PNum
+  Do sendanswear(13, "Ready to send.")
+   If ($G(@PEntry) = "") Write $ZLC(0)
+   Else  Write $ZLC($L(@PEntry)),@PEntry
+  Quit
+cmdFRecv
+  New FName, FLen, DataBuf, BlockLen
+  Do log(3, "cmdFileReceive")
+  Do treadparam(.FName, 10)
+  Do treadparam(.FLen, 1)
+  Do treadparam(.BlockLen, 1)
+  Set DestFile = ##class(%File).%New(FName)
+  Set ok = DestFile.Open("WSN")
+  If 'ok Do sendanswear(14, "Can't open specified file.") Quit
+  Do sendanswear(13, "Ready to receive.")
+  For i=1:1 {
+    If (FLen < BlockLen) Set BlockLen = FLen
+  	Read DataBuf#BlockLen:15
+  	Do DestFile.Write(DataBuf)
+  	Set FLen = FLen - BlockLen
+  	If (FLen '> 0) Quit
+  }
+  Do DestFile.Close()
+  Do sendanswear(0, "Transfer successed: "_FName_", length: "_FLen)
+  Quit
+cmdFSend
+  New FName, FLen, DataBuf, BlockLen
+  Do log(3, "cmdFileSend")
+  Do treadparam(.FName, 10)
+  Do treadparam(.BlockLen, 1)
+  Set SrcFile = ##class(%File).%New(FName)
+  Set ok = SrcFile.Open("RU")
+  If 'ok Do sendanswear(14,"Can't open specified file.") Quit
+  Set FLen = SrcFile.SizeGet
+  If (FLen > 0) {
+    Do sendanswear(13,"Ready to send.")
+    Write $ZLC(FLen)
+  } Else {
+	Do SrcFile.Close()
+	Do sendanswear(14,"Zero-length file. Nothing to send.")
+    Quit
+  }
+  For i=1:1 {
+    If (FLen < BlockLen) Set BlockLen = FLen
+    Set DataBuf = SrcFile.Read(BlockLen)
+    Write DataBuf
+    Set FLen = FLen - $Length(DataBuf)
+    If (FLen '> 0) Quit
+  }
+  Do SrcFile.Close()
+  Do sendanswear(0, "Transfer successed: "_FName_", length: "_FLen)
+  Quit
+cmdFListSend
+  New Path, Wildcard, Mode, rset, ResultBuf
+  Do log(3, "cmdFListSend")
+  Do treadparam(.Path, 10)
+  Do treadparam(.Wildcard, 10)
+  Do treadparam(.Mode, 10)
+  If ('##class(%File).DirectoryExists(Path)) {
+    Do sendanswear(14, "Specified path did not exists.")
+    Quit
+  }
+  Set rset = ##class(%ResultSet).%New("%Library.File:FileSet")
+  Do rset.Execute(Path, Wildcard, "ItemName", 1)
+  Set ResultBuf = ""
+  While (rset.Next(.fEnt)) {
+    If ($SYSTEM.Status.IsOK(fEnt)) {
+	  If (Mode = "1") {
+	  	Set ResultBuf = ResultBuf _ rset.Data("ItemName") _ ":" _ rset.Data("Type") _ ";"
+	  } ElseIf (Mode = "0") {
+		If (rset.Data("Type") = "F") {
+	      Set ResultBuf = ResultBuf _ rset.Data("ItemName") _ ";"
+		}
+	  } ElseIf (Mode = "2") {
+	    If (rset.Data("Type") = "D") {
+	      Set ResultBuf = ResultBuf _ rset.Data("ItemName") _ ";"
+	    }
+	  }
+    }
+  }
+  If ($SYSTEM.Status.IsError(fEnt)) {
+    Do sendanswear(14, "Query error.")
+    Quit
+  } Else {
+	  Do sendanswear(13, "Ready to send. Block length:"_$ZLC($Length(ResultBuf)))
+	  Write $ZLC($Length(ResultBuf))
+  }
+  Do rset.Close()
+  If ($Length(ResultBuf) > 0) {
+  	Do sendanswear(13, "Ready to send. Folder content.")
+  	Write ResultBuf
+  } Else {
+    Do sendanswear(0, "Nothing to send.")
+  }
+  Quit
+  /*
+---------------------------------------------------------------------
+  */
+cmdset
+  New gname,keys,newval,flags,olduci
+  Do log(3,"cmdset.")
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.gname,10)  
+  Do treadparam(.keys,1)
+  Do treadparam(.newval,1)
+  Do treadparam(.flags,1)
+  If (gname="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isglobalallowed(gname,dr,user) Do sendanswear(8,"") Quit
+  Set gname="^"_gname_$S(keys="":"",1:"("_keys_")")
+  Do log(3,"global -> "_gname)  
+  Set @gname=newval  
+  Do sendanswear(0,"New value assigned")
+  Quit
+cmdget
+  New gname,keys,def,flags,res
+  Do log(3,"cmdget.")  
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.gname,10)  
+  Do treadparam(.keys,1)
+  Do treadparam(.def,1)
+  Do treadparam(.flags,1)
+  If (gname="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isglobalallowed(gname,dr,user) Do sendanswear(8,"") Quit
+  Set gname="^"_gname_$S(keys="":"",1:"("_keys_")")
+  Do log(3,"global -> "_gname)
+  Set res=$Get(@gname,def)
+  Do sendanswear(0,res)
+  Quit
+cmdkill
+  New gname,keys,flags
+  Do log(3,"cmdkill.")
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.gname,10)  
+  Do treadparam(.keys,1)
+  Do treadparam(.flags,1)
+  If (gname="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isglobalallowed(gname,dr,user) Do sendanswear(8,"") Quit  
+  Set gname="^"_gname_$S(keys="":"",1:"("_keys_")")
+  Do log(3,"global -> "_gname)
+  Kill @gname
+  Do sendanswear(0,"Global killed")    
+  Quit
+cmdorder
+  New gname,keys,flags,res
+  Do log(3,"cmdorder.")
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.gname,10)  
+  Do treadparam(.keys,1)
+  Do treadparam(.flags,1)
+  If (gname="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isglobalallowed(gname,dr,user) Do sendanswear(8,"") Quit
+  Set gname="^"_gname_$S(keys="":"",1:"("_keys_")")
+  Do log(3,"global -> "_gname)
+  Set res=$Order(@gname)
+  Do sendanswear(0,res)
+  Quit
+cmddata
+  New gname,keys,flags,res
+  Do log(3,"cmddata.")
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.gname,10)  
+  Do treadparam(.keys,1)
+  Do treadparam(.flags,1)
+  If (gname="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isglobalallowed(gname,dr,user) Do sendanswear(8,"") Quit
+  Set gname="^"_gname_$S(keys="":"",1:"("_keys_")")
+  Do log(3,"global -> "_gname)
+  Set res=$Data(@gname)
+  Do sendanswear(0,res)
+  Quit
+cmddo
+  New proc,ofs,args,flags,i,j,res,v
+  Do log(3,"cmddo.")
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.proc,10)
+  Do treadparam(.ofs,1)
+  Do treadparam(.args,1)
+  Do treadparam(.flags,1)
+  If (proc="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isprocallowed(proc,dr,user) Do sendanswear(8,"") Quit
+  Set proc=ofs_"^"_proc_$S(args="":"",1:"("_args_")")
+  Set j=$JOB
+  Open 2:(j)
+  Use 2 Do @proc
+  Close 2
+  Set i="",res=""
+  For  Set i=$O(^SPOOL(j,i)) Quit:(i="")||(i'<2147483647)  Set v=$G(^SPOOL(j,i)) Quit:($L(res)+$L(v)>32000)  Set res=res_v      
+  Kill ^SPOOL(j)
+  Do sendanswear(0,res)
+  Quit
+cmdxecute
+  New xstr,j,i,res,v
+  Do log(3,"cmdxecute.")
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do treadparam(.xstr,10)
+  If (xstr="") Do sendanswear(5,"More parameters needed") Quit
+  Do log(3,"xstr=<"_xstr_">, job="_$JOB)
+  Set j=$JOB
+  Open 2:(j)
+  Use 2 Xecute xstr
+  Close 2
+  Set i="",res=""
+  For  Set i=$O(^SPOOL(j,i)) Quit:(i="")||(i'<2147483647)  Set v=$G(^SPOOL(j,i)) Quit:($L(res)+$L(v)>32000)  Set res=res_v    
+  Kill ^SPOOL(j)  
+  Do sendanswear(0,res)
+  Quit
+cmdcversion
+  Do log(3,"cmdcversion.")
+  Do sendanswear(0,$ZV)
+  Quit
+cmdlock
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  New gname,keys,flags Set (gname,keys)="",flags=0  
+  Do log(3,"cmdLock")
+  Do treadparam(.gname,1)
+  Do treadparam(.keys,1)
+  Do treadparam(.flags,1)
+  If (gname="") || ($L(gname)>56) Do sendanswear(5,"Bad global name") Quit
+  Set gname=$S(+flags:"",1:"^")_gname_$S(keys="":"",1:"("_keys_")")
+  Do log(3,"cmdlock: global -> +"_gname)
+  Lock +@gname
+  Do sendanswear(0,"Locked")
+  Quit
+cmdunlock
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  New gname,keys,flags Set (gname,keys)="",flags=0
+  Do log(3,"cmdUnlock")
+  Do treadparam(.gname,1)
+  Do treadparam(.keys,1)
+  Do treadparam(.flags,1)
+  Do log(3,"cmdunlock: global -> -"_gname)
+  If ($L(gname)>56) Do sendanswear(5,"Bad global name") Quit
+  If (gname'="") Set gname=$S(+flags:"",1:"^")_gname_$S(keys="":"",1:"("_keys_")")  
+  Lock:(gname="")
+  Lock:(gname'="") -@gname
+  Do sendanswear(0,"Unlocked")
+  Quit
+cmdsetuci
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  New newuci Set newuci=""
+  Do log(3,"cmdSetUCI")
+  Do treadparam(.newuci,5)
+  If (newuci="") Do sendanswear(5,"Bad UCI name") Quit
+  If '$$isuciallowed(newuci,dr,user) Do sendanswear(8,"") Quit
+  Do log(3,"cmdSetUCI: newuci="_newuci)
+  If ($ZNSPACE=newuci) Do sendanswear(0,"Namespace already set") Quit
+  If ($ZU(90,10,newuci)=1) Set $ZNSPACE=newuci Do sendanswear(0,"Namespace was set") Quit
+  Do sendanswear(6,"Namespace not exist "_$ZNSPACE)
+  Quit
+cmdgetuci
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do log(3,"cmdGetUCI")
+  Do sendanswear(0,$ZNSPACE)
+  Quit
+cmdtstart
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do log(3,"cmdTStart")
+  TSTART
+  Do sendanswear(0,$TLEVEL)
+  Quit
+cmdtrollback
+  If 'auth {Do sendanswear(4,"") Quit}
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do log(3,"cmdTRollback")
+  If ($TLEVEL=0) Do sendanswear(7,"Transaction not started") Quit
+  TROLLBACK
+  Do sendanswear(0,"Rollback complite")
+  Quit
+cmdtcommit
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do log(3,"cmdTCommit")
+  If ($TLEVEL=0) Do sendanswear(7,"Transaction not started") Quit
+  TCOMMIT
+  Do sendanswear(0,"Transaction commited")
+  Quit
+cmdinc
+  New gname,keys,flags,res
+  If 'auth Do sendanswear(4,"") Quit
+  If ('$$iscmdallowed(cmd,dr,user)) Do sendanswear(8,"") Quit
+  Do log(3,"cmdInc")
+  Do treadparam(.gname,10)  
+  Do treadparam(.keys,1)
+  Do treadparam(.flags,1)
+  If (gname="") Do sendanswear(5,"More parameters needed") Quit
+  If '$$isglobalallowed(gname,dr,user) Do sendanswear(8,"") Quit
+  Set gname="^"_gname_$S(keys="":"",1:"("_keys_")")
+  Set res=$Increment(@gname)
+  Do sendanswear(0,+res)  
+  Quit
+cmdnull Quit  // Null command
+cmdunknown
+  Do log(2,"Unknown command ID <"_cmd_">")
+  Do sendanswear(3,"Unknown command ID <"+cmd+">")
+  Quit
+auth(user,pass)  
+  New upass
+  Q 1 If ($G(user)="") Quit 0    
+  i $d(^%ZAPM.ed.BSCmdapicfg("users",user)) Set upass=$Get(^%ZAPM.ed.BSCmdapicfg("users",user,"pass")) Quit (upass'="")&&(upass=($$CRC^%ZAPM.ed.BSCp(user,pass))) //inoaaei e noa?uo iiuciaaoaeae
+  Q $$CHECK(user,pass)
+CHECK(user,pass)  N BDSES,P9,noPASS,WW,GC
+  S GC=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""PROTECT"")")
+  S BDSES=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""SESSIONS"")")
+  I $D(@GC@(user)),$$PROTECT^%ZAPM.ed.BSCp(user,pass) Q 1 //password is valid
+  I $D(@BDSES@(pass)),'$D(@BDSES@(pass,"CHR")),$G(@BDSES@(pass,"NM"))=user Q 1 //id session as tempory key
+  Q 0 
+sendanswear(error,msg)
+  New pkt
+  Do tflush()
+  Set pkt=$C(2)_$ZLC(+$Get(error))_$ZLC($L($Get(msg)))_$Get(msg)
+  Write pkt,!
+  Quit
+treadparam(str,tout)
+  New a,len,res Set str=""
+  Read a#1:1 If '$T Quit 0  
+  If ($A(a)=0) Quit 1
+  If ($A(a)=1) Set res=$$tread(.len,1,5),res=$$tread(.str,$A(len),5) Quit res
+  If ($A(a)=2) Set res=$$tread(.len,4,5),res=$$tread(.str,$ZLA(len),5) Quit res
+  If ($A(a)=3) Set res=$$tread(.a,4,5),str=$ZLA(a) Quit res
+  Quit 0
+tread(str,len,tout)  
+  Set len=$Get(len,0),tout=$Get(tout,1)
+  If (len=0) Quit 0
+  Read str#len:tout
+  Quit $T &&($L(str)=len)
+tflush()
+  //New s Set s=""
+  Read *a:0.5 Quit:(a=-1)||('$T)  //Set s=s_a
+  //If ($L(s)>0) Do log($$$LogLvlInfo,"flush ("_$L(s)_")>"_s)
+  Quit 1
+twaitsinh(tout)
+  New i,a,t1,za Set i=0,tout=$Get(tout,5),t1=$ZH
+  For  Do   Quit:(i=4)||($Get(^%ZAPM.ed.BSCmdapicfg("stopsig"),0))||((tout>0)&&($ZH-t1>tout))
+   .Read *a:1 Set za=$ZA,zh=$ZH
+   .If (a>0) Set i=$S(a=254:i+1,1:0)   
+  Quit (i=4)
+terr
+  Set $ZTrap=""
+  Do log(1,"Thread error: $ZE="_$ZE_"; $ZC="_$ZC)
+  Lock
+  Close 2
+  Kill ^SPOOL($JOB)  
+  ;If (($F($ZE,"<SYNTAX>")'=0) || ($F($ZE,"<UNDEFINED>")'=0)) Do sendanswear($$$errSystem,$ze) Goto tnxt
+  If $ZE'="" Do sendanswear(1,$ze) Goto tnxt
+  Close $P  
+  Quit
+log(lvl,v)
+  Do DISABLE^%NOJRN
+  Set ^%ZAPM.ed.BSCmdapilog($I(^%ZAPM.ed.BSCmdapilog))=$ZDT($H,4,1)_"["_$G(lvl,0)_"]: "_$G(v)
+  Do ENABLE^%NOJRN
+  Quit

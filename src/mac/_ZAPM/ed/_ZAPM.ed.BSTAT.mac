@@ -1,0 +1,184 @@
+ROUTINE %ZAPM.ed.BSTAT
+STAT ; Статистика по RPT файлу. (А.Нефедов) ; 15:18   12.06.99
+ I $ZV["Cach"||($ZV["IRIS") D ErrMsg^%ZAPM.ed.BSXfun(" НЕТ РЕЖИМА В "_$ZV) Q
+ S RPTName=$G(%BS(24,1),$P($GET(^%ZAPM.ed.BSS("SETUP",17,2)),"@",15))
+ I RPTName=""!($E(RPTName)="^") W "- No RPT file defined.",! Q
+ S BSTAT=$$TMPG^%ZAPM.ed.BSF11
+ S BVOL=$$TMPG^%ZAPM.ed.BSF11
+ S BERR=$$TMPG^%ZAPM.ed.BSF11
+ D Wait^%ZAPM.ed.BSXfun("Checking "_RPTName)
+ F %Dev=51:1:54 O %Dev::0 Q:$T
+ I '$T D ErrMsg^%ZAPM.ed.BSXfun("All Dos devices are buzy.") Q
+ S %FN=$$AddFile^%ZAPM.ed.BSDOS2(RPTName)
+ O %Dev:(%FN:"R") U %Dev I $ZA U 0 D ErrMsg^%ZAPM.ed.BSXfun("file not found") Q
+ S Entr=0
+ F  R Line Q:$ZC  D:Line'=""
+ .U 0
+ .S Entr=Entr+1
+ .S User=$P(Line,"§",3) I User="" S User="User:?"
+ .I User="User:" S User="User:!SysOp"
+ .S Vol=$P(Line,"§",4)  I Vol="" S Vol="?"
+ .S Command=$P(Line,"§",5)
+ .S Com=$P($P(Command,":",2),"%",1) I (Com="")!($A(Com)<32)!($F(Com,$C(0))'=0) S Com="?"
+ .S Time=$P($P(Line,"§",6),":",2)
+ .S ^(User)=$G(@BSTAT@(User))+1
+ .S ^(Com)=$G(@BSTAT@(User,Vol,Com))+1
+ .S ^(Com,^(Com))=Time
+ .I Com="Begin" S @BSTAT@(User,Vol,"Timer","Flag")=1,^("Start")=Time
+ .I (Com="Exit")&($G(@BSTAT@(User,Vol,"Timer","Flag"))=1) S ^("Flag")=0 D
+ ..S TM=($P(Time,",",1)-$P(^("Start"),",",1))*3600*24+$P(Time,",",2)-$P(^("Start"),",",2)
+ ..S TM=TM\60,@BSTAT@(User,Vol,"Timer")=TM
+ ..Q
+ .I $E(Com,1,5)="Mount" S @BVOL@(" "_$E(Com,6,$L(Com)),"Timer","Flag")=1,^("Start")=Time
+ .I ($E(Com,1,8)="Dismount")&($G(@BVOL@(" "_$E(Com,10,$L(Com)),"Timer","Flag"))=1) S ^("Flag")=0 D
+ ..S TM=($P(Time,",",1)-$P(^("Start"),",",1))*3600*24+$P(Time,",",2)-$P(^("Start"),",",2)
+ ..S TM=TM\60,@BVOL@(" "_$E(Com,10,$L(Com)),"Timer")=TM
+ ..Q
+ .I $E(Com,1,5)="Mount" S @BVOL@(" "_$E(Com,6,$L(Com)),"LastOper")="Mount",^("LastUser")=User,^("LastSys")=Vol
+ .I $E(Com,1,8)="Dismount" S @BVOL@(" "_$E(Com,10,$L(Com)),"LastOper")="Dismount",^("LastUser")=User,^("LastSys")=Vol
+ .I (Com="Error")!(Com="BeginStop") D
+ ..I Com="BeginStop" S SubC=" "_"BEGINSTOP Ошибка регистрации"
+ ..I Com="Error" S SubC=" "_$E($P(Command,"<",2,99),1,40)
+ ..S ^(SubC)=$G(@BERR@(SubC))+1
+ ..S @BERR@(SubC,"LastUser")=User,@BERR@(SubC,"LastSys")=Vol
+ ..I $G(@BSTAT@(User,Vol,"Timer","Flag"))=1 S ^("Flag")=0 D
+ ...S TM=($P(Time,",",1)-$P(^("Start"),",",1))*3600*24+$P(Time,",",2)-$P(^("Start"),",",2)
+ ...S TM=TM\60,@BSTAT@(User,Vol,"Timer")=TM
+ ...Q
+ ..Q
+ .W $$atr^%ZAPM.ed.BS3(0),/CUP(24,52),Entr
+ .U %Dev
+ .Q
+ U 0
+ C %Dev S UTotal=0,Ref=""
+ F  S Ref=$O(@BSTAT@(Ref)) Q:Ref=""  S UTotal=UTotal+1
+ D OkMsg^%ZAPM.ed.BSXfun(Entr_" - events total, "_UTotal_" - users found.")
+Down 
+ S BSR="^%ZAPM.ed.BSS",BST="STAT" ;,^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P))=BSTAT_"!"_BVOL_"!"_BERR
+ D ^%ZAPM.ed.BST I R1=27 G Exit
+ I ny=1 G Users
+ I ny=2 G Mount
+ G Errs
+ ;Down Q
+ W /ED(2)
+ W /CUP(10,27),"1. Users summary."
+ W /CUP(11,27),"2. Volumes information."
+ W /CUP(12,27),"3. Errors detected."
+ W /CUP(13,27),"4. Exit"
+ S Arrow=5,R1=27,R2=91,R3=66
+ F  D WCheck D CL^%ZAPM.ed.BSF4 R *R1 R:R1=27 *R2,*R3 D OP^%ZAPM.ed.BSF4 Q:R1=13!((R1>48)&(R1<53))
+ G W1
+WCheck 
+  Q:(R1'=27)!(R2'=91)!((R3'=66)&(R3'=65))  S Temp=Arrow
+  S:R3=66 Arrow=Arrow+1 S:Arrow>4 Arrow=1
+  S:R3=65 Arrow=Arrow-1 S:Arrow<1 Arrow=4
+  W /CUP(9+Temp,22),"   "
+  W /CUP(9+Arrow,22),"==>",/CUP(9+Arrow,27)
+  Q
+W1 
+ W /ED(2)
+ S:R1'=13 Arrow=R1-48
+ G:Arrow=4 Exit
+ G:Arrow=1 Users
+ G:Arrow=2 Mount
+ G:Arrow=3 Errs
+ G Down
+ 
+Exit 
+ ;S BSTAT=$P(^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P)),"!"),BERR=$P(^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P)),"!",3),BVOL=$P(^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P)),"!",2)
+ K @BSTAT,@BVOL,@BERR
+ Q
+ 
+Users ;S BSTAT=$P(^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P)),"!")
+ S (li,G)=$$TMPG^%ZAPM.ed.BSF11 D TIR^%ZAPM.ed.BST4
+ S BSr=$P(li,",",2),BSt=$P(li,",")
+ S i0="Пользователь"
+ S i0=$$W(i0,23)_"Система"
+ S i0=$$W(i0,41)_"Регистрации"
+ S i0=$$W(i0,56)_"Время"
+ S i0=$$W(i0,66)_"Ошибки"
+ S Coment=i0
+ S User=$O(@BSTAT@("")),Vol=""
+ F  Q:User=""  D
+ .S TBegin=0,TError=0,TTimer=0
+ .F  S Vol=$O(@BSTAT@(User,Vol)) Q:Vol=""  D
+ ..S HUser=User,HVol=Vol
+ ..S:$E(HUser,1)=" " HUser=$E(HUser,2,$L(HUser))
+ ..S:$E(HVol,1)=" " HVol=$E(HVol,2,$L(HVol))
+ ..S HBegin=$G(@BSTAT@(User,Vol,"Begin")) S:HBegin="" HBegin="0" S TBegin=TBegin+HBegin
+ ..S HError=$G(@BSTAT@(User,Vol,"Error")) S:HError="" HError="0" S TError=TError+HError
+ ..S HTimer=$G(@BSTAT@(User,Vol,"Timer")) S:HTimer="" HTimer="0" S TTimer=TTimer+HTimer
+ ..S t0="   "_HUser
+ ..S t0=$$W(t0,26)_HVol
+ ..S t0=$$W(t0,44)_HBegin
+ ..S t0=$$W(t0,59)_HTimer
+ ..S t0=$$W(t0,69)_HError
+ ..D CR^%ZAPM.ed.BSTT
+ ..Q
+ .S t0="" D CR^%ZAPM.ed.BSTT
+ .S t0=$$W(t0,35)_" Всего: "
+ .S t0=$$W(t0,44)_TBegin
+ .S t0=$$W(t0,59)_TTimer
+ .S t0=$$W(t0,69)_TError
+ .D CR^%ZAPM.ed.BSTT
+ .S t0="" D CR^%ZAPM.ed.BSTT  D CR^%ZAPM.ed.BSTT
+ .S User=$O(@BSTAT@(User))
+ .Q
+ D CREATE^%ZAPM.ed.BSTT
+ K @G
+ G Down
+ 
+Mount ;S BVOL=$P(^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P)),"!",2)
+ S (li,G)=$$TMPG^%ZAPM.ed.BSF11 D TIR^%ZAPM.ed.BST4
+ S BSr=$P(li,",",2),BSt=$P(li,",")
+ S Vol=""
+ S i0="Имя тома"
+ S i0=$$W(i0,14)_"Время испол."
+ S i0=$$W(i0,30)_"Послед. операция"
+ S i0=$$W(i0,49)_"Пользователь"
+ S i0=$$W(i0,62)_"Система   "
+ S Coment=i0
+ F  S Vol=$O(@BVOL@(Vol)) D:Vol'=""  Q:Vol=""
+ .S HTimer=$G(@BVOL@(Vol,"Timer")) S:HTimer="" HTimer="?"
+ .S HOper=$G(@BVOL@(Vol,"LastOper")) S:HOper="" HOper="?"
+ .S HUser=$G(@BVOL@(Vol,"LastUser")) S:HUser="" HUser="?"
+ .S HSys=$G(@BVOL@(Vol,"LastSys")) S:HSys="" HSys="?"
+ .S t0="  "_Vol
+ .S t0=$$W(t0,17)_HTimer
+ .S t0=$$W(t0,33)_HOper
+ .S t0=$$W(t0,52)_HUser
+ .S t0=$$W(t0,65)_HSys
+ .D CR^%ZAPM.ed.BSTT
+ .Q
+ D CREATE^%ZAPM.ed.BSTT
+ K @G
+ G Down
+ 
+Errs ;S BERR=$P(^%ZAPM.ed.BSbufB("StaTu"_$G(%BS(3),$P)),"!",3)
+ S (li,G)=$$TMPG^%ZAPM.ed.BSF11 D TIR^%ZAPM.ed.BST4
+ S BSr=$P(li,",",2),BSt=$P(li,",")
+ S Err=""
+ S i0="Ошибка"
+ S i0=$$W(i0,42)_"Число раз"
+ S i0=$$W(i0,52)_"Пользователь"
+ S i0=$$W(i0,65)_"Система"
+ S Coment=i0
+ F  S Err=$O(@BERR@(Err)) D:Err'=""  Q:Err=""
+ .S HErr=$G(@BERR@(Err)) S:HErr="" HErr="0"
+ .S HUser=$G(@BERR@(Err,"LastUser")) S:HUser="" HUser="?"
+ .S HSys=$G(@BERR@(Err,"LastSys")) S:HSys="" HSys="?"
+ .S t0="   "_$P(Err," ",2)
+ .S t0=$$W(t0,30)_$E(Err,$F(Err," ",2),$F(Err," ",2)+12)
+ .S t0=$$W(t0,45)_HErr
+ .S t0=$$W(t0,55)_HUser
+ .S t0=$$W(t0,68)_HSys
+ .D CR^%ZAPM.ed.BSTT
+ .Q
+ D CREATE^%ZAPM.ed.BSTT
+ K @G
+ G Down
+ 
+W(St,Num) 
+ N I,S S S=St
+ F I=$L(St):1:Num-1 S S=S_" "
+ Q S

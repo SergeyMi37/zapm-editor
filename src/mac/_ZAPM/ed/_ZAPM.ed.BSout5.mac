@@ -1,0 +1,20 @@
+ROUTINE %ZAPM.ed.BSout5
+%BSout5 ; пакетный вывод на устройство  (А.Тимофеев) ; 10:11 14-AUG-98
+ 
+ S pacetF=1,%zT=$ZT,$ZT="ERROR" N i
+1 S A=$$LOAD^%ZAPM.ed.BSscrF("^%ZAPM.ed.BSS(OPout5)",2,2,"#") Q:A=""
+ S tab=$P(%BS("Tmp","LastTabl"),"@",4)
+ I tab=27 S $ZT=%zT Q
+ S tab=$P(A,"#"),pacetG=$P(A,"#",2),pacetU=$P(A,"#",3),pacetD=$P(A,"#",4),pacetO=1
+ I tab="" D ErrMsg^%ZAPM.ed.BSXfun("Не выбраны таблицы !!") S $ZT=%zT Q
+ I pacetU=""  D ErrMsg^%ZAPM.ed.BSXfun("Не определено устройство вывода !!") S $ZT=%zT Q
+ F i=1:1 S tab1=$P(tab,"~",i) Q:tab1=""  D
+ .S Tbsr="^"_$S($P(tab1,",",3)'="":"["""_$P(tab1,",",3)_""","""_$P(tab1,",",4)_"""]",1:"")_$P(tab1,",",2)
+ .S Tbst=$P(tab1,",")
+ .D Kout^%ZAPM.ed.BSout0(pacetU,Tbsr,Tbst) I $P($G(bok),"~",3)="" K in
+ D:$G(pacetD)="" OkMsg^%ZAPM.ed.BSXfun("Вывод завершен !",6)
+ K pacetF,pacetG,pacetU,pacetD,pacetO,Tbsr,Tbst
+ S $ZT=%zT G 1
+ 
+ERROR D ErrMsg^%ZAPM.ed.BSXfun("ГЛЯ - !!"_$ZE)
+ S $ZT=%zT Q

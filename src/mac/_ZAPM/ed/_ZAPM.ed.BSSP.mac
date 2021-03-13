@@ -1,0 +1,170 @@
+ROUTINE %ZAPM.ed.BSSP
+%BSSP ;НАСЧЕТ СПИСКОВ ; 13:15   17.01.2002
+ G 0
+CYC1 X "S L(1,iii)="_%1 I $G(%3)'="" X "S L(2,iii)="_%3
+ Q
+CYC2 X "S L(1,iii)="_%1 I %2'="" X "S L(2,iii)="_%2
+ I %3'="" X "S L(3,iii)="_%3
+ Q
+CYC3 S ib=$P($P(%1,"("_$C(34),2),","),ie=$P($P(%3,"("_$C(34),2),","),jb=$P($P(%1,",",2),$C(34)_")"),je=$P($P(%3,",",2),$C(34)_")"),LIC(iii)="",ii=0 I $D(@zr)
+ F s=ib:%2:ie F k=jb:%2:je I 1 X:"1"'[%4 "I "_$TR($TR(%4,$C(221,222,223,224),s),$C(231,232,233,234),k) S %TEST=$T D
+ .I %TEST S ii=ii+1,L(ii,iii)=$G(^(s_","_k)) Q
+ .I '%TEST S ii=ii+1,ER(ii)=""
+ Q
+CYC4 X %1 S L(1,iii)=$G(%0) Q
+CYCL I $D(@CurNam@(@("k"_keys),"3,3"))
+ X SP(6,2) ;ДО
+ S zr=$ZR I $D(SP(2)) S iii="" F  S iii=$O(SP(2,iii)) Q:iii=""  X SP(2,iii) X "I "_%1 E  G CYCE
+ I '$D(CALCFON) W /CUP(23,1),/EL(0),zr
+ I $D(@zr)
+ K L,ER,LIC S iii="" F  S iii=$O(SP(4,iii)) Q:iii=""  X SP(4,iii) ;ТЕЛО ЦИКЛА
+ S ii="" F  S ii=$O(ER(ii)) Q:ii=""  K:ii'=1 L(ii)
+ I $D(ER(1)),$O(L(1))="" K L
+ I $D(ER(1)),$O(L(1))'="",$D(LIC) S i1=$O(L(1)) S ii="" D  K L(i1)
+ .F  S ii=$O(LIC(ii)) Q:ii=""  S L(1,ii)=$G(L(i1,ii))
+ I $D(LIC) S ii="" F  S ii=$O(L(ii)) Q:ii=""  D
+ .K iiii S iii="" F  S iii=$O(L(ii,iii)) Q:iii=""  I $G(L(ii,iii))'="" S iiii=1 Q
+ .I '$D(iiii) K L(ii)
+ K R,LIC S ii="" F  S ii=$O(L(ii)) Q:ii=""  S ny=ny+1,@BSr@(BSt,ny)=Pi,Yl=Yl+$P(O(1,1),"@",3) F iii=1:1:ke S @(BSr_"(BSt,ny,iii)")=O(1,iii) I $D(L(ii,iii)) S $P(@$ZR,"@",15)=L(ii,iii) 
+ I $D(L),sii X "F si="_sii_" D COP" ;РАЗГРАНИЧИТЕЛЬ ТЕЛА ЦИКЛА
+ X SP(6,3) ;ПОСЛЕ
+CYCE Q
+PI I +SP(6,1) S fo=1 X "F si="_SP(6,1)_" D COP" S Pi=Pi+1 ;ПРОМ.ИТОГ
+ S fo=0 Q
+0 I $E(%BS(1),13) D Yes^%ZAPM.ed.BSZPS Q:YES<1
+BEGIN I '$D(x) S x=$NA(^%ZAPM.ed.BSbufB("KCH"_$G(%BS(3),$P)_$J_"u"_%BS(15)))
+ I $D(CALCFON) S $P(@x,"#",2)=1,YES=0,x=$$%^%ZAPM.ed.BSF12($ZR) L -@x D  H 3 Q:YES
+ .I CALCFON=2,$P($ZV,"Version ",2)="4.0.11" D ErrMsg^%ZAPM.ed.BSXfun("Удаленный процесс в "_$ZV_" ЗАПУСТИТЬ НЕЛЬЗЯ !") S YES=1
+ .I CALCFON=2,$P($ZV,"Version ",2)'="4.0.11" S UUU=$P($P(UU,"[",2),"]") X "J J^%ZAPM.ed.BSSP(x,$G(ObR))["_UUU_"]::1" I  D:'$D(PACKET) OkMsg^%ZAPM.ed.BSXfun("Фоновый процесс в СИСТЕМЕ ["_UUU_"] ЗАПУЩЕН") S YES=1
+ .I CALCFON=1 J J^%ZAPM.ed.BSSP(x,$G(ObR))::1 I  D:'$D(PACKET) OkMsg^%ZAPM.ed.BSXfun("Фоновый процесс ЗАПУЩЕН") S YES=1
+ S $P(@x,"#",2)="" I $D(CALCFON) D:'$D(PACKET) ErrMsg^%ZAPM.ed.BSXfun("Не могу запустить фоновый процесс")
+ D J(x,$G(ObR)) Q
+J(x,ObR) S Total=$P($$h^%ZAPM.ed.BS3(),",",2) S:$G(%BS(15))<1 %BS(15)=0 L +@x K PaGe,zr,CH,SP,CALCFON
+ S %zT=$ZT,$ZT="ER^%ZAPM.ed.BSSP" D SI^%ZAPM.ed.BSN
+ S i=$P(@x,"#"),BST=$P(i,",",$L(i,",")),BSR=$P(i,",",1,$L(i,",")-1)
+ S ZPR=$P(@$ZR,"#",4),ZPT=$P(@$ZR,"#",5) S:$P(@$ZR,"#",2) CALCFON=1,WA="" S %0=$$ESDAY^%ZAPM.ed.BSsFUNR(8,$$h^%ZAPM.ed.BS3()) D KCHO^%ZAPM.ed.BSsFUNM
+ S BSr=$S(ZPR'="":ZPR,1:$$cB^%ZAPM.ed.BSSV),(iii,i)=$$TNAME^%ZAPM.ed.BSF13(BSR,BST),ii="",TIP=3,%Co=2,%Do=0,ls="ИДЕТ ГЕНЕРАЦИЯ СПИСКА" D:'$D(CALCFON) WAITS^%ZAPM.ed.BSF2 S WA=""
+ I ZPR="" S ii=0 F  S i=$O(@(BSr_"(i)")) Q:i'[(iii_".")  D  S:ii<$P(i,".",2) ii=$P(i,".",2)
+ S ii=ii+1,ZR="I $D(@zr)",BSt=$S(ZPT'="":ZPT,1:iii_"."_ii)
+ L -@x,+@BSr@(BSt) ;ЛОКИРОВКА
+ I $$VAR^%ZAPM.ed.BSH ;ПЕРЕМЕННЫЕ
+ N Desc
+ S @(BSr_"(BSt)")=@(BSR_"(BST)"),Desc=$P(@$ZR,"@"),$P(@$ZR,"@")=" "_%0_" ;СЧЕТ",$P(@$ZR,"@",17)=1,$P(@$ZR,"@",30)="" F i=2,4,5 S $P(@$ZR,"@",i)=""
+ I $G(ObR)'="" S @ObR@("TT")=$ZR
+ S I="",Yl=0,Pi=1 F  S I=$O(@x@(I)) Q:I=""  S II="" F  S II=$O(@x@(I,II)) Q:II=""  F III=1,2,3,4 I $D(@x@(I,II,III)) S CH(I,II,III)=$$Variabl(^(III))
+ K SAY,@x L -@x S SAY=""
+ S C=1 I $D(CH(1,0)) S SAY=$S(CH(1,0,4)'["NONE#":$P(CH(1,0,4),"#")_$$s(CH(1,0,1),0),1:"")
+ F II=1:1:9 D:$D(CH(1,II))
+ .I $G(CH(1,II,4),"NONE#")["TXTC#" S SAY=SAY_" "_$P(CH(1,II,4),"#",2) Q
+ .I $G(CH(1,II,4),"NONE#")'["NONE#" D
+ ..S SAY=SAY_" "_$P(CH(1,II,4),"#")_" "_$$s(CH(1,II,1),II)
+ ..S SAY=SAY_" "_$P(CH(1,II,4),"#",2)_" "_$$s(CH(1,II,2),II)
+ S BSD=@(BSR_"(BST,""TSP"",1)") I $D(^(2,1)) F i=1:1 Q:'$D(^(i))  S SP(2,i)=^(i)
+ I '$D(@BSD) S ls=" БАЗЫ ДАННЫХ НЕТ !!! "_BSD G NO
+ S SP(3,2)=@(BSR_"(BST,""TSP"",3,2)"),SP(3,3)=^(3),SP(3,4)=^(4),SP(3,5)=^(5),i=""
+ I $D(@(BSR_"(BST,""TSP"",4)")) S SP(4)=$$GLRET^%ZAPM.ed.BSF12($ZR) F  S i=$O(@(BSR_"(BST,""TSP"",4,i)")) Q:i=""  I i S SP(4,i)=^(i)
+ I $D(@(BSR_"(BST,""TSP"",7)")) S SP(7)=@$ZR
+ S ny=0 K ke,k0,k1,k2,k3,k4,k5,O,fCL,fCOL I $D(@(BSR_"(BST,""TSP"",0)")) D SAY(@$ZR) S %Co=%Co+1 ;ЗАГОЛОВОК
+ D SAY(SAY) ;СТРОКА ПЕРИОДА
+ S (SP(6,2),SP(6,3))="" I $D(@(BSR_"(BST,""TSP"",6,1)")) S SP(6,1)=^(1) S:'^(2) SP(6,2)="X ""I $D(@zr)"" X ""I "_^(3)_""" I  D PI" S:^(2) SP(6,3)="X ""I $D(@zr)"" X ""I "_^(3)_""" I  D PI" I +^(4) S SP(6,4)=1
+ I $D(@BSR@(BST,"ExcelOut")) S @BSr@(BSt,"ExcelOut")=@$ZR
+ S $P(@BSr@(BSt,"ExcelOut"),",",3)=ny+1
+ I +SP(3,3) S fo=1 X "F si="_SP(3,3)_" D COP" S ke=kj-1 ;ШАПКА
+ D:'$D(ke) REND^%ZAPM.ed.BSF2 S CH="",CH=$O(CH(1,CH)) I CH="" S ls=" НЕОПРЕДЕЛЕНЫ КЛЮЧИ " G NO
+ S si=+SP(3,2) I 'si S ls=" НЕ ОПРЕДЕЛЕНО ТЕЛО ЦИКЛА СПИСКА " G NO
+ I $P(@(BSR_"(BST)"),"@",19) S $P(@(BSr_"(BSt)"),"@",19)=($P($P(@$ZR,"@",19),",")+%Co)_","_$P($P(@$ZR,"@",19),",",2)
+ I $P(@(BSR_"(BST)"),"@",50) S $P(@(BSr_"(BSt)"),"@",50)=($P($P(@$ZR,"@",50),",")+%Co)_","_$P($P(@$ZR,"@",50),",",2)
+ I $D(@(BSR_"(BST,""PRN"")")) S @(BSr_"(BSt,""PRN"")")=@$ZR
+ I $D(@(BSR_"(BST,""RSM"")")) S @(BSr_"(BSt,""RSM"")")=@$ZR
+ I $D(@(BSR_"(BST,""SVM"")")) S @(BSr_"(BSt,""SVM"")")=@$ZR
+ I $D(@BSR@(BST,"Var")) D Copy^%ZAPM.ed.BSF8($NA(@$ZR),$NA(@BSr@(BSt,"Var")))
+ S @BSr@(BSt,"REM")=$P(@BSR@(BST),"@")
+ I $D(@(BSR_"(BST,""SHR"")")) S @(BSr_"(BSt,""SHR"")")=@$ZR
+ I $D(@(BSR_"(BST,""HFS"")")) S @(BSr_"(BSt,""HFS"")")=$G(@$ZR)
+ I $D(@(BSR_"(BST,""AF2"")")) S @(BSr_"(BSt,""AF2"")")=BSR_","_BST
+ S @BSr@(BSt,"LST")=$H_","_$G(%BS(12))_",Greated"
+ S @(BSr_"(BSt,""sp"")")="S"
+ S fo=1 D COP S nyR=ny F kj=1:1:ke S $P(@(BSr_"(BSt,ny,kj)"),"@",3)=0,$P(@$ZR,"@",18)="" I $G(@(BSr_"(BSt,""FCL"",ny,kj)"))["$$TSP" K @$ZR S $P(@(BSr_"(BSt,ny,kj)"),"@",7)=""
+ S AFO=@BSR@(BST),AFOO=""
+ I $D(@(BSR_"(BST,si,1)")) F kj=1:1 Q:'$D(@(BSR_"(BST,si,kj)"))  S O(1,kj)=@$ZR,$P(O(1,kj),"@",7)="" D
+ .I $D(@(BSR_"(BST,""FCL"",si,kj)")),@$ZR["$$TSPN" S $P(O(1,kj),"@",7)=3
+ .I $P(AFO,"@",47),$D(@(BSR_"(BST,""FCL"",si,kj)")),@$ZR["$$TSP" S AFOO=AFOO_kj_"," ;А-ФОРМАТ
+ .I $D(@(BSR_"(BST,""FTR"",si,kj)")) S $P(O(1,kj),"@",8)=nyR_","_kj
+ .I $D(@(BSR_"(BST,""FCL"",si,kj)")),@$ZR'["$$TSP" S $P(O(1,kj),"@",7)=nyR_","_kj,fCL=1
+ .I $D(@(BSR_"(BST,""COL"",si,kj)")) S $P(O(1,kj),"@",13)=nyR_","_kj,fCOL=1
+ .I $D(@(BSR_"(BST,""RTR"",si,kj)")) S $P(O(1,kj),"@",16)=nyR_","_kj
+ S:$G(fCL) $P(@(BSr_"(BSt)"),"@",32)=1 K fCL
+ N nam,ks1,X1,X2,X3,X4,X5,X6,X7,X8,X9,ks2,ks3,ks4,ks5,ks6,ks7,ks8,ks9,CurNam
+ S (nam,%NAm)=BSD,Ke=kj-1 I CH=0 S (nam,%NAm,BSD)=BSD_CH(1,CH,1),CH=CH+1,k0=CH(1,CH,1)
+ I '$$GETDDP^%ZAPM.ed.BSF12(%NAm) G CEND
+ S:$G(fCOL) $P(@(BSr_"(BSt)"),"@",33)=1 K fCOL
+ S %NAm=%NAm_"(" F key=1:1:10 Q:'$D(CH(1,key))
+ S keys=key-1,C=1,fo=0,sii=$S(SP(3,2)'=+SP(3,2):$P(SP(3,2),",",2,99),1:0)
+ F i=1:1:9 S @("X"_i)="I 1 " I $D(CH(C,i,3)) S @("X"_i)=@("X"_i)_" "_CH(C,i,3)
+ D
+L1 .S k1=$$OTDO^%ZAPM.ed.BSSV($NA(@nam),1) F  S k1=$O(@nam@(k1)) Q:k1=""!(k1=ks1)  X X1 I  D
+L2 ..D:'$D(CH(C,2)) CYCL I $D(CH(C,2,1)) S k2=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1)),2) F  S k2=$O(@nam@(k1,k2)) Q:k2=""!(k2=ks2)  X X2 I  D
+L3 ...D:'$D(CH(C,3)) CYCL I $D(CH(C,3,1)) S k3=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2)),3) F  S k3=$O(@nam@(k1,k2,k3)) Q:k3=""!(k3=ks3)  X X3 I  D
+L4 ....D:'$D(CH(C,4)) CYCL I $D(CH(C,4,1)) S k4=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2,k3)),4) F  S k4=$O(@nam@(k1,k2,k3,k4)) Q:k4=""!(k4=ks4)  X X4 I  D
+L5 .....D:'$D(CH(C,5)) CYCL I $D(CH(C,5,1)) S k5=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2,k3,k4)),5) F  S k5=$O(@nam@(k1,k2,k3,k4,k5)) Q:k5=""!(k5=ks5)  X X5 I  D
+L6 ......D:'$D(CH(C,6)) CYCL I $D(CH(C,6,1)) S k6=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2,k3,k4,k5)),6) F  S k6=$O(@nam@(k1,k2,k3,k4,k5,k6)) Q:k6=""!(k6=ks6)  X X6 I  D
+L7 .......D:'$D(CH(C,7)) CYCL I $D(CH(C,7,1)) S k7=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2,k3,k4,k5,k6)),7) F  S k7=$O(@nam@(k1,k2,k3,k4,k5,k6,k7)) Q:k7=""!(k7=ks7)  X X7 I  D
+L8 ........D:'$D(CH(C,8)) CYCL I $D(CH(C,8,1)) S k8=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2,k3,k4,k5,k6,k7)),8) F  S k8=$O(@nam@(k1,k2,k3,k4,k5,k6,k7,k8)) Q:k8=""!(k8=ks8)  X X8 I  D
+L9 .........D:'$D(CH(C,9)) CYCL I $D(CH(C,9,1)) S k9=$$OTDO^%ZAPM.ed.BSSV($NA(@nam@(k1,k2,k3,k4,k5,k6,k7,k8)),9) F  S k9=$O(@nam@(k1,k2,k3,k4,k5,k6,k7,k8,k9)) Q:k9=""!(k9=ks9)  X X9 I  D
+CEND I '$D(CALCFON) W /CUP(23,1),/EL(0)
+ M @BSr@(BSt,"PERIODS")=CH //СОХРАНИТЬ ВЫБОРКУ
+ K Mx S se=ny,Mr="",ls="ФОРМАТИРОВАНИЕ ВЫСОТЫ СТРОК" D:'$D(CALCFON) WAITS^%ZAPM.ed.BSF2 F i=2:1:se X WA I $G(@(BSr_"(BSt,i)"))=1 S Mx=$P(@$ZR@(1),"@",3) G:'SP(4) CEN X "F j="_SP(4)_" D XBOCT" D
+ .S:Mx>21 Mx=20,Mr=1 I Mx>1 F j=1:1:ke S $P(@(BSr_"(BSt,i,j)"),"@",3)=Mx I Mr S $P(@(BSr_"(BSt,i,j)"),"@",12)=1
+ G:$D(Mx) CEN F i=2:1:se K @(BSr_"(BSt,i)")
+ S ny=1,$P(@(BSr_"(BSt)"),"@")=$P($P(@(BSr_"(BSt)"),"@"),";")_";ПУСТО" G CE
+CEN I +SP(3,5) S ls="ОБРАБОТКА ФУНКЦИИ $$TSPN" D:'$D(CALCFON) WAITS^%ZAPM.ed.BSF2 S jj=0,j=+SP(3,5) F i=1:1:se X WA I $P($G(@(BSr_"(BSt,i,j)")),"@",7)=3 S jj=jj+1,$P(@$ZR,"@",15)=jj
+ D:+$G(SP(6,4)) PI I +SP(3,4) S fo=1 X "F si="_SP(3,4)_" D COP" ;ИТОГ
+CE I $G(AFOO) D GLSET^%ZAPM.ed.BSF12($NA(@BSr@(BSt,"AFO")),AFOO)
+ K %TEST,BB,AFO,AFOO,SpStr,Pi,PaGe,si,sii,uci,r4,nyR,I,%1,%0,%2,%3,%4,%5,key,keys,CH,X1,X2,X3,X4,Mx,X5,O,L,SP,fo,%NAm,kj,f,ER,LIC,iiii D KCHO^%ZAPM.ed.BSsFUNM
+ S $P(@BSr@(BSt),"@",24)="S"
+ S BST=BSt,BSR=$$%^%ZAPM.ed.BSF12(BSr),ke=Ke
+ I $P(@(BSR_"(BST)"),"@")'["ПУСТО",$P(@BSR@(BST),"@",36) K se S B=@$ZR,nx=$P($P(B,"@",36),",",2),IntSort=1,IntSortS=1 D CALC^%ZAPM.ed.BSF3,^%ZAPM.ed.BSS K IntSort,IntSortS
+ D TAB^%ZAPM.ed.BSF1 S $ZT=$G(%zT) D  Q:$D(CALCFON)  D:'$D(PACKET) SPIS^%ZAPM.ed.BSF10 S CALCFONs=1 Q
+ .I $G(ObR)'="" S @ObR@("TZ")=($P($$h^%ZAPM.ed.BS3(),",",2)-Total\60)_" мин"
+ .I $P(@(BSr_"(BSt)"),"@")'["ПУСТО" S $P(@$ZR,"@")=$P($P(@(BSr_"(BSt)"),"@"),";")_";ГОТОВ "_" за "_($P($$h^%ZAPM.ed.BS3(),",",2)-Total)_" сек"_"|"_$G(Desc)
+ .S $P(@$ZR,"@",30)=""
+ .D TPr^%ZAPM.ed.BSF8($ZR)
+ .S @BSr@(BSt,"PERDATE")=$$ESDAY^%ZAPM.ed.BSsFUNR(7,$$h^%ZAPM.ed.BS3())
+ .S @BSr@(BSt,"PERUSER")=$G(%BS(12))
+ .S @BSr@(BSt,"PER",1)=$G(SAY)
+ .L -@BSr@(BSt)
+COP ;КОПИРОВАНИЕ
+ Q:'$D(@(BSR_"(BST,si,1)"))  S ny=ny+1,Yl=Yl+$P(@$ZR,"@",3) X WA
+ F kj=1:1 Q:'$D(@(BSR_"(BST,si,kj)"))  S @(BSr_"(BSt,ny,kj)")=@$ZR I fo F f="FCL","COL","FTR","RTR" I $D(@(BSR_"(BST,f,si,kj)")) S @(BSr_"(BSt,f,ny,kj)")=@$ZR I f="COL" D
+ .I $D(@(BSR_"(BST,f,si,kj,1)")) S @(BSr_"(BSt,f,ny,kj,1)")=@$ZR
+ .I $D(@(BSR_"(BST,f,si,kj,2)")) S @(BSr_"(BSt,f,ny,kj,2)")=@$ZR
+ Q
+XBOCT Q:'$L($P($G(@(BSr_"(BSt,i,j)")),"@",15))  S jj=@$ZR I $D(SP(7)),$P(jj,"@",8)'="",(","_SP(7)_",")[(","_j_",") D TRANS^%ZAPM.ed.BST(BSr,BSt,jj,i,j) S $P(jj,"@",15)=d1
+ I ($L($P(jj,"@",15))\$P(jj,"@",4)+$S($L($P(jj,"@",15))#$P(jj,"@",4):1,1:0))>Mx S Mx=$L($P(jj,"@",15))\$P(jj,"@",4)+$S($L($P(jj,"@",15))#$P(jj,"@",4):1,1:0)
+e Q
+SAY(SAY) S fo=0 I +SP(3,2) X "F si="_+SP(3,2)_" D COP" F j=1:1:kj-1 I $D(@(BSr_"(BSt,ny,j)")) S $P(@$ZR,"@",15)="",$P(@$ZR,"@",7)="",$P(@$ZR,"@",8)="",$P(@$ZR,"@",13)="",$P(@$ZR,"@",18)="",$P(@$ZR,"@",16)="",$P(@$ZR,"@",3)=1,$P(@$ZR,"@",6)=""
+ S i=1 F j=1:1 Q:'$D(^(j))  S $P(^(j),"@",15)=$E(SAY,i,i+$P(^(j),"@",4)-1),i=$P(^(j),"@",4)+i
+ Q
+NO D  Q:$D(CALCFON)!($D(PACKET))  S $ZT=$G(%zT) D O^%ZAPM.ed.BSF7 S YES=0 Q
+ .I $G(ObR)'="" S @ObR@("TT")="!!! "_ls
+ .S $P(@(BSr_"(BSt)"),"@")="!!! "_ls,$P(@$ZR,"@",30)="" L -@BSr@(BSt)
+END Q
+s(d,K) ;ТРАНСФОРМАЦИЯ ТЕКСТА ВЫБОРКИ
+ S %zT=$ZT,$ZT="ERTR^%ZAPM.ed.BSSP"
+ S d1=d,d0=+d
+ I $D(@BSR@(BST,"Key",K)) D
+ .I $D(@BSR@(BST,"Key",K,3)) X @$ZR
+ I "0§"[d1 Q ""
+ Q d1
+ERTR D ErrMsg^%ZAPM.ed.BSXfun($ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE)) S $ZT=$G(%zT) Q $ZE
+ER I $ZE["<INRPT" S ls=" ПРЕРВАНО ОПЕРАТОРОМ..." G NO
+   I $ZE["<DKFUL" S ls=" ДИСК ПЕРЕПОЛНИЛСЯ" G NO
+   I $ZE["<CMND"!($ZE["<SYNTX")!($ZE["<UNDEF") S ls=" ОШИБКА В ФОРМУЛАХ !",CALCFON=1 D NO Q:$D(CALCFON)!($D(PACKET))  D ERCMD^%ZAPM.ed.BSF11 Q
+ER1 S ls=$ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE) G NO
+Variabl(FL) Q:FL'["vl(" FL ;ЗАМЕНА ПЕРЕМЕННЫХ ДАННЫМИ В ТЕКСТАХ ВЫБОРКИ
+ N i,ii,iii,vi
+ S iii=FL,%zT=$ZT,$ZT="ERvl^%ZAPM.ed.BSSP"
+ F i=2:1 Q:$P(FL,"vl(",i,i+1)=""  S ii=$P($P(FL,"vl(",i),")") X "S vi=vl("_ii_")" S iii=$$TR^%ZAPM.ed.BSsFUNM(iii,"vl("_ii_")",vi)
+ Q iii
+ERvl I $ZE["UNDEF>" D ErrMsg^%ZAPM.ed.BSXfun(" НЕ ОПРЕДЕЛЕНА ПЕРЕМЕННАЯ vl("_ii_")")
+ D ErrMsg^%ZAPM.ed.BSXfun($ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE)) S $ZT=$G(%zT) Q $ZE

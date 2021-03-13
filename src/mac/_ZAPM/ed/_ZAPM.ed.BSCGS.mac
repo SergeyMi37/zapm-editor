@@ -1,0 +1,251 @@
+ROUTINE %ZAPM.ed.BSCGS
+%BSCGS(DiR,gLo) ;Global Size Utility   ; 15:45   05.09.2002 ; Compiled September 21, 2001 14:33:07
+ ; +--------------------------------------------------------+
+ ; | Copyright 1986-2001 by InterSystems Corporation,       |
+ ; | Cambridge, Massachusetts, U.S.A.                       |
+ ; | All rights reserved.                                   |
+ ; |                                                        |
+ ; | Confidential, unpublished property of InterSystems.    |
+ ; |                                                        |
+ ; | This media contains an authorized copy or copies       |
+ ; | of material copyrighted by InterSystems and is the     |
+ ; | confidential, unpublished property of InterSystems.    |
+ ; | This copyright notice and any other copyright notices  |
+ ; | included in machine readable copies must be reproduced |
+ ; | on all authorized copies.                              |
+ ; +--------------------------------------------------------+
+ ;%system.INC ; LFT865 11/08/00
+ ;%ST.INC CFL509 04/24/01
+ I $zv'["Windows" Q "NoWindows!"
+ I $$ZV^%ZAPM.ed.BSCp>5 Q "No5.0!"
+ If $$isrem^%GLO Quit $ZN_" does not currently support default global directory located on a remote system."
+ If '$zbitget($zversion(0),21) Q $ZN_" only runs on big database system code."
+ n (DiR,gLo)
+ S $ZT="ERR^"_$ZN
+ I $G(DiR)'="" S NSold=$ZU(5) I '$$ZU^%ZAPM.ed.BSF4(DiR) Q "NoDir!"
+ s DIR=$$GETDIR ;///
+ I DIR="" D NSNAZAD Q "NoDir!"
+ 
+ If $zbitget($zversion(0),21) {
+    Set dirinfo=$zu(49,DIR) If (+dirinfo)<0 Write !,*7,DIR," is not available" Quit
+    Set bigdb=$Piece(dirinfo,",",21)
+    Set blksiz=$Piece(dirinfo,",",2)
+ } else {
+    Set bigdb=0
+    Set blksiz=2048
+ }
+ 
+ Set datasize=$Case(blksiz,2048:2036,:(blksiz-$zu(40,32,10)))
+ s ONSP=$zu(5) zn "^^"_DIR ;save current namespace
+ 
+ d INT^%T ;,^%GSET ;///%GSET accepts globals in current namespace only
+         ;g exit:$o(^UTILITY($j,""))="" ;///
+         ;s detail=($$YN("Show details?","N")="Y") ;///
+ s detail=1
+ ;d ^%IS q:POP  ;///
+              s G="",P=1,(tbytes,tblks,tcont,DX)=0
+ ;i IO=$I,$G(
+ S XY="" ; S DX=18 ;///
+ ;i 'detail d showless i 1
+ 
+ I gLo["]" S gLo=$P(gLo,"]",2)
+ I $E(gLo,1)="^" S gLo=$E(gLo,2,99)
+   d showmore ;d:'POP stop w @IOF       ///
+exit zn ONSP
+ ;c:$d(IO) IO k %ST
+ q $G(TOTAL)
+ ;
+NSNAZAD() I $G(NSold)'="" I $$ZU^%ZAPM.ed.BSF4(NSold)
+ Q
+GETDIR() ;
+ ;W !
+ S R=$zu(12,"") ;W !
+ Q:R="QUIT"!(R="quit")!(R="^")!(R="") ""
+ q $zu(12,R,3) ;not really necessary as GetDir checked R already
+ ;
+showmore ;inherit all variables from caller, call detail(), and display
+ ;u IO d hdr i IO=$I     d CURRENT^%IS
+ ;f  s G=$o(^UTILITY($j,G)) q:G=""  d:'POP
+ ;. w ?6,G
+ s DY=1,DX=1
+ ;. i '$p(^UTILITY("GLO",G),"^",3) w " - implicit",! q
+  s x=$$detail(gLo) If x="" Quit
+  Set bytes=$p(x,","),blks=$p(x,",",2),cont=$p(x,",",3)
+ ;. s tbytes=tbytes+bytes,tblks=tblks+blks,tcont=tcont+cont
+ ;. w:'DX ?18,$J($fn(blks,","),8)
+ ;. w ?28,$J($fn(bytes,","),15),?45
+  S TOTAL=bytes
+  i blks=0 S TOTAL=TOTAL_"^"_"0%"
+  i blks'=0 S TOTAL=TOTAL_"^"_$j(100*(bytes/(blks*datasize)),1,0)_"%"
+  S TOTAL=TOTAL_"^"_$j($fn(cont,","),1)_"^"_$p(x,"?",2)
+ ;. i $y>(IOSL-4) d hdr
+ ;w !!?6,"TOTAL" d hdr1
+ ;w ?18,$J($fn(tblks,","),8)
+ ;w ?28,$J($fn(tbytes,","),15)
+ ;w:tblks ?45,$j(100*(tbytes/(tblks*datasize)),5,0)," %"
+ ;w ?55,$j($fn(tcont,","),7)
+ q
+showless ;inherit all variables from caller, call brief(), and display
+ u IO w @IOF i IO=$I d CURRENT^%IS
+ S H="Global Size Display of "_$zu(5)
+ U IO W @IOF W !,$J(H,$L(H)+IOM\2)
+ D INT^%T S H=%TIM_"  "_$zd($h,7) W !,$J(H,$L(H)+IOM\2)
+ w !!
+ f  s G=$o(^UTILITY($j,G)) q:G=""  d:'POP
+ . w $j(G,12)
+ . i '$p(^UTILITY("GLO",G),"^",3) w $j(" - ",8),! q
+ . s x=$$brief("^"_G),blks=+x,tblks=tblks+blks
+ . i x'["?" w $J(blks,8)
+ . e  w $j($p(x,"?",2),8)
+ w !!,$j("TOTAL:",12),$j(tblks,8),!
+ q
+ ;
+hdr d stop q:POP  w @IOF
+ w "directory: ",DIR,!
+ w "Page: ",P,?34,"GLOBAL SIZE",?(IOM-11),$ZDATE($h,2,,4),!,?(IOM-8),%TIM,!
+ w ?6,"Global"
+ s P=P+1
+hdr1 w ?18,"  Blocks",?28,"     Bytes Used",?45,"Packing",?55,"Contig.",!
+ w ?6,"--------",?18,"--------",?28,"---------------",?45,"-------",?55,"-------",!
+ q
+stop i P=1!(IOST'["C-") q
+ r !?40,"<RETURN> to continue or '^' to STOP: ",X s:X="^" POP=1
+ q
+ ;
+detail(G) ;detailed version
+ n (bigdb,blksiz,dataloc,datasize,dirinfo,G,%ST,DX,DY,XY,DIR) ;DX,DY,XY are used to display progress
+ If $Data(dataloc) {
+    Set DIR=$Extract(dataloc,2,$Length(dataloc)) ; leave off the "^"
+    If ($zbitget($zversion(0),21)) {
+       Set dirinfo=$zu(49,DIR) If (+dirinfo)<0 Quit ""
+       Set bigdb=$Piece(dirinfo,",",21)
+       Set blksiz=$Piece(dirinfo,",",2)
+    } else {
+       Set bigdb=0
+       Set blksiz=2048
+    }
+ }
+ Set datasize=$Case(blksiz,2048:2036,:(blksiz-$zu(40,32,10)))
+ s (n,k,c)=0 ;n:bytes,k:blocks,c:contiguous blocks?
+ ;W !!,DIR,!,G,!!! R rrrrr
+ Set rc=$$GetGlobalPointers^%DM(DIR,G,,.b)
+ If ('rc) Do ShowMessage(rc,0) Quit ""
+ o 63
+ f  q:'b  d  q:$d(err)  s p=b+1,b=$$GetLinkBlockFromViewBuffer^%DMREPAIR(bigdb),c=c+(p=b)
+ . v b s t=$$GetBlockTypeFromViewBuffer^%DMREPAIR(bigdb)
+ . i t-8,t-12 s err="?TOB: "_b_":"_t q  ;unexpected type of block
+ . s n=n+$$GetOffsetFromViewBuffer^%DMREPAIR(bigdb),k=k+1 ;q:t=8  ;so much for normal data blocks
+ . Set n=n-$Case(bigdb,0:0,:$zu(40,32,10)) ;Adjust number for header bytes
+ . f i=1:1 s x=$v(i*2-1,-6) q:x=""  d  q:$d(err)
+ . . ;Next line covers all the long string types for both 2k and bigdb
+ . . s v=$v(i*2,-6) If $a(v)'=5,($a(v)'=$Case(bigdb,0:9,:7)),($a(v)'=3) Quit
+ . . s nb=$p(v,",",2),r=$p(v,",",3) ;nb: # of blocks,r:#bytes in last block
+ . . s n=n+((nb-1)*blksiz)+r,k=k+(nb-1)+''r
+ . ;i DX u 0 X XY w $J(k,8) u IO
+ ;i DX u 0 X XY w $J(k,8) u IO
+ c 63
+ q n_","_k_","_c_$g(err)
+brief(G) ;brief version (quicker)
+ n (bigdb,blksiz,datasize,dirinfo,G,DIR)
+ s k=0 ;k:blocks
+ Set rc=$$GetGlobalPointers^%DM(DIR,G,.b)
+ If ('rc) Do ShowMessage(rc,0) Set err="?" Goto exitbrf
+ o 63
+ i 'b s err="?GLOBAL" g exitbrf
+ f  q:'b  v b s t=$$GetBlockTypeFromViewBuffer^%DMREPAIR(bigdb) q:(t=6!(t=70))  s b=$v(2,-5)
+ i 'b s err="?BOTPNT" g exitbrf
+ f  k big s lastbig=-1,big=0 q:'b  v b  d  s k=k+i-1
+ . f i=1:1 s x=$v(i*2-1,-6) q:x=""  s p=$v(i*2,-6) d:$Piece(p,",")
+ . . Set p=$Piece(p,",",2) ;block number with big string
+ . . i lastbig=(i-1) s $p(big(big),",",2)=p
+ . . e  s big=big+1,big(big)=p
+ . . s lastbig=i
+ . s b=$$GetLinkBlockFromViewBuffer^%DMREPAIR(bigdb) ;get next linked block before doing big blocks
+ . s j="" f  s j=$o(big(j)) q:j=""  s k=k+$$bigblk(big(j))
+exitbrf c 63
+ q k_$g(err)
+bigblk(b) ;
+ n (b,bigdb) s beg=+$p(b,","),end=+$p(b,",",2) s:'end end=beg q:'beg 0
+ s b=beg,k=0 f  v b  q:($$GetBlockTypeFromViewBuffer^%DMREPAIR(bigdb)'=12)  d  q:b=end  s b=$$GetLinkBlockFromViewBuffer^%DMREPAIR(bigdb) q:'b
+ . f i=1:1 s x=$v(i*2-1,-6) q:x=""  d
+ . . s v=$v(i*2,-6) q:$a(v)'=3
+ . . s k=k+$p(v,",",2)  ;+''($p(v,",",3))
+ q k
+YN(P,D,t) N R,X S P=$G(P),D=$E($G(D)_"?"),t=$G(t) ;ask Yes/No w/ Prompt,Default
+ S D=$S("Yy"[D:"Yes => ","Nn"[D:"No => ",1:"") ;Yes, No or no default
+ F  W !,P_"? "_D Read:t R:t Read:'t R DO  I "^YN"[R Q  ;timed or non-timed read
+ . S X=R,R=$TR($E(R_D_"?"),"yn","YN") I "^YN"'[R W "  enter Yes or No, please"
+ S POP=(R="^") W $E($S(R="N":"No",R="Y":"Yes",1:""),$L(X)+1,3) Q R
+GetDir(p,d,exists) ;ask for a directory, allow defaults
+ i '$D(exists) s exists=1 ; default is to check if exists
+ n neednew s neednew=1 ;expect to new dirlist
+ i $g(dirlist) i $g(@dirlist) s neednew=0 ; callers dirlist seems ok
+ i neednew n dirlist d
+ . S dirlist="mtemp1(""dir"")" ;as good a place as any...
+ . I $G(@dirlist)<$H K @dirlist S @dirlist=$H_","_$J_","_$I
+ N R,Z,Lock Lock +@dirlist:1 S Lock=$T DO  Lock:Lock -@dirlist Q R
+ . N N,OLD,MAX,TWO S (N,MAX)=$G(@dirlist@(0))+1,TWO=0
+Get . S OLD=$G(@dirlist@(N)),$ZT="GetErr" I OLD="",N=MAX S OLD=$G(d)
+ . W:'TWO ! I TWO W $C(13),$J("",70),$C(13) ;start on new line
+ . W p_": "_$S(OLD]"":OLD_" => ",1:"") R R S Z=$ZB,TWO=0 S:R="" R=OLD
+ . i $ZM'["R" I $A(Z)=27 S R="" DO  G Get:R="" ;handle special function keys!!
+ . . I Z=$C(27,91,65) DO  Q  ;handle ANSI up-arrow
+ . . . S TWO=1,N=N-1 I 'N S N=$G(@dirlist@(0))+1 Q
+ . . I Z=$C(27,91,66) DO  Q  ;handle ANSI down-arrow
+ . . . S N=N+1,TWO=1 I N>MAX S N=1
+ . . I Z=$C(27,91,67) S R="@" Q  ;handle ANSI right-arrow --> edit
+ . . I Z=$C(27,91,68) S R="@" Q  ;handle ANSI left-arrow --> edit
+ . ;
+ . I R="@",OLD]"" S R=$$ED(OLD) ;use good-old replace/with editor
+ . I $E(R)="?" S Z=R Q  ;pass-on request for elaboration
+ . i $$STOP(R) Q
+ . S Z=$S(exists:$$ChkDirOrSpecEXISTS(R),1:$$ChkDirVALID(R))
+ . I Z="" W *7,"  could not interpret '"_R_"'",! G:exists Get d  g:Z="N" Get
+ . . s Z=$$YN("Use this directory anyway")
+ . Q  ;needed to not enter 'GetErr'
+GetErr . S $ZT="",D="",TWO=0,N=$G(MAX) ; clear default
+ . I $P($ZE,">")="<INTERRUPT" S R="" q
+ . E  W !,"Error: "_$ZE
+ . G Get
+UC(x) q $zcvt(x,"u")
+Touch(D) ;add directory 'D' to the list of directories 'touched' today
+ Q:D=""  Q:D=-1  n neednew s neednew=1 ;expect to new dirlist
+ i $g(dirlist) i $g(@dirlist) s neednew=0 ; callers dirlist seems ok
+ i neednew n dirlist d
+ . S dirlist="mtemp1(""dir"")" ;as good a place as any...
+ . I $G(@dirlist)<$H K @dirlist S @dirlist=$H_","_$J_","_$I
+ I $D(@dirlist@("*",D)) Q  ;already in list
+ N N S N=$G(@dirlist@(0))+1,@dirlist@(0)=N,@dirlist@(N)=D
+ S @dirlist@("*",D)=N Q  ;keep track of directories added
+ED(%L) ; Edit using the familiar old line editor.
+ N %IED,%R,%W,%A,%B,%C,%D,%J X ^%("ED") W !?7,"--> "_%L Q %L
+ChkDirVALID(R) N N S $ZE="",$ZT="ChkBad",N=$ZU(12,R,1) Q N
+ChkDirEXISTS(R) N N S $ZE="",$ZT="ChkBad",N=$ZU(12,R,2) Q N
+ChkDirOrSpecEXISTS(R) N N S $ZE="",$ZT="ChkBad",N=$ZU(12,R,3) Q N
+ChkDir(R) N N S $ZE="",$ZT="ChkBad",N=$ZU(12,R,2) Q N
+ChkBad S $ZT="" W !,"<"_$P($P($ZE,"<",2),">")_"> error -- invalid directory"
+ Q ""
+STOP(x) S x=$$UC($E(x,1,4)) Q (x["EXIT")!(x["STOP")!(x["QUIT")!(x["HALT")!($E(x)="^")
+ShowMessage(sc,device)
+ New msglist d DecomposeStatus^%DM(sc,.msglist,0,"")
+ d wrtmsg($C(13,10),device) f i=1:1:msglist d wrtmsg(msglist(i)_$C(13,10),device)
+ q
+GetMessage(code,locale)
+ If $Get(locale)="" Set locale=$$getEnvironment^%DM()
+ If locale="" s locale="ENU"
+ q $g(^%Messages(code,"text",locale),$g(^%Messages(code,"text","ENU"),1000))
+wrtmsg(msg,device) ;
+ q:'$L(msg)       ; Avoid argumentless writes...
+ i $g(%UI,"CHUI")="CHUI" u device w msg q
+ d:$$IjcMsg^%Wprima("DI"_msg)="CANCEL"  ; Return value could be cancel message
+ . i $$IjcMsg^%Wprima("DI"_$C(13,10)_"Abort received!"_$C(13,10))
+ . zt "Abort"
+ q
+ERR S $ZT="",ze=$ZE
+ I ze["<FUNCTION>" Q "Bad namespace name """_$G(DiR)_"""."
+ I ze["<DIRECTORY>" Q "Namespace """_$G(DiR)_""" is not available."
+ I ze["<NAMESPACE>" Q "Namespace """_$G(DiR)_""" is not available."
+ I ze["<PROTECT>" Q "Insufficient privileges for """_$G(DiR)_"""."
+ I ze["<NOTOPEN>" Q "No database in """_$G(DiR)_"""."
+ I ze["<INTERRUPT>" Q "Interrupted."
+ Q "Error: "_ze

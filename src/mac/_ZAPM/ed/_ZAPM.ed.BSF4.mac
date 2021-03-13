@@ -1,0 +1,178 @@
+ROUTINE %ZAPM.ed.BSF4
+%BSF4 ;РЕДАКТИРОВАНИЕ ОПЦИЙ ТАБЛИЦЫ ; 10:34   05.07.2001
+D G 0^%ZAPM.ed.BSTM
+E1561 G TT0^%ZAPM.ed.BSF2
+E1562 G TT1^%ZAPM.ed.BSF2
+E15103 D ErrMsg^%ZAPM.ed.BSXfun("ЭТО УЖЕ РУДИМЕНТ !") G D
+E151011 G USM
+E151012 S $P(@(BSR_"(BST)"),"@",17)=1 K @(BSR_"(BST,""USM"")") D TIP^%ZAPM.ed.BST G D
+USM I TIP'=7,TIP>1 S ls=" ПОЛЬЗОВАТЕЛЬСКИМ МЕНЮ МОЖЕТ БЫТЬ ТОЛЬКО ПРОСТАЯ ТАБЛИЦА " D O^%ZAPM.ed.BSF7 G D
+ I $D(%TIT) S ls=" СНИМИТЕ ТИТУЛ С ТАБЛИЦЫ " D O^%ZAPM.ed.BSF7 G D
+ D LONG S i1=$S(LY'<17:6,1:5+((17-LY)\2)),i2=(80-LX)\2-1,i3=i1+LY-1 S:i2<2 i2=2 S i4=i2+LX-1 S:i3>22 i3=22 S:i4>78 i4=78 I $D(@(BSR_"(BST)")) F i=1:1:4 S $P(@$ZR,"@",7+i)=@("i"_i)
+ F i=12,13,14,15,18,21 S $P(@$ZR,"@",i)=""
+ F i=16,25,34 S $P(@$ZR,"@",i)=1
+ S $P(@(BSR_"(BST)"),"@",17)=7,TIP=7
+ D SETMENU($ZR)
+ K CCC,LY,LX,i1,i2,i3,i4,BFL,%ZAP G 10^%ZAPM.ed.BSF
+SETMENU(G) N A S A=$P(@G,"@",41) S A=$$TR^%ZAPM.ed.BSsFUNM(A,",MENU^%ZAPM.ed.BSF11","")
+ I A["MENU^%ZAPM.ed.BSF11" S $P(@G,"@",41)=A Q
+ S $P(@G,"@",41)="MENU^%ZAPM.ed.BSF11"_$S(A'="":","_A,1:"")
+ Q
+LONG D DEND^%ZAPM.ed.BSF2,REND^%ZAPM.ed.BSF2 S LY=$P(@(BSR_"(BST,se,1)"),"@")+$P(^(1),"@",3)-1,LX=$P(@(BSR_"(BST,1,ke)"),"@",2)+$P(^(ke),"@",4)-1 Q
+E15102 S ls=" ВЫ ХОТИТЕ ЧТОБЫ ВАША ТАБЛИЦА СТАЛА ТЕКСТОМ ? " D YES^%ZAPM.ed.BSF I 'YES G D ;TEXT
+ D OOO G D:'YES D TXT^%ZAPM.ed.BSTT,R(17,5) K %ZAP S $P(B,"@",23)=1 G 10^%ZAPM.ed.BSF
+E15111 D R(25,"") Q
+E15112 D R(25,1) Q
+E15151 D R(34,"") Q
+E15152 D R(34,1) Q
+E15121 D R(26,1) Q
+E15122 D R(26,"") Q
+E15131 D R(27,"") Q  ;ЛОГИКА
+E15132 D R(27,1) Q
+E151621 D R(35,"") Q  ;СПИСКИ
+E151622 S li=$P(B,"@",35),li=$S("1"[li:2,1:li),ls="'ДЛИНА#X1,X2,...,Xn' ,где Xi - колонки ,данные которых должны быть в списке"
+ D LE^%ZAPM.ed.BSTT I YES D R(35,li)
+ Q
+R(i,ii) S $P(@(BSR_"(BST)"),"@",i)=ii S B=@$ZR Q
+E151641 S Fi=$P(@(BSR_"(BST)"),"@",40)
+ S li=$P(Fi,","),ls="По КАКОЙ КОЛОНКЕ ПОИСК ? (ALL-ПО ВСЕЙ ТАБЛИЦЕ)" D LE^%ZAPM.ed.BSTT Q:'YES  S $P(Fi,",")=li
+ S li=$P(Fi,",",2),ls="С КАКОЙ СТРОКИ ВСЕГДА НАЧИНАТЬ ПОИСК ? (DFLT-С ТЕКУЩЕЙ)" D LE^%ZAPM.ed.BSTT Q:'YES  S $P(Fi,",",2)=li
+ D Yes^%ZAPM.ed.BSXfun("УЧИТЫВАТЬ РЕГИСТР ПРИ ПОИСКЕ ?") S $P(Fi,",",3)=YES
+ D R(40,Fi) Q
+E151642 D R(40,"") Q
+E15165 D OOO G D
+E151631 D R(38,"") Q
+E15169 D PRED^%ZAPM.ed.BSF9 G D
+E151632 D RAML D:YES R(38,1) Q  ;РАМКИ
+E151633 D RAML D:YES R(38,2) Q
+E151634 D RAML D:YES R(38,3) Q
+E1514 G OPT^%ZAPM.ed.BSF5
+OOO D R(8,$G(BSY1(3),BSY1(0))) D R(9,$G(BSX1(3),BSX1(0))) S y=$O(BY(""),-1),x=$O(BX(""),-1) I $D(@(BSR_"(BST,"_BY(y)_","_BX(x)_")")) S l=$P(@$ZR,"@",3),ll=$P(@$ZR,"@",4) D R(10,y+l-1),R(11,x+ll-1) Q
+ S ls=" НЕУДАЧА ",YES=0 D O^%ZAPM.ed.BSF7 Q
+RAML S B=@(BSR_"(BST)") I $P(B,"@",21) S ls=" У ТАБЛИЦЫ ВКЛЮЧЕН ВИДЕОСТАТУС !!! ",YES=0 D O^%ZAPM.ed.BSF7 Q
+ I $P(B,"@",8)<2!($P(B,"@",9)<2)!($P(B,"@",10)>79) S ls=" ДЛЯ РАМКИ ОКНО ВЫВОДА ТАБЛИЦЫ СЛИШКОМ ВЕЛИКО ",YES=0 D O^%ZAPM.ed.BSF7 Q
+ S YES=1,ls=" ОБЖИМАТЬ ГРАНИЦЫ ОКНА БУДЕМ ? " D YES^%ZAPM.ed.BSF D:YES OOO Q
+E151611 S Sort=$P(@BSR@(BST),"@",36) I TIP=3 D Yes^%ZAPM.ed.BSXfun("ВКЛЮЧИТЬ ОБЯЗАТЕЛЬНУЮ СОРТИРОВКУ СПИСКА ?",1) G D:YES<1 S Sort="1,1,0,"_$P(Sort,",",4) D SO^%ZAPM.ed.BSF9 G SETSORT
+ S li=$P(Sort,","),ls=" СОРТИРОВАТЬ С КАКОЙ СТРОКИ" D LE^%ZAPM.ed.BSTT G D:'YES,D:'+li S $P(Sort,",")=+li
+ S li=$P(Sort,",",2),ls=" С КАКИМ ШАГОМ" D LE^%ZAPM.ed.BSTT G D:'YES,D:'+li S $P(Sort,",",2)=+li D SORT^%ZAPM.ed.BSF9
+SETSORT D R(36,Sort) K Sort G D
+E151612 D R(36,"") G D ;СОРТИРОВКА ТАБЛИЦ
+PAROL S ls="Вводите ПАРОЛЬ НА КОРРЕКЦИЮ ХАРАКТЕРИСТИК РАЗДЕЛА",li="",s=4,PARROL=1 K k D P12 Q
+USER S ls="Вводите ваш ПАРОЛЬ",li="",s=4,PARROL=1 K k D P12 S ls=" Введите комментаpий...",ll="@" D LE^%ZAPM.ed.BSTT Q
+E1571 D PASSWORD(BSR,BST,2,"Вводите пароль на вход в таблицу") G D
+E1572 D PASSWORD(BSR,BST,5,"Вводите пароль на коррекцию данных") G D
+E1573 D PASSWORD(BSR,BST,4,"Вводите пароль на коррекцию описания таблицы") G D
+P12 S ll="@" D LINE^%ZAPM.ed.BSF1 I ('$D(k)) S k=li,ls=" Еще раз ... "_ls,li="" G P12
+ I li'=k S ls=" Ничего ... не понимаю " D O^%ZAPM.ed.BSF7 Q
+ I $D(PARROL) S %PAROL=li K PARROL Q
+ S $P(@(BSR_"(BST)"),"@",s)=li K k,s Q
+PASSWORD(MAS,TAB,s,ls,VAR) N k,li,ll S li="" I TAB'="" S MAS=MAS_"(TAB)"
+PA S ll="@" D LE^%ZAPM.ed.BSTT I YES,('$D(k)) S k=li,ls=" Еще раз ... "_ls,li="" G PA
+ I li'=k S ls=" Ничего ... не понимаю " D O^%ZAPM.ed.BSF7 Q
+ I $D(PARROL) S %PAROL=li K PARROL Q
+ S $P(@MAS,"@",s)=li K s Q
+e Q
+TBD I R3=89 ZT "F10"
+ I R3=83 D COM^%ZAPM.ed.BS2 G D
+ I R3=85 D SRV^%ZAPM.ed.BSF5 G D^%ZAPM.ed.BSF5
+ I R3=86 D FIND^%ZAPM.ed.BSF5 G D
+ I R3=88 S OO=20,OOO="^%ZAPM.ed.BS" K %JB D 24^%ZAPM.ed.BSTM,^%ZAPM.ed.BSB,ZA^%ZAPM.ed.BSF G D:R1=27,MOUN:%B=1,UNMO:%B=2,SETUP:%B=3,Screen:%B=5 I %B=4 D:$G(%BS(23)) EraseD,LOCKTAB^%ZAPM.ed.BSF6,PAUSE D MGR^%ZAPM.ed.BS,TIT^%ZAPM.ed.BST,W^%ZAPM.ed.BST
+ G D
+Screen D NEW Q
+EraseD W $$atr^%ZAPM.ed.BS3(0),/ED(2) Q
+PAUSE W $$r^%ZAPM.ed.BS3 Q
+15 W /CUP(20,1) Q
+OP I $ZV["Cach"||($ZV["IRIS") U 0:(80:"") Q
+ U $I:(80:::::1) Q
+CL I $ZV["Cach"||($ZV["IRIS") U 0:("IS") Q
+ U $I:(0::::1) Q
+UNMO N SYS,M,I,i D OP,15 S i=0 K SYS F I=1:1:7 I $$ZU^%ZAPM.ed.BS3(1,I)'="" S i=i+1,SYS(i)=I
+ I '$D(SYS) S ls=" ДЕМОНТИРОВАТЬ НЕЧЕГО " D CL,O^%ZAPM.ed.BSF7 G NEW
+ S X=SYS(i)
+UNMO1 D UNM,CL G NEW
+UNM I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ ZF  S YES=1 ZF  D CHECKDDP^%ZAPM.ed.BSD2($G(X,1)) Q:YES<1  D MGR^%ZAPM.ed.BS D ^UMOUNT Q
+M D MOU,CL G NEW
+MOUN D  D:'(R1=27!(%BShNAME="")) OP,15,MOU,CL G NEW
+ .D SI^%ZAPM.ed.BSN N (%BS,vl,%zT,%KAT,%File,R1,%BShNAME,%BSrs,%BSvg) S BSR="^%ZAPM.ed.BSETUP",BST="MOUNT" D CHECK,^%ZAPM.ed.BST
+ .S %BShNAME=$P($G(^%ZAPM.ed.BSETUP("MOUNT",ny,2)),"@",15) I $L(%BShNAME)'=3!(%BShNAME["\") S %BShNAME=$$AddFile^%ZAPM.ed.BSDOS2(%BShNAME) Q
+ .S %BSvg=$P($G(^%ZAPM.ed.BSETUP("MOUNT",ny,3)),"@",15),%BSrs=%BShNAME
+MOU I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ D SI^%ZAPM.ed.BSN N (%BS,vl,%BShNAME,%BSrs,%BSvg) ZF  ZF  D OP,15,MGR^%ZAPM.ed.BS
+ I $D(%BSrs) D ^MOUNTRVG
+ I '$D(%BSrs) D ^DBMAINT3,DDPDIR^%ZAPM.ed.BSMSMF ;ОБНОВИТЬ ССЫЛКИ В ^BSdirddp
+ D MOUNT^%ZAPM.ed.BSMSMF($G(VGNAME)) Q
+SETUP S BSR="^%ZAPM.ed.BSETUP",BST="SETUP" D ^%ZAPM.ed.BST,CONF^%ZAPM.ed.BSH,CLr
+NEW S NEWVOLUM=1,R1=27 D  K SYS,M,OO,OOO G END^%ZAPM.ed.BSF
+ .S %BS(18)=$$%BSU^%ZAPM.ed.BSF7()
+CHECK D MGR^%ZAPM.ed.BS Q:$D(@(BSR_"(BST)"))  S BSr1="^%ZAPM.ed.BSS",BSt1="MOUNT",BSr2="^%ZAPM.ed.BSETUP",BSt2=BST D COPY^%ZAPM.ed.BSTK Q
+LOCK D:$D(%BS)["0" CLr U $I::%BS(32) Q
+%BS1 S %BS(1)=$P($G(^%ZAPM.ed.BSETUP("SETUP",20,2)),"@",15) ;```I $E(%BS(1),8),$D(^ ("%MOUSE")) D ^%ZAPM.ed.BSMOUSE
+ S $E(%BS(1),19)=$S($ZV'["Cach"&&($ZV'["IRIS"):0,$E(%BS(1),19):$E(%BS(1),19)+3,1:0)
+ S %BS(18)=$$%BSU^%ZAPM.ed.BSF7()
+ Q
+LV S IntP=1
+CLr I $ZV'["Cach"&&($ZV'["IRIS") N I,II,uci,SGCNFG S uci=$$ZU^%ZAPM.ed.BS3(0) I '$D(IntP) D
+ .D MGR^%ZAPM.ed.BS I '$D(^%ZAPM.ed.BS("SYSGEN")) D CONF^%ZAPM.ed.BSH S ^%ZAPM.ed.BS("SYSGEN")=""
+ .E  D BUFERS^%ZAPM.ed.BSH
+ ;I $P($$LICINFO^%MSMOPS,"^")_","_$ZU(0)'=("10"_"00"_"00"_"0,"_"MG"_"R,M"_"SW") H
+ I '$D(^%ZAPM.ed.BSETUP("PATH")) S BSr1="^%ZAPM.ed.BSS",BSt1="PATH",BSr2="^%ZAPM.ed.BSETUP",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ I '$D(^%ZAPM.ed.BSETUP("SETUP")) S BSr1="^%ZAPM.ed.BSS",BSt1="SETUP",BSr2="^%ZAPM.ed.BSETUP",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ I '$D(^%ZAPM.ed.BSETUP("SERVER")) S BSr1="^%ZAPM.ed.BSS",BSt1=$S($ZV["MSM":"SERVER",1:"CacheServ"),BSr2="^%ZAPM.ed.BSETUP",BSt2="SERVER" D COPY^%ZAPM.ed.BSTK
+ S %BS(32)="X3.64-1979" I $P'=1 ;   S %BS(32)=???
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) D %BS35^%ZAPM.ed.BSre ;ЗАГРУЗКА ТАБЛИЦЫ ПЕРЕКОДИРОВКИ
+ I '$D(IntP) D NS
+ ;```D %BS35^%ZAPM.ed.BSre ;ЗАГРУЗКА ТАБЛИЦЫ ПЕРЕКОДИРОВКИ
+ ;
+ I $ZV["MSM-Workstation" ;S ^$DISPLAY($PDISPLAY,"ZOEMDB")=1
+ I $ZV["Cach"||($ZV["IRIS") D CACHERUN^%ZAPM.ed.BSC
+ I $ZV["MSM-PC" D ADRMEM
+ D %BS1 B $E(%BS(1),15)=0
+ D INITHELP^%ZAPM.ed.BSDOS2
+ S %BS(2)=$P($G(^%ZAPM.ed.BSETUP("SETUP",3,2)),"@",15)
+ S %BS(6)=$P($G(^%ZAPM.ed.BSETUP("SETUP",2,2)),"@",15) I '%BS(6) K %BS(6)
+ S %BS(23)=+$P($G(^%ZAPM.ed.BSETUP("SETUP",10,2)),"@",15)
+ S %BS(18)=$$%BSU^%ZAPM.ed.BSF7(),%BS(15)=+$G(%BS(15))
+ S %BS(24,1)=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSVOL(""PROTOKOL"")")
+ S %BS(24,2)=$P($G(^%ZAPM.ed.BSETUP("PATH",4,4)),"@",15)
+ S %BS(21)=$P($G(^%ZAPM.ed.BSETUP("SETUP",14,2)),"@",15) K:'(+%BS(21)=1!(+%BS(21)=2))!('$D(^%ZAPM.ed.BS("COM",+%BS(21)))) %BS(21) I $D(%BS(21)) S %BS(21)=^%ZAPM.ed.BS("COM",+%BS(21))_" "_$P(%BS(21)," ",2,99)
+ S %BS(33)=$P($G(^%ZAPM.ed.BSETUP("SETUP",4,2)),"@",15)
+ I '$D(^%ZAPM.ed.BSETUP("MOUNT")) S BSr1="^%ZAPM.ed.BSS",BSt1="MOUNT",BSr2="^%ZAPM.ed.BSETUP",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ S %BS(34)=$P($G(^%ZAPM.ed.BSETUP("SETUP",5,2)),"@",15)
+ S %BS(34)=$S(%BS(34)'["/":"Y/Y/Y",1:%BS(34))
+ S %BS(33)=$S(%BS(33)'["/":"10/0/0",1:%BS(33))
+ I $D(^%ZAPM.ed.BSETUP("YEAR",1)) S %BS(36)=$H+$G(^%ZAPM.ed.BSETUP("YEAR",1))
+ S %BS(20)=$P($G(^%ZAPM.ed.BSETUP("SETUP",12,2)),"@",15)
+ S %BS(20)=$S(%BS(20)'["^":"",1:%BS(20))
+ I $G(%BS(20))'="" S %BS(22)=$P($G(@%BS(20)@("CharGlob",1,4),"@@@@@@@@@@@@@@4114,4114,4114"),"@",15)
+ E  S %BS(22)="4114,4114,4114"
+ S %BS(5)=$P($G(^%ZAPM.ed.BSETUP("SETUP",15,2)),"@",15) S:%BS(5)>2 %BS(5)=0
+ S %BS(16)=$P($G(^%ZAPM.ed.BSETUP("SETUP",16,2)),"@",15) S:%BS(16)>2 %BS(16)=0
+ I '$D(%BS(12)) S %BS(12)=""
+ I '$D(^%ZAPM.ed.BSETUP("COLOR")) S BSr1="^%ZAPM.ed.BSS",BSt1="COLOR",BSr2="^%ZAPM.ed.BSETUP",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ S %BS="" F I=2:1:13 S %BS=%BS_$S($P($G(^%ZAPM.ed.BSETUP("COLOR",I,2)),"@",15)'="":$P($G(@$ZR),"@",15),1:"0")_"!"
+ I '$D(^%ZAPM.ed.BSETUP("PRNDFLT")) S BSr1=%BS(20),BSt1="PRNDFLT",BSr2="^%ZAPM.ed.BSETUP",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ I '$D(^%ZAPM.ed.BSETUP("PARPRN")) S BSr1=%BS(20),BSt1="PARPRN",BSr2="^%ZAPM.ed.BSETUP",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ I '$D(^%ZAPM.ed.BSbufB("INFO_K")) S BSr1="^%ZAPM.ed.BSS",BSt1="INFO_K",BSr2="^%ZAPM.ed.BSbufB",BSt2=BSt1 D COPY^%ZAPM.ed.BSTK
+ K vD,%BS(7) S I=1 F  S I=$O(^%ZAPM.ed.BSETUP("MOUNT",I)) Q:'I  D
+ .I $P($P(^%ZAPM.ed.BSETUP("MOUNT",I,2),"@",15),":")'="" S vD($P($P(@$ZR,"@",15),":"))=$S("N"[$P($G(^%ZAPM.ed.BSETUP("MOUNT",I,4)),"@",15):0,1:1)
+ .I $P(^%ZAPM.ed.BSETUP("MOUNT",I,3),"@",15)'="",$P($G(^(5)),"@",15)="Y" S %BS(7,$P(^(3),"@",15))=""
+ S (%BS(4),I)="" D  S %BS(4)=$TR(%BS(4),"QWERTYUIOPASDFGHJKLZXCVBNM","qwertyuiopasdfghjklzxcvbnm") K vD
+ .F  S I=$O(vD(I)) Q:I=""  I vD(I) S %BS(4)=%BS(4)_I_":"
+ K vD S:'%BS(2) %BS(2)="9999-1"
+%GU N I S YES=0 ;ПЕРЕХОД ИЗ КИПА В КИП      uci="КИП,ТОМ"
+ Q:$G(uci)=""  
+ I $ZV["Cach"||($ZV["IRIS") D  Q  ;Cache' from InterSystems
+ .I $$ZU(uci) S YES=1
+ S I=$$ZU^%ZAPM.ed.BS3($P(uci,","),$P(uci,",",2)) I I'="" V 2:$J:$P(I,",",2)*32+$P(I,","):2 K np S YES=1 Q
+ I '$D(np) S ls=" Кип,Том <"_uci_"> НЕдоступны " D O^%ZAPM.ed.BSF7
+ K np Q
+ZU(UCI,SYS) ;ПЕРЕЙТИ В НУЖНЫЙ КИП
+ I $ZV["Cach"||($ZV["IRIS") Q $$CNS^%ZAPM.ed.BSCp(UCI)
+ I '$$ZU^%ZAPM.ed.BS3(UCI,SYS) Q 0 ;
+ V 2:$J:$P($ZU(UCI,SYS),",",2)*32+$P($ZU(UCI,SYS),","):2
+ Q 1
+ADRMEM N VT,CPU386 ;D VTYPE^%VIDEO S %BS(17)=$S(VT&CPU386:#B8000,'VT&CPU386:#B0000,VT&'CPU386:#B8000000,1:#B0000000) Q
+ q
+NS I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) S %BS(13)="%BS-PC" U $I::%BS(32) D  Q
+ .I $ZV["Cach"||($ZV["IRIS") D %BS3^%ZAPM.ed.BSCp

@@ -13,8 +13,8 @@
   </Author>
   <Packaging>module</Packaging>
    <SourcesRoot>src</SourcesRoot>
-  <Resource Name="%ZAPM.bs.PKG" Directory="mac"/>
-  <Resource Name="%ZAPM.bs.GBL" Directory="gbl"/>
+  <Resource Name="%ZAPM.ed.PKG" Directory="mac"/>
+  <Resource Name="%ZAPM.ed.GBL" Directory="gbl"/>
   <Dependencies>
 	<ModuleReference>
     <Name>zapm</Name>

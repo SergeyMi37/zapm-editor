@@ -1,0 +1,191 @@
+ROUTINE %ZAPM.ed.BSF1
+%BSF1 ;КОРРЕКЦИЯ ОПИСАНИЯ ТАБЛИЦЫ ; 8:39   31.10.2001
+BLOK N EndLoop D WAIT^%ZAPM.ed.BSF2 I '$P(@(BSR_"(BST)"),"@",3) S ls=" Блок не определен " D O^%ZAPM.ed.BSF7 X "I 0" Q
+ F i=1:1 Q:'$D(@(BSR_"(BST,i)"))  X $G(WA) F j=1:1 Q:'$D(@(BSR_"(BST,i,j)"))  I $P(^(j),"@",12) X do G:$D(EndLoop) Blo
+Blo I 1 Q
+DEL I $P(^(j),"@",5)!($D(%ZAP)) Q
+ I $P(^(j),"@",9)=1 S Tmp=$ZR D AHI("DAT",$P(^(j),"@",15)) S $P(@Tmp,"@",15)="" Q
+ S $P(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)),"@",2)=1 I $D(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)) S Tmp1=$ZR,Tmp=@Tmp1,@Tmp1="" D:Tmp'="" AHI("DAT",Tmp)
+ Q
+SET I $P(^(j),"@",5)!($D(%ZAP)) Q
+ I $P(^(j),"@",9)=1 S $P(^(j),"@",15)=li Q
+ S $P(^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15)),"@",2)=1 S ^%ZAPM.ed.BSbufB("BB"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,j)=li Q
+BUF S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),bf,i,j)=^(j) F f="FTR","FCL","COL","RTR" I $D(@(BSR_"(BST,f,i,j)")) S z=$G(@$ZR),z1=$G(@$ZR@(1)),z2=$G(^(2)) I z'="" S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),bf,f,i,j)=z,^(j,1)=z1 I z2'="" S ^(2)=z2
+ I $D(@(BSR_"(BST,""CMD"",i,j)")) S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),bf,"CMD",i,j)=@$ZR
+ Q
+E111 S nOy=ny,nOx=nx D CLR20E S:COLORS'="" $P(@(BSR_"(BST,nOy,nOx)"),"@",10)=COLORS K nOx,nOy G D
+CLR2 Q:R1=27  S $P(@(BSR_"(BST)"),"@",31)=COLORS,COLOR=COLORS Q
+E112 D CLR20E,CLR1 G E111E
+E114 D CLR20E,CLR2 G E111E
+CLR1 Q:R1=27  S do="S $P(^(j),""@"",10)=COLORS" D BLOK Q
+Color(Color) N COLORS,i,j ;Вызов палитры
+ D CLR20E Q $G(COLORS)
+CLR20E D SA^%ZAPM.ed.BSsBUF D  D RE^%ZAPM.ed.BSsBUF Q
+ .D SI^%ZAPM.ed.BSN N (%BS,vl,%zT,%KAT,%File,COLORS,R1,Color)
+ .I '$D(^%ZAPM.ed.BSbufB("CLR")) S BSr1="^%ZAPM.ed.BSS",(BSt2,BSt1)="CLR",BSr2="^%ZAPM.ed.BSbufB" D COPY^%ZAPM.ed.BSTK
+ .I $D(Color) F i=1:1:8 F j=1:1:16 I $P(^%ZAPM.ed.BSbufB("CLR",i,j),"@",10)=Color S $P(^%ZAPM.ed.BSbufB("CLR","STA"),"@",7)=i+9,$P(^%ZAPM.ed.BSbufB("CLR","STA"),"@",8)=j*4+6 Q
+ .S BSR="^%ZAPM.ed.BSbufB",BST="CLR" D STA^%ZAPM.ed.BST S COLORS=$S(R1=27:"",1:$P(@(BSR_"(BST,ny,nx)"),"@",10)) Q:R1=27  S ls=" Мерцание нужно ? ",%B=2 D YES^%ZAPM.ed.BSF I YES S $P(COLORS,";",2)=5 Q
+E113 S d=$P(BS,"@",10),do="S $P(^(j),""@"",10)=d" D BLOK
+E111E D CL^%ZAPM.ed.BSF4 D TIT^%ZAPM.ed.BST,W^%ZAPM.ed.BST G D
+E72 S do="I '$D(^%ZAPM.ed.BSbufB(""f""_$G(%BS(3),$P)_$J_""u""_%BS(15),i)) S ^(i)=1" K ^%ZAPM.ed.BSbufB("f"_$G(%BS(3),$P)_$J_"u"_%BS(15)) D BLOK G D:'$T D E710 S s=0 F  S s=$O(^%ZAPM.ed.BSbufB("f"_$G(%BS(3),$P)_$J_"u"_%BS(15),s)) Q:s=""  D HSTR
+ K ^%ZAPM.ed.BSbufB("f"_$G(%BS(3),$P)_$J_"u"_%BS(15)) D TAB,W^%ZAPM.ed.BST G B^%ZAPM.ed.BSTM
+E710 S s=ny,(ii,li)=$P(BS,"@",3)
+ S ls=" Корректируйте высоту строки" D LINE,E711 G E710:$D(ERRO) Q
+A25 W /CUP(25,1),$$atr^%ZAPM.ed.BS3(0),/EL(0) Q
+E71 ;ВЫСОТА КЛЕТКИ
+ D E710 G D:'YES I ii'=li D HSTR,TAB,W^%ZAPM.ed.BST,KLE^%ZAPM.ed.BSTM
+ G D
+HSTR ;s- СТРОКА li- НОВАЯ ВЫСОТА
+ I $D(@(BSR_"(BST,s,1)")) F ii=1:1 Q:'$D(^(ii))  S $P(^(ii),"@",3)=li
+ Q
+WinL(L) Q ($P(@BSR@(BST),"@",L)-$P(@BSR@(BST),"@",L-2)+1)
+ErrWin S ERRO=1 D O^%ZAPM.ed.BSF7 Q
+E711 K ERRO S li=+li I $$WinL(10)<li S ls=" Высота строки БОЛЬШЕ высоты окна" G ErrWin
+ I li<1!(li>20) S ls=" Нарушение диапазона 1:20 " G ErrWin
+e Q
+E811 K ERRO S list=li,li=+li I $$WinL(11)<li S ls=" Длина колонки БОЛЬШЕ длины окна" G ErrWin
+ I li<1!(li>77) S ls=" Нарушение диапазона 1:77 " G ErrWin
+ Q
+E810 S k=nx,s=ny,(ii,li)=$P(BS,"@",4)
+ S ls="Корректируйте длину колонки (раздвижка: N>-справа N<-слева N<>-центрир)" D LINE,E811 G E810:$D(ERRO) Q
+E82 S do="I '$D(^%ZAPM.ed.BSbufB(""f""_$G(%BS(3),$P)_$J_""u""_%BS(15),j)) S ^(j)=1" K ^%ZAPM.ed.BSbufB("f"_$G(%BS(3),$P)_$J_"u"_%BS(15)) D BLOK G D:'$T D E810 S k=0 F  S k=$O(^%ZAPM.ed.BSbufB("f"_$G(%BS(3),$P)_$J_"u"_%BS(15),k)) Q:k=""  D LSTR
+ K ^%ZAPM.ed.BSbufB("f"_$G(%BS(3),$P)_$J_"u"_%BS(15)) D TAB,W^%ZAPM.ed.BST G B^%ZAPM.ed.BSTM
+E81 ;ДЛИНА КОЛОНКИ
+ D E810 G D:'YES I ii'=li D LSTR,TAB,W^%ZAPM.ed.BST,KLE^%ZAPM.ed.BSTM
+ G D
+LSTR ;k- КОЛОНКА li- НОВАЯ ДЛИНА
+ F ii=1:1 Q:'$D(@(BSR_"(BST,ii,k)"))  D
+ .I list[">"!(list["<")!(list["<>") D RAZ($P(^(k),"@",4),$P(^(k),"@",3),list,$P(^(k),"@",15))
+ .I '(list[">"!(list["<")!(list["<>")),$E(%BS(1),10) D RAZ($P(^(k),"@",4),$P(^(k),"@",3),list_$S($E(%BS(1),10)=1:">",$E(%BS(1),10)=2:"<",1:"<>"),$P(^(k),"@",15))
+ .S $P(^(k),"@",4)=li
+ Q
+RAZ(LO,H,LST,D) ;РАЗДВИЖКА
+ N L,M,I
+ Q:D=""  I $D(AFORM),$P(^(k),"@",12) Q
+ F I=1:1:H S M(I)=$E(D,I*LO-LO+1,LO+(LO*(I-1)))
+ I (LST-LO)>0 S L=LST-LO D  G RAZSET
+ .I LST["<>" D  Q
+ ..F I=1:1:H S M(I)=$$RA($$RAZS(L,1),$E(M(I),1))_M(I)_$$RA($$RAZS(L,2),$E(M(I),$L(M(I))))
+ .I LST[">" F I=1:1:H S M(I)=M(I)_$$RA(L,$E(M(I),$L(M(I))))
+ .I LST["<" F I=1:1:H S M(I)=$$RA(L,$E(M(I),1))_M(I)
+ I (LST-LO)<0 S L=LO-LST D  G RAZSET
+ .I LST["<>" D  Q
+ ..F I=1:1:H S M(I)=$E(M(I),$$RAZS(L,1)+1,$L(M(I))-$$RAZS(L,2))
+ .I LST[">" F I=1:1:H S M(I)=$E(M(I),1,$L(M(I))-L)
+ .I LST["<" F I=1:1:H S M(I)=$E(M(I),L+1,$L(M(I)))
+RAZSET S M="" F I=1:1:H S M=M_M(I)
+ S $P(^(k),"@",15)=$$Cut^%ZAPM.ed.BSF10(M) Q
+RAZS(W,N) ;ПОПАЛАМ
+ I '(W#2) Q (W\2)
+ I N=1 Q (W\2)+1
+ Q (W\2)
+RA(L,S) ;ПОВТОР
+ I '($A(S)>178&($A(S)<220)) S S=" "
+ Q $TR($J("",L)," ",S)
+TAB D Wait^%ZAPM.ed.BSXfun("ФормированиеТаблицы")
+TABM G:$P($ZV,"Version ",2)<4&($ZV'["Cach"&&($ZV'["IRIS")) TABm ;АВТОФОРМАТИРОВАНИЕ
+ N i,j,x,y,h,l,L,H S ke=$O(@BSR@(BST,1,"&"),-1) X WA G:ke>4092 TABm
+ F j=1:1:ke S $E(L,j)=$C($P(@BSR@(BST,1,j),"@",4))
+ S se=$O(@BSR@(BST,"&"),-1) G:se>4092 TABm X WA F i=1:1:se S $E(H,i)=$C($P(@BSR@(BST,i,1),"@",3))
+ F i=1:1:se S y=$S('$D(y):1,1:y+h),h=$A($E(H,i)) D  K x I '(i#50) X WA
+ .F j=1:1:ke S x=$S('$D(x):1,1:x+l),l=$A($E(L,j)),$P(@BSR@(BST,i,j),"@",1,2)=y_"@"_x
+ S $P(@BSR@(BST),"@",28)=se,$P(@$ZR,"@",29)=ke
+SaveM I $G(@BSR@(BST,"SVM"))'="" D XM^%ZAPM.ed.BSre(@$ZR)
+ Q
+TABm ;```СТАРЫЙ МОДУЛЬ
+ N x,y,h,l F i=1:1 Q:'$D(@(BSR_"(BST,i)"))  S y=$S('$D(y):1,1:y+h),h=$P(@(BSR_"(BST,i,1)"),"@",3) D  K x I '(i#50) X $G(WA)
+ .F j=1:1 Q:'$D(@(BSR_"(BST,i,j)"))  S Tmp=@$ZR,x=$S('$D(x):1,1:x+l),$P(Tmp,"@",2)=x,$P(Tmp,"@")=y,l=$P(Tmp,"@",4) S:$D(TSV)&($P(Tmp,"@",15)=0) $P(Tmp,"@",15)="" S ^(j)=Tmp
+ K x,y,l,h S $P(@(BSR_"(BST)"),"@",28)=i-1,$P(@$ZR,"@",29)=j-1
+ G SaveM
+ Q
+LINE ;КОРРЕКЦИЯ СТРОКИ
+ S ll="@# " D LE^%ZAPM.ed.BSTT I YES
+ Q  ;I 1 Q
+LIF X "I 0" Q
+LINF N say1,say2 S say1=ls,say2=%hlp ;КОРРЕКЦИЯ ФУНКЦИЙ *
+LINEFUN S ll="" D LE^%ZAPM.ed.BSTT I YES D E1F I 'YES S ls=say1,%hlp=say2 G LINEFUN
+ Q  ;I 1 Q
+E41 S i=$P(BS,"@",9),k=$S(i=1:2,1:1) D:k=2 BDCN I YES S $P(@(BSR_"(BST,ny,nx)"),"@",9)=k G D
+ G D
+E421 S k=1 G E4
+E422 S k=2 D BDCN I 'YES G D
+E4 S do="S $P(^(j),""@"",9)=k" D BLOK I  D W^%ZAPM.ed.BST
+D G 0^%ZAPM.ed.BSTM
+BDCN I '$D(BSCN) S YES=0 I $G(@(BSR_"(BST,""KEY"")"))'["^" S ls=" ВАША ТАБЛИЦА БУДЕТ ПРИКРЕПЛЯТЬСЯ К КАКОЙ-НИБУДЬ БАЗЕ ДАННЫХ ? " D YES^%ZAPM.ed.BSF I 'YES Q
+ S YES=1,BDCN=1 Q
+E61 S i=$P(BS,"@",5),$P(@(BSR_"(BST,ny,nx)"),"@",5)=$S(i=1:"",1:1) G D
+E621 S k="" G E6
+E622 S k=1
+E6 S do="S $P(^(j),""@"",5)=k" D BLOK G D
+E631 S k="" G E6A
+HIS(f) S %HIS=$NA(^%ZAPM.ed.BSbufB("HIStory"_f_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")))
+ Q
+AHI(f,d) Q:d=""  N %HIS D HIS(f) D AddHist^%ZAPM.ed.BSXuse(%HIS,"Удалено{"_ny_","_nx_","_BST_"}="_d)
+ Q
+E632 S k=1
+E6A S do="S $P(^(j),""@"",5)=k" D ALLT^%ZAPM.ed.BSS1 G D
+EE11 S li1=$G(@(BSR_"(BST,f,ny,nx)")),li=$G(^(nx,1)) I li="" S li=$P($G(@BSR@(BST,ny,nx)),"@",$S(f="FCL":7,f="FTR":8,f="COL":13,1:16)) Q
+ Q
+E11 S f="FCL" D EE11,HIS(f) S YES=0,%hlp="^%ZAPM.ed.BSHLP(200",ls=" Вводите / Корректируйте формулу вычисления в клетке {"_ny_","_nx_"}. Помощь-F1" D LINF I YES S i=ny,j=nx D E1Z D:$D(%CAL) CALC^%ZAPM.ed.BSF3
+ G D
+E141 S f="COL" D EE11,HIS(f) S YES=0,%hlp="^%ZAPM.ed.BSHLP(203",ls=" Вводите / Корректируйте формулу логического контроля (F1)" D LINF I YES S i=ny,j=nx D E1Z
+ G D
+E142 S f="COL",do="D E1Z" D EE11,BLOK I  D W^%ZAPM.ed.BST
+ G D
+E143 D TXTLOG^%ZAPM.ed.BSF8 G D
+E12 S f="FCL",do="D E1Z",ft=$P(BS,"@",7) D EE11 I li1'="" D Yes^%ZAPM.ed.BSXfun("Формулу ТРАНСЛИРОВАТЬ ?",2) I YES D CalcTran^%ZAPM.ed.BSF10(li)
+ D BLOK I  D W^%ZAPM.ed.BST
+ G D
+E1zz S ny=i,nx=j,Oli=li,Oli1=li1 X "S Tmp="_TAR S li=$$TR^%ZAPM.ed.BSsFUNM(li,SOU,Tmp),li1=$$TR^%ZAPM.ed.BSsFUNM(li1,SOU,Tmp) D E1Z S li=Oli,li1=Oli1 Q
+E1Z I li'="" S:li'?.N1",".N @(BSR_"(BST,f,i,j)")=li1,^(j,1)=li,$P(@(BSR_"(BST,i,j)"),"@",$S(f="FCL":7,f="FTR":8,f="COL":13,1:16))=$S(f="FCL":$G(ft,1),1:0) D:li?.N1",".N  G 23
+ .K @(BSR_"(BST,f,i,j)") S $P(@(BSR_"(BST,i,j)"),"@",$S(f="FCL":7,f="FTR":8,f="COL":13,1:16))=li S:"FCLCOL"[f $P(@(BSR_"(BST)"),"@",$S(f="FCL":32,1:33))=1 D C11 Q
+ E  K @(BSR_"(BST,f,i,j)") S $P(@(BSR_"(BST,i,j)"),"@",$S(f="FCL":7,f="FTR":8,f="COL":13,f="RTR":16,1:7))="" D C11
+23 D 24^%ZAPM.ed.BSTM Q
+C11 Q:f'="COL"  S $P(@(BSR_"(BST,i,j)"),"@",11)="" Q
+E1F ;СИНТ & ЛОГ КОНТРОЛЬ ФОРМУЛ И ФУНКЦИИ ЛОГИКИ
+ S YES=1 Q:li=""  Q:li&($P(li,","))&($P(li,",",2))&('$P(li,",",3))  G ^%ZAPM.ed.BSFTF ;!!!
+E21 S f="FTR" D EE11,HIS(f) S YES=0,%hlp="^%ZAPM.ed.BSHLP(201",ls=" Вводите / Корректируйте функцию трансформации (F1)" D LINF I YES S i=ny,j=nx D E1Z
+ G D
+E22 S f="FTR",do="D E1Z" D EE11,BLOK I  D W^%ZAPM.ed.BST
+ G D
+E17 D POST^%ZAPM.ed.BSF9 G D
+E161 S f="RTR" D EE11,HIS(f) S YES=0,%hlp="^%ZAPM.ed.BSHLP(204",ls=" Корректируйте функцию синтаксического контроля на ввод данных (F1)" D LINF I YES S i=ny,j=nx D E1Z
+ G D
+E162 S f="RTR",do="D E1Z" D EE11,BLOK I  D W^%ZAPM.ed.BST
+ G D
+E91 G E91^%ZAPM.ed.BSF2
+E52 G EXPORT^%ZAPM.ed.BSBL1
+E531 s YES=$$Dbf2Tab^%ZAPM.ed.BSXdbf1()
+ i YES=0 d CopySons^%ZAPM.ed.BSXfun1(BSR,BST,$E(BST,2,$L(BST))) s YES=-4
+ i YES=-4 g 100^%ZAPM.ed.BSF k @(BSR_"(BST)")
+ G D
+E532 D In^%ZAPM.ed.BSXdbf1($NA(@BSR@(BST)),0) G D
+E533 D In^%ZAPM.ed.BSXdbf1($NA(@BSR@(BST)),1) G D
+E54 G EXPORTXT^%ZAPM.ed.BSBL1
+  G 10^%ZAPM.ed.BSF
+E92 G E92^%ZAPM.ed.BSF2
+E10 G E10^%ZAPM.ed.BSTK ;КЛЮЧИ
+E131 G E131^%ZAPM.ed.BSF2
+E132 G E132^%ZAPM.ed.BSF2
+E133 G E133^%ZAPM.ed.BSS2
+E134 G E134^%ZAPM.ed.BSS2
+E1351 G E1351^%ZAPM.ed.BSS2
+E1352 G E1352^%ZAPM.ed.BSS2
+E1353 G E1353^%ZAPM.ed.BSS2
+E1354 G E1354^%ZAPM.ed.BSS2
+E136 K @(BSR_"(BST,""DBF"")") G D
+E137 S do="S ls=$P(^(j),""@"",15),li=$$ClearSpc^%ZAPM.ed.BSF7(ls) I li'=ls S $P(^(j),""@"",15)=li" D BLOK G D
+E138 G D:TIP'=8 K @BSR@(BST,"BUT") S TIP=1,$P(@BSR@(BST),"@",17)=1 G D
+E311 D XBD^%ZAPM.ed.BSS1 G D
+E312 D PRI^%ZAPM.ed.BSS1 G D
+E321 D OUT^%ZAPM.ed.BSS1 G D
+E322 D BLK^%ZAPM.ed.BSS1 G D
+E323 D SSS^%ZAPM.ed.BSS1 G D
+E34 D EDIT^%ZAPM.ed.BSIND G D
+E121 D TAB^%ZAPM.ed.BSF3 G D
+E122 D CMD^%ZAPM.ed.BSF3 G D
+E123 D COPYCMD^%ZAPM.ed.BSF8 G D
+E171 S sr=1 G E170 ;?
+E172 S sr=2 G E170
+E173 S sr=3
+E170 G SHR^%ZAPM.ed.BSSR

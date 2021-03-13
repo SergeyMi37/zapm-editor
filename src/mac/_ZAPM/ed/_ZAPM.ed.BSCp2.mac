@@ -1,0 +1,586 @@
+ROUTINE %ZAPM.ed.BSCp2
+%BSCp2 //СИСТЕМНЫЕ ФУНКЦИИ (ЧАСТЬ 2)
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;--------------------------------
+ i 1 d  //тест на $T
+ .i 0 
+ .W 222_$T
+ e  w 111_$t
+ q
+ipS() //адрес текущего сервера
+ q $P($ZU(54,13,$zu(110)),",") //$zu(54,0)=$zu(110)?
+ 
+PreCBE(th,de) //подготовка переменных и функций для редактируемого комбобокса
+ w " <link rel='stylesheet' type='text/css' href='"_th_"cb-edit.css' />"
+ D JS^%ZAPM.ed.BSCp
+ w "var arrowImage = '"_th_"images/arrow.gif';"_BK	// Regular arrow
+ w "var arrowImageOver = arrowImage ;"_BK //// '"_th_"images/arrow.gif';"_BK	// Mouse over
+ w "var arrowImageDown = arrowImage ;"_BK //// '"_th_"images/arrow.gif';"_BK	// Mouse down
+ w "var deli = '"_$g(de,"~")_"';"_BK	//присвоение разделителя
+ D JSE^%ZAPM.ed.BSCp
+ w "<script type='text/javascript' src='"_th_"cb-edit.js'></script>	"_BK
+ //w "<script type='text/javascript' src='"_th_"mfun.js'></script>	"_BK
+ q
+w2f(Fname) n OLDIO //модуль вывода всех локальных переменных в файл
+ I $g(Fname)="" S Fname="N:\out-w2f.log"
+ I $ZU(140,4,Fname)'=0 S OLDIO=$I O Fname:"UWN" U Fname W "-----",! W  W "-------",! U OLDIO C Fname 
+ q ""
+Put2Registr //записать в реестр информацию о сессии и пользователе
+ D Exec^%ZAPM.ed.BSCp //СТАРАЯ КОНЦЕПЦИЯ и самая правильная
+ n p s p=$$PORT^%ZAPM.ed.BSpgWEBC i "23"[p s p=""  //порт tkweb
+ s p=$P($$ADDSN^%ZAPM.ed.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /n=PRG /v="_$G(p)_" /f=1 /c="_$g(%CGIEVAR("REMOTE_ADDR"))_" "_$g(BSadd2registr)  //f=0 проверить как записалось в реестр
+ 
+ D JS^%ZAPM.ed.BSCp 
+ W "Exec('put2registr.exe','"_p_"','"_$$DR^%ZAPM.ed.BSCp2_"');"_BK  //записать в реестр информацию о сессии и пользователе
+ D JSE^%ZAPM.ed.BSCp
+ q
+RunRem //запуск запоминателя для проекта АСУ
+ D Exec^%ZAPM.ed.BSCp
+ D JS^%ZAPM.ed.BSCp 
+ W "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,"RunRem2^~BSCp2")_""",""WORK"","""");"_BK
+ D JSE^%ZAPM.ed.BSCp
+ s BSmenuID="_ASURParms" zn $$v^%ZAPM.ed.BSCp("vPRG") d Arms2^BSadmin
+ q
+RunRem2 //запуск запоминателя
+ zn $$v^%ZAPM.ed.BSCp("vPRG") d VAR^BSadmin s flag=$$GETOPT^%ZAPM.ed.BSC4cfgP(g,"A1rA3") i 'flag q
+ D Exec^%ZAPM.ed.BSCp  
+ H 4
+ D JS^%ZAPM.ed.BSCp 
+ n BSNSP,BSLABEL,BSFRM2,BSGRANT,BSLABEL2,BSNSP2 ///Command-"?BSTKWEB%20?&BSLABEL=Hello^ASUJNLlApi&BSLNG=RUS&BSLOGIN=0095&BSLogin=0095&BSNSP=ASU&BSPIN=MSM&BSPRO=&BSSES=493.484165&BSTOP2=Специальный функционал АСУРП&BSdebug=1&BSframe=&BSmenuID=zOpenSess&BSnewREG=1&BStyle=ASU" /Address-ast-w2003-34 /Host-ast-w2003-34 /Port-1966 /Interval-5000 
+ s BSLogin=BSLOGIN,BSNSP=$$v^%ZAPM.ed.BSCp("vASU"),BSLABEL="Hello^ASUJNLlApi"
+ s ur="/BSLogin-"_BSLOGIN_" /Command-"""_$$ADDLIB^%ZAPM.ed.BSC4()_$$addb^%ZAPM.ed.BSC4()_""" /Address-"_$p($$ADDSN^%ZAPM.ed.BSC4(),":")_" /Host-"_$p($$ADDSN^%ZAPM.ed.BSC4(),":")_" /Port-1966 /Interval-5000 "
+ ;s ^%zz($h)=ur
+ ;w "alert('"_url_"');"_BK
+ W "Exec('rA3.exe','"_ur_"','"_$$DR^%ZAPM.ed.BSCp2_"');"_BK
+ D JSE^%ZAPM.ed.BSCp
+ q
+ThisServer() //мы на сервере?
+ n ip,IP1
+ s ip=$g(%CGIEVAR("REMOTE_ADDR")) i ip="" q "? программа выполняется не под ИП" //ip клиента
+ i ip="localhost"!(ip="127.0.0.1") q 1
+ S IP1=$P($ZU(54,13,$zu(110)),",")  //ip сервера 
+ i ip=IP1 q 1 
+ q 0
+PartList(P) //список документов %BS из ссылки P
+ D JS^%ZAPM.ed.BSCp
+ //--------------------------------
+ w "function Edit(BSitem) {"_BK
+ w "alert(BSitem);"_BK
+ w "}"_BK
+ //----------------------------
+ w "function View(BSitem) {",BK
+ i 1 s BSLABEL="CALL2^~BSmirGL" D
+ .w "window.open('"_$$ADDBSGET^%ZAPM.ed.BSC4_"&BSitem='+BSitem,'view',""toolbar=no,menubar=yes,scrollbars=yes,width=800,height=600,status=1,resizable=1"");"_BK
+ w "}",BK
+ //--------------------------------
+  w "function txt2exc(URLmir,MODE1) {",BK
+ //загрузка в Excel текста из URL НОВАЯ ОПЦИЯ У put2registr.exe
+ W "var u2='"_$$ADDBSGET^%ZAPM.ed.BSC4(,"HyperRunwin^~BSCp2")_"&BSa1=put2registr.exe&BSa3="_$$DR^%ZAPM.ed.BSCp2_"&BSa2=inbuff&BSa4='+MODE1+URLmir;"_BK
+ ;;W "alert(u2);"_BK
+ W "window.open(u2,""WORK"",""toolbar=no,menubar=no,scrollbars=yes,width=1,height=1,status=1,resizable=1"");"_BK
+ w "}",BK
+ D JSE^%ZAPM.ed.BSCp
+ 
+ D TABL^%ZAPM.ed.BSCp
+ s t="" f  s t=$o(@P@(t)) q:t=""   d Item($na(@P@(t)))
+ D TABLE^%ZAPM.ed.BSCp
+ ;WorkRun^%ZAPM.ed.BSCp2(EXE,PAR,DIR)
+ q
+ 
+Item(PT,DIS) //текущий документ
+ n BSitem,TIT,ST s BSitem=$$b64e^%ZAPM.ed.BSCp2(PT)
+ s TIT="",ST=1 i $g(DIS)'="" s TIT="Заблокирован доступ. ",ST=0
+ w "<tr>"
+ w "<td class=s1>"_$qs(PT,$ql(PT))_"</td>"
+ w "<td class=s1>"_BK
+ i $p($g(@PT),"@",17)=5 d
+ .W "<button class=u1 onclick='View("""_BSitem_""");' "_$g(DIS)_" ><img border=0 src='"_BSDOMAIN_"/img/view_1.gif' ALT='Просмотр текста отчета' ></button>"
+ .W "<button class=u1 onclick='Edit("""_BSitem_""");' "_$g(DIS)_" ><img border=0 src='"_BSDOMAIN_"/img/edit.gif' ALT='Редактировать текст отчета'></button>"
+ .W "<BUTTON onclick=""txt2exc('&BSitem="_BSitem_"','true');"" "_$g(DIS)_" title='"_TIT_"Экспорт в EXCEL без разбора по полям'><img src='"_BSDOMAIN_"/img/bsx_"_ST_".gif' WIDTH=15 border=0></BUTTON>"_BK
+ .W "<BUTTON onclick=""txt2exc('&BSitem="_BSitem_"','false')"" "_$g(DIS)_" title='"_TIT_"Экспорт в EXCEL с разбором по полям. "_$C(10)_" По правой клавише мыши доступны "_$C(10)_" дополнительные опции'><img src='"_BSDOMAIN_"/img/xls_"_ST_".gif' border=0></BUTTON>"_BK
+ w "</td>"
+ W "<td class=s1>"_$p($g(@PT),"@",1)_"</td>"
+ w "</tr>"_BK
+ q
+ /*
+ */
+ //////--------------------------------//////  WebView WebView WebView WebView WebView WebView WebView WebView WebView
+GetCmd //ПРОВЕРКА и возврат команды на запуск внешнего приложения из браузера - WebView
+ S A=$$GetVar^%ZAPM.ed.BSC4("RunB4y")
+ I A'="" K @BDSES@(BSSES,"VAR","RunB4y")
+ W A
+ Q
+CloseWebView d SetCmd("terminate webview","","","")
+ q
+SetCmd(CM,EXE,PAR,DIR) //ПРИСВОИТЬ КОМАНУ Запуска внешнего приложения -  WebView
+ N A,B
+ S A="RunB4y"_BK_CM_BK_EXE_BK_PAR_BK_DIR_BK
+ I $$GetVar^%ZAPM.ed.BSC4("RunB4y")=$$GetVar^%ZAPM.ed.BSC4("RunB4y+") H 3
+ S B=$$SetVar^%ZAPM.ed.BSC4("RunB4y+",A)
+ Q $$SetVar^%ZAPM.ed.BSC4("RunB4y",A)
+ 
+ActiveRef(BSid,FileName)  //АКТИВНАЯ ССЫЛКА  загрузки файлов из CSP страниц
+ n ext i 'BSid q ""
+ s ext=$p(FileName,".",$l(FileName,"."))
+ q "<div class=u1 onclick='LoadCFW("_BSid_");' title='"_FileName_"' >&nbsp<img border=0 src='/csp/asu/ext/"_ext_".gif' ></div>"
+ 
+ActiveRefFun() //сформировать функцию загрузки файлов из CSP страниц
+ s BK=$c(13,10)
+ D JS^%ZAPM.ed.BSCp
+ W "function LoadCFW(id2) {"_BK
+ //w "alert(id2);"_BK
+ w "parent.parent.parent.WORK.location='"_$$GetUrlWorkRun^%ZAPM.ed.BSCp2(BSLOGIN,BSSES,"CacheFileWork.exe","/cmd-edit /server-"_$zu(110)_" /port-1972 /code-viewgroup /BSLogin-"_BSLOGIN_" /id-'+id2+'",$$DirClientIPf^%ZAPM.ed.BSCp2("^[""PRG"",""""]BSc4uSESS",BSSES))_"';"_BK
+ w "}"_BK
+ D JSE^%ZAPM.ed.BSCp
+ Q
+GetUrlWorkRun(BSLOGIN,BSSES,BSa1,BSa2,BSa3)
+ n u,%  N I F I=1:1:4  I $D(@("BSa"_I)) S @("BSa"_I)=$$%T^%ZAPM.ed.BSCh(@("BSa"_I))
+ S %("HOST:")=$ZU(110)_":1962"
+ s u="http://"_$$ADDSN^%ZAPM.ed.BSC4_$$ADDBSGET^%ZAPM.ed.BSC4(,"WorkRun2^~BSCp2")
+ q u
+ 
+WorkRun(BSa1,BSa2,BSa3) ///EXE,PAR,DIR - ЗАГРУЗИТЬ
+ N I F I=1:1:4  I $D(@("BSa"_I)) S @("BSa"_I)=$$%T^%ZAPM.ed.BSCh(@("BSa"_I))
+ D JS^%ZAPM.ed.BSCp
+ W "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,"WorkRun2^~BSCp2")_""",""WORK"","""");"_BK
+ D JSE^%ZAPM.ed.BSCp
+ q
+WorkRun2 //EXE,PAR,DIR
+ 
+ //W "<HTML><BODY bgcolor='BLACK'>"
+ N I F I=1:1:4 I $D(@("BSa"_I)) S @("BSa"_I)=$$%^%ZAPM.ed.BSCh(@("BSa"_I))
+ S I=BSa2
+ I BSa2="inbuff" D   //ЭТОТ ГИМОРОЙ ИЗ-ЗА ВНЕШНЕГО ВЫЗОВА ЕXCELA для конвертации текста в Excel
+ .S I=$P($$ADDSN^%ZAPM.ed.BSC4,":")_" /p=0 /t="_$G(BSa4)_" /u=http://"
+ .D
+ ..N BSa3,BSa4,BSa2
+ ..S I=I_$$ADDSN^%ZAPM.ed.BSC4_$$ADDBSGET^%ZAPM.ed.BSC4(,"CALL1^~BSmirGL")
+ D JS^%ZAPM.ed.BSCp
+ 
+ W "//BSSES="_BSSES_" EXE="_BSa1_BK_"//PAR="_I_BK_"//DIR="_BSa3_BK
+ 
+ //D locvar^%ZAPM.ed.BSCh0("",1)
+ ;w "alert('"_I_"');"_BK
+ w "status='Status :Exec:*"_BSa1_"*"_I_"*"_BSa3_"*';"_BK  ;R=Path\\Prog.exe  R="parametrs in command line"  D=/directory/run
+ i $G(@BDSES@(BSSES,"VAR","DirRun"))'="" w "status='Ждите, программа запускается...';"_BK
+ e  w "alert('Ошибка запуска ! Клиет ИП должен был загружен программой WebView.exe');"_BK
+ D JSE^%ZAPM.ed.BSCp
+ //W "</BODY></HTML>"
+ Q
+ 
+HyperRun(BSa1,BSa2,BSa3) ///EXE,PAR,DIR - ЗАГРУЗИТЬ
+ N I F I=1:1:4  I $D(@("BSa"_I)) S @("BSa"_I)=$$%T^%ZAPM.ed.BSCh(@("BSa"_I))
+ Q "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,"HyperRunwin^~BSCp2")_""",""WORK"",""toolbar=no,menubar=no,scrollbars=no,width=1,height=1,status=1,resizable=1"");"
+HyperRunwin //EXE,PAR,DIR
+ g WorkRun2 //!!!!!!!!!!!!!!!!!!!!!! пока так
+ W "<HTML><BODY bgcolor='BLACK'>"
+ N I F I=1:1:4 I $D(@("BSa"_I)) S @("BSa"_I)=$$%^%ZAPM.ed.BSCh(@("BSa"_I))
+ S I=BSa2
+ I BSa2="inbuff" D   //ЭТОТ ГИМОРОЙ ИЗ-ЗА ВНЕШНЕГО ВЫЗОВА ЕXCELA
+ .S I=$P($$ADDSN^%ZAPM.ed.BSC4,":")_" /p=0 /t="_$G(BSa4)_" /u=http://"
+ .D
+ ..N BSa3,BSa4,BSa2
+ ..S I=I_$$ADDSN^%ZAPM.ed.BSC4_$$ADDBSGET^%ZAPM.ed.BSC4(,"CALL1^~BSmirGL")
+ 
+ W "BSSES="_BSSES_" EXE="_BSa1_BK_"PAR="_I_BK_"DIR="_BSa3_BK
+ 
+ W $$SetCmd("",BSa1,I,BSa3)
+ 
+ //D locvar^%ZAPM.ed.BSCh0("",1)
+ 
+ D JS^%ZAPM.ed.BSCp
+ W "window.close();"_BK
+ D JSE^%ZAPM.ed.BSCp
+ W "</BODY></HTML>"
+ Q
+WorkTel(BSa1,BSa2,BSa3,BSa4) //ЗАГРУЗИТЬ ТЕРМИНАЛ /NS,PART,TABL,TITLE === 1,2,3,4
+ N I F I=1:1:4 S @("BSa"_I)=$$%T^%ZAPM.ed.BSCh(@("BSa"_I))
+ D JS^%ZAPM.ed.BSCp
+ W "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,"WorkTelRun^~BSCp2")_""",""WORK"",""toolbar=no,menubar=no,scrollbars=no,width=1,height=1,status=1,resizable=1"");"_BK
+ D JSE^%ZAPM.ed.BSCp
+ Q
+WorkTelRun
+ N I F I=1:1:4 S @("BSa"_I)=$$%^%ZAPM.ed.BSCh(@("BSa"_I))
+ N A,FTerm,TelPort,R
+ I $G(BSa2)="@" S BSa2="#"
+ S FTerm=$$FTerm^%ZAPM.ed.BSCmDDR
+ I FTerm=1 D
+ .S R="BSCacheTel.exe"
+ .S A=$P($$ADDSN^%ZAPM.ed.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /p="_$$PortTerm^%ZAPM.ed.BSCp2_" /t="_BSa3_" /n="_BSa1_" /v="_$$VerTelnet^%ZAPM.ed.BSCp_" /y=1 /x="_BSa2_" /f="_$$nse^%ZAPM.ed.BSCmDDR_BSa4
+ I FTerm=2 D
+ .S R="AdvSockTerm.exe"
+ .S A="D BST^%ZAPM.ed.BSC("""""_BSa1_""""","""""_BSa2_""""","""""_BSa3_""""",""""1"""","""""""","""""_BSLOGIN_""""","""""_BSSES_""""")"
+ .S A="server="""_$P($$ADDSN^%ZAPM.ed.BSC4,":")_""" port="""_$$PortTerm^%ZAPM.ed.BSCp2_""" user=""SYS"" psw=""XXX"" cmdline="""_A_""" title="""_$$nse^%ZAPM.ed.BSCmDDR_BSa4_""""
+ S Di=$$DirClientIP^%ZAPM.ed.BSCp2
+ D JS^%ZAPM.ed.BSCp
+ W "//EXE="_R_BK_"//PAR="_A_BK_"//DIR="_Di_BK
+ W "var Par='"_A_"';"_BK
+ //w "alert(Par);"_BK
+ w "status='Status :Exec:*"_R_"*'+Par+'*"_$$DirClientIP^%ZAPM.ed.BSCp2_"*';"_BK  ;R=Path\\Prog.exe  R="parametrs in command line"  D=/directory/run
+ i $G(@BDSES@(BSSES,"VAR","DirRun"))'="" w "status='Ждите, программа запускается...';"_BK
+ e  w "alert('Ошибка запуска ! Клиет ИП должен был загружен программой WebView.exe');"_BK
+ D JSE^%ZAPM.ed.BSCp
+ q
+HyperRunTel(BSa1,BSa2,BSa3,BSa4) //ЗАГРУЗИТЬ ТЕРМИНАЛ /NS,PART,TABL,TITLE === 1,2,3,4
+ N I F I=1:1:4 S @("BSa"_I)=$$%T^%ZAPM.ed.BSCh(@("BSa"_I))
+ Q "open("""_$$ADDBSGET^%ZAPM.ed.BSC4(,"HyperRunTelwin^~BSCp2")_""",""WORK"",""toolbar=no,menubar=no,scrollbars=no,width=1,height=1,status=1,resizable=1"");"
+HyperRunTelwin //NS,PART,TABL,TITLE === 1,2,3,4
+ N I F I=1:1:4 S @("BSa"_I)=$$%^%ZAPM.ed.BSCh(@("BSa"_I))
+  N A,FTerm,TelPort,R
+  I $G(BSa2)="@" S BSa2="#"
+ S FTerm=$$FTerm^%ZAPM.ed.BSCmDDR
+ I FTerm=1 D
+ .S R="BSCacheTel.exe"
+ .S A=$P($$ADDSN^%ZAPM.ed.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /p="_$$PortTerm^%ZAPM.ed.BSCp2_" /t="_BSa3_" /n="_BSa1_" /v="_$$VerTelnet^%ZAPM.ed.BSCp_" /y=1 /x="_BSa2_" /f="_$$nse^%ZAPM.ed.BSCmDDR_BSa4
+ I FTerm=2 D
+ .S R="AdvSockTerm.exe"
+ .S A="D BST^%ZAPM.ed.BSC("""""_BSa1_""""","""""_BSa2_""""","""""_BSa3_""""",""""1"""","""""""","""""_BSLOGIN_""""","""""_BSSES_""""")"
+ .S A="server="""_$P($$ADDSN^%ZAPM.ed.BSC4,":")_""" port="""_$$PortTerm^%ZAPM.ed.BSCp2_""" user=""SYS"" psw=""XXX"" cmdline="""_A_""" title="""_$$nse^%ZAPM.ed.BSCmDDR_BSa4_""""
+ S Di=$$DirClientIP^%ZAPM.ed.BSCp2
+ W "EXE="_R_BK_"PAR="_A_BK_"DIR="_Di_BK
+ D SetCmd("",R,A,Di)
+ D JS^%ZAPM.ed.BSCp
+ W "window.close();"_BK
+ D JSE^%ZAPM.ed.BSCp
+ Q
+ /////---------------------------------///////////////////// WebView WebView WebView WebView WebView WebView WebView WebView
+DR() //Возвратить рабочую директорию, если ИП запущен через WebView.exe
+ Q $tr($G(@BDSES@(BSSES,"VAR","DirRun")),"\","/")
+GetPartName(BSLOGIN)  //ИМЯ РАЗДЕЛА ГОТОВЫХ ОТЧЕТОВ ДЛЯ ПОЛЬЗОВАТЕЛЯ BSLOGIN
+ N A S A=$$SW^%ZAPM.ed.BSF12("^%ZAPM.ed.BSbufS")
+ I $G(BSLOGIN)'="" Q $NA(@(A_$$2LAT^%ZAPM.ed.BSCp(BSLOGIN))) 
+ Q $P($$LISTPART1^%ZAPM.ed.BSmirGL()," ")
+PortTerm() N TelPort,tcpPORT //ОПРЕДЕЛИТЬ ПОРТ ТЕРМИНАЛА
+ ;S tcpPORT=$$PORT^%ZAPM.ed.BSpgTEL //ЭТО ВКЛЮЧИМ КОГДА БУДЕТ НОРМАЛЬНЫЙ BS-TERMINAL
+ S TelPort=$G(^%ZAPM.ed.BS("Telnet","Port"),23) I TelPort="" K TelPort 
+ Q $G(tcpPORT,$G(TelPort,23))
+ ;
+ ;%SYS"",""@"",""InfoSessi^^%ZAPM.ed.BSC4rout("_BSSES_")"",""Sessions""   - ЗАПУСК ПРОГРАММЫ ИЗ НС %SYS
+ ;"1","$","$","Terminal"  										  - ЗАПУСК ПОЛНОГО ТЕРМИНАЛА
+ ;""GLAVK"",""%BSJPRN"",""DPP"",""Устройства вывода""			  - ЗАПУСК ТАБЛИЦЫ
+ ;"""_N_""",""$"",""$"",""Namespace_"_N_"""						  - ЗАПУСК ТЕРМИНАЛА ИЗ НС 
+ ;
+TELNET(NS,PART,TABL,TITLE) /////NS,PART,TABL,TITLE ---> ""%SYS"",""#"",""InfoSessi^^%ZAPM.ed.BSC4rout("_BSSES_")"",""Sessions""  /////t='+TABL+' /n='+NS+' /y=1 /x='+PART+'
+ N A S A=$P($$ADDSN^%ZAPM.ed.BSC4,":")_" /s="_BSLOGIN_" /i="_BSSES_" /p="_$$PortTerm^%ZAPM.ed.BSCp2_" /t="_TABL_" /n="_NS_" /y=1 /v="_$$VerTelnet^%ZAPM.ed.BSCp_" /x="_PART_" /f="_$$nse^%ZAPM.ed.BSCmDDR_TITLE
+ Q " ExecTel('"_NS_"','"_PART_"','"_TABL_"','"_TITLE_"');"
+ 
+DirTemp(BSSES) //получение директории временных файлов
+ s BDSES=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""SESSIONS"")") q $$DirTempo()
+DirTempo() N B S B=$TR($G(@BDSES@(BSSES,"VAR","DirTemp")),"\","/")_"/" I B="/" S B="C:/Program Files/MSW-Tools/ClientIP/TemporaryISS/"
+ Q B
+ 
+DirClientIPff(BSSES) //получение директории установки ClientIP - клиента ИнфоПортала
+ s BDSES=$$KBD^%ZAPM.ed.BSF12("^%ZAPM.ed.BSC4(""SESSIONS"")") q $$DirClientIP()
+DirClientIPf(BDSES,BSSES) q $$DirClientIP()
+DirClientIP() N B S B=$TR($G(@BDSES@(BSSES,"VAR","DirRun")),"\","/")_"/" I B="/" S B="C:/Program Files/MSW-Tools/ClientIP/"
+ Q B
+WebView(HTTP) N A S A=$$DirClientIP^%ZAPM.ed.BSCp2
+ Q " Exec('"_A_"WebView.exe','"_HTTP_"','"_A_"');"
+OpenWeb(HTTP,OK) //OK=' - ЗАКРЫВАЮЩАЯ ОДИНАРНАЯ КОВЫЧКА НУЖНА
+ N A S A=$$DirClientIP^%ZAPM.ed.BSCp2
+ Q " Exec('"_A_"OpenWeb.exe','"_HTTP_$G(OK)_",'"_A_"');"
+SN() //ПОЛУЧИТЬ СЕРИЙНЫЙ НОМЕР 0 ДИСКА
+  q $zf(-3, "l:\MSW_Tools\_kev\ZF-HDSerialNumber\HDSN.dll", "GETHDSERIAL")
+COMP // СРАВНЕНИЕ ДВУХ ПРОГРАММ
+ I '$D(Fname) S Fname="N:\222.TXT" I $ZU(140,4,Fname)'=0 O Fname:"UWN" U Fname W "-----",! D  W "-------",! C Fname
+ .W $$rcomp^%Wr("%SYS","%SYS","%BSCSVV.INT","%BSCSVVold.INT")
+ Q
+rcomp(r1,r2) //СРАВНИТЬ
+ N A S A=$$rr(r2) I A="" Q ""
+ Q $$rr(r1)=A
+rr(ZN) //СОЗВРАТИТЬ СУММАРНУЮ КОНТРОЛЬНУЮ СУММУ НА ТЕКCТ ПРОГРАММЫ
+ N R,I,S
+ M R=^ROUTINE(ZN,0)
+ S S="" F I=1:1 Q:'$D(R(I))  S S=S+$ZCRC(R(I),7)
+ Q S
+CRO(RN,EXT,SS) //ТОЛЬКО СРАВНИТЬ
+ N R,T
+ S T=$NA(^mtempBSCOMP($J)),R="^tempoCompBs"
+ D ROUTINE^%R(R_"."_EXT,.SS,.err,"CS",0)
+ S @T@(RN)=$$rcomp(R,RN)
+ Q
+COMPLOG() //ОТДАТЬ ПРОТОКОЛ
+ N T,S,I,BK S $ZT="COMPLOGerr"
+ S T=$NA(^mtempBSCOMP($J)),S="------ Протокол сравнения программ --------",I="",BK=$C(13,10)
+ F  S I=$O(@T@(I)) Q:I=""  I I'["tempBS",'$G(@T@(I)) S S=S_BK_I_" новая "_$S($G(@T@(I))=0:"версия",1:"")
+ K @T
+ Q S_BK_"--------------"_BK
+COMPLOGerr Q "------ Протокол сравнения программ --------<MXSTR>!!!!!!"
+ ///////////////Символы для браузеров
+check1() //checkBOX
+ Q "<FONT face='Wingdings' >ю</FONT> "
+check0() //checkBOX
+ Q "<FONT face='Wingdings' >Ё</FONT> "
+SYMBOL //ВЫВЕСТИ ВСЕ СИМВОЛЫ
+ D BEG1^%ZAPM.ed.BSC4 W $$TITL^%ZAPM.ed.BSCGIS("Step1 for NewTabel"),$$B27^%ZAPM.ed.BSCGIS(1)
+ S F="Webdings" D  F II=""," 2"," 3" S F="Wingdings"_II D
+ .W BBK_RED_F_EF_BBK
+ .F I=1:1:255 W "<FONT face='"_F_"' TITLE='FontFace="_F_" symbol="_I_"'>"_$C(I)_"</FONT> "
+ W "<HR>",! w BK F I=9332:1:9839 W "<FONT TITLE='"_I_"'>&#"_I_";</FONT>" 
+ D BUTT^%ZAPM.ed.BSCGIS,END^%ZAPM.ed.BSC4
+ Q
+S(F,C,s) I F=1 S F="Webdings"
+ E  S F="Wingdings"_F
+ Q "<FONT face='"_F_"' size='"_$G(s,3)_"' >"_$C(C)_"</FONT>"
+ 
+spell ;TRANSLATE FOX2MUMPS ONIX ;[ 01/17/06   4:21 PM ]
+ ;;GENERATED from 14012000;1493052321 MGR,REC spell v1 17Jan06 4:21pm
+ ;ПО МОТИВАМ Newsgroups: fido7.ru.foxpro
+ ;СУММА ПРОПИСЬЮ...
+ ;что добавить? вынести числа прописью в отдельную переменную, для
+ ;того что бы транслироватть на другие языки.ru.ua..:
+ ;и добавить цикл в переменные
+ ;  for i="0c","1c",... s n=$$repl(i,var(i))
+ w !,"num:" r num
+ w !,"sump:",$$sump(num)
+ q
+ ;
+sump(n) ;$$;преобразование
+ s n=+$j($tr(n,","),"",2)
+ ;w !,$fn(num,",",2),!
+ s n=$$tran(n)_"k"
+ ;составляем разряды
+ s n=$$repl(n,",,,,,,,","eT")
+ s n=$$repl(n,",,,,,,","eM")
+ s n=$$repl(n,",,,,,","em")
+ s n=$$repl(n,",,,,","et")
+ s n=$$repl(n,",,,","e")
+ s n=$$repl(n,",,","d")
+ s n=$$repl(n,",","c")
+ ;убрать пустые значения
+ s n=$$repl(n,"0c0d0eT","")
+ s n=$$repl(n,"0c0d0et","")
+ s n=$$repl(n,"0c0d0em","")
+ s n=$$repl(n,"0c0d0eM","")
+ ;заменяем соответвующие значения на пропись
+ s n=$$repl(n,"0c","")
+ s n=$$repl(n,"1c","сто ")
+ s n=$$repl(n,"2c","двести ")
+ s n=$$repl(n,"3c","триста ")
+ s n=$$repl(n,"4c","четыреста ")
+ s n=$$repl(n,"5c","пятьсот ")
+ s n=$$repl(n,"6c","шестьсот ")
+ s n=$$repl(n,"7c","семьсот ")
+ s n=$$repl(n,"8c","восемьсот ")
+ s n=$$repl(n,"9c","девятьсот ")
+ ;
+ s n=$$repl(n,"1d0e","десять ")
+ s n=$$repl(n,"1d1e","одиннадцать ")
+ s n=$$repl(n,"1d2e","двенадцать ")
+ s n=$$repl(n,"1d3e","тринадцать ")
+ s n=$$repl(n,"1d4e","четырнадцать ")
+ s n=$$repl(n,"1d5e","пятнадцать ")
+ s n=$$repl(n,"1d6e","шестнадцать ")
+ s n=$$repl(n,"1d7e","семьнадцать ")
+ s n=$$repl(n,"1d8e","восемнадцать ")
+ s n=$$repl(n,"1d9e","девятнадцать ")
+ ;
+ s n=$$repl(n,"0d","")
+ s n=$$repl(n,"2d","двадцать ")
+ s n=$$repl(n,"3d","тридцать ")
+ s n=$$repl(n,"4d","сорок ")
+ s n=$$repl(n,"5d","пятьдесят ")
+ s n=$$repl(n,"6d","шестьдесят ")
+ s n=$$repl(n,"7d","семьдесят ")
+ s n=$$repl(n,"8d","восемьдесят ")
+ s n=$$repl(n,"9d","девяносто ")
+ ;
+ s n=$$repl(n,"0e","")
+ s n=$$repl(n,"5e","пять ")
+ s n=$$repl(n,"6e","шесть ")
+ s n=$$repl(n,"7e","семь ")
+ s n=$$repl(n,"8e","восемь ")
+ s n=$$repl(n,"9e","девять ")
+ ;
+ s n=$$repl(n,"1e.","один рубль ")
+ s n=$$repl(n,"2e.","два рубля ")
+ s n=$$repl(n,"3e.","три рубля ")
+ s n=$$repl(n,"4e.","четыре рубля ")
+ s n=$$repl(n,"1et","одна тысяча ")
+ s n=$$repl(n,"2et","две тысячи ")
+ s n=$$repl(n,"3et","три тысячи ")
+ s n=$$repl(n,"4et","четыре тысячи ")
+ s n=$$repl(n,"1em","один миллион ")
+ s n=$$repl(n,"2em","два миллиона ")
+ s n=$$repl(n,"3em","три миллиона ")
+ s n=$$repl(n,"4em","четыре миллиона ")
+ s n=$$repl(n,"1eM","один милиард ")
+ s n=$$repl(n,"2eM","два милиарда ")
+ s n=$$repl(n,"3eM","три милиарда ")
+ s n=$$repl(n,"4eM","четыре милиарда ")
+ s n=$$repl(n,"1eT","один триллион ")
+ s n=$$repl(n,"2eT","два триллиона ")
+ s n=$$repl(n,"3eT","три триллиона ")
+ s n=$$repl(n,"4eT","четыре триллиона ")
+ ;копейки
+ s n=$$repl(n,"11k","11 копеек")
+ s n=$$repl(n,"12k","12 копеек")
+ s n=$$repl(n,"13k","13 копеек")
+ s n=$$repl(n,"14k","14 копеек")
+ s n=$$repl(n,"1k","1 копейка")
+ s n=$$repl(n,"2k","2 копейки")
+ s n=$$repl(n,"3k","3 копейки")
+ s n=$$repl(n,"4k","4 копейки")
+ ;пустые позиции
+ s n=$$repl(n,"et","")
+ s n=$$repl(n,"em","")
+ s n=$$repl(n,"eM","")
+ s n=$$repl(n,"eT","")
+ ;если число <1
+ s:$p(n,".")="" n="ноль "_n
+ ;
+ s n=$$repl(n,".","рублей ")
+ s n=$$repl(n,"t","тысяч ")
+ s n=$$repl(n,"m","миллионов ")
+ s n=$$repl(n,"M","милиардов ")
+ s n=$$repl(n,"T","триллионов ")
+ s n=$$repl(n,"k"," копеек")
+ ;НЕРАСПОЗНАННЫЕ ОСТАТКИ ОТ ПРЕОБРАЗОВАНИЯ
+ s n=$tr(n,".ecdtmMkT")
+ ;w !,n
+ q n
+ ;
+tran(n) ;$$;приводим в форму пригодную для замены
+ s n=$tr($j(n,18,2)," ","0")
+ s n=$tr("q,w,,e,,,,,,,r,t,,y,,,,,,u,i,,o,,,,,p,a,,s,,,,d,f,,g,,,.hj","qwertyuiopasdfg.hj",n)
+ ;w !,n
+ q n
+ ;
+TR(%1,%2,%3) N p,l,l3 ;ТРАНСФОРМАЦИЯ !!!!!
+ I %2="" Q %1
+ I %1'[%2 Q %1
+ S p=1,l=$L(%2),l3=$L(%3),%z=$ZT,$ZT="TRMAX^%ZAPM.ed.BSsFUNM"
+ F  S p=$F(%1,%2,p) Q:p=0  S $E(%1,p-l,p-1)=%3,p=p+l3-l
+ S $ZT=$G(%z) Q %1
+ 
+repl(s,s0,sn) ;$$; поиск s0 замена в строке s строкой sn  ---- $$TR^%ZAPM.ed.BSsFUNM
+ S $ZT="TRMAX^%ZAPM.ed.BSsFUNM"
+ f  q:s'[s0  s s=$p(s,s0,1)_$g(sn)_$p(s,s0,2,1E9)
+ q s
+ ;
+T1 //ТЕСТ ЭФФЕКТИВНОСТИ
+ S B="12213330901901-343143434109023914-2-01234-2314242-0-201114-211410"
+ S A=$P($ZTIMESTAMP,",",2)
+  F I=1:1:100000 D
+  .S B=$$repl(B,"1"," ONE ")
+  .;S B=$$TR(B,"1"," ONE ")
+  W !,$P($ZTIMESTAMP,",",2)-A," сек."
+ 
+BUTTBSWV(ROU,GIF,FNAME,TIT,H,W) 
+ D Exec^%ZAPM.ed.BSCp
+ Q "<BUTTON onclick="" "_$$WebView^%ZAPM.ed.BSCp2("http://"_$$ADDSN^%ZAPM.ed.BSC4_$$ADDBSGET^%ZAPM.ed.BSC4(,ROU))_" "" title='"_TIT_"'><img src='"_BSDOMAIN_"/img/"_$G(GIF,"ham-red.gif")_"' border=0></BUTTON>"_BK
+ 
+BUTTBS(ROU,GIF,FNAME,TIT,H,W,TXT)
+ Q "<BUTTON onclick=""open('"_$$ADDBSGET^%ZAPM.ed.BSC4(,ROU)_"','"_FNAME_"','toolbar=no,menubar=no,scrollbars=yes,width="_$G(W,800)_",height="_$G(H,500)_",status=1,resizable=1');"" title='"_TIT_"'><img src='"_BSDOMAIN_"/img/"_$G(GIF,"ham-red.gif")_"' border=0>"_$G(TXT)_"</BUTTON>"_BK
+BUTTHR(HREF,GIF,FNAME,TIT,H,W)
+ Q "<BUTTON onclick=""open('"_HREF_"','"_FNAME_"','toolbar=no,menubar=no,scrollbars=yes,width="_$G(W,800)_",height="_$G(H,500)_",status=1,resizable=1');"" title='"_TIT_"'><img src='"_BSDOMAIN_"/img/"_$G(GIF,"ham-red.gif")_"' border=0></BUTTON>"_BK
+ 
+GetHDSerial() S $ZT="EGetHDSerial"
+  n T s T=$$CacheSysDir^%ZAPM.ed.BSCp("\bin\") 
+  q $zf(-3, T_"\ekHDSN.dll", "GETHDSERIAL")
+EGetHDSerial Q "-1"
+Ab64e(s,k) q $tr($System.Encryption.AESBase64Encode(s,$g(k,"mSw")),"+=/"_$c(32,13,10),"_-$~@^")
+Ab64d(s,k) q $System.Encryption.AESBase64Decode($tr(s,"_-$~@^","+=/"_$c(32,13,10)),$g(k,"mSw"))
+b64e(s) q $tr($System.Encryption.Base64Encode(s),"+=/"_$c(32,13,10),"_-$~@^")
+b64d(s) q $System.Encryption.Base64Decode($tr(s,"_-$~@^","+=/"_$c(32,13,10)))
+WebPort() q $p($g(^%ZAPM.ed.BS("Startup","WebServer"),"ON,8972"),",",2)
+TKWEBPort() q $$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Atkweb")
+ 
+GetA(BSLOGIN,BSarm,b64) //вернуть права доступа
+ n r,M //код права доступа
+  s r=3 //пока так
+  //смешать все версии АРМа для групп пользователей и прочитать $$GetValTree^%ZAPM.ed.BSCtree(g,"B1")
+ n WG,AR,G,HSS,MA,SM,US,bST,g,gg
+ D VAR^BSadmin,VARTREE^BSissJ
+ D MENU^BSadmin(.M)
+ i '$d(M(BSarm)) q "N"
+ s b64=$$Ab64d(b64)
+ s r="M("""_BSarm_""","_b64 i $g(@r)="" q "N"
+ q $$GetA^%ZAPM.ed.BSCtree($$GetValTree^%ZAPM.ed.BSCtree(@r,"B1"))
+l //список переменных 
+ D locvar^%ZAPM.ed.BSCh0("",1)
+ Q 
+ ///////////////////////////////////////////////////////////////////////
+CSS //<!--ВЫТАЩИТЬ ВСЕ BS-ПЕРЕМЕННЫЕ И ПРИМЕНИТЬ ТЕКУЩИЕ СТИЛИ
+ D BSREST
+ D MAINVAR^%ZAPM.ed.BSC4,GRA^%ZAPM.ed.BSC4 N BSGRANT
+ W $$STYLE^%ZAPM.ed.BSC4  S %("HOST:")=$ZU(110)_":"_$$TKWEBPort()
+ Q
+BSREST N name,index 
+ s name = ""
+ for  
+ {
+    s name = $order(%request.Data(name)) 
+    q:name=""
+    continue:'(name?1"BS".E)
+    s index = ""
+    for  
+    {
+        s index = $order(%request.Data(name,index))
+        q:index=""
+        ;w "<br>" 
+        ;w "name = "_name_"///index = "_index_"///value = "_%request.Get(name,,index)
+        S @name=%request.Get(name,,index)
+    }    
+ }
+ Q
+RESTALL(s) //восановить все переменные из реквеста
+ N name,index 
+ i $g(s)="s" g resses
+ s name = ""
+ for  
+ {
+    s name = $order(%request.Data(name)) 
+    q:name=""
+    //continue:'(name?1"BS".E)
+    s index = ""
+    for  
+    {
+        s index = $order(%request.Data(name,index))
+        q:index=""
+        w "<li>" w name_"  ,index="_index_"   ,value="_%request.Get(name,,index)
+      //  S @name=%request.Get(name,,index)
+    }    
+ }
+ Q ""
+resses //из сессии
+ s name = ""
+ for  
+ {
+    s name = $order(%session.Data(name)) 
+    q:name=""
+    //continue:'(name?1"BS".E)
+    s index = ""
+    for  
+    {
+        s index = $order(%session.Data(name,index))
+        q:index=""
+        w "<li>" w name_"  ,index="_index_"   ,value="_%session.Get(name,,index)
+      //  S @name=%request.Get(name,,index)
+    }    
+ }
+ Q ""
+ 
+lp(ClassName,pr) //list property from %BSCRG1 //получить свойства у класса 
+ n %objlasterror,i,pro,s,count,ii,ClassOref,NORM,a
+  s ClassOref=##class(%Library.ClassDefinition).%OpenId(ClassName)
+  g:'ClassOref lpe
+  s count=ClassOref.Properties.Count()
+  s pro=ClassOref.Description
+  f i=1:1:count d
+  .s pro(i)=ClassOref.Properties.GetAt(i).Name 
+  .s a=$$FindDesc^%occName(ClassName,"a",pro(i))
+  .s so=+$p(a,";",2) 
+  .s pro(i,"filt")=$p(a,";",3) //это фильтр для формы редактирования
+  .s pro(i,"spec")=$p(a,";",4)
+  .s pro(i,"w")=$p(a,";",5)
+  .s pro(i,"prof")=$tr($p(a,";",6),"()")
+  .s s=$$NORM^%ZAPM.ed.BSCrr(so,3)_$$NORM^%ZAPM.ed.BSCrr(i,3),s(s)=i,a=$p(a,";")
+  .s pro(i,"desc")=a
+  .s pro(i,"type")=ClassOref.Properties.GetAt(i).Type
+ d ClassOref.%Close()
+  S i="",pr=pro F  S i=$O(s(i)) Q:i=""  s pr(i)=pro(s(i)) f ii="desc","type","filt","spec","w","prof" i $g(pro(s(i),ii))'="" s pr(i,ii)=pro(s(i),ii)
+lpe i $g(%objlasterror)'="" w !,"Ошибка! :"_$System.Status.GetErrorText(%objlasterror)
+ q

@@ -1,0 +1,385 @@
+ROUTINE %ZAPM.ed.BSCG
+%BSCG ; пpогpамма SQL-Gate ; 10:19   19.10.2001
+ ;===================================================================
+ ;| Пример для зимней школы 1999 тема SqlGate                       |
+ ;|                                           ;Н.Жохов              |
+ ;| loaddll       загрузить dll библиотеку                          |
+ ;| freedll       выгрузить dll библиотеку                          |
+ ;| connect                                                         |
+ ;| disconnect                                                      |
+ ;| Create        создать таблицу                                   |
+ ;| Populate      создать экзмпляры записей                         |
+ ;| Select        Сделать выборку                                   |
+ ;| TableCatalog(mode)                                              |
+ ;| TableColumn                                                     |
+ ;| ProcCatalog                                                     |
+ ;| CallProc      Вызов хранимой процедуры                          |
+ ;===================================================================
+ Q
+T2 S DNS="TDBF" G 1
+T1 ;ТЕСТ
+ N Errors,DNS,SQL,IF,ErV,TG,Break,Return
+ ;---ИМЯ DNS
+ S DNS="KSP"
+1 ;---ЗАПРОС К БАЗЕ
+ ;S SQL="SELECT nwc, snaim FROM knh WHERE nwc LIKE '3%' AND snaim LIKE '1%' AND TRUE"
+ ;S SQL="SELECT Knh.NWC, Knh.SNAIM, KPD.HAR, KPD.IMJ FROM Knh LEFT JOIN KPD ON Knh.KPD = KPD.KPD WHERE (((Knh.NWC) Like '6%') AND ((KPD.IMJ) Like 'Мо%'));"
+ S SQL="SELECT * FROM TEL"
+ ;---ФОРМУЛА ДОПОЛНИТЕЛЬНОЙ ВЫБОРКИ ИЗ РЕЗУЛЬТАТОВ ВЫБОРКИ
+ ;d - СТРОКА ЗАПИСИ РЕЗУЛЬТАТА ВЫБОРКИ  $LI(d,5) - ЗНАЧЕНИЕ 5 ПОЛЯ
+ ;ЕСЛИ ПРИСВОИТЬ Break=1 , ТО ПЕРЕБОР ВЫБОРКИ ПРЕРВЕТСЯ
+ S IF="$E($LI(d,1),1)'=0" ;"I $LI(d,1)=""3657"" S Break=1,Return=$LI(d,2)"
+ ;---ПОДАВЛЯТЬ ВЫВОД СООБЩЕНИЙ ОБ ОШИБКАХ НА ТЕКУЩЕЕ УСТРОЙСТВО (КОНСОЛЬ)
+ S ErV=1 ;ВСЕ СООБЩЕНИЯ БУДУТ НАХОДИТСЯ В ПЕРЕМЕННОЙ Errors
+ ;---МАССИВ В КОТОРЫЙ ЗАПИСАТЬ РЕЗУЛЬТАТЫ ВЫБОРКИ, ИНАЧЕ ВСЕ ВЫВЕДЕТСЯ НА КОНСОЛЬ
+ S TG="" ;"TEMPO"
+ D Read(DNS,SQL,IF,ErV,TG)
+ I $D(Errors) W !,Errors ;ПОСМОТРЕТЬ ОШИБКИ
+ I $G(TG)'="" D ^%ZAPM.ed.BSMSMG(TG) ;ВОЙТИ В РЕДАКТОР МАССИВОВ
+ Q
+ 
+Read(DSN,SQL,IF,ErV,TG) ;выполнение запроса и результат положить В МАССИВ TG
+ ;@TG@(-2)=IF - логика ограничения выполнения перебора полученного результата
+ ;@TG@(-1)=SQL
+ ;@TG@(0,number_field)=ИМЯ ПОЛЯ
+ ;@TG@(number_record,number_field)=ЗНАЧЕНИЕ ПОЛЯ
+ ;@TG@(number_record,number_field,k)=если ЗНАЧЕНИЕ ПОЛЯ больше 31k
+ g ReadInt^%ZAPM.ed.BSCEXE //НОВЫЙ КОД
+ N hstmt,e,ColInfo,ncol,d,i,sql,rc,ColName,hdbc,Break
+ K Errors
+ S $ZT="ERG^%ZAPM.ed.BSCG"
+ I $G(TG)'="" K @TG S @TG@(-1)=SQL
+ I $G(IF)'="" D  I $G(TG)'="" S @TG@(-2)=IF
+ . ;ПРОВЕРИТЬ СИНТАКСИС У IF
+ d loaddll(),connect(DSN,$G(BSUsEr),$G(BSPsWrD))
+ d Select(SQL,$G(IF),$G(TG))
+ d disconnect,freedll
+ Q
+ERG D EW($ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE)) Q
+intDSN(DSN,USER,PASS) ; ИНФОРМАЦИЯ ПО DSN --> WEBSQL
+ N I,II,i,ii,ErV,%,d,e,hdbc,iName,iType,name,rc
+ S ErV="1 "
+ S WEBSQL=DSN D iDSN(DSN,$G(USER),$G(PASS))
+ Q
+iDSN(DSN,USER,PASS) ; ИНФОРМАЦИЯ ПО DSN
+ d loaddll(),connect(DSN,$G(USER),$G(PASS)) I hdbc'=0 D
+ .;d TableCatalog(1) ;СТРУКТУРА НО НЕ ТА...
+ .d TableCatalog(0) ; КАКИЕ ТАМ ТАБЛИЦЫ
+ .d disconnect
+ D freedll
+ Q
+iTAB(DSN,tbl,USER,PASS) ;ИНФОРМАЦИЯ ПО ТАБЛИЦЕ !!!!! НЕ РАБОТАЕТ
+ d loaddll(),connect(DSN,$G(USER),$G(PASS)) I hdbc'=0 D
+ .D TableColumn(tbl)
+ .d disconnect
+ D freedll
+ Q
+iSQL(DSN,tbl,USER,PASS) ;ВЫПОЛНЕНИЕ ПОЛНОЙ ВЫБОРКИ ИЗ ТАБЛИЦЫ
+ d loaddll(),connect(DSN,$G(USER),$G(PASS)) I hdbc'=0 D
+ .d Select("SELECT * FROM "_tbl,"","")
+ .d disconnect
+ D freedll
+ Q
+ 
+TEST(DSN) ;ТЕСТ С DSN-СОЕДИНЕНИЕМ
+ d loaddll(),connect(DSN)
+ ;d CreateTable
+ d Populate
+ d Select("SELECT * FROM TEST","","")
+ ;d TableCatalog(1)
+ ;d TableCatalog(0)
+ d disconnect,freedll
+ Q
+ ;===================================================================
+loaddll(DIR) ;ЗАГРУЗИТЬ DLL
+ S %=$ZF(-3,$G(DIR,$P($$defdir^%GLO("%SYS"),"\mgr")_"\bin\cgate.dll"),"Connect","","","") Q
+freedll ;ОСВОБОДИТЬ DLL
+ S %=$ZF(-3,"") Q
+ ;===================================================================
+CreateTable ; Создание таблицы TEST
+ N hstmt,e
+ S hstmt=$ZF(-3,"","AllocStatement",hdbc) I hstmt=0 W "can't alloc statement",!
+ S sql="CREATE TABLE TEST (A1 VARCHAR(50), A2 VARCHAR(50))"
+ S e=$ZF(-3,"","Prepare",hstmt,sql) I e'=0 D Err(e),DropStatement(hstmt) Q
+ S e=$ZF(-3,"","Execute",hstmt) I e'=0 D Err(e),DropStatement(hstmt) Q
+ S e=$ZF(-3,"","DropStatement",hstmt) D Err(e)
+ Q
+ ;===================================================================
+ ; Заполнение данными таблицы TEST
+ ; Для таких утверждений удобнее работать с параметрами
+Populate
+ S hstmt=$$AllocStatement I hstmt=0 Q
+ S sql="INSERT INTO TEST (A1,A2) VALUES (?, ?)"
+ ;S sql="INSERT INTO TEST (A1,A2) VALUES (""ZZZ"", ""QQQ"")"
+ S e=$ZF(-3,"","Prepare",hstmt,sql) I e'=0 D Err(e),DropStatement(hstmt) Q
+ ;S e=$ZF(-3,"","Execute",hstmt) I e'=0 B
+ ;Q
+ S pdtl=$LB(50,50)
+ S pdt=$LB(12,12)
+ S ps=$LB(0,0)
+ S piot=$LB(1,1) ; in=1, in/out =2, out=4
+ S ppr=$LB(50,50)
+ S e=$ZF(-3,"","BindParameters",hstmt,pdtl,pdt,ps,piot,ppr) I e'=0 W "Bind failed",! D Err(e),DropStatement(hstmt) Q
+ D new("AA","X")
+ D new("AB","X")
+ D new("BA","X")
+ D new("BB","X")
+ D DropStatement(hstmt)
+ Q
+new(a1,a2)
+ S e=$ZF(-3,"","SetParameter",hstmt,$LB(a1),1) I e'=0 B
+ S e=$ZF(-3,"","SetParameter",hstmt,$LB(a2),2) I e'=0 B
+ S e=$ZF(-3,"","Execute",hstmt) I e'=0 B
+ Q
+ ;===================================================================
+DeleteTable ;
+ N hstmt,e
+ S hstmt=$ZF(-3,"","AllocStatement",hdbc) I hstmt=0 W "can't alloc statement",! Q
+ S sql="DROP TABLE TEST"
+ S e=$ZF(-3,"","Prepare",hstmt,sql) I e'=0 D Err(e),DropStatement(hstmt) Q
+ S e=$ZF(-3,"","Execute",hstmt) I e'=0 D Err(e),DropStatement(hstmt) Q
+ D DropStatement(hstmt)
+ Q
+ ;===================================================================
+ ; показать таблицы в Источнике Данных
+TableCatalog(mode)
+ N hstmt,e,i,ncol,ColInfo
+ S hstmt=$$AllocStatement I hstmt=0 Q
+ 
+ S e=$ZF(-3,"","Tables",hstmt,"","","","") I e'=0 D Err(e),DropStatement(hstmt) Q
+ 
+ S ColInfo=$ZF(-3,"","DescribeColumns",hstmt)
+ 
+ ; показать имена столбцов используемых
+ ; для описания запроса списка таблиц
+ I $G(mode)=1 D ShowResSetStruc(ColInfo) D DropStatement(hstmt) Q
+ 
+ S ncol=$LI($LI(ColInfo,1),1)
+ 
+ ; найти индексы столбцов имени и типа таблицы
+ F i=1:1:ncol D
+ .S d=$LI(ColInfo,i+1)
+ .S name=$LI(d,1)
+ .I $ZCONVERT(name,"U")="TABLE_NAME" S iName=i
+ .I $ZCONVERT(name,"U")="TABLE_TYPE" S iType=i
+ .S WEBSQ(0,i)=name
+ I $D(WEBSQL) S WEBSQL(0,1)="TABLE NAME",WEBSQL(0,2)="TYPE"
+ E  W "TABLE NAME",?20,"TYPE",! W $TR($J("",30)," ","-"),!
+ F i=1:1 S rc=$ZF(-3,"","Fetch",hstmt) Q:rc'=0  D
+ .S d=$ZF(-3,"","GetOneRow",hstmt) I d="" Q
+ .I $D(WEBSQL) D
+ ..I $D(iName) S WEBSQL(i,1)=$LI(d,iName)
+ ..I $D(iType) S WEBSQL(i,2)=$LI(d,iType)
+ ..F ii=1:1:ncol D
+ ...S WEBSQ(i,ii)=$LI(d,ii)
+ .E  W $LI(d,$G(iName,1)),?20,$LI(d,$G(iType,2)),!
+ D DropStatement(hstmt)
+ Q
+ShowResSetStruc(ColsDef)
+ N i,n
+ S n=$LI($LI(ColsDef,1),1)
+ D ShowColDef("ColName","SQLtype","Prcs","Scale","Nulb","dtype","Display","$")
+ W $TR($J("",79)," ","-"),!
+ F i=1:1:n D
+ .S d=$LI(ColsDef,i+1)
+ .D ShowColDef($LI(d,1),$LI(d,2),$LI(d,3),$LI(d,4),$LI(d,5),$LI(d,6),$LI(d,7),$LI(d,8))
+ Q
+ShowColDef(a1,a2,a3,a4,a5,a6,a7,a8)
+ W a1
+ W ?20,a2
+ W ?33,a3
+ W ?39,a4
+ W ?45,a5
+ W ?50,a6
+ W ?65,a7
+ W ?75,a8
+ W !
+ Q
+ ;===================================================================
+ ; показать столбцы и их свойства для таблицы с именем tbl
+TableColumn(tbl)
+ N hstmt,e,i,d,ncol,ColInfo,rc
+ 
+ S hstmt=$$AllocStatement I hstmt=0 Q
+ S e=$ZF(-3,"","Columns",hstmt,"","","X%","A1") I e'=0 D Err(0),DropStatement(hstmt) Q
+ 
+ S ColInfo=$ZF(-3,"","DescribeColumns",hstmt)
+ 
+ ; показать имена столбцов используемых
+ ; для описания запроса списка столбцов таблицы
+ I 0 D ShowResSetStruc(ColInfo) D DropStatement(hstmt) Q
+ 
+ N iName,iTypeId,iTypeName,iPrec,iLen,iScale,iNull
+ N xName,xTypeId,xTypeName,xPrec,xLen,xScale,xNull
+ S xName=0
+ S xTypeId=xName+20
+ S xTypeName=xTypeId+5
+ S xPrec=xTypeName+10
+ S xLen=xPrec+5
+ S xScale=xLen+7
+ S xNull=xScale+15
+ 
+ S ncol=$LI($LI(ColInfo,1),1)
+ F i=1:1:ncol D
+ .S d=$LI(ColInfo,i+1)
+ .S name=$LI(d,1)
+ .I name="COLUMN_NAME" S iName=i
+ .I name="DATA_TYPE" S iTypeId=i
+ .I name="TYPE_NAME" S iTypeName=i
+ .I name="PRECISION" S iPrec=i
+ .I name="LENGTH" S iLen=i
+ .I name="SCALE" S iScale=i
+ .I name="NULLABLE" S iNull=i
+ 
+ W ?xName,"NAME",?xTypeId,"TID",?xTypeName,"TNAME"
+ W ?xPrec,"PREC",?xLen,"LEN",?xScale,"SCALE"
+ W ?xNull,"NULL",!
+ W $TR($J("",79)," ","-"),!
+ 
+ F  S rc=$ZF(-3,"","Fetch",hstmt) Q:rc'=0  D
+ .S d=$ZF(-3,"","GetOneRow",hstmt) I d="" Q
+ .W ?xName,$LI(d,iName),?xTypeId,$LI(d,iTypeId),?xTypeName,$LI(d,iTypeName)
+ .W ?xPrec,$LI(d,iPrec),?xLen,$LI(d,iLen),?xScale,$LI(d,iScale)
+ .W ?xNull,$LI(d,iNull)
+ .W !
+ D DropStatement(hstmt)
+ Q
+ ;===================================================================
+ ; Сделать запрос и показать результаты
+Select(sql,IF,TG)
+ N ColInfo,hstmt,ncol,d,i,rc,ColName
+ S hstmt=$$AllocStatement I hstmt=0 Q
+ S e=$ZF(-3,"","Prepare",hstmt,sql) I e'=0 D Err(0),DropStatement(hstmt)
+ S e=$ZF(-3,"","Execute",hstmt) I e'=0 D Err(0),DropStatement(hstmt)
+ 
+ S ColInfo=$ZF(-3,"","DescribeColumns",hstmt)
+ I ColInfo="" D EW("Результат запроса пустой") D DropStatement(hstmt) Q
+ S ncol=$LI($LI(ColInfo,1),1) ;КОЛИЧЕСТО КОЛОНОК
+ 
+ F i=1:1:ncol D
+ .S d=$LI(ColInfo,i+1)
+ .S ColName(i)=$LI(d,1) ;ИМЕНА ПОЛЕЙ
+ 
+ I $G(TG)="" D
+ .F i=1:1:ncol W ?15*(i-1),ColName(i)            ;ЗАСВЕТИТЬ ШАПКУ
+ .W !,$TR($J("",79)," ","-")
+ I $G(TG)'="" F i=1:1:ncol S @TG@(0,i)=ColName(i)
+ 
+ S ii=0
+ ;ЦИКЛ ПО ОТКРЫТОМУ КУРСОРУ
+ F  S rc=$ZF(-3,"","Fetch",hstmt) Q:rc'=0  D  I $G(Break) Q  ;ПРЕРВАТЬ ПЕРЕБОР
+ .S d=$ZF(-3,"","GetOneRow",hstmt) I d="" Q  ;ТЕКУЩАЯ ЗАПИСЬ
+ .I $G(IF)'="" X "I "_IF E  Q
+ .S ii=ii+1 I $G(TG)="" W !
+ .F i=1:1:ncol D
+ ..I $G(TG)="" W ?15*(i-1),$LI(d,i) Q        ;КОЛОНКИ
+ ..S @TG@(ii,i)=$LI(d,i)
+ D DropStatement(hstmt)
+ Q
+ ;===================================================================
+ShowResultSet(hstmt)
+ N ColInfo
+ S ColInfo=$ZF(-3,"","DescribeColumns",hstmt)
+ I ColInfo="" W "No Result",! Q
+ 
+ S ncol=$LI($LI(ColInfo,1),1)
+ 
+ F i=1:1:ncol D
+ .S d=$LI(ColInfo,i+1)
+ .S ColName(i)=$LI(d,1)
+ 
+ F i=1:1:ncol W ?15*(i-1),ColName(i)
+ W !
+ W $TR($J("",79)," ","-"),!
+ 
+ F  S rc=$ZF(-3,"","Fetch",hstmt) Q:rc'=0  D
+ .S d=$ZF(-3,"","GetOneRow",hstmt) I d="" Q
+ .F i=1:1:ncol W ?15*(i-1),$LI(d,i)
+ .W !
+ Q
+ ;===================================================================
+ ; Просмор каталога процедур
+ProcCatalog(mode)
+ N name,x,hdr,i,ncol,x
+ 
+ S hstmt=$$AllocStatement I hstmt=0 Q
+ S e=$ZF(-3,"","DescribeProcedures",hstmt,"","","")
+ 
+ S ColInfo=$ZF(-3,"","DescribeColumns",hstmt)
+ 
+ ; показать структуру запроса списка процедур
+ I +$G(mode)=1 D ShowResSetStruc(ColInfo) D DropStatement(hstmt) Q
+ 
+ S ncol=$LI($LI(ColInfo,1),1)
+ ;S ncol=3
+ F i=3:1:ncol D
+ .S d=$LI(ColInfo,i+1)
+ .S hdr(i)=$LI(d,1)
+ .I i>3,$P($LI(d,1),"_",2)'="" S hdr(i)=$P($LI(d,1),"_",2)
+ .S x(i)=$S(i=3:0,i=4:25,1:$L(hdr(i-1))+1)+$S(i=3:0,1:x(i-1))
+ .W ?x(i),hdr(i)
+ 
+ W !,$TR($J("",79)," ","-"),!
+ 
+ F  S rc=$ZF(-3,"","Fetch",hstmt) Q:rc'=0  D
+ .S d=$ZF(-3,"","GetOneRow",hstmt) I d="" Q
+ .F i=3:1:ncol D
+ ..S v=$LI(d,i) I v="<NULL DATA>" S v="<NULL>"
+ ..W ?x(i),v
+ .W !
+ D DropStatement(hstmt)
+ Q
+ 
+ ;===================================================================
+ProcPar
+ Q
+ ;===================================================================
+CallProc
+ N hstmt,sql,e
+ S hstmt=$$AllocStatement I hstmt=0 Q
+ S sql="CALL DemoQuery_Qy1( '1', '2' )"
+ S e=$ZF(-3,"","Prepare",hstmt,sql) I e'=0 D Err(e),DropStatement(hstmt) Q
+ S e=$ZF(-3,"","Execute",hstmt) I e'=0 D Err(e),DropStatement(hstmt) Q
+ D ShowResultSet(hstmt)
+ D DropStatement(hstmt)
+ Q
+ ;===================================================================
+AllocStatement()
+ S hstmt=$ZF(-3,"","AllocStatement",hdbc)
+ I hstmt=0 D EW("can't alloc statement")
+ Q hstmt
+ ;===================================================================
+DropStatement(hstmt)
+ S e=$ZF(-3,"","DropStatement",hstmt)
+ Q
+ ;===================================================================
+connect(dsn,user,pswd)
+ S hdbc=$ZF(-3,"","Connect",$G(dsn),$G(user),$G(pswd))
+ I hdbc=0 D EW("Connection failor !")
+ Q
+ ;===================================================================
+disconnect
+ S e=$ZF(-3,"","Disconnect",hdbc)
+ D Err(e)
+ Q
+ ;===================================================================
+EW(V) ;СООБЩЕНИЕ О ОШИБКЕ
+ I $D(ErV) S Errors=$G(Errors)_V_". "_$C(13,10) Q
+ W V_". ",! Q
+ErrWas
+ N e S e=$ZF(-3,"","WasError") I e=0 Q
+ I e=-1000 D EW("SqlGate error") Q
+ I e'=-1 Q
+ N el S el=$ZF(-3,"","GetSqlErrors",+$G(hdbc),+$G(hstmt))
+ N l S l=$LL(el)
+ N i F i=1:1:l D EW($LI(el,i))
+ Q
+ ;===================================================================
+Err(e)
+ I e=0 Q
+ I e=-1000 D EW("SqlGate error") Q
+ I e'=-1 D EW("Other error") Q
+ N el S el=$ZF(-3,"","GetSQLErrors",+$G(hdbc),+$G(hstmt))
+ N l S l=$LL(el)
+ N i F i=1:1:l D EW($LI(el,i))
+ Q

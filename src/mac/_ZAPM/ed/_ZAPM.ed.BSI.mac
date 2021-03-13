@@ -1,0 +1,182 @@
+ROUTINE %ZAPM.ed.BSI
+%BSI ;ТЕСТ ТАБЛИЦ (Е.Истомин) недоделанная ; 20:15   13.03.99
+ I $ZV["Cach"||($ZV["IRIS") D ErrMsg^%ZAPM.ed.BSXfun(" НЕТ РЕЖИМА В "_$ZV) Q
+ N j,do,CountUCI,CountVOL,MesStr,BStmp,TmpVOL,TmpUCI,Buf
+ S $ZT="ErrGlo^%ZAPM.ed.BSI"
+ D SA^%ZAPM.ed.BSsBUF,zzz,RE^%ZAPM.ed.BSsBUF,CL^%ZAPM.ed.BSF4 Q
+zzz W /CUP(1,1),$$atr^%ZAPM.ed.BS3(0),*27,"[0J"
+ S MesStr=""
+ S Way=1
+ K ^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u")
+ K BStmp,TmpVOL,TmpUCI,Buf
+ D MGR^%ZAPM.ed.BS
+ I $P($$ZU^%ZAPM.ed.BS3(0),",",2)'=$P($$ZU^%ZAPM.ed.BS3(1,0),",",2) D  Q
+ .S MesStr="Перейдите в системный том."
+ .D ErrGlo^%ZAPM.ed.BSI
+ .Q
+ D Ramka^%ZAPM.ed.BSXfun(4,20,12,60,2,"47;30;6",1)
+ W /CUP(5,25),$$atr^%ZAPM.ed.BS3("47;30"),"0%           Тома            0%"
+ W /CUP(9,25),"0%           Кипы            0%"
+ W /CUP(6,25),$$atr^%ZAPM.ed.BS3("44;34;1;5"),"                               "
+ W /CUP(10,25),"                               ",$$atr^%ZAPM.ed.BS3("40;37;6;2")
+ D Ramka^%ZAPM.ed.BSXfun(14,10,22,70,2,"47;30;6",1)
+ W /CUP(14,30)," Диагностика таблиц "
+ F CountVOL=0:1 Q:$$ZU^%ZAPM.ed.BS3(1,CountVOL)=""  D
+ .F CountUCI=1:1 Q:$$ZU^%ZAPM.ed.BS3(CountUCI,CountVOL)=""  D
+ ..S TmpUCI($$ZU^%ZAPM.ed.BS3(CountUCI,CountVOL))=CountUCI Q
+ .S BStmp($P($$ZU^%ZAPM.ed.BS3(1,CountVOL),",",2))=CountUCI-1
+ .S TmpVOL($P($$ZU^%ZAPM.ed.BS3(1,CountVOL),",",2))=CountVOL+1
+ .Q
+ S OldVOL=$P($$ZU^%ZAPM.ed.BS3(1,0),",",2)
+ S Str=15
+ S DOX="D START^%ZAPM.ed.BSI(i,iI)" D STA^%ZAPM.ed.BSF5
+ W /CUP(1,1),*27,"[0J"
+ I '$D(^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u")) D  G Ex
+ .D OkMsg^%ZAPM.ed.BSXfun("Повреждений не обнаружено.")
+ I $D(^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u")) S ls=" Диагностика закончена. Просмотр ошибок ? " D YES^%ZAPM.ed.BSF G Ex:YES<1 I YES=1 D  Q
+ .D Select Q
+ S ls="Попытаемся отремонтировать таблицу "_$P(Buf(Cou),";")_" ?"
+ D YES^%ZAPM.ed.BSF I YES=1 D
+ .S uci=""_$P(Buf(Cou),";",3)_","_$P(Buf(Cou),";",4)_"" D %GU^%ZAPM.ed.BSF4
+ .D REMONT^%ZAPM.ed.BSF5($P(Buf(Cou),";",2),$P(Buf(Cou),";",1))
+ .D x^%ZAPM.ed.BS3("I+40")
+Ex ;D RE^%ZAPM.ed.BSsBUF
+ Q
+ 
+START(BSR,BST) 
+ S Scrol1=TmpVOL($P($$ZU^%ZAPM.ed.BS3(0),",",2))/CountVOL*31
+ S Scrol2=TmpVOL($P($$ZU^%ZAPM.ed.BS3(0),",",2))/CountVOL*100
+ W /CUP(6,25),$$atr^%ZAPM.ed.BS3("44;34;2;6"),$TR($J("",Scrol1)," ",$C(219))
+ W $$atr^%ZAPM.ed.BS3("47;30"),/CUP(5,52),$J(Scrol2,3,0),"%"
+ S Scrol3=TmpUCI($$ZU^%ZAPM.ed.BS3(0))/BStmp($P($$ZU^%ZAPM.ed.BS3(0),",",2))*31
+ S Scrol4=TmpUCI($$ZU^%ZAPM.ed.BS3(0))/BStmp($P($$ZU^%ZAPM.ed.BS3(0),",",2))*100
+ I $P($$ZU^%ZAPM.ed.BS3(0),",",2)'=OldVOL W /CUP(10,25),$$atr^%ZAPM.ed.BS3("44;34;1;5"),"                               "
+ W /CUP(10,25),$$atr^%ZAPM.ed.BS3("44;34;2;6"),$TR($J("",Scrol3)," ",$C(219))
+ W $$atr^%ZAPM.ed.BS3("47;30"),/CUP(9,52),$J(Scrol4,3,0),"%"
+ I BSR="^%ZAPM.ed.BSbufS"!(BSR="^%ZAPM.ed.BSX") G EXIT
+ 
+ ;``РАЗОВАЯ ПРОКАЧКА - ИСПРАВЛЕНИЕ БАГА
+ ;``I $P(@(BSR_"(BST)"),"@",41)'="" S zXz=$ZR D
+ ;``.N A S A=$P(@zXz,"@",41) I A["MENU^%ZAPM.ed.BSF11,MENU^%ZAPM.ed.BSF11" S $P(@zXz,"@",41)="MENU^%ZAPM.ed.BSF11"
+ ;``G EXIT
+ 
+ I $P(@(BSR_"(BST)"),"@",17)=5 G EXIT
+ I Str=22 S StrBST(8)=" "_BST_$TR($J(0,20-$L(BST)),"0",":") F TT=1:1:7 D
+ .S StrBST(TT)=StrBST(TT+1)
+ .W /CUP(TT+14,15),$$atr^%ZAPM.ed.BS3("47;30;6"),StrBST(TT)
+ .W:TT=7 /CUP(TT+14,15),$$atr^%ZAPM.ed.BS3("47;30;6"),StrBST(TT+1) D:TT=7 PROV
+ I Str<22&(Str>15) S StrBST(Str-14)=" "_BST_$TR($J(0,20-$L(BST)),"0",":") D
+ .W /CUP(Str,15),$$atr^%ZAPM.ed.BS3("47;30;6"),StrBST(Str-14) D PROV S Str=Str+1 Q
+ I Str=15 S StrBST(Str-14)=" "_BST_$TR($J(0,20-$L(BST)),"0",":") D
+ .W /CUP(Str,15),$$atr^%ZAPM.ed.BS3("47;30;6"),StrBST(Str-14) D PROV S Str=Str+1 Q
+ D MaxY^%ZAPM.ed.BSI S MaxHighY=TempY
+ D MaxX^%ZAPM.ed.BSI S MaxHighX=TempX
+ S FlagEr=0
+ F u=1:1:MaxHighX-1 F m=1:1:MaxHighY-1  D  G JUMP:FlagEr
+ .I '$D(@(BSR_"(BST,m,u)")) S FlagEr=1 D Mess Q
+ .S ColDiag=$S($P(@(BSR_"(BST,m,u)"),"@",3)="":1,1:$P(@(BSR_"(BST,m,u)"),"@",3))
+ .S ColDiag=ColDiag+$S($P(@(BSR_"(BST,m,u)"),"@",1)="":1,1:$P(@(BSR_"(BST,m,u)"),"@",1))
+ .I $D(@(BSR_"(BST,m+1,u)")) I $P(@(BSR_"(BST,m+1,u)"),"@",1)'=ColDiag D  Q
+ ..D Mess S FlagEr=1 Q
+ .Q
+ F h=1:1:MaxHighY-1 F j=1:1:MaxHighX-1  D  G JUMP:FlagEr
+ .I '$D(@(BSR_"(BST,h,j)")) S FlagEr=1 D Mess Q
+ .S StrDiag=$S($P(@(BSR_"(BST,h,j)"),"@",4)="":1,1:$P(@(BSR_"(BST,h,j)"),"@",4))
+ .S StrDiag=StrDiag+$S($P(@(BSR_"(BST,h,j)"),"@",2)="":1,1:$P(@(BSR_"(BST,h,j)"),"@",2))
+ .I $D(@(BSR_"(BST,h,j+1)")) I $P(@(BSR_"(BST,h,j+1)"),"@",2)'=StrDiag  D   Q
+ ..D Mess S FlagEr=1 Q
+ .Q
+ F u=1:1:MaxHighX-1 D  G JUMP:FlagEr
+ .I (u+1)'>(MaxHighX-1) D  Q
+ ..I $P(@(BSR_"(BST,MaxHighY-1,u)"),"@",3)'=$P(@(BSR_"(BST,MaxHighY-1,u+1)"),"@",3) S FlagEr=1 D Mess Q
+ F h=1:1:MaxHighY-1 D  G JUMP:FlagEr
+ .I (h+1)'>(MaxHighY-1) D  Q
+ ..I $P(@(BSR_"(BST,h,MaxHighX-1)"),"@",4)'=$P(@(BSR_"(BST,h+1,MaxHighX-1)"),"@",4) S FlagEr=1 D Mess Q
+ D OK S StrBST(Str-15)=StrBST(Str-15)_" Ok ...       " G EXIT
+JUMP D Error S StrBST(Str-15)=StrBST(Str-15)_" ошибка ...   "
+ ;S do="S zr=$ZR,$P(@zr,""@"",3)=$P(^%ZAPM.ed.BSbufB(""u""_$G(%BS(3),$P)_$J_""u""_%BS(15),m,1),""#""),$P(@zr,""@"",4)=$P(^%ZAPM.ed.BSbufB(""u""_$G(%BS(3),$P)_$J_""u""_%BS(15),1,j),""#"",2)"
+ ;D ALLT^%ZAPM.ed.BSS1
+EXIT S OldVOL=$P($$ZU^%ZAPM.ed.BS3(0),",",2)
+ Q
+ 
+PROV S x=$X,y=$Y W $$atr^%ZAPM.ed.BS3("47;31")," проверяю ... " Q
+OK S $X=x,$Y=y W $$atr^%ZAPM.ed.BS3("47;30;6")," Ok ...       " Q
+Error S $X=x,$Y=y W $$atr^%ZAPM.ed.BS3("47;30;6")," ошибка ...   " Q
+ 
+Mess 
+ I '$D(^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u")) S ^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u")="Error"
+ S ^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u",Way)=BST_";"_BSR_";"_$P($$ZU^%ZAPM.ed.BS3(0),",")_";"_$P($$ZU^%ZAPM.ed.BS3(0),",",2)
+ S Way=Way+1
+ Q
+ 
+Bord(%1,%2,%3,%4) 
+ W /CUP(%1,$G(%3)),$$atr^%ZAPM.ed.BS3(%4),$C(220)
+ W /CUP($G(%1)+1,$G(%2)+1),$$atr^%ZAPM.ed.BS3(%4),$TR($J("",$G(%3)-$G(%2))," ",$C(223))
+ Q
+ 
+EnterBut(%1,%2,%3) 
+ Q
+ 
+ErrGlo 
+ N Delay,I
+ D Ramka^%ZAPM.ed.BSXfun(8,15,14,65,2,"41;33;1",1)
+ I MesStr="" S MesStr=$ZE W /CUP(8,35)," Ошибка ! "
+ S Delay=$P(%BS(2),"-",3)*1000
+ W /CUP(10,(65-15-$L(MesStr))\2+15),$$atr^%ZAPM.ed.BS3("41;37;1"),$E(MesStr,1,40)
+ D Bord(12,36,44,"41;30;2") D CL^%ZAPM.ed.BSF4
+ W /CUP(12,36),$$atr^%ZAPM.ed.BS3("47;30;2;6"),"  Ввод  ",*R D OP^%ZAPM.ed.BSF4
+ W /CUP(12,36),$$atr^%ZAPM.ed.BS3("41")," ",$$atr^%ZAPM.ed.BS3("47;30;2;6"),"  Ввод  "
+ W /CUP(13,36),$$atr^%ZAPM.ed.BS3("41"),"         "
+ F I=1:1:Delay
+ D Bord(12,36,44,"41;30;2")
+ W /CUP(12,36),$$atr^%ZAPM.ed.BS3("47;30;2;6"),"  Ввод  "
+ F I=1:1:Delay
+ ;W /CUP(1,1),$$atr^%ZAPM.ed.BS3(0),*27,"[0J"
+ D CL^%ZAPM.ed.BSF4,RE^%ZAPM.ed.BSsBUF
+ Q
+ 
+Select 
+ D Ramka^%ZAPM.ed.BSXfun(6,15,20,65,2,"44;36;1",1)
+ W /CUP(7,17),$$atr^%ZAPM.ed.BS3("40;33"),"           Таблица            Раздел           ",$$atr^%ZAPM.ed.BS3(0)
+ W /CUP(8,16),$$atr^%ZAPM.ed.BS3("44;36;1"),"-------------------------------------------------",$$atr^%ZAPM.ed.BS3(0)
+ S Index1=""
+ F k=1:1 S Index1=$O(^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u",Index1)) Q:Index1=""  D
+ .S Buf(k)=$G(^%ZAPM.ed.BSbufB("Mes"_$G(%BS(3),$P)_$J_"u",Index1))
+ .Q
+ F j=1:1:$S(k-1<11:k-1,1:11)  W /CUP(8+j,17),$$atr^%ZAPM.ed.BS3("44;36;1"),"           ",$P(Buf(j),";"),$J("",18-$L($P(Buf(j),";"))),$P(Buf(j),";",2),$J("",18-$L($P(Buf(j),";",2)))
+ W /CUP(9,17),$$atr^%ZAPM.ed.BS3("40;32;1"),"           ",$P(Buf(1),";"),$J("",18-$L($P(Buf(1),";"))),$P(Buf(1),";",2),$J("",18-$L($P(Buf(1),";",2)))
+ S Str=9,Cou=1,i=0
+Rotat D CL^%ZAPM.ed.BSF4 R *R D OP^%ZAPM.ed.BSF4
+ I R=66&(Str=19) D  G Rotat
+ .I Cou<(k-1) S i=i+1,Cou=Cou+1 D
+ ..F j=1:1:$S(k-1<11:k-1,1:11)  W /CUP(8+j,17),$$atr^%ZAPM.ed.BS3("44;36;1"),"           ",$P(Buf(j+i),";"),$J("",18-$L($P(Buf(j+i),";"))),$P(Buf(j+i),";",2),$J("",18-$L($P(Buf(j+i),";",2)))
+ ..W /CUP(Str,17),$$atr^%ZAPM.ed.BS3("40;32;1"),"           ",$P(Buf(j+i),";"),$J("",18-$L($P(Buf(j+i),";"))),$P(Buf(j+i),";",2),$J("",18-$L($P(Buf(j+i),";",2)))
+ I R=66 D  G Rotat
+ .I (Cou+1)<k D
+ ..W /CUP(Str,17),$$atr^%ZAPM.ed.BS3("44;36;1"),"           ",$P(Buf(Cou),";"),$J("",18-$L($P(Buf(Cou),";"))),$P(Buf(Cou),";",2),$J("",18-$L($P(Buf(Cou),";",2)))
+ ..W /CUP(Str+1,17),$$atr^%ZAPM.ed.BS3("40;32;1"),"           ",$P(Buf(Cou+1),";"),$J("",18-$L($P(Buf(Cou+1),";"))),$P(Buf(Cou+1),";",2),$J("",18-$L($P(Buf(Cou+1),";",2)))
+ ..S Str=Str+1,Cou=Cou+1
+ I R=65&(Str=9) D  G Rotat
+ .I Cou'<2 S i=i-1,Cou=Cou-1 D
+ ..F j=1:1:$S(k-1<11:k-1,1:11)  W /CUP(8+j,17),$$atr^%ZAPM.ed.BS3("44;36;1"),"           ",$P(Buf(j+Cou-1),";"),$J("",18-$L($P(Buf(j+Cou-1),";"))),$P(Buf(j+Cou-1),";",2),$J("",18-$L($P(Buf(j+Cou-1),";",2)))
+ ..W /CUP(Str,17),$$atr^%ZAPM.ed.BS3("40;32;1"),"           ",$P(Buf(Cou),";"),$J("",18-$L($P(Buf(Cou),";"))),$P(Buf(Cou),";",2),$J("",18-$L($P(Buf(Cou),";",2)))
+ I R=65 D  G Rotat
+ .W /CUP(Str,17),$$atr^%ZAPM.ed.BS3("44;36;1"),"           ",$P(Buf(Cou),";"),$J("",18-$L($P(Buf(Cou),";"))),$P(Buf(Cou),";",2),$J("",18-$L($P(Buf(Cou),";",2)))
+ .W /CUP(Str-1,17),$$atr^%ZAPM.ed.BS3("40;32;1"),"           ",$P(Buf(Cou-1),";"),$J("",18-$L($P(Buf(Cou-1),";"))),$P(Buf(Cou-1),";",2),$J("",18-$L($P(Buf(Cou-1),";",2)))
+ .S Str=Str-1,Cou=Cou-1
+ I R=13 Q
+ G Rotat
+ 
+MaxY 
+ S TempY=0
+ F t=1:1 D  Q:'$D(@(BSR_"(BST,1,t+1)"))&('$D(@(BSR_"(BST,1,t+2)")))
+ .F HighY=1:1 Q:'$D(@(BSR_"(BST,HighY,t)"))
+ .I TempY<HighY S TempY=HighY
+ .Q
+ 
+MaxX 
+ S TempX=0
+ F t=1:1 D  Q:'$D(@(BSR_"(BST,t+1,1)"))&('$D(@(BSR_"(BST,t+2,1)")))
+ .F HighX=1:1 Q:'$D(@(BSR_"(BST,t,HighX)"))
+ .I TempX<HighX S TempX=HighX
+ .Q

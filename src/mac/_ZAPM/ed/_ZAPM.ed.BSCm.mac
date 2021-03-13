@@ -1,0 +1,61 @@
+ROUTINE %ZAPM.ed.BSCm
+%BSCm ;МОДУЛЬ ДИСПЕТЧЕРА И ПОДДЕРЖАНИЯ ФУНКЦИОНАЛА ПАКЕТА %BS-MSM-MONITOR
+ ;
+ ;    Copyright (C) 2002 Serge W. Mikhaylenko
+ ;    All Rights Reserved
+ ;
+ ;ЭТО НАДО ПЕРЕПИСАТЬ, ВСЕ КРИВО И НЕПРАВИЛЬНО
+PARTS(P,D,Cm4,PERE) //РАЗДЕЛЫ
+ N I S D=$G(D,$C(0))
+ I P'[D D PART(P) Q
+ F I=1:1 Q:$P(P,D,I,I+1)=""  D PART($P(P,D,I))
+ Q
+PART(pin) //РАЗДЕЛ
+ D BEG1^%ZAPM.ed.BSC4
+ I $E(pin,1)'="^" S pin="^"_pin
+ I '$$Data^%ZAPM.ed.BSF12(pin) Q
+ W "<table border=0 width=100%>" I pin["." S Tmp=$P(pin,"."),Tmp1=$P(pin,".",2),Tmp=$G(@(Tmp_".PRO")@(Tmp1,"REM"))
+ I pin'["." S Tmp=$P($G(@(pin)),"@",2)
+ W "<tr><td width=30% class=s3 ><strong>"_pin_"</strong></td><td width=70% class=s3 >"_Tmp_"</td></tr>"
+ N I,N,BD,Sort,BSTOP
+ S N="",I=0 I '$D(@(pin)) W "Нет раздела ! "_PART_" Обратитесь к Администратору" Q
+ S Co=0,NWT1=$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,"NWT1")
+ F  S N=$O(@(pin)@(N)) Q:N=""  I $P($G(@(pin)@(N)),"@",17)=2 D
+ .I N="ROU" Q
+ .I $D(PERE),$$PERE Q 
+ .S Co=Co+1,sta="OK"
+ .W "<tr><td width=20% class=s1 >"
+ .I $G(Cm4)=1 w $$PAframe
+ .I $G(Cm4)=3 W $$PAlist,$$PAform,$$PAframe
+ .I $G(Cm4)=2 W $$PAlist,$$PAform
+ .W " "_N
+ .W "</td><td class=s1 >"_AF,$P($G(@(pin)@(N)),"@",1),EF_"</td></tr>",BK
+ W " </table>"
+ D END^%ZAPM.ed.BSC4
+ Q
+PERE() I $G(PERE)=1 Q:$G(PERE(N))=1 0 Q 1
+ I $G(PERE)=0 Q:$G(PERE(N))=0 1 Q 0
+ Q 1
+PAframe() Q "<a title='"_$G(TITl,"редактировать в фрейме")_"' "_$$AN(pin,N,"EDIT^~BSChT1")_"><img src='"_BSDOMAIN_"/img/"_$G(IMG,"const.gif")_"'></a>"
+PAlist() Q "<a title='редактировать из списка' "_$$AN(pin,N,"List^~BSCm41")_"><img src='"_BSDOMAIN_"/img/tabl.gif'></a>"
+PAform() Q "<a title='редактировать в форме' "_$$AN(pin,N,"T^~BSCm4")_"><img src='"_BSDOMAIN_"/img/form.gif'></a>"
+AN(pin,N,BSLABEL,NOWIN)
+ n BSTABL,BSPART,BSNSP,BSNSPACE,BSPARENT
+ S BSPART=pin
+ I pin["""]" S BSNSP=$P(pin,$C(34),2),BSPART="^"_$P(pin,"]",2)
+ E  S BSNSP=$TR($ZU(5),"%","~")
+ S BSPART=$$%T^%ZAPM.ed.BSCh(BSPART),BSTABL=$$%T^%ZAPM.ed.BSCh(N),BSPARENT=$$ANPAR()
+ I $G(NOWIN) Q " href='"_$$ADDBSGET^%ZAPM.ed.BSC4()_"' "
+ Q " class=u1 onclick='open("""_$$ADDBSGET^%ZAPM.ed.BSC4()_""","""_BSPARENT_""",""toolbar=no,menubar=no,scrollbars=yes,"_$G(NWT1,"width=800,height=600")_",status=1,resizable=1"");' "
+ANPAR() Q "EditForm"_$ZCRC(BSPART_BSTABL,7)
+EditRecord(P,T,BScurREC) //УСТАНОВКА НА РЕДАКТИРУЕМУ ЗАПИСЬ
+ N BSLABEL
+ S BSLABEL="EditRec^~BSCm"
+ Q "<A title='редактировать данные таблицы' "_$$AN(P,T,BSLABEL)_"> РЕДАКТИРОВАТЬ </A>"
+EditRec
+ I '$$VAR^%ZAPM.ed.BSCm4 Q
+ I '$D(@PT) Q ""
+ I $$SetVar^%ZAPM.ed.BSC4(PT_" CurNode",BScurREC) ;УСТАНОВИТЬ ТЕКУЩУЮ ЗАПИСЬ
+ I $G(BSPARENT)="" S BSPARENT=$$ANPAR()
+ D T^%ZAPM.ed.BSCm4
+ Q

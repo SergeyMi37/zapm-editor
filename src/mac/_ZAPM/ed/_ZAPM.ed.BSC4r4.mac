@@ -1,0 +1,592 @@
+ROUTINE %ZAPM.ed.BSC4r4
+%BSC4r4 ;СОЗДАНИЕ ДИСТРИБУТИВОВ. Модуль выкачки массивов из MSM в ^%ZZZ 
+ ;
+ ; Copyright (c) Serge W. Mikhaylenko
+ ; All Rights Reserved
+ ;
+ Q
+LST N M1,N,i,FI,F,T
+ S F="d:\MSW_Tools\_installation_ext\soft\dsr-client-dev\Support\"
+ D File2Arr^%ZAPM.ed.BSCEXE(F_"Setup.Lst",.M1),STR2MAS^%ZAPM.ed.BSCmail(.M1,.N,$C(13,10))
+ S i=""  F  S i=$O(N(i)) Q:i=""  D  
+ .I $E(N(i),1,4)="File" S FI=$P($P(N(i),"@",2),",",1) D
+ ..S T=$ZU(140,2,F_FI) S T=$$TR^%ZAPM.ed.BSsFUNM($ZD(T,1),"/200","/0")_" "_$ZT($P(T,",",2),3) S $P(N(i),",",5)=$E(T,1,$L(T)-2)_" "_$E(T,$L(T)-1,$L(T))
+ ..S T=$ZU(140,1,F_FI) S $P(N(i),",",6)=T
+ ..W !,N(i)
+ .S N(i)=N(i)_$C(13,10)
+ D Arr2File^%ZAPM.ed.BSCEXE(.N,F_"Setup.Lst")
+ D ANY
+ Q
+AUxml s onlyxml=1 //только создать xml
+AUFREE S FREE=1 G AU //ДИСТРИБУТИВ ДЛЯ ВСЕХ, А НЕ ТОЛЬКО ДЛЯ ВВ
+ Q
+AUFON S addFON=1 //C МАССИВАМИ FON 
+AU I $$ZU^%ZAPM.ed.BSF4("%SYS") S $ZT="Er" D AUTO //ПОЛНАЯ СБОРКА ДИСТРИБУТИВА БЕЗ FON
+ q
+Er W !,$ZE D ANY
+ Q 
+AUTO S AUTO=1 D ALL,VAR1^%ZAPM.ed.BSCm1,VAR3^%ZAPM.ed.BSCm1,ARX
+ I $G(FREE) W !,"!!!!!!!! ДЛЯ ВСЕХ !!!!!!!!!!!!!",!
+ I $ZU(140,4,ARX)=0 D  //ЕСЛИ СУЩЕСТВУЕТ СТАРЫЙ, ТО ...
+ .S Time=$ZU(140,2,ARX),Time=$ZD(Time,3)_"~"_(VER-1) 
+ .W !,"Копируем предыдущий дистрибутив в "_Time,!
+ .D exec^%ZAPM.ed.BSCEXE(COMM_"COPY "_$TR(ARX_" "_$$TR^%ZAPM.ed.BSsFUNM(ARX,"bsdsr.zip","bs"_Time_".zip"),"/","\"),0)
+ .I $ZU(140,5,ARX)
+ S COMM1=COMM_" "_Dbin_"\Rar.exe a -ep "_$TR(ARX_" "_PR1,"/","\")_"\*.*"
+ W !,"Формирование архива "_COMM1,!!
+ D exec^%ZAPM.ed.BSCEXE(COMM1,0) ;_" -ps3v9e3t6a8m9y0",0)
+ I $ZU(140,4,ARX)=0 W !,"Архив готов. "_$ZU(140,1,ARX)_" byte. "_$ZD($ZU(140,2,ARX),3),!,ARX
+ E  W !,"!!! Архив НЕ готов ! "_ARX
+ W !! i $g(onlyxml) g xml1
+ D exec^%ZAPM.ed.BSCEXE(COMM_" N:\InfoPortal\rarcsp.bat",0) s CSPf=$$TR^%ZAPM.ed.BSsFUNM(ARX,"bsdsr.zip","ip\cache\csp.rar")
+ I $ZU(140,4,CSPf)=0 W !,"Архив готов. "_$ZU(140,1,CSPf)_" byte. "_$ZD($ZU(140,2,CSPf),3),!,CSPf
+ E  W !,"!!! Архив НЕ готов ! "_CSPf
+xml1 W !,$$VerEX^%ZAPM.ed.BSC4r3 //ПРОСЧИТАТЬ ВЕРСИЮ КЛИЕНТА 
+ANY W !!,"...Press ANY KEY ..." R *r1
+ Q
+ARX S PR1=$p(PR1,"/",1,$l(PR1,"/")-1) ;,ARX=$$TR^%ZAPM.ed.BSsFUNM(PR1,"BSNEW","bssetup")_"\bsdsr.zip"
+ S ARX=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSRA")_"bsdsr.zip"
+ ;I $G(^%ZAPM.ed.BSETUP("BSDSR","ARX"))'="" S ARX=^%ZAPM.ed.BSETUP("BSDSR","ARX")
+ Q
+ALL I $G(addFON) D FON^%ZAPM.ed.BSCAsIs1("^%ZAPM.ed.BStemp",1)
+ N GOF,RSA 
+ D BSC,BSc,BSETUP,BSCACHE
+ K ^%ZAPM.ed.BStemp
+ ;I '$G(AUTO) D ARX S A=$$LineEdit^%ZAPM.ed.BSXfun(ARX,"!!!!!!!! ВВЕДИТЕ ПОЛНЫЙ ПУТЬ К ДИСТРУБУТИВУ !!!!!!!!") I A'="" S ^%ZAPM.ed.BSETUP("BSDSR","ARX")=A
+ i '$g(onlyxml) D GOFRSA
+ D XML
+ Q
+GOFRSA N dir,g,g1,I,II
+ S dir="N:/ROU/Install" I '$$exists^%ZAPM.ed.BSCEXE(dir) W "Директория "_dir_" не создана!" Q
+ //массивы
+ F II="MAC","INC" i $d(@("r"_II)) K @("^tempBSr"_II) S GOF("BSC","tempBSr"_II)="",I="" F  S I=$O(@("r"_II)@(I)) Q:I=""  m @("^tempBSr"_II)@(I)=@("^r"_II)@(I)
+ S I="" F  S I=$O(GOF(I)) Q:I=""  D
+ .N g
+ .M g=GOF(I) D %GOF^%ZAPM.ed.BSCEXE($ZCONVERT(dir_"/bs-portal/"_I,"L")_".gof",.g,$G(GOF(I)))
+ N g
+ //программы
+ S I="" F  S I=$O(RSA(I)) Q:I=""  I I'["-" D
+ .M g=RSA(I)
+ .S II="" F i=1:1 S II=$O(g(II)) Q:II=""  S g1(i)=II_"."_g(II)
+ .S g1(i)="ZSTU.INT"
+ .I $$Ro^%ZAPM.ed.BSCEXE($ZCONVERT(dir_"/update","L")_".rsa","g1",,$G(RSA(I)))
+ Q
+XML //ВСЕ ВЫБРОСИТЬ В XML
+ N List,I,g,g1,II,dir
+ S dir="N:/ROU/b4y" I '$$exists^%ZAPM.ed.BSCEXE(dir) W "Директория "_dir_" не создана!" Q
+ i '$g(onlyxml) S (List("/csp/msw/BsDoc.csp"),List("/csp/msw/BsDocResult.csp"),List("/csp/msw/BsLib.csp"),List("/csp/msw/BsLibresult.csp"))=""
+ S (List("/csp/msw/b4y/b4yupload.csp"),List("/csp/msw/b4y/b4yuploadf.csp"))=""
+ i $g(onlyxml) S (List("/isc/studio/templates/BsLIB.csp"),List("/isc/studio/templates/BsLIB2.csp"))=""
+ F I="BSG","BSQLDSN","BSWebService","GRAND","GRANDAPP","HELP","MAIL","PROTECT","SESSIONS","TEST","VISIT" S List("BSC."_I_".CLS")=""
+ F I="Content1","Content2","Content3","Param","Tree" S List("BSC4.BSDOC."_I_".CLS")=""
+ F I="DemonCFG","DemonCMD","Dict","FrameStyle","Param","Projects","PropFields","PropTables","UStatus" S List("BSC4.CFG."_I_".CLS")=""
+ //программы
+ S I="" F  S I=$O(RSA(I)) Q:I=""  I I'["-" D
+ .M g=RSA(I)
+ .S II="" F  S II=$O(g(II)) Q:II=""  D
+ ..I $D(^rINC(II)) S List(II_".INC")="" Q
+ ..S List(II_"."_g(II))=""
+ .;S List("ZSTU.INT")=""
+ i '$g(onlyxml) S List("%BSALL.PRJ")=""   //^oddPROJECT(nameProj,item,....
+ //массивы
+ K g
+ S I="" F  S I=$O(GOF(I)) Q:I=""  D
+ .I I="BScBDPROFILE" D  Q
+ ..S II="" F  S II=$O(GOF(I,II)) Q:II=""  S g(II_".GBL")=""
+ ..do $system.OBJ.Export(.g,dir_"/"_I_".xml","d",.err)
+ .S II="" F  S II=$O(GOF(I,II)) Q:II=""  I II'["tempBSr" S List(II_".GBL")=""
+ do $system.OBJ.Export(.List,dir_"/BSALL.xml","d",.err)
+ K List S List("BsBuild.INT")=""
+ do $system.OBJ.Export(.List,dir_"/BsBuild.xml","d",.err)
+ Q 
+ ;
+G2F(GLN,%DEV,CURDEV,RComment) //МАССИВ В ФАЙЛ -----------
+ N NFN,LR,LTR,f,DOS,FNO
+ D GSAVE(GLN,"tempBS")
+ i $$RREST("tempBS") U $G(CURDEV,0) w "Есть ошибки !!!",! q
+ I $$Open^%ZAPM.ed.BSCF1(%DEV,"W")<0  U $G(CURDEV,0) W "Ошибка открытия файла ! "_%DEV,! Q
+ U %DEV
+ D RComment(RComment),RO("^ROUTINE","INT",1,0,"+tempBS*") 
+ C %DEV U $G(CURDEV,0)
+G2F1 D DeltempBS
+ Q
+OPENFILE(PR1,AUTO) I '$G(AUTO)   D DOSOPN^%ZAPM.ed.BSBL1 I '$D(%FN) Q 0
+ I $G(AUTO) S %FN=PR1 D  I '$$OpenFile^%ZAPM.ed.BSCF1(PR1,"A") K %FN,%DEV Q 0
+ .I $$DelFile^%ZAPM.ed.BSCEXE(PR1)
+ Q 1
+BSETUP //СОЗДАТЬ ДИСТРИБУТИВ %BSETUP.RGR
+ D DeltempBS
+ N %FN,%DEV,NFN,LR,LTR
+ S PR1=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSR")_"%bsetup.rgr"
+ ;I PR1'["/" S PR1=$g(^%ZAPM.ed.BSETUP("BSDSR",2),"D:/MSW/!")_"/%bsetup.rgr"
+ S GOF="BSETUP"
+ D GSAVE("+%BSETUP*","tempBS")
+ W !!! i $$RREST("tempBS") w "Есть ошибки !!!",!!! q
+ ;D DOSOPN^%ZAPM.ed.BSBL1 I '$D(%FN) Q
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ U %DEV ;s ^%ZAPM.ed.BSETUP("BSDSR",2)=$p(%FN,"/",1,$l(%FN,"/")-1)
+ S RSA="BSETUP-"
+ S GOF(GOF)="%BSETUP-global. Version "_$$ver^%ZAPM.ed.BSC
+ D RComment(GOF(GOF)),RO("^ROUTINE","INT",1,0,"+tempBS*") W !!!!
+ C %DEV
+BSETUP1 D DeltempBS
+ Q
+PROF //СОЗДАТЬ ДИСТРИБУТИВ ПРОФИЛЕЙ
+ D DeltempBS
+ N %FN,%DEV,NFN,LR,LTR
+ S PR1=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSR")_"%bs-profile.rgr"
+ ;S PR1=$g(^%ZAPM.ed.BSETUP("BSDSR",3),"D:/MSW/!")_"/%bs-profile.rgr"
+ S GOF="PROFILE"
+ D GSAVE("+%BSc4uSERS,+%BSC4.Profile,+%BSC4grand,+%BScGRAND,+%BScGAPP,+%BScPROT","tempBS")
+ ;D GSAVE("%BSC4.Profile","tempBS")
+ ;D GSAVE("%BSC4grand","tempBS")
+ ;D GSAVE("%BScGRAND","tempBS")
+ ;D GSAVE("%BScGAPP","tempBS")
+ ;D GSAVE("%BScPROT","tempBS")
+ W !!! i $$RREST("tempBS") w "Есть ошибки !!!",!!! q
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ U %DEV ;s ^%ZAPM.ed.BSETUP("BSDSR","Profile")=$p(%FN,"/",1,$l(%FN,"/")-1)
+ S RSA="PROFILE-"
+ S GOF(GOF)="%BS profile. Version "_$$ver^%ZAPM.ed.BSC
+ D RComment(GOF(GOF)),RO("^ROUTINE","INT",1,0,"+tempBS*") W !!!!
+ C %DEV
+ D DeltempBS
+ d GOFRSA
+ Q
+BSc //СОЗДАТЬ ДИСТРИБУТИВ %BScBD.RGR
+ D DeltempBS
+ N %FN,%DEV,NFN,LR,LTR
+ S PR1=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSR")_"%bscbd.rgr"
+ ;S PR1=$g(^%ZAPM.ed.BSETUP("BSDSR",3),"D:/MSW/!")_"/%bscbd.rgr"
+ S GOF="BScBDPROFILE"
+ I $G(FREE) S MASK="+%BSc*,-%BScVIS,-%BScMAIL,-%BSc4uSESS,-%BSc4uSERS,-%BScPROT"
+ E  S MASK="+%BSc*,-%BScVIS,-%BScMAIL,-%BSc4uSESS"
+ D GSAVE(MASK,"tempBS")
+ W !!! i $$RREST("tempBS") w "Есть ошибки !!!",!!! q
+ ;D DOSOPN^%ZAPM.ed.BSBL1 I '$D(%FN) Q
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ U %DEV ;s ^%ZAPM.ed.BSETUP("BSDSR",3)=$p(%FN,"/",1,$l(%FN,"/")-1)
+ S RSA="BSc-"
+ S GOF(GOF)="%BSc*-globals. Version "_$$ver^%ZAPM.ed.BSC
+ D RComment(GOF(GOF)),RO("^ROUTINE","INT",1,0,"+tempBS*") W !!!!
+ C %DEV
+BSc1 D DeltempBS
+ Q
+BSC //СОЗДАТЬ ДИСТРИБУТИВ %BSС.RR %BSС.RGR
+ D DeltempBS
+ N %FN,%DEV,NFN,LR,LTR
+ X "ZL %BSF11 ZS %BSCnewF11"
+ S PR1=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSR")_"%bsc.rr"
+ ;S PR1=$g(^%ZAPM.ed.BSETUP("BSDSR",0),"D:/MSW/!")_"/%bsc.rr"
+ d VERADD($P(PR1,"/",1,$L(PR1,"/")-1)_"/#.ver")
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ U %DEV ;s ^%ZAPM.ed.BSETUP("BSDSR",0)=$p(%FN,"/",1,$l(%FN,"/")-1)
+ S RSA="BSC",RSA(RSA)="%BSC-routine. Version "_$$ver^%ZAPM.ed.BSC
+ I $G(FREE) S ROULIST="+%BSC*,-%BSCSV*"
+ E  S ROULIST="+%BSC*"
+ D RComment(RSA(RSA)),RO("^rINC","INC","","","+%BSC*")
+ D RO("^ROUTINE","INT",1,0,ROULIST) //,RO("^ROUTINE","INT","",0,"+%ZMGWS*") //,RO("^ROUTINE","INT","",0,"+%a*")
+ D RO("^rMAC","MAC","",0,"+%BSC*"),RO("^rMAC","MAC","",0,"+%zek*") W !!!!
+ C %DEV U 0
+ S GOF="BSC"
+ I $G(FREE) S MASK="+%BSC*,-%BSC4SNX*,+BSC*,-BSC4.CFG.UStat*,-%BSZ,+%BSC4SNX,-%BSZ*,-%BSMDDR,-%BSCmdapilog"
+ E  S MASK="+%BSC*,-%BSC4SNX.OUT*,-%BSC4SNX.BPO*,-%BSC4SNX.Protokol*,-%BSC4SNX.VKS*,+BSC*,-BSC4.CFG.UStat*,-%BSCmdapilog"
+ D GSAVE(MASK,"tempBS") ;,GSAVE("BSC","tempBS")
+ W !!! i $$RREST("tempBS") w "Есть ошибки !!!",!!! q
+ S NFN=$P(%FN,".",1)_".rgr"
+ i $$Open^%ZAPM.ed.BSCF1(NFN,"W")
+ U NFN
+ S RSA="BSC-"
+ S GOF(GOF)="%BSC-globals. Version "_$$ver^%ZAPM.ed.BSC
+ D RComment(GOF(GOF)),RO("^ROUTINE","INT",1,0,"+tempBS*") W !!!!
+ C NFN
+BSC1 D DeltempBS
+ Q
+BSCACHE //СОЗДАТЬ ДИСТРИБУТИВ %BSСACHE.RR %BSСACHE.RGR
+ D DeltempBS
+ N %FN,%DEV,NFN,LR,LTR,MASK
+ S PR1=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSR")_"%bscache.rr" 
+ ;S PR1=$g(^%ZAPM.ed.BSETUP("BSDSR",1),"D:/MSW/!")_"/%bscache.rr"
+ ;D DOSOPN^%ZAPM.ed.BSBL1 I '$D(%FN) Q
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ U %DEV ;s ^%ZAPM.ed.BSETUP("BSDSR",1)=$p(%FN,"/",1,$l(%FN,"/")-1)
+ S RSA="BSCACHE",RSA(RSA)="%BSCACHE-routine. Version "_$$ver^%ZAPM.ed.BSC
+ I $G(FREE) S ROULIST="+%BS*,-%BSC*,-%BSc*,-%BSTAB*,-%BSMOL*,-%BSmirO*,-%BSion*,-%BSgsv*,-%BSfon*,-%BSkov*"
+ E  S ROULIST="+%BS*,-%BSC*,-%BSc*"
+ D RComment(RSA(RSA)),RO("^ROUTINE","INT",1,0,ROULIST),RO("^rMAC","MAC","",0,"+%BS*") W !!!!
+ C %DEV U 0
+ S GOF="BSCACHE"
+ I $G(FREE) S MASK="+%BS*,-%BSC*,-%BSc*,-%BSETUP,-%BSb*,-%BSpgWEB*,+%BSpgWEBC,-%BSpgWEMM"
+ E  S MASK="+%BS*,-%BSC*,-%BSc*,-%BSETUP,-%BSb*,-%BSvda*,-%BSpgWEB*,+%BSpgWEBC,-%BSpgWEMM,-%BSC4MON.SINX.BPO,+%BSCiP*"
+ D GSAVE(MASK,"tempBS")
+ W !!! i $$RREST("tempBS") w "Есть ошибки !!!",!!! q
+ S NFN=$P(%FN,".",1)_".rgr"
+ i $$Open^%ZAPM.ed.BSCF1(NFN,"W")
+ U NFN
+ S RSA="BSCACHE-"
+ S GOF(GOF)="%BSCACHE-globals. Version "_$$ver^%ZAPM.ed.BSC
+ D RComment(GOF(GOF)),RO("^ROUTINE","INT",1,0,"+tempBS*") W !!!!
+ C NFN
+BSCACHE1 D DeltempBS
+ Q
+VERADD(PR1) //СЧЕТЧИК ВЕРСИЙ+1
+ S VE=$P(^%ZAPM.ed.BSC4,"@",2)
+ S VER=$P(VE,"Version :",2)+1
+ S $P(VE,"Version :",2)=VER_" от "_$ZD(+$H,3)
+ S $P(^%ZAPM.ed.BSC4,"@",2)=VE
+ S ^ROUTINE("%BS",0,1)="%BS ///"_$$ver^%ZAPM.ed.BSC
+ N %FN,%DEV,NFN,LR,LTR
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ U %DEV W $$ver^%ZAPM.ed.BSC," ",$ZU(110)
+ C %DEV U 0
+ Q
+Ver() q "Ver. "_$P($P(^%ZAPM.ed.BSC4,"@",2),"Version :",2)
+ //--------------------------------------------------------------------------
+RO(M,EXT,N,NN,MA) //ВЫВЕСТИ СТРОКИ ПРОГРАММ
+ N I,MI,MI2,MI3,MI4
+ ;I MA["-" S MI2=$P(MA,"-",2),MI3=$P(MA,"-",3),MI4=$P(MA,"-",4),MI5=$P(MA,"-",5),MA=$P(MA,"-",1)
+ S I=""  F  S I=$O(@M@(I)) Q:I=""  I $$MASK(I,MA) D  ;I ("@"_I)[("@"_MA) D
+ .;I $G(MI2)'="",("@"_I)[("@"_MI2) Q  //ИСКЛЮЧЕНИЯ
+ .;I $G(MI3)'="",("@"_I)[("@"_MI3) Q
+ .;I $G(MI4)'="",("@"_I)[("@"_MI4) Q
+ .;I $G(MI5)'="",("@"_I)[("@"_MI5) Q
+ .S II=0
+ .I EXT="INT",$D(^rMAC(I)) Q  //
+ .I M="^rMAC" S rMAC(I)=""
+ .I M="^rINC" S rINC(I)=""
+ .S RSA(RSA,I)=EXT
+ .W I,"^",EXT,"^"_N_"^",$G(@M@(I,0)),"^"_NN,!
+ .F II=1:1 Q:'$D(@M@(I,0,II))   W @M@(I,0,II),!
+ .W !
+ Q
+RComment(T) W $S($D(FREE):"Дистрибутив Для Всех. ",1:"")_"Cache for Windows NT^MAC^"_T_" из области "_$ZU(5)_"^~Format=Cache.S~",!,"%BS version "_$$ver^%ZAPM.ed.BSC_" ~"_$ZU(5)_"~",!
+ Q
+MASK(NAME,MASK) //ЛОГИКА ВКЛЮЧЕНИЯ\ВЫКЛЮЧЕНИЯ ИМЕН
+ N A,I,J,M,RET S RET=0
+ i MASK="*" q 1
+ I '$D(MI) F I=1:1 Q:$P(MASK,",",I,I+1)=""  S A=$P(MASK,",",I),J=$E(A,1) S MI(J,$E($P(A,"*"),2,99))=A["*"
+ S I="" F  S I=$O(MI("+",I)) Q:I=""  D  Q:RET=2
+ .I MI("+",I)=0,NAME=I S RET=2 Q
+ .I MI("+",I)=1,("@"_NAME)[("@"_I) S RET=1 Q
+ I RET=1 S I="" F  S I=$O(MI("-",I)) Q:I=""  D  
+ .I MI("-",I)=1,("@"_NAME)[("@"_I) S RET=0 Q
+ .I MI("-",I)=0,NAME=I S RET=0 Q
+ Q RET
+GSAVE(MA,ROU) //СОХРАНИТЬ ГЛОБАЛИ В ПРОГРАММАХ
+ N t,NS,i,ii,rc,MI,MI2,MI3,MI4,MI5
+ S NS=$ZU(5),t="^mtempmBSdirGlob"
+ D GetGlobalDir^%ZAPM.ed.BSCp(NS,t)
+ ;I MA["-" S MI2=$P(MA,"-",2),MI3=$P(MA,"-",3),MI4=$P(MA,"-",4),MI5=$P(MA,"-",5),MA=$P(MA,"-",1)
+ S i="" F ii=1:1 S i=$O(@t@(i)) Q:i=""  I $$MASK(i,MA) D  ;I ("@"_i)[("@"_MA) D
+ .;I $G(MI2)'="",("@"_i)[("@"_MI2) Q
+ .;I $G(MI3)'="",("@"_i)[("@"_MI3) Q
+ .;I $G(MI4)'="",("@"_i)[("@"_MI4) Q
+ .;I $G(MI5)'="",("@"_i)[("@"_MI5) Q
+ .S GOF(GOF,i)=""
+ .S LR=$G(LR)+1,LR(LR)=$$G2R("^"_i,ROU_"."_$$NaR(i)) ;W !,i
+ K @t
+ Q
+NaR(N) I $E(N,1)="%" Q "p"_$E(N,2,99)
+ Q N
+RREST(ROU) //СОБРАТЬ ПРОГРАММУ ВОССТАНОВЛЕНИЯ
+ N ERR
+ D NEWROU(ROU),ADDSTR(ROU,"RestGlo //")
+ S I="" F  S I=$O(LR(I)) Q:I=""  D ADDSTR(ROU,LR(I)) I LR(I)["!ERROR" S ERR=$G(ERR)+1
+ D ADDSTR(ROU," Q"),ADDSTR(ROU,"DelRou //") //,ADDSTR(ROU," S $ZT=""DelErr^"_ROU_""" //")
+ S I="" F  S I=$O(LTR(I)) Q:I=""  I LTR(I)'=ROU D ADDSTR(ROU," D DEL1^%ZAPM.ed.BSC4r4("""_LTR(I)_".*"")")
+ D ADDSTR(ROU," Q") //,ADDSTR(ROU,"DelErr Q  //")
+ D SAVEROU(ROU)
+ I $G(ERR) Q +$G(ERR)
+ Q 0
+ /*
+ >w $$Quote^%cspQuote($lb("123",123))
+$c(5,1)_"123"_$c(3,4)_"{"
+>w $$Quote^%cspQuote($lb("123",123,"aa ""111"" bb"))
+$c(5,1)_"123"_$c(3,4)_"{"_$c(13,1)_"aa ""111"" bb"
+ */
+G2M(i) ;ГЛОБАЛЬ В ЛОКАЛЬ
+ K STR S FLAG=0
+ S STR(1)=" S "_GG_"="_$$CUT($E(i,1,LONG))
+ F f=2:1 Q:$E(i,f*LONG-LONG+1,LONG+(LONG*(f-1)))=""  S FLAG=0,STR(f)=" S @$ZR=@$ZR_"_$$CUT($E(i,f*LONG-LONG+1,LONG+(LONG*(f-1))))
+ Q
+CUT(S)  I S="" Q """"""
+ S SS="" F II=1:1:$L(S) S v=$A($E(S,II)) D
+ .I v<32 D ADSUM(v) Q  ;//"$C("_v_")") Q
+ .I v>126&(v<161) D ADSUM(v) Q  ;//"$C("_v_")") Q
+ .I v=34 D ADSUM(v) Q  ;//"$C("_v_")") Q
+ .D ADSU($E(S,II))
+ I FLAG=2 S SS=SS_""""
+ I FLAG=1 S SS=SS_")"
+ Q SS
+ADSUM(S) I FLAG=1 S SS=SS_","_S ;//S SS=SS_"_"_S
+ I FLAG=0 S SS="$C("_S ;//S SS=S
+ I FLAG=2 S SS=SS_"""_$C("_S ;//S SS=SS_"""_"_S
+ S FLAG=1
+ Q
+ADSU(S) I FLAG=1 S SS=SS_")_"""_S ;//S SS=SS_"_"""_S
+ I FLAG=0 S SS=""""_S
+ I FLAG=2 S SS=SS_S
+ S FLAG=2
+ Q
+G2R(G,R) //ГЛОБАЛЬ В ПРОГРАММУ ЗАСУНУТЬ
+ N BT,ND,BTR,BTR1,R1,RR,GG,I,II,ROUTINE,LONG,f,v,ERROR,FLAG,RSTR,STR,SS,err
+ S ERROR=0
+ I '$D(@G) Q $$GINFO(" // global: "_G_" not exist")
+ D NEWROU(R)     S RR=R,R1=0,BTR=0,BT=0,ND=0,LONG=1000
+ I $D(@G)'[0 D SAVENODE(G)
+ S GG=G F  S GG=$ZO(@GG) Q:GG=""  D SAVENODE(GG)
+ D SAVEROU(RR)
+ I $G(ERROR) Q $$GINFO(" //D ^"_R_" //!!!ERROR="_ERROR_" // ")
+ Q $$GINFO(" D ^"_R_" // ")
+GINFO(S) N A S A=$$JF(S,50) I $D(BT) S A=A_$$JF(BT,8,".")_$$JF("bytes",9)_$$JF(ND,6,".")_"nodes"
+ Q A
+JF(S,N,C) Q S_$TR($J("",N-$L(S))," ",$G(C," "))
+SAVENODE(GG) //СОХРАНИТЬ УЗЕЛ
+  S BT=BT+$L(@GG)+$L(GG),ND=ND+1
+  D G2M(@GG)
+  S I="" F  S I=$O(STR(I)) Q:I=""  D
+  .S BTR=BTR+$L(STR(I))
+  .I BTR>31000 S R1=R1+1 D ADDSTR(RR," S LTR=$G(LTR)+1,LTR(LTR)="""_RR_""" G ^"_R_"."_R1),SAVEROU(RR) S RR=R_"."_R1 D NEWROU(RR)
+  .D ADDSTR(RR,STR(I))
+  Q
+ADDSTR(RR,S) //ДОБАВИТЬ СТРОКУ В ПРОГРАММУ
+ S RSTR=RSTR+1,ROUTINE(RSTR)=S
+ Q
+NEWROU(R) K ROUTINE
+ S ROUTINE(1)=" //Программа создающая массив"
+ S BTR=$L(ROUTINE(1)),RSTR=1,LTR=$G(LTR)+1,LTR(LTR)=R
+ Q
+SAVEROU(R) //СОХРАНИТЬ ПРОГРАММУ
+ S ROUTINE(0)=RSTR
+ D ROUTINE^%R(R_".INT",.ROUTINE,.err,"CS",0)
+ I $G(err)'="" W $$FMTERR^%R(.err,.ROUTINE) S ERROR=ERROR+1
+ E  W !,R," Ok"
+ Q
+MIR //СОЗДАТЬ ДИСТРИБУТИВ %GKDO*.RR %MIR*.RGR --- ДИСПЕТЧЕР ДОКУМЕНТОВ --- МИРЕНБУРГ АНДРЕЙ ЛЬВОВИЧ
+ D DeltempBS
+ N %FN,%DEV,NFN,LR,LTR
+ S PR1=$$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","bBSDSR")_"%GKDOC.rg"
+ ;S PR1=$g(^%ZAPM.ed.BSETUP("BSDSR",0),"D:/MSW/!")_"/%GKDOC.rg"
+ I '$$OPENFILE(PR1,$G(AUTO)) Q
+ D GSAVE("+%MIR*","tempBS")
+ W !!! i $$RREST("tempBS") w "Есть ошибки !!!",!!! q
+ U %DEV ;s ^%ZAPM.ed.BSETUP("BSDSR","%MIR")=$p(%FN,"/",1,$l(%FN,"/")-1)
+ D RComment("%GKDOC-routine. Version "_$$ver^%ZAPM.ed.BSC),RO("^ROUTINE","INT",1,0,"+%GKDO*"),RO("^ROUTINE","INT",1,0,"+tempBS*") W !!!!
+ C %DEV U 0 D DeltempBS
+ Q               
+DeltempBS I $$EXIST^%R("tempBS.INT")     D DelRou^tempBS,DEL1("tempBS.*") Q
+DEL1(r) i $$ZV^%ZAPM.ed.BSCp>5 s r=$p(r,".*")
+ d DEL^%R(r)
+ q
+DELs(mask) //удаление программ по маске
+ q
+ n i,ii
+ S (i,ii)=$p(mask,"*") d  F  S i=$O(^ROUTINE(i)) Q:i=""  d
+ .i $Zname(i,1) i ("@"_i)[("@"_ii) w !,$$DEL^%R(i)
+ q 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;Модуль выкачки массивов из MSM в ^%ZZZ 
+ ;0. Перенести в MSM под именем ^z в кип PRG
+ ;1. создать там новый том ZZZ,ZZZ для хранения массива Z с длиной узла до 511
+ ;2. запустить gd^z
+ ;3. перенести массив ^[""ZZZ"",""ZZZ""]Z в Кашу в namespace PRG
+ ;4. восстановить d Z^%ZAPM.ed.BSC4r4("^Z")
+g2g(G,gl) ;положить глобаль в линейный массив
+ s LONG=200
+ i $g(gl)="" s gl="^mtempGL"
+ ;s l=0
+ I $D(@G)'[0 D sAVENODE(G)
+ S GG=G F  S GG=$ZO(@GG) Q:GG=""  D sAVENODE(GG)
+ q
+sAVENODE(GG) ;СОХРАНИТЬ УЗЕЛ
+  S BT=$g(BT)+$L(@GG)+$L(GG),ND=$g(ND)+1
+  D G2M(@GG)
+  S I="" F  S I=$O(STR(I)) Q:I=""  D
+  .S BTR=$g(BTR)+$L(STR(I))
+  .s l=l+1,@gl@(l,0)=$l(@GG)+$L(GG),@gl@(l)=$e(STR(I),1,510) i $e(STR(I),511)'="" s @gl@(l,1)=$e(STR(I),511,511+510) 
+  Q
+gMT k ^%ZZZ d g2g("^MT","^%ZZZ")
+ q
+g(gl) k @gl g gd1
+gd s gl="^[""ZZZ"",""ZZZ""]Z" k @gl
+gd1 S i="^",l=0 F  S i=$O(@i) Q:i=""  S i="^"_i w !,i D
+ .;i i="^GRAF" w " пропущено <DKSER>" q
+ .d g2g(i,gl)
+ w !," количество ошибок: " zw ERR
+ q
+Z(G) ;Модуль закачки массивов из ^Z в ... с перекодирокой из ASCII в ANSI
+ s nm1="" //,(S1,S2)="" //
+ d INIT^%ZAPM.ed.BSre(0) 
+ i $g(G)="" S G="^Z" K ^%ZZZ,ERR
+ S I="" F  S I=$O(@G@(I)) Q:I=""  S xxx=I
+ .s cs=@G@(I,0),s=@G@(I) i $d(@G@(I,1)) s s=s_@G@(I,1)
+ .s in=$p(s,"=",1),nm=$p($p(s," ^",2),"=",1) s v=$p(s,"=",2,999) 
+ .D  i nm'=nm1 s nm1=nm k @("^"_nm1) w !,nm1_" "
+ ..I nm["(" S nm=$P(nm,"(")
+ ..I in["(",in'[")" S in=$p(s,"=",1,2),v=$p(s,"=",3,999) 
+ ..I in["(",in'[")" S in=$p(s,"=",1,3),v=$p(s,"=",4,999) 
+ .D  x "s ^%ZZZ="_v 
+ ..I $E($g(@G@(I+1)),1,12)=" S @$ZR=@$ZR" S v=v_" "_@G@(I+1),I=I+1
+ .S in=$P($tr(in,S1,S2),"S ",2,999) S @in=$tr(^%ZZZ,S1,S2)
+ .s g=$zr,cs1=$l(g)+$L(@g) i cs1'=cs w !,g w " "_cs1_","_cs_" не совпадает кол-во символов" S ERR=$g(ERR)+1,ERR(ERR,g)=cs1
+ q
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ //Создание дистрибутива комплекса АСУРП
+PRG N LIST
+ s dir="Z:\n\ASU-AST\Arhiv\rou\prg\"
+ zn $$v^%ZAPM.ed.BSCp("vPRG")
+ d addRou("+A*,+Q*,+W*,+E*,+R*,+T*,+Y*,+U*,+I*,+O*,+P*,+S*,+D*,+F*,+G*,+H*,+J*,+K*,+L*,+Z*,+X*,+C*,-CSP*,+V*,+B*,+N*,+M*")
+ d addGlo("+BS*,-BSprot*,-BSbufS*,+MSM*,+ASU*") //"+A*,+Q*,+W*,+E*,+R*,+T*,+Y*,+U*,+I*,+O*,+P*,+S*,+D*,+F*,+G*,+H*,+J*,+K*,+L*,+Z*,+X*,+C*,+V*,+B*,+N*,+M*")
+ s time=$zd($h,3)_"("_$tr($p($ZDATETIME($ZUTIL(188),1,1,2)," ",2),":","'")_")"
+ do $system.OBJ.Export(.LIST,dir_time_"-prg.xml","d",.err)
+ zn "%SYS" k LIST
+ d addRou("+%BS*,+%ZM*,+%GBA*")
+ d addGlo("+%ZM*")
+ do $system.OBJ.Export(.LIST,dir_time_"-sys.xml","d",.err)
+ w ! zw err
+ Q
+DescOut2File(ClassName,dir) //выгрузить в файл описание класса
+ n menFile,menuU,OLDIO,pr,i,z
+ d lp^%ZAPM.ed.BSCp2(ClassName,.pr)
+ d menuBeg,menuTab,menuEnd
+ q
+menuTab 
+ U menFile  w "<table border=1 >"
+ w "<tr><td><b>Имя таблицы</b></td><td> -</td><td><b>"_ClassName_"</b></td></tr>"
+ w "<tr><td><b>Описание таблицы</b></td><td> -</td><td><b>"_pr_"</b></td></tr>"
+ w "<tr><td><i>Имя поля</i></td><td>Тип</td><td>Описание поля</td></tr>"
+ S i="" F  S i=$O(pr(i)) Q:i=""  d
+ .w "<tr><td><i>"_pr(i)_"</i></td><td>"_$g(pr(i,"type"))_"</td><td>"_$g(pr(i,"desc"),"?"_pr(i))_"</td></tr>"
+ w "</table>"_BK
+ U OLDIO q
+menuBeg
+ i pr["%Zen" s z="zen"
+ s i=$o(pr("")) i i'="" i $g(pr(i,"type"))["%ZEN" s z="zen"
+ S menFile=dir_$g(z,"tab")_ClassName_".html" ;I $ZU(140,4,menFile)'=0 
+ S OLDIO=$I O menFile:"UWN" U menFile 
+ D BEG1^%ZAPM.ed.BSC4 
+ U OLDIO s menU=0
+ q
+menuEnd
+ U menFile D END^%ZAPM.ed.BSC4 U OLDIO
+ C menFile 
+ q
+addRouMac(MA) //Создание дистрибутива комплекса АСУРП программы MAC 
+ n i,ii,rc,MI,MI2,MI3,MI4,MI5
+ S (i,ii)=""  i '$g(noSay) w !,"выбираем MAC программы по маске :"_MA
+ F  S i=$O(^rMAC(i)) Q:i=""  i $$MASK^%ZAPM.ed.BSC4r4(i,MA) s LIST(i_".MAC")=""  i '$g(noSay) w !,"MAC: "_i
+ i $d(LIST(".MAC")) k LIST(".MAC")
+ q
+addRou(MA) //Создание дистрибутива комплекса АСУРП 
+ n i,ii,rc,MI,MI2,MI3,MI4,MI5
+ S (i,ii)=""  i '$g(noSay) w !,"выбираем INT программы по маске :"_MA
+ F  S i=$O(^ROUTINE(i)) Q:i=""  i $$MASK^%ZAPM.ed.BSC4r4(i,MA) s LIST(i_".INT")="" 
+ i $d(LIST(".INT")) k LIST(".INT")
+ q
+addGlo(MA)
+ N t,NS,i,ii,rc,MI,MI2,MI3,MI4,MI5
+ S NS=$ZU(5),t="^||mtempmBSdirGlob"
+ D GetGlobalDir^%ZAPM.ed.BSCp(NS,t) 
+ i '$g(noSay) w !,"выбираем глобали по маске :"_MA
+ S i="" F ii=1:1 S i=$O(@t@(i)) Q:i=""  I $$MASK^%ZAPM.ed.BSC4r4(i,MA) s LIST(i_".GBL")="" 
+ K @t
+ q
+AddMenu(a)  i '$g(noSay) w !,"выбираем меню ИП по маске :"_a
+ n i
+ s (a,i)=$p(a,$c(34),2) f  s i=$o(@g@(i)) q:i=""  i i[a  w !,i m @g1@(i)=@g@(i)
+ s LIST(g1_".GBL")=""
+ q
+ //$$GetF^%ZAPM.ed.BSCtree("Security.Applications","ID","/csp/ndoc","Path","%SYS") = реальный путь
+addCSP(dir)  i '$g(noSay) w !,"выбираем файлы по маске :"_dir
+ n rs,dir1,file
+ s dir=$zconvert($tr(dir,"\","/"),"L")
+ i dir'["+",dir'["*" s LIST(dir)="" q  //явный путь
+ i $e(dir)="+" s dir=$p($p(dir,"+",2,9),"*")
+ s dir1=dir
+ i $e(dir)'="/" s dir="/"_dir
+ s dir2=$$GetF^%ZAPM.ed.BSCtree("Security.Applications","ID",dir,"Path","%SYS")
+ ;w !,"---",7,dir2,7
+ i "?."[dir2 s dir3=$p(dir,"/",$l(dir,"/")),dir2=$$GetF^%ZAPM.ed.BSCtree("Security.Applications","ID",$p(dir,"/",1,$l(dir,"/")-1),"Path","%SYS") d
+ .;w !,"=====",$p(dir,"/",1,$l(dir,"/")-1)
+ .i "?."'[dir2 s dir2=dir2_"/"_dir3 q
+ .i "?."[dir2 s dir2=$$CacheSysDir^%ZAPM.ed.BSCp(dir)
+ ;w !!!,1,dir2,1
+ N i,in,U1,MAS,m,FN,FN1
+ S MAS="m" K @MAS D FileListDir^%ZAPM.ed.BSCEXE(dir2,MAS,2,"")
+ S U1="" F i=1:1 S U1=$O(@MAS@(U1)) Q:U1=""  D
+ .S FN=$P(@MAS@(U1),"?",1)
+ .s file=$ZCONVERT($tr(FN,"/","\"),"L")
+ .w !,file
+ .s LIST(dir1_$tr($p(file,$tr(dir1,"/","\"),2),"\","/"))=""
+ q
+addCls(MA) n ClassName,res i '$g(noSay)  w !,"выбираем классы по маске :"_MA
+ N t,NS,i,ii,rc,MI,MI2,MI3,MI4,MI5
+ s res=##class(%ResultSet).%New("%ClassDefinition.ClassInfo")
+ i 'res w:$zu(67,10,$j)=1 !,"Can not open res" q
+ d res.Execute()
+ f  q:'res.Next()  d
+ . s ClassName=res.GetData(1)
+ . I $$MASK^%ZAPM.ed.BSC4r4(ClassName,MA) s LIST(ClassName_".CLS")="" i $g(^%ZAPM.ed.BS("Debug")) d DescOut2File(ClassName,"d:\_snap\")
+ k res ;d res.%Close() 
+ q
+BuildMS(name,dir) //сборка по АРМу на основе конфигурационного файла MS, кладем в dir
+ n i,ns,ons,LIST,err,g,g1
+ i $g(name)="" q
+ i '$g(noSay) w !,"======================== Сборка :"_name
+ i $g(MS(name,"active"))=0  i '$g(noSay) w " билд не активен" q
+ s ons=$zu(5),ns=$$%^%ZAPM.ed.BSCh($g(MS(name,"namespace")))
+ i ns'="",ons'=ns zn ns
+ i $e(dir,$l(dir))'="\" s dir=dir_"\"
+ s g="^[""prg""]MSM.ASURP.MatrAcc",g1=g_"Tempo" k @g1
+ s i="" f  s i=$o(MS(name,i)) q:i=""  d 
+ .i $e(i,1,4)="menu" d AddMenu(MS(name,i)) q
+ .i $e(i,1,3)="INT" d addRou(MS(name,i)) q
+ .i $e(i,1,3)="GBL" d addGlo(MS(name,i)) q
+ .i $e(i,1,3)="CLS" d addCls(MS(name,i)) q
+ .i $e(i,1,3)="CSP" d addCSP(MS(name,i)) q
+ .i $e(i,1,3)="MAC" d addRouMac(MS(name,i)) q
+ i '$d(LIST) g BuildMS2
+ ;;s LIST("d:\scool2007\!_Упражнения\UNITTE~1.DOC")=""
+ n fn,%datetime,%date,%section,%namespace,a
+ s %datetime=$zd($h,3)_"("_$tr($p($ZDATETIME($ZUTIL(188),1,1,2)," ",2),":.","'-")_")"
+ s %date=$zd($h,3)
+ s %namespace=$g(MS(name,"namespace")),%section=name
+ s a=$g(MS(name,"sfilename")) i a="" s a="%section"
+ e  i a'[$c(34) s a=$c(34)_a_$c(34)
+ x "s a="_a
+  s fn=dir_a_".xml" 
+ do $system.OBJ.Export(.LIST,fn,"d",.err)
+ w !!,"Выведено в файл :"_fn,!!
+ w ! zw err
+BuildMS2 zn ons
+ k @g1
+ q
+LoadXML(BSfile) //загрузка из сборки
+ n fn,g,g1,I,STOP,ERR,i,menu
+ s fn=$$b64d^%ZAPM.ed.BSCp2(BSfile)
+ //нужен ini файл для команд перед восстановлением....но пока так.//////////////////////////////////
+LoadXMLint s g="^[""prg""]MSM.ASURP.MatrAcc",g1=g_"Tempo",g2=g_"Back" k @g1
+ m @g2=@g  //сделаем запасную копию 
+ w "Загрузка из сборки :",fn
+ s name=$p(fn,"\",$l(fn,"\")),ns=$$%^%ZAPM.ed.BSCh($p(name,"_",2)) i ns'="" zn ns
+ w !,"В рабочей области :"_$zu(5) 
+ i '$d(auto) r !!,"Вы уверены? [YyнН/N] <N>",r q:r=""  q:"YyнН"'[r
+ 
+ do $system.OBJ.Load(fn,"ck",.ERR) 
+ S I="" F  S I=$O(ERR(I)) Q:I=""  D  ;Q:$G(STOP)
+ .I ERR(I,"code")'=5475 S STOP=I Q
+ .I ERR(I,"param",1)["%BSC" S STOP=I Q
+ w !!,"Восстанавливаем меню ИП..."
+ s i="" f  s i=$o(@g1@(i)) q:i=""  w !,i s menu=$p(i,":") i menu'="" s menu(menu)=""
+ s i=""  f  s i=$o(@g@(i)) q:i=""  i $p(i,":")'="",$d(menu($p(i,":"))) k @g@(i) w !,"удалили : "_i
+ m @g=@g1  
+ i '$d(auto) D ANY^%ZAPM.ed.BSC4r4
+ q 
+LoadAllXml(sec,dirfile) n auto s auto=1
+ d INI^%ZAPM.ed.BSCindx(dirfile,.MS)
+ S i1="" F  S i1=$O(MS(sec,i1)) Q:i1=""  i $e(i1,1,4)="File" s fn=MS(sec,i1) i fn'="" d
+ . w !,"//////////////////////////////////////////////////////////////////////////",!
+ .d LoadXMLint
+ D ANY^%ZAPM.ed.BSC4r4
+ q
+ 

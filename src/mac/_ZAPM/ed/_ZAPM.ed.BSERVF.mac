@@ -1,0 +1,37 @@
+ROUTINE %ZAPM.ed.BSERVF
+%BSERVF ; ФУНКЦИИ FOR-%BS-SERVER ; 12:55   17.10.2003
+ Q
+LastMsg N T,G,S,LIST I '$$LO^%ZAPM.ed.BSERV Q
+ D OkMsg^%ZAPM.ed.BSXfun($G(@G@("LastMsg",S),"СООБЩЕНИЙ НЕ БЫЛО !")) Q
+EXIT(ku,Sec) ;ОСТАНОВ MSM-СТАНЦИИ БЕЗУСЛОВНЫЙ
+ D MSG^%ZAPM.ed.BSERVER("!!! ВАШЕМУ %BS-СЕРВЕРУ ДАЛИ КОМАНДУ СРОЧНО ОСТАНОВИТЬСЯ !!!")
+ H +$G(Sec,5)
+ I ku=2 D S^%ZAPM.ed.BSD2
+ I ku=1 D SS^%ZAPM.ed.BSD2
+ Q
+UPG(U)
+ D MSG^%ZAPM.ed.BSERVER("!!! ВАШ ПРОЦЕСС ОСТАНОВЯТ ДЛЯ ПРИНУДИТЕЛЬНОГО ПОВЫШЕНИЯ ВЕРСИИ %BS !!!") H 5
+ D %BSKJ J IntSELF^%ZAPM.ed.BSMENU(U):20:1 ;АВТОМАТИЧЕСКОЕ ПОВЫШЕНИЕ ВЕРСИИ %BS
+ Q
+%BSKJ N I ;ТОРМОЗ ЗАДАНИЯ ОСНОВНОГО ПРОЦЕССА %BS
+ S I=$$%BSJ I I D KJ(I)
+ Q
+%BSJ() N I,II ;НОМЕР ЗАДАНИЯ ОСНОВНОГО ПРОЦЕССА %BS
+ S II=0 F I=1:1:20 D  Q:II
+ .L +@("%BSj"_I):1 E  S II=I
+ .L -@("%BSj"_I)
+ Q II
+KJ(J) D MGR^%ZAPM.ed.BS,KILL^KILLJOB(J,1)
+ Q
+EXE(EXE,N) ;ДОС-ПРОЦЕСС ДАЖЕ НА М-СЕРВЕРЕ
+ I N=1 S EXE=$$JOB^%HOSTCMD(EXE) Q
+ D LV^%ZAPM.ed.BSF4 D EXE^%ZAPM.ed.BSDOS(EXE,1)
+ Q
+PEEK(SYS,H) ;ПОДГЛЯДЕТЬ ЭКРАН, СКОЛЬКО СЕКУНД ОЖИДАТЬ ОТКЛИКА
+ I $ZV["Wind"!($ZV["Cach"||($ZV["IRIS")) Q
+ N I
+ I '$$LO^%ZAPM.ed.BSERV Q
+ K @G@("SCR",SYS) S @G@("CMD",SYS)="D SCRSAVE^%ZAPM.ed.BSERVF" F I=1:1:H H 1 I $D(@G@("SCR",SYS)) S I=$ZR D LoadWinV^%ZAPM.ed.BSXfun($NA(@G@("SCR",SYS)),1) W $$bel^%ZAPM.ed.BS3,$$bel^%ZAPM.ed.BS3,$$bel^%ZAPM.ed.BS3,$$r^%ZAPM.ed.BS3 K @I Q
+ Q
+SCRSAVE ;D SaveWinV^%ZAPM.ed.BSXfun(1,1,25,80,$NA(@G@("SCR",S)),1)
+ Q

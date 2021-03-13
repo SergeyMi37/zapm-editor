@@ -1,0 +1,150 @@
+ROUTINE %ZAPM.ed.BSHTML1
+%BSHTML1 ; пpогpамма работы с Java & JavaScript ; 15:07   04.05.2003
+ q
+NETDIR() ;СЕТЕВАЯ ДИРЕКТОРИЯ
+ N Ns S Ns=$P($G(^%ZAPM.ed.BSETUP("SERVER",15,4)),"@",15) I Ns="" S Ns="C:\TEMP\"
+ Q Ns
+UNAME() N A S A=$TR($$h^%ZAPM.ed.BS3(),",","_") Q $E(A,$L(A)-8,$L(A))
+NAMEFILE() N N1,N2 S N1=$P($P(BST,"!",3),".",1)
+ ;это для молнии
+ I N1="" S N1=$E(BST,1,8) Q $$TOM()_"\"_$$KIP()_"\"_$$UNAME()
+ ;это для табеля
+ S:$E(N1,2)="P" $E(N1,2)="" S N2=$E(N1,7) I N2="" S N2="_"
+ I $E(N1,2,6)["KOM" S N1="_KOM" ;командировки --------------
+ Q $$TOM()_"\"_$$KIP()_"\"_$E(N1,2,6)_"\"_$$UNAME()
+KIP() N Ns S Ns=$P(BST,$C(34),2)
+ I Ns="" S Ns=$p($P(BST,"!",3),".",1)
+ I Ns="" D  Q Ns
+ .I $P(BST,"_",1)["INSP" S Ns="INSP"
+ .E  S Ns=$P(BST,"_",1)
+ Q Ns
+TOM() N Ns S Ns=$P(BST,$C(34),4)
+ I Ns="" d
+ .S Ns=$p($P(BST,"!",3),".",1)
+ .i Ns["Q"!(Ns["SP") S Ns="TAB"
+ I Ns="" Q "MOL"
+ Q Ns
+INTJAVA(BSR,BST,%FN) ;ВЫВОД ТАБЛИЦЫ В JAVA-APPLET ВНУТРЕННЯЯ ТОЧКА
+ N S1,S2,BUF,BUF1,BUF2,%DEV,S,DOS,FNO,PR1,N1,N2
+ S DOS=52 I $$Open^%ZAPM.ed.BSXdos(%FN,"W")<0 Q
+ I '$D(S1) D INIT^%ZAPM.ed.BSre(1)
+ I $ZV["Cach"||($ZV["IRIS") S (S1,S2)=""
+ U DOS D JAVA C DOS
+ Q
+OUTJAVA ;ВЫВОД ТАБЛИЦЫ В JAVA-APPLET
+ N S1,S2,BUF,BUF1,BUF2,%DEV,%FN,S,DOS,FNO,PR1,N1,N2
+ S PR1=$$NETDIR()_$$NAMEFILE_".HTM" D DOSOPN^%ZAPM.ed.BSBL1 Q:'$D(%FN)
+ I '$D(S1) D INIT^%ZAPM.ed.BSre(1)
+ I $ZV["Cach"||($ZV["IRIS") S (S1,S2)=""
+ D Wait^%ZAPM.ed.BSXfun("Идет вывод")
+ U %DEV D JAVA
+ C %DEV
+ U 0 D OkMsg^%ZAPM.ed.BSXfun("Вывод Завершен")
+ Q
+Desc() ;ЗАГОЛОВКИ
+ N N I $D(@BSR@(BST,"PERHEAD")) Q $G(@BSR@(BST,"PERHEAD")) ;TAF
+ S N=$P($G(@BS),"@") I $P(N,"~~~",2)'="" Q $P(N,"~~~",2) ;ТАБЕЛЬ
+ I $P(N,"|",2)'="" Q $P(N,"|",2)
+ Q N
+SCREEN ; РАЗРЕШЕНИЕ АПЛЕТА
+ ;РАЗРЕШЕНИЕ МОНИТОРА      screen.availWidth screen.availHeight
+ ;S W=620,H=350   ;640x480 !!! ВЗАВИСИМОСТИ ОТ COOKIE ИЛИ IP\ADRESSA
+ ;S W=801,H=601    ;800x600
+ S W=1023,H=760   ;1024x768
+ ;S W=1280,H=1024   ;1280x1024
+ Q
+CODEBASE() I $G(%BsWebL) Q $$0^%ZAPM.ed.BSCh(31)
+ N Ns S Ns=$P($G(^%ZAPM.ed.BSETUP("SERVER",16,4)),"@",15) I Ns="" S Ns="CACHESERVER"
+ Q "http://"_Ns_"/iss/tabview/"
+PERDAT(G) ;ПЕРИОД ДАТ В ТИТУЛ ДОКУМЕНТА
+ N T,C S T="Насчет от "_$P($G(@G@("PERDATE")," ..?")," ",2)
+ I $D(@G@("PER",1)) F C=1:1 Q:'$D(@G@("PER",C))  S T=T_BK_@G@("PER",C)
+ Q T
+JAVA ;ФОРМИРОВАНИЕ ТАБЛИЦЫ ДЛЯ АПЛЕТА
+ S UsBS12=$G(%BS(12))
+ N %BS,I,II,NSPACE,GL,P1,P2,P3,P9,PART,TABL,TIP,CFG,BS
+ N JAVA,W,H,BODY,STR,COL,TIT,TIX,TIY,BYTE,S1,S2
+TE I $G(%BsWebL),'$$TABVAR^%ZAPM.ed.BSCh1 Q
+ I '$G(%BsWebL) D VARLOC
+ S (S2,S1)="" I $$IFDOS($P($G(@BS),"@")) K S1,S2 I $$ANSI^%ZAPM.ed.BSre("")
+ D SCREEN ;640x480 РАЗРЕШЕНИЕ АПЛЕТА
+APPLET ;ФОРМИРОВАНИЕ ТАБЛИЦЫ
+ W "<HTML>",BK
+ W "<HEAD><TITLE>"_$TR($$Desc(),S1,S2)_"</TITLE>",BK
+ W "<!--%BS + "_$ZV_"-->",BK
+ W "<!--%BS "_BST_$TR(" Выводил "_$G(UsBS12)_" из Cистемы "_$$ZU^%ZAPM.ed.BS3(1,0)_" , а насчитывал "_$G(@BSR@(BST,"PERUSER")),S1,S2)_"-->",BK
+ W "<!--<BSTITLE> "_$TR($$PERDAT($NA(@BSR@(BST))),S1,S2)_"</BSTITLE>-->"
+ ;W BK,"<SCRIPT LANGUAGE=""JavaScript"" SRC="""_$$CODEBASE()_"TabView.JS"">",BK
+ ;W "</SCRIPT>",BK
+ W BK,"<SCRIPT LANGUAGE=""JavaScript""><!--",BK
+ W "function NewSize() {",BK
+ W "var W=document.body.clientWidth;",BK
+ W "var H=document.body.clientHeight;",BK
+ W "document.TabView.SetOptionApplet(W-10,H-15,""0"",0,0,0);",BK
+ W "}//--></SCRIPT>",BK
+ W "<SCRIPT LANGUAGE=""JavaScript"" EVENT=""onresize"" FOR=""window""> NewSize();",BK
+ W "</SCRIPT>",BK
+ W "<SCRIPT LANGUAGE=""JavaScript"" EVENT=""onscroll"" FOR=""window""> window.scroll(0,0);",BK
+ W "</SCRIPT>",BK
+ W "</HEAD>",BK
+ W "<BODY onload=""NewSize();"">",BK
+ D BODY I '$D(@BODY) W STR G FINAL
+ W "<APPLET CODE=TabView.class CODEBASE="""_$$CODEBASE()_""" ID=TabView WIDTH="_W_" HEIGHT="_H_">",BK
+ W "<PARAM NAME=COMMENT VALUE="""_1_""">",BK
+ W "<PARAM NAME=t2tFontN VALUE=""Courier"">",BK
+ W "<PARAM NAME=t2tFontH VALUE=12>",BK
+ S Tmp=$$GLRET^%ZAPM.ed.BSF12($NA(@BODY@(1)))
+ I $E(Tmp,1)=" "!($E(Tmp,1)="") W "<PARAM NAME=FirstChar VALUE=1>",BK D GLSET^%ZAPM.ed.BSF12($NA(@BODY@(1)),"F"_$E(Tmp,2,9999))
+ W "<PARAM NAME=t2tstr VALUE="_STR_">",BK
+ W "<PARAM NAME=t2tcol VALUE="_COL_">",BK
+ I $G(TIT) W "<PARAM NAME=t2tituls VALUE="_$G(TIY,1)_">",BK,"<PARAM NAME=t2titulc VALUE="_$G(TIX,1)_">",BK
+ W "<PARAM NAME=t2t VALUE=""",BK
+ S BYTE=0,BYT=0 F I=1:1 Q:'$D(@BODY@(I))  S II=$$GLRET^%ZAPM.ed.BSF12($NA(@BODY@(I)))_$J("",COL-$L($$GLRET^%ZAPM.ed.BSF12($NA(@BODY@(I)))))_BK,BYTE=BYTE+$L(II) D
+ .I (BYTE+$L(II))>35000 I $E(II,$L(II)-2)=" " S $E(II,$L(II)-2)="_"
+ .I BYTE>35000 D
+ ..S BYTE=$L(II),BYT=BYT+1 W """>",BK,"<PARAM NAME=t2t"_BYT_" VALUE=""",BK
+ ..I $E(II,1)=" " S $E(II,1)="_"
+ .W $TR(II,S1,S2)
+ W """></APPLET>",BK
+FINAL W "</BODY>","</HTML>",BK
+ Q
+BYTEPLUS I $E(II,$L(II))=" " S $E(II,$L(II))="_"
+ Q
+BODY S COL=0,STR=0,BODY=$$TMPG^%ZAPM.ed.BSF11
+ I $P(@BS,"@",17)=5 D  Q  ;ТЕКСТ
+ .S COL=0 F I=1:1 Q:'$D(@PART@(TABL,I))  D  I COL<$L(Tmp) S COL=$L(Tmp)
+ ..S Tmp=$$CTRL^%ZAPM.ed.BSre($TR($G(@PART@(TABL,I)),$C(34),"'"))
+ ..D GLSET^%ZAPM.ed.BSF12($NA(@BODY@(I)),Tmp)
+ .S STR=I-1
+ I $P(@BS,"@",17)=1 D  Q  ;ТАБЛИЦА
+ .N X,S,ny,nx,d,d1,d0,BSR,BST ;МОДУЛЬ ИЗ ^%ZAPM.ed.BSHTML
+ .S TABLE=BS,STR=0,%BS(15)=1,BSR=PART,BST=TABL,TIT="1,1"
+ .I $P(@BS,"@",19) S TIT=$P(@BS,"@",19)
+ .E  I $P(@BS,"@",50) S TIT=$P(@BS,"@",50)
+ .F ny=1:1 Q:'$D(@TABLE@(ny))  K S D  I $D(%DEV) U 0 X WA U %DEV
+ ..F nx=1:1 Q:'$D(@TABLE@(ny,nx))  D:$P(TIT,",")=ny&($P(TIT,",",2)=nx)  D CELL^%ZAPM.ed.BSCi
+ ...S TIX=$L($G(S(1)))+1,TIY=STR+1
+ ..S nx="" F  S nx=$O(S(nx)) Q:nx=""  S STR=STR+1 D  I COL<$L(Tmp) S COL=$L(Tmp)
+ ...S Tmp=$$CTRL^%ZAPM.ed.BSre($TR(S(nx),$C(34),"'"))
+ ...D GLSET^%ZAPM.ed.BSF12($NA(@BODY@(STR)),Tmp)
+ S STR="УКАЗАННЫЙ ТИП ОБЪЕКТА ПОКА НЕ ПОДДЕРЖИВАЕТСЯ"
+ Q
+TAGS(S) ;ESCAPE КОДИРОВАНИЕ
+ I S[" " S S=$$TR^%ZAPM.ed.BSsFUNM(S," ","&nbsp;")
+ I S["<" S S=$$TR^%ZAPM.ed.BSsFUNM(S,"<","&lt;")
+ I S[">" S S=$$TR^%ZAPM.ed.BSsFUNM(S,">","&gt;")
+ I S[$C(34) S S=$$TR^%ZAPM.ed.BSsFUNM(S,$C(34),"&quot;")
+ ;I S["%" S S=$$TR^%ZAPM.ed.BSsFUNM(S,"%","%25")
+ ;I S["\" S S=$$TR^%ZAPM.ed.BSsFUNM(S,"\","%5C")
+ ;I S[":" S S=$$TR^%ZAPM.ed.BSsFUNM(S,":","%3A")
+ Q S
+IFDOS(S) ;ПРОВЕРКА КОДИРОВКИ
+ I $TR(S,$C(128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175),"")'=S Q 1
+ Q 0
+TEST S (BST,TABL)="A1000_20000417_1",(BSR,PART)="^[""MGR"",""WNT""]%BSMOLN",BK=""
+ S BS=$NA(@PART@(TABL))
+ D TE
+ Q
+VARLOC ;ЛОКАЛЬНЫЕ ПЕРЕМЕННЫЕ
+ S BK=$C(13,10),TABL=BST,PART=BSR,BS=$NA(@PART@(TABL))
+ Q

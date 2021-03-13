@@ -1,0 +1,130 @@
+ROUTINE %ZAPM.ed.BSC4r2
+%BSC4r2 ;МОДУЛЬ ДЛЯ СПЕЦИАЛЬНЫХ ФУНКЦИЙ  ; 11:11   12.09.2002
+ Q
+MERGE ;СМЕШАТЬ ПРОЕКТЫ
+ D BEG1^%ZAPM.ed.BSC4
+ W "<BODY>"
+ N BSPASS,BSNAME,BSTARIF,BSEMAIL,BSFIRMA,BSCOUNTRY,BSCITY,BSLABEL
+ S BSTMP1=newPR,BSTMP2=Proj
+ W "<form action="""_$$ADDLIB^%ZAPM.ed.BSC4()_""" method=""POST"">"
+ S BSLABEL="MERG^~BSC4r2"
+ D ADDBSPOST^%ZAPM.ed.BSC4reg
+ W "<HR>"_RED,$$LNG^%ZAPM.ed.BSC4("Будем смешивать ? Вы уверены ?",318),EF,BK_BBK
+ W "<input type=""submit"" name=""sMER"" value='"_$$LNG^%ZAPM.ed.BSC4("СМЕШАТЬ",319)_"'>",BK
+ W "</form>" d BACK^%ZAPM.ed.BSCh
+ D END^%ZAPM.ed.BSC4
+ Q
+MERG ;ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ
+ I $D(sMER) W "<HR>"_$$LNG^%ZAPM.ed.BSC4("Объединим два проекта",320)_BBK S newPR=BSTMP1,Proj=BSTMP2 G CreatMERG^%ZAPM.ed.BSC4base
+ E  W "<HR>"_$$LNG^%ZAPM.ed.BSC4("Смешение отменено",321)_BBK
+ G PRO^%ZAPM.ed.BSC4base
+ Q
+WIND ;ИЗМЕНИТЬ ОКНО
+ N S,i,I,K,M
+ D pin^%ZAPM.ed.BSC4base
+ I BSTMPL="B" D
+ .s S=$G(@("^"_pin_".ROU")@(BSR1,BSTMPH)),Tmp=$ZR
+ .S M=0
+ .s K=$L(S,BK)
+ .F I=1:1:K I M<$L($P(S,BK,I)) S M=$L($P(S,BK,I))
+ .S:M<255 M=255 S:K<25 K=25
+ .S @BDSES@(BSSES,"TEXTARIA",BSTMPH)="cols="_M_" rows="_K
+ I BSTMPL="L" K @BDSES@(BSSES,"TEXTARIA",BSTMPH)
+ D EditRou^%ZAPM.ed.BSC4base1(BSR1)
+ Q
+GETH(H,L) ;GET - ПЕРЕМЕННЫЕ ДЛЯ УВЕЛИЧЕНИЯ/УМЕНЬШЕНИЯ ОКОН ТЕXTARIA
+ n BSLABEL,BSRoutineId,BSTMPH,BSTMPL,BSTOP,BSGRANT,BSROU
+ s BSLABEL="WIND^~BSC4r2",BSTMPH=H,BSTMPL=L,BSR1=Rou
+ S R=$$ADDBSGET^%ZAPM.ed.BSC4()
+ Q R
+GETTA(A) ;РАЗМЕРЫ ТЕКCТ АРИИ ПО УМОЛЧАНИЮ
+ N I
+ S I=$G(@BDSES@(BSSES,"TEXTARIA",A))
+ I I="" S I=$$GETOPT^%ZAPM.ed.BSC4cfg(MainOpt,A) I I="" Q "cols=70 rows=4"
+ Q I
+ ;====================================================================================
+prg ;РАЗОВАЯ ПРОКАЧКА ПРОГРАММ для АСУРП
+ zn "USER" 
+ n g,S,SS,I,FLAG,ROU,V,II,err
+ s g="^%ZAPM.ed.BSC(""asurpPRG"")"
+ F I=1:1 Q:'$D(@g@(I))  S SS(I,1)=$P(@g@(I),"|",1),SS(I,2)=$P(@g@(I),"|",2)
+ S I="A" F  S I=$O(^ROUTINE(I)) Q:I=""  D
+ .K FLAG,ROU W !,I 
+ .F II=0:1:^ROUTINE(I,0,0) I $D(^ROUTINE(I,0,II)) S (ROU(II),S)=@$ZR D
+ ..S V="" F  S V=$O(SS(V)) Q:V=""  I S[SS(V,1) S S=$$TR^%ZAPM.ed.BSsFUNM(S,SS(V,1),SS(V,2))
+ ..I ROU(II)'=S S ROU(II)=S,FLAG=1 w "+"
+ .I $D(FLAG) D
+ ..D ROUTINE^%R(I_".INT",.ROU,.err,"CS",0)
+ ..ZW err
+ . //ЗАПИСАТЬ ПРОГРАММУ
+ Q
+ ;====================================================================================
+132 ;РАСШИРИТЬ ОКНО КОНСОЛИ!!! РАЗОВАЯ ПРОКАЧКА ПРОГРАММ
+ K SS F I=1:1 Q:'$D(^%ZAPM.ed.BSC("T132X48",I))  S SS(I,1)=$P(^%ZAPM.ed.BSC("T132X48",I),"|",1),SS(I,2)=$P(^%ZAPM.ed.BSC("T132X48",I),"|",2)
+ S I="%BS" D  F  S I=$O(^ROUTINE(I)) Q:I=""  I I["%BST132"  I I'=$ZN D
+ .K FLAG,ROU W !,I
+ .F II=0:1:^ROUTINE(I,0,0) I $D(^ROUTINE(I,0,II)) S (ROU(II),S)=@$ZR D
+ ..S V="" F  S V=$O(SS(V)) Q:V=""  I S[SS(V,1) S S=$$TR^%ZAPM.ed.BSsFUNM(S,SS(V,1),SS(V,2))
+ ..I ROU(II)'=S S ROU(II)=S,FLAG=1
+ .I $D(FLAG) D
+ ..D ROUTINE^%R(I_".INT",.ROU,.err,"CS",0)
+ ..ZW err
+ . //ЗАПИСАТЬ ПРОГРАММУ
+ Q
+ ;====================================================================================
+CNODE Q  ;СОЗДАТЬ УЗЕЛКИ ДЛЯ LNG!!! РАЗОВАЯ ПРОКАЧКА
+ S X=$O(^%ZAPM.ed.BSC4DIC("!"),-1)+1 K SSS
+ S I="%BSC4" D  F  S I=$O(^ROUTINE(I)) Q:I'["%BSC4"  I I'=$ZN D
+ .F II=1:1:^ROUTINE(I,0,0) I $D(^ROUTINE(I,0,II)) S (S4,S)=@$ZR D
+ ..F SS="$$LNG(","$$LNG^%ZAPM.ed.BSC4(" D XE(SS,S)
+ ..I S4'=S S ^ROUTINE(I,0,II)=S4
+ ;ZW SSS
+ Q
+XE(SS,S) I S'[SS Q
+ F S2=2:1 Q:$P(S,SS,S2,S2+1)=""  S S3=$P($P(S,SS,S2),")",1) D
+ .I $E(S3,1)'=$C(34) Q
+ .I $E(S3,$L(S3))'=$C(34)&(S3'[",") S S3=$P($P(S,SS,S2),")",1,2)
+ .I S3["""_"!(S3["_""") Q
+ .;W !,S3
+ .S S1="D XEC^%ZAPM.ed.BSC4r2("_S3_")" X S1
+ Q
+XEC(T,N)
+ I $D(^%ZAPM.ed.BSC4DIC(T)) Q
+ I $D(N) D  Q
+ .I $D(^%ZAPM.ed.BSC4DIC(N)) Q
+ .S ^%ZAPM.ed.BSC4DIC(N,"R")=T,^%ZAPM.ed.BSC4DIC(N,"E")="?",^%ZAPM.ed.BSC4DIC(N,"F")="?",^%ZAPM.ed.BSC4DIC(N,"G")="?"
+ s XX(T)=$G(XX(T))+1 I XX(T)=1 S X=X+1,N=X S XX(T,1)=X S ^%ZAPM.ed.BSC4DIC(N,"R")=T,^%ZAPM.ed.BSC4DIC(N,"E")="?",^%ZAPM.ed.BSC4DIC(N,"F")="?",^%ZAPM.ed.BSC4DIC(N,"G")="?"
+ I XX(T)>1 S N=XX(T,1),^%ZAPM.ed.BSC4DIC(N,"Multu")=XX(T)
+ S S4=$$TR^%ZAPM.ed.BSsFUNM(S4,""""_T_"""",""""_T_""","_N)
+ Q
+ ;===========================================================
+ ;
+ ;ИДЕЯ : ОТЧЕТНУЮ ТАБЛИЦУ
+ ;1. ОТСКАНИРОВАТЬ И СОЗДАТЬ ВРЕМЕННЫЙ МАССИВ ПО ТАБЛИЦЕ ОТЧЕТА
+ ;2. ОБВЯЗАТЬ ЕГО SQL-Ю ...
+ ;3. УБИТЬ И МАССИВ И КЛАСС И ОТЧЕТНУЮ ТАБЛИЦУ
+ ;
+ARRAY2OBJ(GN,P,T,KKOL,FIELDS,NAMECLASS,TEMPDIR) ;СОЗДАТЬ ОБЪЕКТНУЮ ОБВЯЗКУ ДЛЯ МАССИВА БД
+ N I,II,III,NF,BSR,BST,PxPUSTO,se,ke
+ ;S P="^Struct",T="KNHA"
+ i $P($G(@P),"@",1)'="BaSe MsW " S @P="BaSe MsW @РАЗДЕЛ@@"
+ K @P@(T)
+ S @P@(T)="МАССИВ "_GN_", ПОЛЯ="_FIELDS_"@@@@@1@1@1@1@22@80@1@@1@@@2@@2,2@1@@@@@1@@@7@2@@@@@@@@@@"
+ S @P@(T,1,1)="1@1@2@20@@@@@1@2;6;35;42@@@@@"
+ S @P@(T,1,2)="1@21@2@53@@@@0@1@2;6;35;42@@@@@@"
+ S @P@(T,"FTR",1,2)="S d1="" КЛЮЧИ: ""_$G(k1)_"" ""_$G(k2)_"" ""_$G(k3)_"" ""_$G(k4)_"" ""_$G(k5)_"" ""_$G(k6)_"" ""_$G(k7)_"" ""_$G(k8)_"" ""_$G(k9)"
+ S @P@(T,"FTR",1,2,1)=" КЛЮЧИ: "_$G(k1)_" "_$G(k2)_" "_$G(k3)_" "_$G(k4)_" "_$G(k5)_" "_$G(k6)_" "_$G(k7)_" "_$G(k8)_" "_$G(k9)
+ S @P@(T,"KEY")=GN
+ S @GN="BSD - MSW@"_P_"@"_T
+ I '$G(KKOL)!($G(FIELDS)="") D ARRAYSCAN(GN)
+ F I=1:1:KKOL S @P@(T,"KEY",I)="49@@64@@НОВЫЙ "_I_"-КЛЮЧ@1,70@@@ "_I_"-Й ИНДЕКСНЫЙ@1;6;33;42@@@@@Введите "_I_"-КЛЮЧ@@@@@"
+ S III=FIELDS ;"KNP,KPD,KSP,OKATO,SNM,VSV"
+ S II=2 F I=1:1 Q:$P(III,",",I,I+1)=""  S NF=$P(III,",",I) D
+ .S @P@(T,II,1)="3@1@2@20@@@@@1@2;6;35;42@@@@@ ИМЯ ПОЛЯ: "_NF
+ .S @P@(T,II,2)="3@21@2@53@@@@@2@2;6;34;43@@@@@@@@"_NF_"@"
+ .S II=II+1
+ S BSR=P,BST=T D TAB^%ZAPM.ed.BSF1
+ I $D(NAMECLASS) S PxPUSTO="" I $$START^%ZAPM.ed.BSCBD($NA(@P@(T)),1,$G(NAMECLASS),$G(TEMPDIR))
+ Q
+ARRAYSCAN(GN) ;СКАНИРОВАТЬ МАССИВ И ОПРЕДЕЛИТЬ КАКИЕ ПОЛЯ И СКОЛЬКО УРОВНЕЙ
+ Q

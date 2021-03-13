@@ -1,0 +1,24 @@
+ROUTINE %ZAPM.ed.BSMOUSE
+%BSMOUSE  ; пpогpамма работа С МЫШьЮ ; 22:56 11-NOV-96
+INIT      ; Check if mouse is installed
+          S init=$$INIT^%MOUSE()  ; mouse installed?
+          I 'init G END
+TYPE      ; Determine type of mouse
+          S info=$$INFO^%MOUSE()  ; get <type>,<irq>,<version>
+          I $$HIDE^%MOUSE()
+          ;S %BS(25,1)=$$REPORT^%MOUSE(),Mouse=1
+          ;S %BS(25)="F  R *R1:0,*R2:0,*R3:0 Q:R1'=-1  I $G(%BS(25,1))'=$$REPORT^%MOUSE() D MOUSE^%ZAPM.ed.BSMOUSE Q:R1'=-1  F  R *R:0 E  Q"
+          S MouseYes(1)=$$REPORT^%MOUSE(),Mouse=1
+          S MouseYes="F  R *R1:0,*R2:0,*R3:0 Q:R1'=-1  I $G(MouseYes(1))'=$$REPORT^%MOUSE() D MOUSE^%ZAPM.ed.BSMOUSE Q:R1'=-1  F  R *R:0 E  Q"
+END       Q
+MOUSE     N co ; F  R *R1:0,*R2:0,*R3:0 Q:R1'=-1  I $G(MouseYes(,1))'=$$REPORT^%MOUSE() D  Q:R1'=-1  F  R *R:0 E  Q
+          S co=$$REPORT^%MOUSE()
+          I "1"[$G(Mouse),$P(co,",",2)>$P(MouseYes(1),",",2) S R1=27,R2=91,R3=66 S:$P(co,",",2)=192 $P(co,",",2)=190 G M
+          I "1"[$G(Mouse),$P(co,",",2)<$P(MouseYes(1),",",2) S R1=27,R2=91,R3=65 S:$P(co,",",2)=0 $P(co,",",2)=1 G M
+          I "2"[$G(Mouse),$P(co,",",1)>$P(MouseYes(1),",",1) S R1=27,R2=91,R3=67 S:$P(co,",",1)=632 $P(co,",",1)=630 G M
+          I "2"[$G(Mouse),$P(co,",",1)<$P(MouseYes(1),",",1) S R1=27,R2=91,R3=68 S:$P(co,",",1)=0 $P(co,",",1)=1 G M
+M         S MouseYes(1)=co ;!!!I $$PUT^%MOUSE($P(co,",",1),$P(co,",",2))
+          Q:'$P(co,",",3)
+          I $ZB(+$P(co,",",3),1,1) S R1=13
+          I $ZB(+$P(co,",",3),2,1) S R1=27
+A         S R2=-1,R3=-1 Q

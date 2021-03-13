@@ -1,0 +1,69 @@
+ROUTINE %ZAPM.ed.BSMSMF
+%BSMSMF ;РЕДАКТИРОВАНИЕ ФУНКЦИЙ                             ; 10:18   17.06.99
+ S IYI="^%ZAPM.ed.BSS(FUN_ED" D ENTER^%ZAPM.ed.BSN Q
+ROU ;ВХОД В ПРОГРАММУ
+ S LA=$P(d,"^"),RO=$P(d,"^",2) ;X:'$D(^ (RO)) "ZR  ZI LA_"" ;..."" ZS @RO" X "ZL @RO F i=0:1 Q:$T(+i)=""""  I $P($P($T(+i),"" ""),""("")=LA Q"
+ D ^%ZAPM.ed.BSX("PROG",RO,i_",1") Q
+HELP Q:d=""  S Br=$P(d,"("),Bt=$P(d,"(",2) Q:Bt=""  I '$D(@(Br_"(Bt)")) S $P(@$ZR,"@",17)=5 ;BSr1="^%ZAPM.ed.BSS",BSt1="NEW4",BSr2=Br,BSt2=Bt D COPY^%ZAPM.ed.BSTK
+ S IYI=d D NE^%ZAPM.ed.BSN
+e Q
+RSE(N) ;ВХОД В ПРОГРАММУ ИЗ СПИСКА
+ N (%BS,vl,N)
+RS S BSR="^%ZAPM.ed.BSbufB",BST="%RSEBUF"_N D ^%ZAPM.ed.BST Q:$G(YES)<1
+ S d=$P($G(@BSR@(BST,YES)),":") Q:$E(d)="-"  S RO=$P(d,"+"),i=$P(d,"+",2)
+ D ^%ZAPM.ed.BSX("PROG",RO,i_",1") G RS
+ Q
+DosRec(NumDev,%FN) ;ОТКРЫТИЕ УСТРОЙСТВА HFS=%DEV ДЛЯ ДОЗАПИСИ
+ I $ZV["Cach"||($ZV["IRIS") Q "ПОКА НЕ УМЕЮ ДОПИСЫВАТЬ В ФАЙЛ"
+ S YES=1,%zT=$ZT,$ZT="DosErr^%ZAPM.ed.BSMSMF"
+ F %DEV=$G(NumDev,51):1:54 O %DEV::0 Q:$T
+ I '$T K %DEV S YES=-1 G DosEnd
+ O %DEV:(%FN:"A") U %DEV I $ZA<0 U 0 S YES=-2 C %DEV G DosEnd
+DosEnd U 0 Q YES
+DosErr S $ZT=$G(%zT) Q $ZE
+Tex(T,MODE) ;СИСТЕМНЫЙ ПРОТОКОЛ
+ N %DEV,%FN i '$d(%BS(44)) D VAR^%ZAPM.ed.BSCh 
+ I '$P($G(%BS(44)),",",3) Q  //ЛОГИ ОТКЛЮЧЕНЫ
+ i $G(%BS(24,1))="" d VARI^%ZAPM.ed.BSC4
+ I $E(%BS(24,1))="^" D  Q
+ .n msg,t1 S msg(2)=": "_$G(MODE)_" :IP="_$G(%BS(41))_" :$J="_$J_" :%BScfg="_$$CFG^%ZAPM.ed.BSCp
+ .S @%BS(24,1)@($P($$h^%ZAPM.ed.BS3(),","),$ZT($P($$h^%ZAPM.ed.BS3(),",",2),1)_".."_$INCREMENT(^mtempBSprot),"U")=$G(%BS(12),$G(BSLOGIN,"???"))
+ .s msg(1)="User: "_@$zr
+ .S ^("S")=msg(2)
+ .S ^("A")=T  s msg(3)="Action: "_T I $E(T,1,5)="Error" d
+ ..i $P($g(%BS(44)),",",1) D SYSMSG^%ZAPM.ed.BSCek(T,"E")
+ ..i $P($g(%BS(44)),",",2) D ADDNEWMAIL^%ZAPM.ed.BSCmail($P($P($$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Admin"),"@",1),"<",2),"BSystemGuard",msg(3)_$C(13,10)_msg(2)_$C(13,10)_msg(1),T)
+ .I T["Change" D
+ ..i $P($g(%BS(44)),",",2) D ADDNEWMAIL^%ZAPM.ed.BSCmail($P($P($$GETOPT^%ZAPM.ed.BSC4cfgP("^%ZAPM.ed.BSETUP(""ISS"")","Admin"),"@",1),"<",2),"BSystemGuard",msg(3)_$C(13,10)_msg(2)_$C(13,10)_msg(1),T)
+ I $ZV["Cach"||($ZV["IRIS") Q
+ Q:$$DosRec(51,$$AddFile^%ZAPM.ed.BSDOS2(%BS(24,1)))'=1
+ S T="§"_$$ESDAY^%ZAPM.ed.BSsFUNR(9,$$h^%ZAPM.ed.BS3())_"§User:"_$G(%BS(12),"???")_"§SysVol:"_$P($$ZU^%ZAPM.ed.BS3(1,0),",",2)_"§$$:"_T_"§$$h^%ZAPM.ed.BS3():"_$$h^%ZAPM.ed.BS3()
+ U %DEV W T,! C %DEV Q
+LOCK I $E(%BS(24,1))="^",$$Data^%ZAPM.ed.BSF12(%BS(24,1)) L +@%BS(24,1)@($P($$ZU^%ZAPM.ed.BS3(1,0),",",2),$G(%BS(12),"???")):0 E  W /BEL,!!!,"Конфликт систем MSM !",!,$P($$ZU^%ZAPM.ed.BS3(1,0),",",2)," Уже работает !" H
+ Q
+UNLOCK I $E(%BS(24,1))="^",$$Data^%ZAPM.ed.BSF12(%BS(24,1)) L -@%BS(24,1)@($P($$ZU^%ZAPM.ed.BS3(1,0),",",2),$G(%BS(12),"???"))
+ Q
+REGO I $ZV["Cach"||($ZV["IRIS") Q  //D Tex("Login") Q       
+ D Tex("Begin%BSv"_+^%ZAPM.ed.BS),LOCK Q
+REGB D Tex("BeginStop") Q
+REGE I $ZV["Cach"||($ZV["IRIS") D Tex("TermLogout") Q      
+ D Tex("Exit%BSv"_+^%ZAPM.ed.BS),UNLOCK Q
+MOUNT(I) D Tex("Mount"_I_" ") Q
+UNMOU(I) D Tex("Dismount "_I_" ") Q
+ER D Tex("Error:"_$G(ls)_" ="_$ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE)) Q
+SAVE ;СОХРАНЕНИЕ ТЕКСТА ТЕСТА
+ N V,%DEV,I,II,%FN Q:$G(%BS(24,2))=""  Q:$$DosRec(51,$$AddFile^%ZAPM.ed.BSDOS2(%BS(24,2)))'=1
+ S T="§"_$$ESDAY^%ZAPM.ed.BSsFUNR(9,$$h^%ZAPM.ed.BS3())_"§User:"_$G(%BS(12),"???")_"§SysVol:"_$P($$ZU^%ZAPM.ed.BS3(1,0),",",2)_"§$$:TestSys§$$h^%ZAPM.ed.BS3():"_$$h^%ZAPM.ed.BS3()
+ U %DEV W !,$TR($J("",78)," ","="),!,T,!,$TR($J("",78)," ","-")
+ U %DEV W !,"=="
+ S V="" F I=1:1  Q:'$D(@BSR@(BST,I))  S II=$P(@BSR@(BST,I,1),"@",15) D  I II'="" U %DEV W !,II U 0
+ .I $E(II,1)=" " S $E(II,1,2)="| " Q
+ .I $E(II,6,8)=V  S II="| "_II Q
+ .S V=$E(II,6,8) U %DEV W !,"|=" S II="| "_II Q
+ U %DEV W !,"==",! C %DEV U 0 Q
+DDPDIR ;ОБНОВЛЕНИЕ ССЫЛКИ
+ ;|I '$$RP^%ZAPM.ed.BSGCH("^BSdirddp") Q  ;МЫ В RVG
+ S DOUCI="S $P(^BSdirddp,""@"",2)=$$ZU^%ZAPM.ed.BS3(1,0) I 0",DOX="" D STA^%ZAPM.ed.BSF5 Q
+DIR() N A S A=$P($G(^%ZAPM.ed.BSETUP("PATH",2,4)),"@",15) I A="" Q A
+ I $E(A,$L(A))'="\" S A=A_"\"
+ Q A

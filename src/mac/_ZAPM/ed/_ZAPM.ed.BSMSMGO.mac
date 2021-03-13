@@ -1,0 +1,64 @@
+ROUTINE %ZAPM.ed.BSMSMGO
+%BSMSMGO ;ПОЛНОЭКРАННЫЙ РЕДАКТОР МАССИВОВ (II PART) ; 21:21 24-FEB-99
+%C G %C^%ZAPM.ed.BSMSMGE
+H ;
+ D AddHist^%ZAPM.ed.BSXuse("^%ZAPM.ed.BSbufB(""HISCTL"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")",$$LEND()) G %C
+N ;OUT HISTORY
+ S Tmp1=$G(^%ZAPM.ed.BSbufB("HISCTL"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1"),1))
+SETN S Tmp=$E($$LBEG()_Tmp1_$S(W:$$LEND(),1:$E($$LEND(),$L(Tmp1)+1,$$LNG^%ZAPM.ed.BSF12)),1,509)
+ S i=YY,Y=$P(S(YY),"/",3) S @M(Y,1)=Tmp D SCREEN^%ZAPM.ed.BSMSMGE G %C
+J ;ОТМЕНА
+ ;S S(YY,1)=@M($P(S(YY),"/",3),1) D SCREEN^%ZAPM.ed.BSMSMGE
+ K M($P(S(YY),"/",3),3) D SCREEN^%ZAPM.ed.BSMSMGE
+ G HM^%ZAPM.ed.BSMSMGE
+ALTT s Tmp1=$$History^%ZAPM.ed.BSXfun("^%ZAPM.ed.BSbufB","HISCTL"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")) G:'YES %C G SETN
+SHIFTF1 S IYI="^%ZAPM.ed.BSS(ShiftF1" D SA^%ZAPM.ed.BSsBUF,F0^%ZAPM.ed.BSMSMGE,RE^%ZAPM.ed.BSsBUF Q  ;;G %C
+ALTF10 D CM^%ZAPM.ed.BSF6 G %C
+K ;УДАЛЕНИЕ УЗЛА БЕЗ ПОДТВЕРЖДЕНИЯ
+ I '$$AccesMSM^%ZAPM.ed.BSDOS2(3) D PROT^%ZAPM.ed.BSMSM G %C
+ S i=YY,Y=$P(S(YY),"/",3) I $D(@M(Y,1))'=1 S ls=" УДАЛЯТЬ "_$ZR_" !!! ВЫ УВЕРЕНЫ ? " D YES^%ZAPM.ed.BSF I 'YES G %C
+KI S G=M(Y,1),%zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMGI" D  S $ZT=$G(%zT),(I3,Y)=Y-1 D LOO^%ZAPM.ed.BSMSMGE W /CUP(I3,80),$$esc^%ZAPM.ed.BS3("[J") S Y=I3 D PUT^%ZAPM.ed.BSMSMGE,REM^%ZAPM.ed.BSMSMGE S I=$O(S(""),-1)
+ .K @M(Y,1) F I=Y:1:25 K M(I),S(I)
+ I I="" D PUU^%ZAPM.ed.BSMSMGE Q  ;G I
+ S YY=$S('$D(S(i)):I,1:i),XX=$P(S(YY),"/") G %C
+F5 ;КОПИРОВАНИЕ ДЕРЕВА В БУФЕР
+ S i=YY,Y=$P(S(YY),"/",3) I $D(@M(Y,1))=1 D ErrMsg^%ZAPM.ed.BSXfun("Потомков Нет") G %C
+ D CopyF5(10,$ZR)
+ G %C
+CopyF5(U,TRe1) N UU K ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),U)
+ S TRe2=$NA(@("^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),U,"_$P(TRe1,"(",2,99))),UU=TRe1
+ D Copy^%ZAPM.ed.BSF8(TRe1,TRe2,0,1),OkMsg^%ZAPM.ed.BSXfun("Узел ("_$P(UU,"(",2,999)_" скопирован в Буфер") Q
+CopyF6(TRe1,TRe2) D Copy^%ZAPM.ed.BSF8(TRe1,TRe2,1,1) D OkMsg^%ZAPM.ed.BSXfun("Узел из Буфера Смешали с ("_$P(TRe2,"(",2,99)) Q
+F6 ;КОПИРОВАНИЕ ИЗ БУФЕРА В ТЕКУЩИЙ УЗЕЛ
+ S i=YY,Y=$P(S(YY),"/",3) I $D(@M(Y,1))
+ S TRe2=$ZR I '$D(^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),10)) D ErrMsg^%ZAPM.ed.BSXfun("Буфер Пуст") G %C
+ S TRe1=$ZR S TRe1=$$LineEdit^%ZAPM.ed.BSXfun(TRe1,"Можете редактировать исходный узел")
+ S TRe2=$$LineEdit^%ZAPM.ed.BSXfun(TRe2,"Можете редактировать целевой узел")
+ D CopyF6(TRe1,TRe2)
+ S G=M(Y,1),%zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMGI" S $ZT=$G(%zT),(I3,Y)=Y-1 D LOO^%ZAPM.ed.BSMSMGE W /CUP(I3,80),$$esc^%ZAPM.ed.BS3("[J") S Y=I3 D PUT^%ZAPM.ed.BSMSMGE,REM^%ZAPM.ed.BSMSMGE S I=$O(S(""),-1)
+ I I="" D PUU^%ZAPM.ed.BSMSMGE Q  ;G I
+ S YY=$S('$D(S(i)):I,1:i),XX=$P(S(YY),"/") G %C
+KILL ;G %C ;!!!УДАЛЕНИЕ УЗЛА БЕЗ УДАЛЕНИЯ ПОТОМКОВ
+ I '$$AccesMSM^%ZAPM.ed.BSDOS2(3) D PROT^%ZAPM.ed.BSMSM G %C
+ S i=YY,Y=$P(S(YY),"/",3) I $D(@M(Y,1))=1 G KI
+ S TRe1=$P($ZR,")"),TRe2="^%ZAPM.ed.BSbufB(2,"_$G(%BS(3),$P)_$J_",9,"_$P(TRe1,"(",2,99) K ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),9) D TREE K @(TRe1_")")
+ S TRe2=$P(TRe1,"(")_"(",TRe1="^%ZAPM.ed.BSbufB(2,"_$G(%BS(3),$P)_$J_",9" D TREE
+ S G=M(Y,1),%zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMGI" S $ZT=$G(%zT),(I3,Y)=Y-1 D LOO^%ZAPM.ed.BSMSMGE W /CUP(I3,80),$$esc^%ZAPM.ed.BS3("[J") S Y=I3 D PUT^%ZAPM.ed.BSMSMGE,REM^%ZAPM.ed.BSMSMGE S I=$O(S(""),-1)
+ I I="" D PUU^%ZAPM.ed.BSMSMGE Q  ;G I
+ S YY=$S('$D(S(i)):I,1:i),XX=$P(S(YY),"/") G %C
+TREE S ls="Копи..."_TRe1_" В "_TRe2_"..." D WAITS^%ZAPM.ed.BSF2 S j=TRe1_")"
+ S jj=$S(TRe1["]":$P(TRe1,"]",2,99),1:$P(TRe1,"^",2,99))_","
+ S jjj=$S($E(TRe2,$L(TRe2))="(":"",1:",")
+ F  S j=$ZO(@j) Q:$S(j["]":$P(j,"]",2,99),1:j)'[jj  S @(TRe2_jjj_$P(j,jj,2,9))=@j X WA
+ Q
+ZO(g,Ha) ;
+Z1 S g=$ZO(@g,Ha) I g="" Q ""
+ X FIL I  Q g
+ G Z1
+CL D CL^%ZAPM.ed.BSF4 Q
+OP D OP^%ZAPM.ed.BSF4 Q
+LEND() I YY=$P(S(YY),"/",3) Q $E(S(YY,1),XX-$P(S(YY),"/")+1,$$LNG^%ZAPM.ed.BSF12)
+ Q $E(S($P(S(YY),"/",3),1),$P(S(YY-1),"/",2)+XX-$P(S(YY),"/")+1,$$LNG^%ZAPM.ed.BSF12)
+LBEG() I YY=$P(S(YY),"/",3) Q $E(S(YY,1),1,XX-$P(S(YY),"/"))
+ Q $E(S($P(S(YY),"/",3),1),1,$P(S(YY-1),"/",2)+XX-$P(S(YY),"/"))
+e Q
