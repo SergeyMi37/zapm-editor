@@ -1,8 +1,10 @@
 ![](https://github.com/SergeyMi37/zapm/blob/master/doc/zapm-red.png)
 
-## zapm
-[![Gitter](https://img.shields.io/badge/Available%20on-Intersystems%20Open%20Exchange-00b2a9.svg)](https://openexchange.intersystems.com/package/zapm-1)
+## zapm-editor
+[![Gitter](https://img.shields.io/badge/Available%20on-Intersystems%20Open%20Exchange-00b2a9.svg)](https://openexchange.intersystems.com/package/zapm-editor)
+[![GitHub all releases](https://img.shields.io/badge/Available%20on-GitHub-black)](https://github.com/SergeyMi37/zapm-editor)
 [![license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 Namespace navigator and area navigator and editor of routines, globals, texts and tables in terminal mode in terminal mode.
 
