@@ -61,7 +61,7 @@ TAB K %BS(9) ;ВЫБОР ТАБЛИЦЫ
  K EXITout,TABLfind S Ii=$S(%NAM="^%ZAPM.ed.BSbufS":79,1:77)
  S BSR="^%ZAPM.ed.BSbufB",BST="Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15) I $D(@(BSR_"(BST,""STA"")")) D STA^%ZAPM.ed.BST G TABE
  S %TAB="",i=1 K ^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15)),SPSV S ^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15),1,1)="@@1@"_Ii_"@@@@@1@"_$P(%BS,"!",4)_"@@@@@·­±.. "_%NAM_$J("",9-$L(%NAM)+Ii-77)_"        ; ТИП  ;   Комментарии к таблицам"
- S:Ii'=79 ^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,1)="@@1@"_Ii_"@@@@@1@"_$P(%BS,"!",5)_"@@@@@·­± ~новая Таблица    "_$J("",Ii-77)_" ;      ;",i=i+1 S i=i+1,^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,1)="@@0@"_Ii_"@@@@0@1@@@@@@"
+ S:Ii'=79 ^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,1)="@@1@"_Ii_"@@@@@1@"_$P(%BS,"!",5)_"@@@@@·­± ~new table    "_$J("",Ii-77)_" ;      ;",i=i+1 S i=i+1,^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,1)="@@0@"_Ii_"@@@@0@1@@@@@@"
  S ^%ZAPM.ed.BSbufB("Tt"_$G(%BS(3),$P)_$J_"u"_%BS(15),"FTR",i,1)="S m=$P($P(d,""~"",2),"" ""),d1=$S($P($G(@(%NAM_""(m)"")),""@"",30)="""":d,1:$P(d,"".."")_$P($G(@(%NAM_""(m)"")),""@"",30)_$J("""",7-$L($P($G(@$ZR),""@"",30)))_"";""_$P(d,"";"",2,99))"
  S Iii=i I Ii=79 S @$ZR=$P(@$ZR,",d1")_",m=""^[""""""_$P(m,"":"")_"""""":""""""_$P(m,"":"",2)_""""""]""_$P(m,"":"",3),d1"_$P(@$ZR,",d1",2,99)
  S sys=$P($$ZU^%ZAPM.ed.BS3(0),",",2),uc=$P($$ZU^%ZAPM.ed.BS3(0),",") F  S %TAB=$O(@(%NAM_"(%TAB)")) Q:%TAB=""  X $G(WA) I %TAB'["@"&(%TAB'[$G(HIDD,"&")) D  ;

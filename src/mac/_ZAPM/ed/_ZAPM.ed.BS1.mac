@@ -39,7 +39,7 @@ CachOn I $ZV["Cach"||($ZV["IRIS") O 0:(:"IS") ;ВКЛ ПОБАЙТОВОГО Ч�
  Q
 REGSERV D Int^%ZAPM.ed.BSERV("S $P(@G@(""CMT"",S),""§"",2)="" %BS v.""_^%ZAPM.ed.BS,$P(@G@(""CMT"",S),""§"",3)="" User :""_%BS(12)")
  Q
-PAROL D PASCHECK(%NAM,"",4," Введите пароль коррекции ХАРАКТЕРИСТИК РАЗДЕЛА:"_%NAM_" ","%PAROL") Q
+PAROL set YES=1 ; D PASCHECK(%NAM,"",4," Введите пароль коррекции ХАРАКТЕРИСТИК РАЗДЕЛА:"_%NAM_" ","%PAROL") Q
  ;---
 PASCHECK(MAS,TAB,PICE,SAY,VAR) N AAA S i1=1,YES=0 S MAS=MAS_$S(TAB="":"",1:"(TAB)")
  I $P($G(@MAS),"@",PICE)="ADM" S AAA="ADM:" I $$LITL^%ZAPM.ed.BSsFUNM($P($G(^%ZAPM.ed.BSETUP("SETUP",9,2),$G(^%ZAPM.ed.BSS("SETUP",9,2))),"@",15))="" S YES=1 Q
@@ -68,16 +68,20 @@ HIDDEN S d="~"_li Q
 DE S ls=" В ДЕМОНСТРАЦИОННОЙ ВЕРСИИ ИСПОЛЬЗУЙТЕ ИМЕНА НАЧИНАЮЩИЕСЯ НА ""DEMONSTR"" " D O^%ZAPM.ed.BSF7 Q
 NEWRAZD S ls=" Enter a name for the new partition ",ll="@ &()^{}[]=+-/.,,$#*!;:""~`\" D LE^%ZAPM.ed.BSTT I 'YES S li="" Q
  I li'[("D"_"E"_"M"_"O"_"NSTR")&($G(^%ZAPM.ed.BSR("KEY"))'=$$PW(2)) D DE G ERR
- S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BS1" S:li'["^" li="^"_li I $D(@li) G:$P($G(@li),"@",3)'=""&($P($G(@li),"@")["BaSe MsW ") HH G:$P($G(@li),"@")'["BaSe MsW " NQM S ls=" Раздел "_li_" Уже существует " D O^%ZAPM.ed.BSF7 G NEWRAZD
+ S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BS1"
+  S:li'["^" li="^"_li 
+  I $D(@li) G:$P($G(@li),"@",3)'=""&($P($G(@li),"@")["BaSe MsW ") HH G:$P($G(@li),"@")'["BaSe MsW " NQM S ls=" Раздел "_li_" Уже существует " D O^%ZAPM.ed.BSF7 G NEWRAZD
 NEWR S @li="",%NAM=li D PS^%ZAPM.ed.BSD1(%NAM) D  I uc="N" S ls=" Пользователю "_%BS(12)_" СОЗДАВАТЬ РАЗДЕЛ "_li_" НЕЛЬЗЯ " D O^%ZAPM.ed.BSF7 G NEWRAZD
  .I %BS(12)'="",'$D(@%BS(18)@(%BS(37),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",1),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",1),%BS("Tmp",2),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",1),%BS("Tmp",2),Pddp)) S uc="N"
- D PAROL^%ZAPM.ed.BSF4 S ls=" СДЕЛАЕМ РАЗДЕЛ СКРЫТЫЙ ? ",HIHI="",%B=2 D YES^%ZAPM.ed.BSF I YES S HIHI="S"
- S $ZT=$G(%zT),@%NAM="BaSe MsW @@"_HIHI_"@"_$G(%PAROL) D CP^%ZAPM.ed.BSGCH(%NAM,$P(%BS(22),",")) K %PAROL,HIHI Q
+ D PAROL^%ZAPM.ed.BSF4 S ls=" Let's make the partition hidden ? ",HIHI="",%B=2 
+ D YES^%ZAPM.ed.BSF I YES S HIHI="S"
+ S $ZT=$G(%zT),@%NAM="BaSe MsW @@"_HIHI_"@"_$G(%PAROL) ;D CP^%ZAPM.ed.BSGCH(%NAM,$P(%BS(22),",")) 
+ K %PAROL,HIHI Q
 25 W /CUP(25,1),$$atr^%ZAPM.ed.BS3(0),/EL(0),ls Q
 HH S HIDDR=1,d=" "_li Q
 NQM I $G(@li)="" D Yes^%ZAPM.ed.BSXfun("Массив "_li_" Чужой !!! Будем из него делать раздел ?",2) G NEWRAZD:'YES,NEWR
  D ErrMsg^%ZAPM.ed.BSXfun("Массив "_li_" Чужой !!!") G NEWRAZD
-ERR S ls="Не корректное имя,(до 8 лат.букв и цифр)" D O^%ZAPM.ed.BSF7 S $ZT=$G(%zT) G NEWRAZD
+ERR S ls="Не корректное имя,(до 8 лат.букв и цифр)"_$ze D O^%ZAPM.ed.BSF7 S $ZT=$G(%zT) G NEWRAZD
  Q
 PW(pi) Q $G(^%ZAPM.ed.BSR("KEY"))  ;~~~Q $$WP($E(^%ZAPM.ed.BSR(1,18),95)_$E(^(18),97)_$E(^(18),99)_$E(^(18),101)_$E(^(18),103)_$E(^(18),105),$ZV,$$ZU^%ZAPM.ed.BS3(1,0))
 WRITE W ! F I=95:2:105 W $E(^%ZAPM.ed.BSR(1,18),I)

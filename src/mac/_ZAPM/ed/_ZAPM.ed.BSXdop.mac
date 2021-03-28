@@ -6,7 +6,7 @@ Draw d SaveWin^%ZAPM.ed.BSXfun(Win(0,0),Win(0,1),Win(1,0)+1,Win(1,1)+2)
  d Ramka^%ZAPM.ed.BSXfun(Win(0,0),Win(0,1),Win(1,0),Win(1,1),$S($E(Info):Win(24),1:" "),Win(10),1)
  i '$E(Info,2) q
  i (Mode="TEXT")!(Mode="LINE") s Tmp=$P(@Head,"@")
- i Mode="PROG" s Tmp=" Пpогpамма ^"_BST0_" "
+ i Mode="PROG" s Tmp=" Routine ^"_BST0_" "
  i Tmp=""!(Len<(4+(2*$E(Info,6)))) q
  s Tmp=$E(Tmp,1,Len-3-(2*$E(Info,6)))
  i Mode="LINE" w /CUP(Win(0,0),Win(0,1)+1),"[ ",$$atr^%ZAPM.ed.BS3(Win(13)),Tmp,$$atr^%ZAPM.ed.BS3(Win(10))," ]" q

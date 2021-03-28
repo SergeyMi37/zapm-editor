@@ -100,7 +100,9 @@ GLOBALS
  .S GLO="^"_$P(GLOBALIST(NAMESP),$C(1),I)
  .S $P(@BSR@(BST,I+2,1),"@",15)=GLO I $$Data^%ZAPM.ed.BSF12(GLO) S COM=$$TIPP^%ZAPM.ed.BS($P($G(@GLO),"@",1))_" ;"_$P($G(@GLO),"@",2)
  .S $P(@BSR@(BST,I+2,2),"@",15)=$G(COM," ...")
- S $P(@BSR@(BST),"@",15)="INTGLO^%ZAPM.ed.BSC",$P(@BSR@(BST),"@",19)="2,2",$P(@BSR@(BST),"@",16)=1
+ S $P(@BSR@(BST),"@",15)="INTGLO^%ZAPM.ed.BSC",
+ 	$P(@BSR@(BST),"@",19)="2,2",
+ 	$P(@BSR@(BST),"@",16)=1
  S $P(@BSR@(BST),"@",41)="FKEYPART^%ZAPM.ed.BSC"
  S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
  D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST I R1=27,R2=-1 Q

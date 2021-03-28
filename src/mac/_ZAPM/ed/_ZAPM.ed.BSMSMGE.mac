@@ -204,6 +204,6 @@ EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0) Q
 CL D CL^%ZAPM.ed.BSF4 Q
 SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1) S:GG="" GG=$P(G,"(") S:GG'="" G=GG K M,S D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2) D PUT,REM Q
 OP D OP^%ZAPM.ed.BSF4 Q
-REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-ПОМОЩЬ <Ctrl-K>-УДАЛИТЬ УЗЕЛ <Ctrl-P>-ИНДЕКСЫ <Esc>-ВЫХОД " D  W $$atr^%ZAPM.ed.BS3(0) Q
+REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-Help <Ctrl-K>-Delete node <Ctrl-P>-Indexes <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
  .W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
 e Q

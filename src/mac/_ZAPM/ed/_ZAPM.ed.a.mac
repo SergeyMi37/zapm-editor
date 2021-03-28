@@ -1,0 +1,355 @@
+ROUTINE %ZAPM.ed.a
+a ;agregation
+ /*
+  d Exports^%ZAPM.ed.a("d:\_proj\_zapp\zpm-addition+\zapm-")
+ 	if $p(cmd," ")="edn" do ns^%ZAPM.ed.a quit $$$OK
+	if $p(cmd," ")="edg" do ^%ZAPM.ed.BSMSMG($p(cmd," ",2)) quit $$$OK
+	if $p(cmd," ")="edr" do ^%ZAPM.ed.BSXprog($p(cmd," ",2)) quit $$$OK
+	if $p(cmd," ")="edf" ;;;do ^%ZAPM.ed.BSX($p(cmd," ",2)) quit $$$OK ;file system
+ */
+ // d ns^%ZAPM.ed.a
+ns  ;Navigator for namespace and zpm modules
+ new
+ set $ztrap="error"
+ D CLr^%ZAPM.ed.BSF4,CCC^%ZAPM.ed.BSC
+ S %BS(12)="m",%BS(39)="NAV"
+ S NSPL=$$NS^%ZAPM.ed.BSCp()  //get list namespace
+ I NSPL=""  D ErrMsg^%ZAPM.ed.BSXfun("No namespaces available !") G exit
+ Set BSR="^%ZAPM.ed.BSbufB",
+ 	BST="NameSpace"_$G(%BS(3),$P)_$J_"u"_%BS(15)
+ Kill @BSR@(BST)
+ merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
+ S $P(@BSR@(BST,1,1),"@",15)=" ZPM modules in "_$ZU(110),
+   $P(@BSR@(BST,1,2),"@",15)=$ZV,
+   $P(@BSR@(BST,2,1),"@",15)=" ..",
+   $P(@BSR@(BST,2,2),"@",15)=" ...Exit - <Esc>"
+ ;S $P(@BSR@(BST),"@",12)=2  // status info 2=full,1,""
+ S $P(@BSR@(BST),"@",15)=0,  // off F-keys 
+   $P(@BSR@(BST),"@",19)="2,2", //freeze colomn and rows table
+   $P(@BSR@(BST),"@",16)=1  // blocked F-keys
+ S $P(@BSR@(BST),"@",41)="FKEY^%ZAPM.ed.BSC"  
+ S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP1" //help text
+ 
+ Set currentns=$Namespace
+ Do ##class(%ZPM.PackageManager).GetListNamespace(.namespace)
+ Set ns="",num=0
+	For { set ns=$Order(namespace(ns)) Quit:ns=""
+		Set $Namespace=ns
+		Kill list
+		set name=""
+		Do ##class(%ZPM.PackageManager).GetListModules("",.list)
+		If $D(list) {
+			Set module="",write=0
+			For { set module=$Order(list(module)) Quit:module=""
+				I $i(tab)
+				if name'=ns set tab(tab,1)=ns, name=ns
+				else  set tab(tab,1)=""
+				set tab(tab,1,0)=$lb(ns,module,list(module))
+				set tab(tab,2)=module_" "_$LG(list(module),1)_" "_$Listget(list(module),2)
+				set tab(tab,2,0)=$lb(ns,module,list(module))
+				}
+			} Else {
+				if $i(tab)
+				set tab(tab,1)=ns
+				set tab(tab,2)=""
+				set tab(tab,1,0)=$lb(ns)
+				set tab(tab,2,0)=$lb(ns)
+			}
+		}
+  do InsertTab(BSR,BST,.tab,2,0)
+  ;D TAB^%ZAPM.ed.BSF1
+  ;D Table^%ZAPM.ed.BSN(BSR,BST)   ;возвращает  YES, где      YES=1@2@3@4@5@6@7@8@9    - статус выхода из таблицы          
+                ; 1=Y,X - номер клетки                                         
+                ; 7 - координата клетки по строке                              
+                ; 8 - координата клетки по колонке                             
+                ; 4,5,6 - скан коды                                            
+                ; 9 - данные лежащие в этой клетке   
+ D TAB^%ZAPM.ed.BSF1 d ^%ZAPM.ed.BST 
+ns1 ;set R1=$P(YES,"@",4),R2=$P(YES,"@",5),R3=$P(YES,"@",6)
+ ;set ny=$P(YES,"@",7)
+ I R1=27,R2=-1 G exit
+ I ny=2 G exit
+ I $G(R1)=13,$G(R2)=-1 D mode(@BSR@(BST,ny,nx)) d STA^%ZAPM.ed.BST  G ns1
+ Q
+InsertTab(p,t,tab,fromY,fromX=0,template="2,2") 
+  new ny,nx,y,x,xx,yy,temp
+  ;zw tab r r
+  ;set ny=$p(@p@(t),"@",28),  	nx=$p(@p@(t),"@",29)
+  set temp=$GET(@p@(t,$p(template,","),$p(template,",",2)))
+  set y=""
+  for { set y=$o(tab(y)) quit:y=""
+  	set yy=fromY+y
+  	set x=""
+  	for { set x=$o(tab(y,x),1,data) quit:x=""
+  		set xx=fromX+x
+  		set @p@(t,yy,xx)=@p@(t,fromY,x)
+  		set $p(@p@(t,yy,xx),"@",15)=data
+  		set $p(@p@(t,yy,xx),"@",42)=$G(tab(y,x,0)) ;7
+  	}
+  }
+  	
+ quit
+mode(cell) ;List zpm modules
+	set list=$p(cell,"@",42)
+ 	set NAMESP=$lg(list,1)
+ 	zn NAMESP
+ new BSR,BST
+ S BSR="^%ZAPM.ed.BSbufB",
+ 	BST="GlobaList"_$G(%BS(3),$P)_$J_"u"_%BS(15) 
+ D CCC^%ZAPM.ed.BSC
+ merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
+ if '$d(Moduls(NAMESP)) do ##class(%ZAPM.ext.zpm).GetListModule(,.Mod,0) merge Moduls(NAMESP)=Mod
+ if $lg(list,3)'="" {
+	 set module=$lg(list,2)
+	 set ver=$lg($lg(list,3),1)
+	 set desc=$lg($lg(list,3),2)
+ }
+ else {
+ 	 set module=""
+	 set ver=""
+	 set desc=""
+ }
+ d AddDataCell(1," "_NAMESP_" "_$g(module)_" "_$g(ver)," "_$g(desc))
+ d AddDataCell(2," Routine Editor"," ...")
+ d CloneRow(3,2)
+ d AddDataCell(3," Global Editor"," ...")
+
+ if module'="" {
+	 set root=$lg($g(Moduls(NAMESP,module,"L")),3)
+	 d CloneRow(4,2)
+	 d AddDataCell(4," Module Root",root)
+	 if root'="" {
+		 set num=4
+		 d GetList^%ZAPM.ed.a(root,"*.*",.DirList)
+		 set dir=""
+		 for { set dir=$o(DirList(dir)) quit:dir=""
+		 	if $g(DirList(dir,"Type"))'="D" {
+			 set file=$g(DirList(dir,"ItemName"))
+			 set filename=$g(DirList(dir,"Name"))
+			 ;set ext=""
+			 ;if file[".",$e(file,1)'="." set ext=$p(file,".",*)
+			 ;if $lf($lb("xml","","md","sh"),ext) continue
+			 set num=num+1
+			 d CloneRow(num,2)
+			 d AddDataCell(num,"",file)
+			 d AddDataCellInfo42(num,2,$lb(filename))
+		 	}
+		 }
+	 }
+ }
+ else {
+	 d RemoveRow(4)
+ }
+ ;S $P(@BSR@(BST),"@",15)="INTGLO^%ZAPM.ed.BSC",  //spezific F-keys
+  set $P(@BSR@(BST),"@",19)="2,2",  
+   	$P(@BSR@(BST),"@",16)=1
+ S $P(@BSR@(BST),"@",15)=0
+ S $P(@BSR@(BST),"@",41)="FKEYPART^%ZAPM.ed.BSC"
+ S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
+ D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
+mode2 I R1=27,R2=-1 Q  //exit - esc
+ I ny=2 d rou(@BSR@(BST,ny,nx))  d STA^%ZAPM.ed.BST  G mode2
+ I ny=3 d glo(@BSR@(BST,ny,nx))  d STA^%ZAPM.ed.BST  G mode2
+ I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G mode2
+ set filename=$lg($p(@BSR@(BST,ny,2),"@",42),1)
+ if filename'="" do viewfile(filename) d STA^%ZAPM.ed.BST  G mode2
+  g mode2
+CloneRow(ny,from)
+ set @BSR@(BST,ny,1)=@BSR@(BST,from,1)
+ set @BSR@(BST,ny,2)=@BSR@(BST,from,2)
+ q
+AddDataCell(ny,d1="",d2="")
+ S $P(@BSR@(BST,ny,1),"@",15)=d1
+ set $P(@BSR@(BST,ny,2),"@",15)=d2
+ q
+AddDataCellInfo42(ny,nx,list)
+ set $P(@BSR@(BST,ny,nx),"@",42)=list
+ quit
+RemoveRow(ny)
+ new i
+ for i=ny:1 quit:'$d(@BSR@(BST,i))  KILL @BSR@(BST,i)
+ q
+error D ErrMsg^%ZAPM.ed.BSXfun($ze) O 0:(:) quit
+exit O 0:(:) write # 
+ quit
+viewfile(file) new (file)
+ D DOSTXT^%ZAPM.ed.BSDOS2(file)
+ quit
+rou(data)
+ do ^%ZAPM.ed.BSXprog
+ q
+glo(data)
+  D ^%ZAPM.ed.BSMSMG()
+ q
+ /// Get all files in a directory without subdirectories
+ /// d GetList^%ZAPM.ed.a("D:\dev\app1\src\","*.*",.List)
+GetList(directory, ext = "*.*", list)
+	set:ext="*.*" ext=$s($zversion(1)=3:"*",1:"*.*")
+	set st = 1
+	try {
+		set directory = ##class(%File).NormalizeDirectory(directory)
+		set rs = ##class(%ResultSet).%New("%File:FileSet")
+		s sc=rs.Execute(directory, ext)
+		while (rs.Next()) {
+			set fName = rs.Get("Name")
+			m list(fName)=rs.Data
+		}
+	} catch ex {
+		set st = ex.AsStatus()
+	}
+ quit st
+
+
+ // for  do $$r^%ZAPM.ed.BSC(999) if R1=13 quit
+r(R) O 0:(:"IS")
+ R *R1:R,*R2:0,*R3:0,*R4:0,*R5:0 
+ w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!
+ q 1
+ ///z 
+ /*
+ Вход в таблицу по ^NEW  S IYI="^PART(TAB" D NE^%ZAPM.ed.BSN         см 1.  
+   c сохранением видео -    или                                             
+    картинки               D Table^%ZAPM.ed.BSN(BSR,BST)   возвращает  YES, гд
+                 YES=1@2@3@4@5@6@7@8@9    - статус выхода из таблицы          
+                 1=Y,X - номер клетки                                         
+                 7 - координата клетки по строке                              
+                 8 - координата клетки по колонке                             
+                 4,5,6 - скан коды                                            
+                 9 - данные лежащие в этой клетке      
+
+   Вход в таблицу  без      S BSR="^PART",BST="TAB"             см 1.         
+   сохpанения видео         D ENTER^%ZAPM.ed.BSN                              
+                                                                              
+   Вывод сообщений об       S ls="ТЕКСТ ОШИБКИ" D O^%ZAPM.ed.BSF7  или        
+   ошибке                   D ErrMsg^%ZAPM.ed.BSXfun("ТЕКСТ ОШИБКИ")          
+                                                                              
+   Вывод простого сообщения D OkMsg^%ZAPM.ed.BSXfun("ТЕКСТ")                  
+                                                                              
+   Меню  ДА/НЕТ             S ls="ВЫ УВЕРЕНЫ ?" D YES^%ZAPM.ed.BSF"      YES=1
+                                                                              
+   Сообщение о действии     S ls="ТЕКСТ" D WAITS^%ZAPM.ed.BSF2          X WA-с
+                            D Wait^%ZAPM.ed.BSXfun("ТЕКСТ")                   
+                                                                              
+   Сообщение "ЖДИТЕ..."     WAIT^%ZAPM.ed.BSF2           
+  Строковый редактор  S ls="Text"                                             
+                       S li="строка"                        li-результат      
+                       S ll="запрещенные символы"            YES=0 отмена     
+                       D LE^%ZAPM.ed.BSS                                      
+                              или                                             
+                       S li=$$LineEdit^%ZAPM.ed.BSXfun("СТРОКА","ТЕКСТ")      
+                                                                          
+                                                                              
+ВХОД В РЕДАКТОР ГЛОБАЛИ   D ^%ZAPM.ed.BSMSMG("^A(1,2,3)")                     
+          ИЛИ ЛОКАЛИ      D ^%ZAPM.ed.BSMSMG("XXX")         
+                  ER D ErrMsg^%ZAPM.ed.BSXfun($ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($>
+
+ D DOSTXT^%ZAPM.ed.BSDOS2("D:\InterSystems\IRIS\mgr\.modules\ZPMSHOW\zpmshow\1.0.2\README.md")
+
+ */
+ /// do FOR^%ZAPM.ed.BSCp - клавиши
+ /// D INIT^%ZAPM.ed.BSChW ;ИНИЦИАЛИЗАЦИЯ КОМПЛЕКСА
+ /// do ^%ZAPM.ed.BSC - Навигация по областям и глобалям
+ /// do ^%ZAPM.ed.BSMSMG("^A(1,2,3)")	- Редактор глобалов
+ /// ИЛИ ЛОКАЛИ      D ^%ZAPM.ed.BSMSMG("XXX")
+ /// do ^%ZAPM.ed.BSXprog - Редактор программ
+ /// do ErrMsg^%ZAPM.ed.BSXfun("Message - !!"_$ZE) - вывод текста об ошибке
+ /// F  D READM^%ZAPM.ed.BSre W !
+ ///
+ /// d Exports^%ZAPM.ed.BSC("d:\_proj\_zapp\zpm-addition+\zapm-")
+ ///
+ /// d Exp2016^%ZAPM.ed.BSC("d:\_proj\_zapm\ENS2016\")
+ /// 
+Exp2016(dir) // 
+	set slash=$select($zversion(1)=3:"/",1:"\")
+	s ed="editor"
+	k list
+	set dirpath=dir_"src"_slash_"xml"_slash
+	s list("%ZAPM.ed.*.GBL")=""
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.gbl.xml","d",.err) 
+	k list
+	s list("%ZAPM.ed.*.MAC")=""
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.mac.xml","d",.err) 
+	k list
+	s list("%ZAPM.*.INC")=""
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.inc.xml","d",.err) 
+ q
+Exports(dir) // d Exports^%ZAPM.ed.BSC("d:\_proj\_zapp\zpm-addition+\zapm-")
+	set slash=$select($zversion(1)=3:"/",1:"\")
+	s ed="editor"
+	do Exp(dir_ed_slash,,,"BSpg")
+	;for d="globals,MSM","routine,BSXpr","text,BSX","table,BST" {
+	;	s di=$p(d,",")
+	;	s mask=$p(d,",",2)
+	;	do Exp(dir_di_"-"_ed_slash,mask,0)
+	;}
+	;do Exp(dir_"tkweb"_slash,"pgWEB","pgWEB")
+	;do Exp(dir_"tkimail"_slash,"pgWEM","pgWEM")
+ q
+Exp(dir,mask="",glomask="",isk="") ;d Exp^%ZAPM.ed.a("d:\_proj\_zapp\zpm-addition+\zapm-editor\")
+	new $namespace
+	set $namespace="%SYS"
+	set slash=$select($zversion(1)=3:"/",1:"\")
+	set dirpath=dir_"src"_slash_"mac"_slash_"_ZAPM"_slash_"ed"_slash
+	s st=##class(%File).CreateDirectoryChain(dirpath)
+	i 'st w !,st q
+ 	do ##class(%File).RemoveDirectoryTree(dirpath)
+	;Rou
+	set r=""
+	for { set r=$O(^ROUTINE(r)) q:r=""  continue:r'["%ZAPM.ed."
+		if mask'="",r'[mask continue 
+		if isk'="",r[isk  continue
+		set file=$tr(r,"%","_")_".mac"
+		Set st = $System.OBJ.ExportUDL(r_".mac",dirpath_file,"-d")
+		s rou(r_".mac")=""
+		if 'st w !,st q
+		else  w !,file
+	}
+	;Glo
+	if 0,glomask'=0 {
+		kill gl
+		set dirpath=dir_"src"_slash_"gbl"_slash
+		d GetGlobalDir^%ZAPM.ed.BSCp($namespace,.gl)
+		s i=""
+		for { s i=$o(gl(i)) q:i=""  continue:i'["%ZAPM.ed."
+			if glomask'="",i'[glomask continue
+			k list
+			s list(i_".GBL")=""
+			do $system.OBJ.Export(.list,dirpath_"_"_$e(i,2,*)_".xml","d",.err) 
+		}
+	}
+	k list
+	set dirpath=dir_"src"_slash_"gbl"_slash
+	s list("%ZAPM.ed.BS.GBL")=""
+	s list("%ZAPM.ed.BSC*.GBL")=""
+	s list("%ZAPM.ed.BSD*.GBL")=""
+	s list("%ZAPM.ed.BSE*.GBL")=""
+	s list("%ZAPM.ed.BSG*.GBL")=""
+	s list("%ZAPM.ed.BSH*.GBL")=""
+	s list("%ZAPM.ed.BSR*.GBL")=""
+	s list("%ZAPM.ed.BSS*.GBL")=""
+	s list("%ZAPM.ed.BSV*.GBL")=""
+	s list("%ZAPM.ed.BSX*.GBL")=""
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.xml","d",.err) 
+	set dirpath=dir_"ed"_slash
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.gbl.xml","d",.err) 	
+
+	set dirpath=dir_"ed"_slash
+	do $system.OBJ.Export(.rou,dirpath_"_ZAPM.ed.mac.xml","d",.err) 
+	zw err
+	m list=rou
+	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.all.xml","d",.err) 
+	zw err
+ q
+ // xec do DrawText^%ZAPM.ed.a("^%ZAPM.ed.BSHLP(""CtructG"")") ;документация по структкре таблицы
+ // xec do DrawText^%ZAPM.ed.a("^%ZAPM.ed.BSHLP(""D"")") ;вся документация
+DrawText(gn)
+ w !,"<pre>"
+  set g=gn
+  set head=""
+  for { set g=$q(@g) quit:g=""
+  	quit:$qs(g,1)'[$qs(gn,1)
+   	if head'=$qs(g,1) set head=$qs(g,1) write !,"<font color=red>"_@g_"</font>"
+   	write !,@g ;,$c(13,10)
+  }
+ write !,"</pre>"
+ quit

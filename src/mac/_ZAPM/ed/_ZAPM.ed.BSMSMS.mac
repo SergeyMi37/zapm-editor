@@ -32,7 +32,10 @@ L S I=""
  Q
  ///z Routines
 1 S I=""
- F  S I=$O(^ROUTINE(I)) Q:I=""  D ADD(I)
+ F  {	 S I=$O(^ROUTINE(I)) Q:I=""  
+ 	if $namespace'="%SYS",$e(I,1)="%" continue
+ 	D ADD(I)
+ }
  Q
  ///z Globals
 2 S I="" new list 

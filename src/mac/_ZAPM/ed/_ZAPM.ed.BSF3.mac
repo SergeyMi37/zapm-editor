@@ -62,9 +62,9 @@ CW D RE^%ZAPM.ed.BSsBUF W $$atr^%ZAPM.ed.BS3(0) K COLO Q
 WIN1 ;ОТКРЫТИЕ ПСЕВДО-ОКНА
 WIND D SA^%ZAPM.ed.BSsBUF
  W $$clr^%ZAPM.ed.BS3($G(COLO,3)),/ED(2) Q
-GLO S:$E($G(li))'="^" li="^" S ll="",ls=" Enter the name of the global array :",%HIS="^%ZAPM.ed.BSbufB(""HISARREY"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.ed.BSTT I 'YES Q
+GLO S:$E($G(li))'="^" li="^" S ll="",ls=" "_$namespace_": Enter the name of the global array. Enter * - directory",%HIS="^%ZAPM.ed.BSbufB(""HISARREY"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.ed.BSTT I 'YES Q
  I li="^" S YES=0 Q
-GL I li["~D" S GL="~D",YES=1 Q
+GL I li["~D"||(li["*") S GL="~D",YES=1 Q
  S %zT=$ZT,$ZT="NGLO^%ZAPM.ed.BSF3" I '$D(@li)
  S $ZT=$G(%zT),GL=li,YES=1 Q
 BUF D BU Q

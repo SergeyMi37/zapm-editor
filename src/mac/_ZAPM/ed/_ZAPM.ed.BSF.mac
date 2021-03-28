@@ -122,7 +122,7 @@ YES ;ВЫБОР
  S YES=$S(R1=27!(%B=2):0,1:1) I GLZ'[$C(34),$D(@GLZ)
  Q
 YES1 N OO,OOO,M,%JB
- W /CUP(25,1) D 0 W /EL(0),$$clr^%ZAPM.ed.BS3(8),$E(ls,1,79) S OOO="M",OO=1,M(1,1)=" .ДА. .НЕТ. @6@ @0" 
+ W /CUP(25,1) D 0 W /EL(0),$$clr^%ZAPM.ed.BS3(8),$E(ls,1,79) S OOO="M",OO=1,M(1,1)=" .Yes. .No. @6@ @0" 
  D 0,24^%ZAPM.ed.BSTM,^%ZAPM.ed.BSB S YES=$S(R1=27!(%B=2):0,1:1) W /CUP(25,1),/EL(0) 
  Q
 EDCOPY Q:$E(BST,1)="@"  S i="@"_BST D L^%ZAPM.ed.BS3($NA(@BSR@(i))) Q:'LOC  D L^%ZAPM.ed.BS3($NA(@BSR@(BST))) I 'LOC Q

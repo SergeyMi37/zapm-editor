@@ -4,12 +4,12 @@ ROUTINE %ZAPM.ed.BSXprog
  n Base,Name,y,x i $D(%BS)[0 d CLr^%ZAPM.ed.BSF4,Registr^%ZAPM.ed.BSX(1) ;То же в %BSX
  U $I::%BS(32)
  s Base=$$ProgBufN(),Name=$G(Nam0),$P(@Base,"@",17)=5
- s %BS(12)=$G(%BS(12)),Ask="Enter the name of the program :",y=$Y,x=$X,On=(+$G(On)'=0)
+ s %BS(12)=$G(%BS(12)),Ask=$namespace_": Enter the name of the program. Enter * - Directory",y=$Y,x=$X,On=(+$G(On)'=0)
  d SaveWin^%ZAPM.ed.BSXfun(1,1,25,80)
 NextProg d ClearDis(0) i Name="" d  i 'YES s Name=""
  . s Name=$$LineEdit^%ZAPM.ed.BSXfun($P($G(@Base),"@"),Ask," ","","",$$HistBufN())
  i Name="" g NoProg
- I Name["~D" D ^%ZAPM.ed.BSMSMS(1,"~D") S Name=dat G:Name="" NextProg
+ I Name["~D"||(Name["*") D ^%ZAPM.ed.BSMSMS(1,"~D") S Name=dat G:Name="" NextProg
  s $P(@Base,"@")=Name
  i '$$NameTest(.Name) d ^%ZAPM.ed.BSX("PROG",Name,$G(Y)_","_$G(X)) k Y,X
  i $G(Nam0)="" s Name="" g NextProg
@@ -61,7 +61,7 @@ Make i Edit>1 q             ; создание дубля из пpогpаммы
  d R^%ZAPM.ed.BS3($NA(@Head)) k @Head s @Head=InHead,$P(@Head,"@",30)=$$UserNAME^%ZAPM.ed.BSXfun()
  x "zl @BST0 f i=1:1 s Line=$T(+i) q:Line=""""  s @Head@(i)=Line"
  d D^%ZAPM.ed.BS3($NA(@Head)) d CopyTree^%ZAPM.ed.BSXfun1($NA(@$$ProgBufN()@("PRN")),$NA(@Head@("PRN")))
- s MaxStr=i-1 i MaxStr'>0 s MaxStr=1,@Head@(1)=BST0_" ; пpогpамма ... "
+ s MaxStr=i-1 i MaxStr'>0 s MaxStr=1,@Head@(1)=BST0_" ; Routine ... "
  q
  
 SaveProg n H,Save,Msg                             ; сохpанение пpогpаммы
@@ -70,7 +70,7 @@ SaveProg n H,Save,Msg                             ; сохpанение пpогp
  .s H=" Изменен заголовок pедактоpа . Пеpеписываем ? "
  .s Msg=" Меняю заголовок "
  i Save=2!(Save=3) d
- .s H=" Пpогpамма была изменена. Пеpеписываем ? "
+ .s H=" The program has been changed. Are we rewriting ? "
  .s Msg=" Пеpеписываю текст пpогpаммы "
  i Save=4 d
  .s H=" Текст пpогpаммы и заголовок pедактоpа изменены. Пеpеписываем ? "

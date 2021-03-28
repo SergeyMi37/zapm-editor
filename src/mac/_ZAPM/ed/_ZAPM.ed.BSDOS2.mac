@@ -35,6 +35,7 @@ ZOS(K,N) ;удаление файла
  Q $ZOS(2,N)
  
 AccesMSM(P) I $D(%BS)["0" D CLr^%ZAPM.ed.BSF4
+ if $g(%BS(37))="" quit 1
  I %BS(12)'="",$D(@%BS(18)@(%BS(37),0,"3,4")) Q ($P($G(@%BS(18)@(%BS(37),0,"3,4")),"/",P)="Y")
  Q $P($G(%BS(34)),"/",P)="Y"
  
@@ -70,10 +71,10 @@ View(%File,BSr,BSt,P,OT,DO) N %DEV,%FN,i,UP,t1,ii ;ФАЙЛ В МАССИВ
 Vi S %zT=$ZT,$ZT="ERFILE^%ZAPM.ed.BSDOS2"
  U 0 S UP="" F i=0:1:8,10:1:31 S UP=UP_$C(i)
  K @(BSr_"(BSt)") S $P(@$ZR,"@")=%File,$P(@$ZR,"@",17)=5
- S ls="ЗАГРУЗКА "_%FN D WAITS^%ZAPM.ed.BSF2 S:'$D(OT) OT=1 S:'$D(DO) DO=9999999
+ S ls="Load... "_%FN D WAITS^%ZAPM.ed.BSF2 S:'$D(OT) OT=1 S:'$D(DO) DO=9999999
  S i=0 F ii=1:1:DO U %DEV R %LINE#509 Q:$ZC  I ii'<OT D ViewIn(%LINE,UP,BSr,BSt)
 ViEND I %LINE'="" D ViewIn(%LINE,UP,BSr,BSt)
- U 0 C %DEV S $P(@(BSr_"(BSt)"),"@",28)=i
+ U 0 C %DEV S $P(@BSr@(BSt),"@",28)=i
  Q 1
 ERFILE U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G EREFILE
  I $ZE["<ENDOFFILE" G ViEND
