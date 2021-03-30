@@ -57,17 +57,17 @@ E151611 S Sort=$P(@BSR@(BST),"@",36) I TIP=3 D Yes^%ZAPM.ed.BSXfun("ВКЛЮЧИ
  S li=$P(Sort,",",2),ls=" С КАКИМ ШАГОМ" D LE^%ZAPM.ed.BSTT G D:'YES,D:'+li S $P(Sort,",",2)=+li D SORT^%ZAPM.ed.BSF9
 SETSORT D R(36,Sort) K Sort G D
 E151612 D R(36,"") G D ;СОРТИРОВКА ТАБЛИЦ
-PAROL S ls="Вводите ПАРОЛЬ НА КОРРЕКЦИЮ ХАРАКТЕРИСТИК РАЗДЕЛА",li="",s=4,PARROL=1 K k D P12 Q
+PAROL S ls="Enter password for partition",li="",s=4,PARROL=1 K k D P12 Q
 USER S ls="Вводите ваш ПАРОЛЬ",li="",s=4,PARROL=1 K k D P12 S ls=" Введите комментаpий...",ll="@" D LE^%ZAPM.ed.BSTT Q
 E1571 D PASSWORD(BSR,BST,2,"Вводите пароль на вход в таблицу") G D
 E1572 D PASSWORD(BSR,BST,5,"Вводите пароль на коррекцию данных") G D
 E1573 D PASSWORD(BSR,BST,4,"Вводите пароль на коррекцию описания таблицы") G D
-P12 S ll="@" D LINE^%ZAPM.ed.BSF1 I ('$D(k)) S k=li,ls=" Еще раз ... "_ls,li="" G P12
+P12 S ll="@" D LINE^%ZAPM.ed.BSF1 I ('$D(k)) S k=li,ls=" Again ... "_ls,li="" G P12
  I li'=k S ls=" Ничего ... не понимаю " D O^%ZAPM.ed.BSF7 Q
  I $D(PARROL) S %PAROL=li K PARROL Q
  S $P(@(BSR_"(BST)"),"@",s)=li K k,s Q
 PASSWORD(MAS,TAB,s,ls,VAR) N k,li,ll S li="" I TAB'="" S MAS=MAS_"(TAB)"
-PA S ll="@" D LE^%ZAPM.ed.BSTT I YES,('$D(k)) S k=li,ls=" Еще раз ... "_ls,li="" G PA
+PA S ll="@" D LE^%ZAPM.ed.BSTT I YES,('$D(k)) S k=li,ls=" Again ... "_ls,li="" G PA
  I li'=k S ls=" Ничего ... не понимаю " D O^%ZAPM.ed.BSF7 Q
  I $D(PARROL) S %PAROL=li K PARROL Q
  S $P(@MAS,"@",s)=li K s Q

@@ -143,10 +143,14 @@ REM ;       РЕМОНТ
  G D:'YES S ls="РЕМОНТ ТАБЛИЦЫ" D WAITS^%ZAPM.ed.BSF2,REMONT(BSR,BST)
  D TIT^%ZAPM.ed.BST,W^%ZAPM.ed.BST,CALC^%ZAPM.ed.BSF3 G B^%ZAPM.ed.BSTM
 REMONT(BSR,BST) 
- K ^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15)) F i=1:1 Q:'$D(@(BSR_"(BST,i)"))  S $P(^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,1),"#")=$S($P(@(BSR_"(BST,i,1)"),"@",3)="":1,1:$P(@(BSR_"(BST,i,1)"),"@",3))
+ K ^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15)) 
+ F i=1:1 Q:'$D(@(BSR_"(BST,i)"))  S $P(^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15),i,1),"#")=$S($P(@(BSR_"(BST,i,1)"),"@",3)="":1,1:$P(@(BSR_"(BST,i,1)"),"@",3))
  F j=1:1 Q:'$D(@(BSR_"(BST,1,j)"))  S $P(^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15),1,j),"#",2)=$S($P(^(j),"@",4)="":1,1:$P(^(j),"@",4)) X $G(WA)
  S do="S zr=$ZR,$P(@zr,""@"",3)=$P(^%ZAPM.ed.BSbufB(""u""_$G(%BS(3),$P)_$J_""u""_%BS(15),i,1),""#""),$P(@zr,""@"",4)=$P(^%ZAPM.ed.BSbufB(""u""_$G(%BS(3),$P)_$J_""u""_%BS(15),1,j),""#"",2),$P(@zr,""@"",11)="""""
- D ALLT^%ZAPM.ed.BSS1 S $P(@(BSR_"(BST)"),"@",24)="" K ^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15)) D TAB^%ZAPM.ed.BSF1 I '$P(@(BSR_"(BST)"),"@",22) S ls=" РЕТРАНСЛЯЦИЮ ФОРМУЛ БУДЕМ ДЕЛАТЬ ? " D YES^%ZAPM.ed.BSF I YES S BSr=BSR,BSt=BST D TRANS^%ZAPM.ed.BSS1
+ D ALLT^%ZAPM.ed.BSS1 S $P(@(BSR_"(BST)"),"@",24)="" 
+ K ^%ZAPM.ed.BSbufB("u"_$G(%BS(3),$P)_$J_"u"_%BS(15)) 
+ D TAB^%ZAPM.ed.BSF1 
+ I '$P(@(BSR_"(BST)"),"@",22) S ls=" РЕТРАНСЛЯЦИЮ ФОРМУЛ БУДЕМ ДЕЛАТЬ ? " D YES^%ZAPM.ed.BSF I YES S BSr=BSR,BSt=BST D TRANS^%ZAPM.ed.BSS1
  Q
 CKD(%VGI) Q:'$D(%BS(6))  Q:'$D(%VGI)  D INT^%SP I %BS(6)>%FTOTBLK S ls=" ВНИМАНИЕ !!! На Томе "_$P($$ZU^%ZAPM.ed.BS3(1,%VGI),",",2)_" Осталось "_%FTOTBLK_" Свободных Блоков " D O^%ZAPM.ed.BSF7
  C 63 Q

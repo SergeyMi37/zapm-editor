@@ -28,7 +28,7 @@ VER I $ZV'["Windows",$P($ZV,"Version ",2)<+^%ZAPM.ed.BS("VER") S ls=" ДЛЯ %BS
  D WAIT^%ZAPM.ed.BSF2 G UCI:$$ZU^%ZAPM.ed.BS3(0)=$$ZU^%ZAPM.ed.BS3(1,0),RAZD
 MGR I $ZV["Cach"||($ZV["IRIS") D  Q
  .I $$ZU^%ZAPM.ed.BSF4("%SYS")
- V 2:$J:1:2
+ ;V 2:$J:1:2
  Q
 UCI S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),""   <Enter>-ВЫБОР  <F6>-СЕРВИС  <F7>-ПОИСК  <F9>-СИСТЕМА-%BS  <Esc>-ОТМЕНА    """
  S %uCI=$V(2,$J,2) D MGR
@@ -85,9 +85,10 @@ TAB ;ВЫБОР ТАБЛИЦЫ
  K %BS("Tmp","EXIToutBD"),%BS(9),Pddp
  S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-ВЫБОР <F4>-КОМЕН <F5>-КОПИР <F7>-ПОИСК <F8>-УДАЛИТЬ <F9>-ИНФО """ K EXITout,TABLfind S Ii=$S($G(%NAM)["%BSbufS":79,1:77)
  S Pddp=$S($D(%BS("Tmp",3)):$P(%NAM,$E(%BS("Tmp",5),2),+%BS("Tmp",5)),1:$P(%NAM,"^",2))
- S BSR="^%ZAPM.ed.BSbufB",BST="T"_$G(%BS(3),$P)_$J_"u"_%BS(15) I $D(@(BSR_"(BST,""STA"")")) D STA^%ZAPM.ed.BST,BS2 G TABE
+ S BSR="^%ZAPM.ed.BSbufB",BST="T"_$G(%BS(3),$P)_$J_"u"_%BS(15) 
+ I $D(@(BSR_"(BST,""STA"")")) D STA^%ZAPM.ed.BST,BS2 G TABE
  S %TAB="",i=1 K ^%ZAPM.ed.BSbufB("T"_$G(%BS(3),$P)_$J_"u"_%BS(15)),SPSV S ^%ZAPM.ed.BSbufB("T"_$G(%BS(3),$P)_$J_"u"_%BS(15),1,1)="@@1@"_Ii_"@@@@@1@"_$P(%BS,"!",4)_"@@@@@·­±.. "_%NAM_$J("",9-$L(%NAM)+Ii-77)_"        ; ТИП  ;   Комментарии к таблицам"
- S:Ii'=79 ^%ZAPM.ed.BSbufB("T"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,1)="@@1@"_Ii_"@@@@@1@"_$P(%BS,"!",5)_"@@@@@·­± ~новая Таблица    "_$J("",Ii-77)_" ;      ;",i=i+1
+ S:Ii'=79 ^%ZAPM.ed.BSbufB("T"_$G(%BS(3),$P)_$J_"u"_%BS(15),2,1)="@@1@"_Ii_"@@@@@1@"_$P(%BS,"!",5)_"@@@@@·­± ~new table    "_$J("",Ii-77)_" ;      ;",i=i+1
  S Iii=i,Tmp1=1,Tmp2=2 I $D(%BS("Tmp",4)) S Tmp1=4,Tmp2=3
  F  S %TAB=$O(@%NAM@(%TAB)) Q:%TAB=""  X $G(WA) I %TAB'["@"&(%TAB'[$G(HIDD,"&"))&('$P($G(@%NAM@(%TAB)),"@",42)) K Tmp3 D
  .I '$D(IntBS),%BS(12)'="",'$D(@%BS(18)@(%BS(37),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",Tmp1),"*")),'$D(@%BS(18)@(%BS(37),%BS("Tmp",Tmp1),%BS("Tmp",Tmp2),"*")) D  Q:$D(Tmp3)
@@ -146,136 +147,4 @@ r(R) O 0:(:"IS")
  R *R1:R,*R2:0,*R3:0,*R4:0,*R5:0 
  w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!
  q 1
- ///z 
- /*
- Вход в таблицу по ^NEW  S IYI="^PART(TAB" D NE^%ZAPM.ed.BSN         см 1.  
-   c сохранением видео -    или                                             
-    картинки               D Table^%ZAPM.ed.BSN(BSR,BST)   возвращает  YES, гд
-                 YES=1@2@3@4@5@6@7@8@9    - статус выхода из таблицы          
-                 1=Y,X - номер клетки                                         
-                 7 - координата клетки по строке                              
-                 8 - координата клетки по колонке                             
-                 4,5,6 - скан коды                                            
-                 9 - данные лежащие в этой клетке      
 
-   Вход в таблицу  без      S BSR="^PART",BST="TAB"             см 1.         
-   сохpанения видео         D ENTER^%ZAPM.ed.BSN                              
-                                                                              
-   Вывод сообщений об       S ls="ТЕКСТ ОШИБКИ" D O^%ZAPM.ed.BSF7  или        
-   ошибке                   D ErrMsg^%ZAPM.ed.BSXfun("ТЕКСТ ОШИБКИ")          
-                                                                              
-   Вывод простого сообщения D OkMsg^%ZAPM.ed.BSXfun("ТЕКСТ")                  
-                                                                              
-   Меню  ДА/НЕТ             S ls="ВЫ УВЕРЕНЫ ?" D YES^%ZAPM.ed.BSF"      YES=1
-                                                                              
-   Сообщение о действии     S ls="ТЕКСТ" D WAITS^%ZAPM.ed.BSF2          X WA-с
-                            D Wait^%ZAPM.ed.BSXfun("ТЕКСТ")                   
-                                                                              
-   Сообщение "ЖДИТЕ..."     WAIT^%ZAPM.ed.BSF2           
-  Строковый редактор  S ls="Text"                                             
-                       S li="строка"                        li-результат      
-                       S ll="запрещенные символы"            YES=0 отмена     
-                       D LE^%ZAPM.ed.BSS                                      
-                              или                                             
-                       S li=$$LineEdit^%ZAPM.ed.BSXfun("СТРОКА","ТЕКСТ")      
-                                                                          
-                                                                              
-ВХОД В РЕДАКТОР ГЛОБАЛИ   D ^%ZAPM.ed.BSMSMG("^A(1,2,3)")                     
-          ИЛИ ЛОКАЛИ      D ^%ZAPM.ed.BSMSMG("XXX")         
-                  ER D ErrMsg^%ZAPM.ed.BSXfun($ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($>
-
- */
- /// do FOR^%ZAPM.ed.BSCp - клавиши
- /// D INIT^%ZAPM.ed.BSChW ;ИНИЦИАЛИЗАЦИЯ КОМПЛЕКСА
- /// do ^%ZAPM.ed.BSC - Навигация по областям и глобалям
- /// do ^%ZAPM.ed.BSMSMG("^A(1,2,3)")	- Редактор глобалов
- /// ИЛИ ЛОКАЛИ      D ^%ZAPM.ed.BSMSMG("XXX")
- /// do ^%ZAPM.ed.BSXprog - Редактор программ
- /// do ErrMsg^%ZAPM.ed.BSXfun("ГЛЯ - !!"_$ZE) - вывод текста об ошибке
- /// F  D READM^%ZAPM.ed.BSre W !
- ///
- /// d Exports^%ZAPM.ed.BSC("d:\_proj\_zapp\zpm-addition+\zapm-")
- ///
- /// d Exp2016^%ZAPM.ed.BSC("d:\_proj\_zapm\ENS2016\")
- /// 
-Exp2016(dir) // 
-	set slash=$select($zversion(1)=3:"/",1:"\")
-	s ed="editor"
-	k list
-	set dirpath=dir_"src"_slash_"xml"_slash
-	s list("%ZAPM.ed.*.GBL")=""
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.gbl.xml","d",.err) 
-	k list
-	s list("%ZAPM.ed.*.MAC")=""
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.mac.xml","d",.err) 
-	k list
-	s list("%ZAPM.*.INC")=""
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.inc.xml","d",.err) 
- q
-Exports(dir) // d Exports^%ZAPM.ed.BSC("d:\_proj\_zapp\zpm-addition+\zapm-")
-	set slash=$select($zversion(1)=3:"/",1:"\")
-	s ed="editor"
-	do Exp(dir_ed_slash,,,"BSpg")
-	;for d="globals,MSM","routine,BSXpr","text,BSX","table,BST" {
-	;	s di=$p(d,",")
-	;	s mask=$p(d,",",2)
-	;	do Exp(dir_di_"-"_ed_slash,mask,0)
-	;}
-	;do Exp(dir_"tkweb"_slash,"pgWEB","pgWEB")
-	;do Exp(dir_"tkimail"_slash,"pgWEM","pgWEM")
- q
-Exp(dir,mask="",glomask="",isk="") ;d Exp^%ZAPM.ed.BSC("d:\_proj\_zapp\zpm-addition+\zapm-editor\")
-	new $namespace
-	set $namespace="%SYS"
-	set slash=$select($zversion(1)=3:"/",1:"\")
-	set dirpath=dir_"src"_slash_"mac"_slash_"_ZAPM"_slash_"ed"_slash
-	s st=##class(%File).CreateDirectoryChain(dirpath)
-	i 'st w !,st q
- 	do ##class(%File).RemoveDirectoryTree(dirpath)
-	;Rou
-	set r=""
-	for { set r=$O(^ROUTINE(r)) q:r=""  continue:r'["%ZAPM.ed."
-		if mask'="",r'[mask continue 
-		if isk'="",r[isk  continue
-		set file=$tr(r,"%","_")_".mac"
-		Set st = $System.OBJ.ExportUDL(r_".mac",dirpath_file,"-d")
-		s rou(r_".mac")=""
-		if 'st w !,st q
-		else  w !,file
-	}
-	;Glo
-	if 0,glomask'=0 {
-		kill gl
-		set dirpath=dir_"src"_slash_"gbl"_slash
-		d GetGlobalDir^%ZAPM.ed.BSCp($namespace,.gl)
-		s i=""
-		for { s i=$o(gl(i)) q:i=""  continue:i'["%ZAPM.ed."
-			if glomask'="",i'[glomask continue
-			k list
-			s list(i_".GBL")=""
-			do $system.OBJ.Export(.list,dirpath_"_"_$e(i,2,*)_".xml","d",.err) 
-		}
-	}
-	k list
-	set dirpath=dir_"src"_slash_"gbl"_slash
-	s list("%ZAPM.ed.BS.GBL")=""
-	s list("%ZAPM.ed.BSC*.GBL")=""
-	s list("%ZAPM.ed.BSD*.GBL")=""
-	s list("%ZAPM.ed.BSE*.GBL")=""
-	s list("%ZAPM.ed.BSG*.GBL")=""
-	s list("%ZAPM.ed.BSH*.GBL")=""
-	s list("%ZAPM.ed.BSR*.GBL")=""
-	s list("%ZAPM.ed.BSS*.GBL")=""
-	s list("%ZAPM.ed.BSV*.GBL")=""
-	s list("%ZAPM.ed.BSX*.GBL")=""
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.xml","d",.err) 
-	set dirpath=dir_"ed"_slash
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.gbl.xml","d",.err) 	
-
-	set dirpath=dir_"ed"_slash
-	do $system.OBJ.Export(.rou,dirpath_"_ZAPM.ed.mac.xml","d",.err) 
-	zw err
-	m list=rou
-	do $system.OBJ.Export(.list,dirpath_"_ZAPM.ed.all.xml","d",.err) 
-	zw err
- q

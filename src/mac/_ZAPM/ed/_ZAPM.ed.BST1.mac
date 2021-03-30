@@ -88,7 +88,7 @@ Key S v=""  F  S v=$O(%KEYS(v)) Q:v=""  S @("Key"_v)=%KEYS(v)
  Q
 K3(k) K ^%ZAPM.ed.BSbufB(k_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),3),^%ZAPM.ed.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"FTR",3) Q
 INDKEY ;ИНДЕКСНЫЙ
- S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-ВЫБОР "_$S('$$Tree():"<F3>-ПАРОЛЬ",1:"")_" <F4>-РЕД"_$S('$$Tree():"",1:"АКТИР.УЗЕЛ")_" <F5>-КОПИР <F6>-СЕРВИС "_$S('$$Tree():"<F7>-ТАБ",1:"")_" <F8>-УДАЛ."""
+ S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Select "_$S('$$Tree():"<F3>-Password",1:"")_" <F4>-Edit"_$S('$$Tree():"",1:"АКТИР.УЗЕЛ")_" <F5>-Copy <F6>-Service "_$S('$$Tree():"<F7>-Tab",1:"")_" <F8>-Del."""
  S kd1=k6["TIME" D K5^%ZAPM.ed.BST4
  S BSR="^%ZAPM.ed.BSbufB",BST=key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15)
  I $D(^%ZAPM.ed.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"STA")) D STA^%ZAPM.ed.BST G INDKE
@@ -153,7 +153,7 @@ KEYLOG ;ПРОВЕРКА ЛОГИКИ
  G D
 PROT() I $G(%BS("Tmp","AKBD",BSD),"RWD")'="RWD" D ErrMsg^%ZAPM.ed.BSXfun("ПОЛЬЗОВАТЕЛЮ `"_$G(%BS(12))_"` ДАННЫЕ РЕЖИМЫ ЗАПРЕЩЕНЫ !") Q 1
  Q 0
-Tree() I $G(Bsr)["%BSVOL",$G(Bst)="TREE" Q 1 ;;ДЛЯ РЕДАКТИРОВАНИЯ ^%ZAPM.ed.BSVOL(TREE
+Tree() I $G(Bsr)["BSVOL",$G(Bst)="TREE" Q 1 ;;ДЛЯ РЕДАКТИРОВАНИЯ ^%ZAPM.ed.BSVOL(TREE
  Q 0 ;F5 ДЛЯ РЕДАКТОРА МАССИВОВ
 DELU I '$D(%w(3)) D PASDD^%ZAPM.ed.BST1 E  Q
  S %NAm=$$BSD^%ZAPM.ed.BSA(BSD,$G(%KEYS(0))) F ii=1:1:key-1 Q:'$D(%KEYS(ii))  S %NAm=%NAm_$S(%KEYS(ii)=+%KEYS(ii):%KEYS(ii),1:$C(34)_%KEYS(ii)_$C(34))_","

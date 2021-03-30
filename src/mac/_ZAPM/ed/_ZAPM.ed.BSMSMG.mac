@@ -8,7 +8,7 @@ ROUTINE %ZAPM.ed.BSMSMG
 00 I $D(G),G'["^",G'="",$D(@G)>0 S GL=G,IntRef=G K G G 000
  D GLO^%ZAPM.ed.BSF3 G:'$D(GL) EXIT G:'YES EXIT
  I GL["~D" D ^%ZAPM.ed.BSMSMS(2,GL) G:dat="" 0 S GL="^"_dat
-000 S glo=GL I '$D(@GL) D Yes^%ZAPM.ed.BSXfun(" МАССИВ "_GL_" НЕ СУЩЕСТВУЕТ ! ,БУДЕМ СОЗДАВАТЬ ?",2) G:'YES ESHE F i=1,2,3 S @(GL_"(i)")=i
+000 S glo=GL I '$D(@GL) D Yes^%ZAPM.ed.BSXfun(" Global "_GL_" does not exist!, we will create?",2) G:'YES ESHE F i=1,2,3 S @(GL_"(i)")=i
  S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7)=GL
  N Sp,FIL,L,Pg,Ha
  S Sp=8000,FIL=$G(^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7,1)) D CL^%ZAPM.ed.BSF4 S L=0,LL=20 I FIL="" S FIL="I 1"
@@ -23,7 +23,7 @@ L S g=$$ZO(g,Ha) I g="" S g=$S(Ha>0:glo,1:glo_"("""")"),L=0 W $$bel^%ZAPM.ed.BS3
 READ R *r1:0,*r2:0,*r3:0 G L:r1<0
  I r1=43,r2=-1 S Sp=Sp-1000 S:Sp<0 Sp=0 G L
  I r1=45,r2=-1 S Sp=Sp+1000 S:Sp>8000 Sp=8000 G L
-PAUSE W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-ПОМОЩЬ <F4>-РЕДАКТ <F5>-ДЕРЕВО <F6>-ФИЛЬТР <F7>-ИНДЕКС <+->-SPEED: " D  W " ",$S(Pg:" ",Ha>0:"=",1:"=")," ",$$atr^%ZAPM.ed.BS3(0)
+PAUSE W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-Help <F4>-Edit <F5>-Tree <F6>-Filter <F7>-Index <+->-SPEED: " D  W " ",$S(Pg:" ",Ha>0:"=",1:"=")," ",$$atr^%ZAPM.ed.BS3(0)
  .W $S(Sp=8000:"MIN",Sp=7000:"MIn",Sp=6000:"Min",Sp=5000:"min",Sp=4000:"max",Sp=3000:"Max",Sp=2000:"MAx",1:"MAX")
 PA W $$rt^%ZAPM.ed.BS3(+$G(%BS(2),9999)) S HHH=0,L=0,LL=20 I R1=-1,%BS(13)="%BS-PC" D GLUC^%ZAPM.ed.BSXgluc G PA
  I R1=27,R2=-1 K GL G:$D(IntRef) EXIT G 0
@@ -64,7 +64,7 @@ HI W /ED(2),/CUP(1,1),$$clr^%ZAPM.ed.BS3(12),g,$$atr^%ZAPM.ed.BS3(0) I $D(@g)'["
 HELP S IYI="^%ZAPM.ed.BSHLP(HELPGL" D N^%ZAPM.ed.BSN("IYI"),ENTER^%ZAPM.ed.BSN,Q^%ZAPM.ed.BSN("IYI") D  Q
  .I $ZV["Cach"||($ZV["IRIS") D HOME
 EDIT S:g["("""")" g=$P(g,"(") D ^%ZAPM.ed.BSMSMGE(g) Q
-FILT S li=FIL,%hlp="^%ZAPM.ed.BSHLP(HELP_F",ls=" Введите Фильтp пpосмотpа (g=ссылка @g=данные) F1-ПОМОЩЬ "
+FILT S li=FIL,%hlp="^%ZAPM.ed.BSHLP(HELP_F",ls=" Enter View Filter (g = link, @g = data) F1-Help "
  S %HIS="^%ZAPM.ed.BSbufB(""HISARREYFILTR"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")" D LE^%ZAPM.ed.BSTT Q:'YES
  S %zT=$ZT,$ZT="ERRF^%ZAPM.ed.BSMSMG" S:li="" li="I 1" X li
  S $ZT=%zT,FIL=li I $ZV["Cach"||($ZV["IRIS") D HOME
