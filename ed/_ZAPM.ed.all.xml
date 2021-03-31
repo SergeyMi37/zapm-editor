@@ -20430,28 +20430,41 @@ VIEW(V) S BSr="^%ZAPM.ed.BSbufB",BSt=V_$G(%BS(3),$P)_$J_"u"_%BS(15) Q:'$$View(%F
  S IYI=BSr_","_BSt D NE^%ZAPM.ed.BSN Q
 GLKL S II="" F  S II=$O(^%ZAPM.ed.BSbufB(II)) Q:II=""  I $P($P(II,"*.*",2),"u")=$I K ^%ZAPM.ed.BSbufB(II)
 e Q
-AddFile(%File) I %File'[":\" S %File=$$CurDisk^%ZAPM.ed.BSDOS()_":"_$$CurDir^%ZAPM.ed.BSDOS($$CurDisk^%ZAPM.ed.BSDOS())_$S($E(%File,1)="\":"",1:"\")_%File Q %File
+AddFile(%File) ;I %File'[":\" S %File=$$CurDisk^%ZAPM.ed.BSDOS()_":"_$$CurDir^%ZAPM.ed.BSDOS($$CurDisk^%ZAPM.ed.BSDOS())_$S($E(%File,1)="\":"",1:"\")_%File Q %File
  Q %File
 ON D O^%ZAPM.ed.BSF7 Q
 FILE Q:'$D(%IN)  D SI^%ZAPM.ed.BSN N (%BS,vl,%FN,%IN) S %SDEV="HISTORY" D  S:'$D(%FN) %FN="" D OP^%ZAPM.ed.BSF4 Q
  .I %IN=0 D DOSOPN^%ZAPM.ed.BSBL1 Q
  .I %IN=1 D DOSREAD^%ZAPM.ed.BSS1 Q
 View(%File,BSr,BSt,P,OT,DO) N %DEV,%FN,i,UP,t1,ii ;ФАЙЛ В МАССИВ
- S %File=$$AddFile(%File)
+ ;S %File=$$AddFile(%File)
  I '$G(P),BSt["View*",($P(d,"-",2)>$$SizeFile(1)) D ErrMsg^%ZAPM.ed.BSXfun("ФАЙЛ "_%File_" ДЛЯ ПРОСМОТРА СЛИШКОМ ВЕЛИК !") Q 0
  I '$G(P),BSt["Edit*",($P(d,"-",2)>$$SizeFile(2)) D ErrMsg^%ZAPM.ed.BSXfun("ФАЙЛ "_%File_" ДЛЯ РЕДАКТИРОВАНИЯ СЛИШКОМ ВЕЛИК !") Q 0
- S %FN=%File I $ZV["Cach"||($ZV["IRIS") Q:$$Open^%ZAPM.ed.BSCF1(%FN,"R")<0 0 S %DEV=DOS G Vi
- F %DEV=51:1:54 O %DEV::0 Q:$T
- I '$T S ls=" Все файловые устpойства ДОС заняты " D ON Q 0
- O %DEV:%FN U %DEV I $ZA=-1 U 0 S ls=" Файл "_%FN_" не найден " D ON Q 0
- O %DEV:(%FN:"R") U %DEV I $ZA<0 U 0 S ls=" Ошибка откpытия файла "_%FN D ON Q 0
+ S %FN=%File 
+ ;I $ZV["Cach"||($ZV["IRIS") Q:$$Open^%ZAPM.ed.BSCF1(%FN,"R")<0 0 S %DEV=DOS G Vi
+ ;F %DEV=51:1:54 O %DEV::0 Q:$T
+ ;I '$T S ls=" Все файловые устpойства ДОС заняты " D ON Q 0
+ ;O %DEV:%FN U %DEV I $ZA=-1 U 0 S ls=" Файл "_%FN_" не найден " D ON Q 0
+ ;O %DEV:(%FN:"R") U %DEV I $ZA<0 U 0 S ls=" Ошибка откpытия файла "_%FN D ON Q 0
 Vi S %zT=$ZT,$ZT="ERFILE^%ZAPM.ed.BSDOS2"
  U 0 S UP="" F i=0:1:8,10:1:31 S UP=UP_$C(i)
  K @(BSr_"(BSt)") S $P(@$ZR,"@")=%File,$P(@$ZR,"@",17)=5
- S ls="Load... "_%FN D WAITS^%ZAPM.ed.BSF2 S:'$D(OT) OT=1 S:'$D(DO) DO=9999999
- S i=0 F ii=1:1:DO U %DEV R %LINE#509 Q:$ZC  I ii'<OT D ViewIn(%LINE,UP,BSr,BSt)
-ViEND I %LINE'="" D ViewIn(%LINE,UP,BSr,BSt)
- U 0 C %DEV S $P(@BSr@(BSt),"@",28)=i
+ set file=%FN
+ set f=##class(%File).%New(file)
+ set ok=f.Open("RSK")     if 'ok do f.%Close() Q ok
+ S ls="Load... "_%FN D WAITS^%ZAPM.ed.BSF2 
+ set len=$zu(140,1,file),i=0
+ while 'f.AtEnd {
+     set str = f.ReadLine()
+     D ViewIn(str,UP,BSr,BSt)
+  }
+ do f.%Close()
+ ;S ls="Load... "_%FN D WAITS^%ZAPM.ed.BSF2 
+ ;S:'$D(OT) OT=1 S:'$D(DO) DO=9999999
+ ;S i=0 F ii=OT:1:DO U %DEV R %LINE#509 Q:$ZC  I ii'<OT D ViewIn(%LINE,UP,BSr,BSt)
+ViEND ;I %LINE'="" D ViewIn(%LINE,UP,BSr,BSt)
+ U 0 ;C %DEV 
+ S $P(@BSr@(BSt),"@",28)=i
  Q 1
 ERFILE U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G EREFILE
  I $ZE["<ENDOFFILE" G ViEND
@@ -34629,6 +34642,7 @@ a ;agregation
  */
  // d ns^%ZAPM.ed.a
 nszpm  ;Navigator for namespace and zpm modules
+ do resizeTerm
  new
  set $ztrap="error"
  D CLr^%ZAPM.ed.BSF4,CCC^%ZAPM.ed.BSC
@@ -34740,9 +34754,9 @@ mode(cell) ;List zpm modules
 	 d AddDataCell(4," Module Root",root)
 	 if root'="" {
 		 set num=4
+		 kill DirList
 		 d GetList^%ZAPM.ed.a(root,"*.*",.DirList)
 		 set dir=""
-		 zw DirList d error
 		 for { set dir=$o(DirList(dir)) quit:dir=""
 		 	if $g(DirList(dir,"Type"))'="D" {
 			 set file=$g(DirList(dir,"ItemName"))
@@ -34819,6 +34833,15 @@ GetList(directory, ext = "*.*", list)
 		set st = ex.AsStatus()
 	}
  quit st
+
+getYXterminal()
+ ;stty -a
+ ;speed 38400 baud; rows 57; columns 193; line = 0;
+ quit
+ 
+resizeTerm(y=25,x=80)
+ w $c(27),"[8;"_y_";"_x_";t"
+ quit
 
 
  // for  do $$r^%ZAPM.ed.BSC(999) if R1=13 quit
@@ -94986,7 +95009,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>%BS-PC</Sub>
-<Data>Работа с текстами@@@@@@@2@5@21@75@@1110110@0@0@@5@@@1@@@010@@1@@@75@@@2;6;30;46//2;6;33;40@@@@@@@1</Data>
+<Data>Работа с текстами@@@@@@@2@5@21@75@@1110110@0@0@@5@@@1@@@010@@1@@@75@@@2;6;33;40//2;6;33;40@@@@@@@1</Data>
 <Node><Sub>1</Sub>
 <Data>                             Пpосмотp :</Data>
 </Node>
@@ -95408,7 +95431,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>5,1@3@1@27@-1@-1@11@20@Стpуктуpа текстов</Data>
+<Data>3,1@3@1@27@-1@-1@9@20@Вызовы текстового пpоцессоpа</Data>
 </Node>
 </Node>
 <Node><Sub>DocFunDial</Sub>

@@ -9,6 +9,7 @@ a ;agregation
  */
  // d ns^%ZAPM.ed.a
 nszpm  ;Navigator for namespace and zpm modules
+ do resizeTerm
  new
  set $ztrap="error"
  D CLr^%ZAPM.ed.BSF4,CCC^%ZAPM.ed.BSC
@@ -120,9 +121,9 @@ mode(cell) ;List zpm modules
 	 d AddDataCell(4," Module Root",root)
 	 if root'="" {
 		 set num=4
+		 kill DirList
 		 d GetList^%ZAPM.ed.a(root,"*.*",.DirList)
 		 set dir=""
-		 zw DirList d error
 		 for { set dir=$o(DirList(dir)) quit:dir=""
 		 	if $g(DirList(dir,"Type"))'="D" {
 			 set file=$g(DirList(dir,"ItemName"))
@@ -199,6 +200,15 @@ GetList(directory, ext = "*.*", list)
 		set st = ex.AsStatus()
 	}
  quit st
+
+getYXterminal()
+ ;stty -a
+ ;speed 38400 baud; rows 57; columns 193; line = 0;
+ quit
+ 
+resizeTerm(y=25,x=80)
+ w $c(27),"[8;"_y_";"_x_";t"
+ quit
 
 
  // for  do $$r^%ZAPM.ed.BSC(999) if R1=13 quit
