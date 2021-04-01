@@ -146,7 +146,9 @@ Menu(OOO,OO,%B,Msg) n Mode s %B=+$G(%B) i %B<1 s %B=1 ; вызов меню
  i R1=13 s %GO=%B q 1
  q 0
  
-PassWord(field,prompt) n var i $P($G(@Head),"@",field)="" q 1
+PassWord(field,prompt) q 1 ///z
+ n var
+ i $P($G(@Head),"@",field)="" q 1
  s var="",prompt=" Введите паpоль "_$G(prompt)_" : "
  d Save3Lin(23),ClrBot,PASCHECK^%ZAPM.ed.BS1(Head,"",field,prompt,"var")
  d Load3Lin(23) w /CUP(25,1) q $D(var)
@@ -177,6 +179,7 @@ LineEdit(Input,Msg,BadChar,Param,Help,History,Pred)  ; стpоковый pеда
 History(BSR,BST,Msg,Param,Help,Pred)  ; History выбоp
  n Head,X,Y,X1,Y1,Clr,Node s Node="@BSR@(BST)",Head=$G(@Node)
  d ReadParm("History","History","11,9,20,60,"_($$LNG^%ZAPM.ed.BSF12-1)_",2;6;30;46//1;6;37;40","11101100")
+ s $P(Head,"@",1)="History" //z
  s $P(Head,"@",12)=1,@Node=Head
  d ^%ZAPM.ed.BSX("TEXT",BSR,BST) i YES<0 s Head=$G(@Node@(-YES)),YES=0 q Head
  i YES<2 q $G(@Node@(YES))

@@ -88,6 +88,7 @@ Vi S %zT=$ZT,$ZT="ERFILE^%ZAPM.ed.BSDOS2"
 ViEND ;I %LINE'="" D ViewIn(%LINE,UP,BSr,BSt)
  U 0 ;C %DEV 
  S $P(@BSr@(BSt),"@",28)=i
+ S $P(@BSr@(BSt),"@",31)="2;6;33;40//2;6;33;40" //z backgr: gray - color: yellow
  Q 1
 ERFILE U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G EREFILE
  I $ZE["<ENDOFFILE" G ViEND

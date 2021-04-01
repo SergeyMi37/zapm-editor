@@ -1546,7 +1546,11 @@ pr() Q:$ZN=""  S %zN=$ZN D PRINT^%ZAPM.ed.BS7238 ;ZL @%zN X %z0 K %zN,%z0,%z1,%z
 atr(A) Q $C(27)_"["_A_"m"
 bel() Q "" /// $C(7)
 clear() Q $C(27)_"[0;0;25;80w"
-clr(C) Q $C(27)_"["_$P($G(%BS,"1;6;33;42!1;6;37;47!1;6;33;46!1;6;30;45!1;6;30;46!2;6;30;46!1;6;33;45!2;6;30;46!1;6;33;46!2;6;30;41!1;6;32;40"),"!",C)_"m"
+clr(C) if C=0 quit $c(27)_"[0m" //z clear
+ ;Q $C(27)_"["_$P($G(%BS,"1;6;33;42!1;6;37;47!1;6;33;46!1;6;30;45!1;6;30;46!2;6;30;46!1;6;33;45!2;6;30;46!1;6;33;46!2;6;30;41!1;6;32;40"),"!",C)_"m"
+ set C=$lg($lb("1;6;33;42","2;6;33;40","1;6;33;46","1;6;30;45","1;6;30;46","2;6;30;46","1;6;33;45","2;6;30;46","1;6;33;46","2;6;30;41","1;6;32;40"),C)
+ if C=""  quit $c(27)_"[0m" //z clear
+ quit $C(27)_"["_C_"m"
 ed() Q $C(27)_"[2J" ;| W /ED(2)
 el() Q $C(27)_"[K"  ;| W /EL(0)
 esc(E) Q $C(27)_E
@@ -1557,12 +1561,13 @@ rt(R) I $ZV["Cach"||($ZV["IRIS") D  Q "" ;ANSI-TERMINAL
  .O 0:(:"IS") R *R1:R,*R2:0 i R1>31,R2>31 s rr=$c(R1)_$c(R2) f  r *r:0 d:r'=-1  i r=-1,$l(rr)>1 d AddHist^%ZAPM.ed.BSXuse("^%ZAPM.ed.BSbufB(""HISCTL1"")",rr) q  ;,ReadToEL^%ZAPM.ed.BSXuse
  ..s rr=rr_$c(r)  ;строка из буфера обмена Windows
  .r *R3:0,*R4:0,*R5:0 
- .;w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!  ;нужно узнать альт коды
+ .;;;w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!  ;нужно узнать альт коды, то убрать коментарии
  .I R1=13 S R2=-1
  .I '$E($G(%BS(1)),15),R1=3,R2=-1,R3=-1 ZT "INRP"
  .i R1=5 s R1=0,R2=18,R3=-1,R4=-1,R5=-1 q  ;Ctr-E --> Alt-E
  .i R1=4 s R1=0,R2=31,R3=-1,R4=-1,R5=-1 q  ;Ctr-D --> Alt-S
  .if $g(%BS(2008))="1L" d  ;эмуляция ANSI-TERMINAL, если Linux
+ ..i R1=127,R2=-1,R3=-1,R4=-1 s R1=8,R2=-1,R3=-1,R4=-1,R5=-1 q  ;backspace
  ..i R1=27,R2=91,R3=51,R4=126 s R1=127,R2=-1,R3=-1,R4=-1,R5=-1 q  ;del
  ..i R1=27,R2=91,R3=50,R4=126 s R1=0,R2=82,R3=-1,R4=-1,R5=-1 q  ;ins
  ..i R1=27,R2=91,R3=49,R4=126 s R1=0,R2=71,R3=-1,R4=-1,R5=-1 q  ;home
@@ -20465,6 +20470,7 @@ Vi S %zT=$ZT,$ZT="ERFILE^%ZAPM.ed.BSDOS2"
 ViEND ;I %LINE'="" D ViewIn(%LINE,UP,BSr,BSt)
  U 0 ;C %DEV 
  S $P(@BSr@(BSt),"@",28)=i
+ S $P(@BSr@(BSt),"@",31)="2;6;33;40//2;6;33;40" //z backgr: gray - color: yellow
  Q 1
 ERFILE U 0 I $ZE["<INRP" S ls=" ПРЕРВАНО..." G EREFILE
  I $ZE["<ENDOFFILE" G ViEND
@@ -24939,7 +24945,8 @@ FILT S li=FIL,%hlp="^%ZAPM.ed.BSHLP(HELP_F",ls=" Enter View Filter (g = link, @g
  S %zT=$ZT,$ZT="ERRF^%ZAPM.ed.BSMSMG" S:li="" li="I 1" X li
  S $ZT=%zT,FIL=li I $ZV["Cach"||($ZV["IRIS") D HOME
  Q
-INDX S li=$S($G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))[$P(g,"("):$G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8)),1:g),li=$$LineEdit^%ZAPM.ed.BSXfun(li,"Введите ссылку массива ","","","","^%ZAPM.ed.BSbufB(""HISARREYINDX"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")") Q:'YES!(li="")
+INDX S li=$S($G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))[$P(g,"("):$G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8)),1:g),
+	li=$$LineEdit^%ZAPM.ed.BSXfun(li,"Enter array reference ","","","","^%ZAPM.ed.BSbufB(""HISARREYINDX"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")") Q:'YES!(li="")
  S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMG" I $D(@li)'["0" S li=$$ZO(li,-1)
  S $ZT=%zT,Ha=1,(g,^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))=li Q
 END S g=$$ZO((glo_"("""")"),-1),Ha=-1,Pg=1,HHH=1 D HI Q
@@ -25126,7 +25133,7 @@ WAIT D WAIT^%ZAPM.ed.BSF2 Q
 EN ;
  S i=$P(S(YY),"/",3) F ii=YY:1 Q:$P($G(S(ii)),"/",3)'=i  S iii=ii
  S YY=iii,XX=78 G RT
-F1 ;
+F1 goto %C ;
  S IYI="^%ZAPM.ed.BSHLP(HELPGE" D F0 D  G %C
  .I $ZV["Cach"||($ZV["IRIS") D SCREEN
 F0 D N^%ZAPM.ed.BSN("IYI"),ENTER^%ZAPM.ed.BSN,Q^%ZAPM.ed.BSN("IYI"),%LOCK^%ZAPM.ed.BSMSMGI Q
@@ -25157,8 +25164,8 @@ EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0) Q
 CL D CL^%ZAPM.ed.BSF4 Q
 SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1) S:GG="" GG=$P(G,"(") S:GG'="" G=GG K M,S D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2) D PUT,REM Q
 OP D OP^%ZAPM.ed.BSF4 Q
-REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-Help <Ctrl-K>-Delete node <Ctrl-P>-Indexes <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
- .W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
+REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," Press Any key to edit node. <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
+ .;W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
 e Q
 ]]></Routine>
 
@@ -25412,6 +25419,9 @@ L S I=""
 1 S I=""
  F  {	 S I=$O(^ROUTINE(I)) Q:I=""  
  	if $namespace'="%SYS",$e(I,1)="%" continue
+ 	if ( ##class(%Library.RoutineMgr).IsGenerated(I) ) continue
+	;if ( ("%" = $e(I)) ) continue
+	if ( ##class(%Library.RoutineMgr).IsMapped(I) ) continue
  	D ADD(I)
  }
  Q
@@ -26762,7 +26772,7 @@ KE ;ОПРЕДЕЛЕНИЕ КЛЮЧА
  I key=0 D NAMEKEY Q
  D INDKEY Q
 NAMEKEY ;ИМЕННОЙ КЛЮЧ
- N ucI S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-ВЫБОР <F4>-РЕДАКТ <F5>-КОПИР <F6>-СЕРВИС <F7>-ТАБ  <F8>-УДАЛ."""
+ N ucI S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Enter <F4>-Edot <F5>-Copy <F8>-Del."""
  S BSR="^%ZAPM.ed.BSbufB",BST="0k"_$G(%BS(3),$P)_$J_"u"_%BS(15)
  I $D(^%ZAPM.ed.BSbufB("0k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"STA")) D STA^%ZAPM.ed.BST G NAMKE
  D SW(key,IMQ)  K %BS("Tmp","Find0Key") //ДЛЯ ПОИСКА
@@ -26803,7 +26813,7 @@ Key S v=""  F  S v=$O(%KEYS(v)) Q:v=""  S @("Key"_v)=%KEYS(v)
  Q
 K3(k) K ^%ZAPM.ed.BSbufB(k_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),3),^%ZAPM.ed.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"FTR",3) Q
 INDKEY ;ИНДЕКСНЫЙ
- S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Select "_$S('$$Tree():"<F3>-Password",1:"")_" <F4>-Edit"_$S('$$Tree():"",1:"АКТИР.УЗЕЛ")_" <F5>-Copy <F6>-Service "_$S('$$Tree():"<F7>-Tab",1:"")_" <F8>-Del."""
+ S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Select <F4>-Edit <F5>-Copy <F8>-Del."""
  S kd1=k6["TIME" D K5^%ZAPM.ed.BST4
  S BSR="^%ZAPM.ed.BSbufB",BST=key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15)
  I $D(^%ZAPM.ed.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"STA")) D STA^%ZAPM.ed.BST G INDKE
@@ -28401,7 +28411,7 @@ CheckMod s Mode=$$ToUp^%ZAPM.ed.BSXfun(Mode),Edit=0
  i Mode="EDIT" s Edit=1,Mode="TEXT"
  i Mode="TEXT" s BST0=BST
  i Mode="PROG" s Win=$G(BST),Edit=1 d ChckName^%ZAPM.ed.BSXprog
- i '$$PassWord^%ZAPM.ed.BSXfun(2,"на вход в текст") s Edit=-1
+ ;i '$$PassWord^%ZAPM.ed.BSXfun(2,"на вход в текст") s Edit=-1
  q
  
 Locs0 s (Up,Str,Col)=1 s Ed=+$G(Ed) ; локали
@@ -28514,7 +28524,7 @@ DoRegis() n Txt,Node s Node="^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),5,""Reg"")"
  s Txt=$$BSR^%ZAPM.ed.BSA($NA(@Head))
  i vhod<0 k @Node@(Txt) q 0
  i $D(@Node@(Txt))'[0 d  q 1
- .d ErrMsg^%ZAPM.ed.BSXfun(" Втоpой pаз в текст '"_$NA(@Head)_"' войти нельзя. ") q
+ .d ErrMsg^%ZAPM.ed.BSXfun(" The second time in the text '"_$NA(@Head)_"' cannot be entered. ") q
  s @Node@(Txt)=$$UserNAME^%ZAPM.ed.BSXfun() q 0
  
 NoHead() i Mode="TEXT",$D(@Head)[0 d  q 1 ; есть ли текст
@@ -29456,7 +29466,7 @@ NewStr i Mode="LINE" q
  s Bstr1="@Head@(Str-1)",Msg="pазбита"
  d GetS^%ZAPM.ed.BSXedit
  s Qu=$E(LocS,Col,MaxLen)
- i Qu="" s Msg="добавлена"
+ i Qu="" s Msg="added"
  i Mode="PROG" d
  . n Pos1
  . s Pos=$F(LocS," ") i 'Pos s LocS=LocS_" ;",Pos=$L(LocS),Col=Pos+1
@@ -29480,7 +29490,7 @@ NewStr i Mode="LINE" q
  i Mode="PROG" i Col'=1 s Col=$$SkipLab(@Bstr,$F(@Bstr," "))
  i Mode="TEXT" s Col=Pos
  s cLen=$L(@Bstr)+1,Str=St+1,Qu=3
- d Say^%ZAPM.ed.BSXfun("Стpока "_$S(Col=1:"вставлена",1:Msg))
+ d Say^%ZAPM.ed.BSXfun("row "_$S(Col=1:"inserted",1:Msg))
  q
  
 DelStr i Mode="LINE" q                 ; удалить до начала следующей стpоки
@@ -30322,7 +30332,9 @@ Menu(OOO,OO,%B,Msg) n Mode s %B=+$G(%B) i %B<1 s %B=1 ; вызов меню
  i R1=13 s %GO=%B q 1
  q 0
  
-PassWord(field,prompt) n var i $P($G(@Head),"@",field)="" q 1
+PassWord(field,prompt) q 1 ///z
+ n var
+ i $P($G(@Head),"@",field)="" q 1
  s var="",prompt=" Введите паpоль "_$G(prompt)_" : "
  d Save3Lin(23),ClrBot,PASCHECK^%ZAPM.ed.BS1(Head,"",field,prompt,"var")
  d Load3Lin(23) w /CUP(25,1) q $D(var)
@@ -30353,6 +30365,7 @@ LineEdit(Input,Msg,BadChar,Param,Help,History,Pred)  ; стpоковый pеда
 History(BSR,BST,Msg,Param,Help,Pred)  ; History выбоp
  n Head,X,Y,X1,Y1,Clr,Node s Node="@BSR@(BST)",Head=$G(@Node)
  d ReadParm("History","History","11,9,20,60,"_($$LNG^%ZAPM.ed.BSF12-1)_",2;6;30;46//1;6;37;40","11101100")
+ s $P(Head,"@",1)="History" //z
  s $P(Head,"@",12)=1,@Node=Head
  d ^%ZAPM.ed.BSX("TEXT",BSR,BST) i YES<0 s Head=$G(@Node@(-YES)),YES=0 q Head
  i YES<2 q $G(@Node@(YES))
@@ -34632,6 +34645,8 @@ PROK //ПРОКАЧКА
 
 
 <Routine name="%ZAPM.ed.a" type="MAC" languagemode="0"><![CDATA[
+#Include %ZAPM.ext.Common
+
 a ;agregation
  /*
   d Exports^%ZAPM.ed.a("d:\_proj\_zapp\zpm-addition+\zapm-")
@@ -34639,9 +34654,10 @@ a ;agregation
 	if $p(cmd," ")="edg" do ^%ZAPM.ed.BSMSMG($p(cmd," ",2)) quit $$$OK
 	if $p(cmd," ")="edr" do ^%ZAPM.ed.BSXprog($p(cmd," ",2)) quit $$$OK
 	if $p(cmd," ")="edf" ;;;do ^%ZAPM.ed.BSX($p(cmd," ",2)) quit $$$OK ;file system
+	 write ##class(%Device).GetMnemonicRoutine()
  */
  // d ns^%ZAPM.ed.a
-nszpm  ;Navigator for namespace and zpm modules
+nszpm  ;Navigator for namespace and zpm modules --------------------------------- edn
  do resizeTerm
  new
  set $ztrap="error"
@@ -34782,13 +34798,13 @@ mode(cell) ;List zpm modules
  ;S $P(@BSR@(BST),"@",41)="FKEYPART^%ZAPM.ed.BSC"
  ;S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
  D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
-mode2 I R1=27,R2=-1 Q  //exit - esc
- I ny=2 d rou(@BSR@(BST,ny,nx))  d STA^%ZAPM.ed.BST  G mode2
- I ny=3 d glo(@BSR@(BST,ny,nx))  d STA^%ZAPM.ed.BST  G mode2
- I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G mode2
+remode2 I R1=27,R2=-1 Q  //exit - esc
+ I ny=2 d rou("")  d STA^%ZAPM.ed.BST  G remode2
+ I ny=3 d glo("")  d STA^%ZAPM.ed.BST  G remode2
+ I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G remode2
  set filename=$lg($p(@BSR@(BST,ny,2),"@",42),1)
- if filename'="" do viewfile(filename) d STA^%ZAPM.ed.BST  G mode2
-  g mode2
+ if filename'="" do viewfile(filename) d STA^%ZAPM.ed.BST  G remode2
+  g remode2
 CloneRow(ny,from)
  set @BSR@(BST,ny,1)=@BSR@(BST,from,1)
  set @BSR@(BST,ny,2)=@BSR@(BST,from,2)
@@ -34804,17 +34820,28 @@ RemoveRow(ny)
  new i
  for i=ny:1 quit:'$d(@BSR@(BST,i))  KILL @BSR@(BST,i)
  quit
-error D ErrMsg^%ZAPM.ed.BSXfun($ze) O 0:(:) quit
+error D ErrMsg^%ZAPM.ed.BSXfun("Error: "_$ze) 
+ O 0:(:) 
+ quit
 exit O 0:(:) write # 
  quit
 viewfile(file) new (file)
  D DOSTXT^%ZAPM.ed.BSDOS2(file)
  quit
-rou(data)
- do ^%ZAPM.ed.BSXprog
+ 
+rou(name="") //--------------------------------------------------------- edr
+ new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
+ new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
+ d resizeTerm
+ do ^%ZAPM.ed.BSXprog(name)
+ do exit
  quit
-glo(data)
- do ^%ZAPM.ed.BSMSMG()
+glo(name="") //--------------------------------------------------------- edg
+ new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
+ new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
+ d resizeTerm
+ do ^%ZAPM.ed.BSMSMG(name)
+ do exit
  quit
  /// Get all files in a directory without subdirectories
  /// d GetList^%ZAPM.ed.a("D:\!\","*.*",.List)
@@ -34843,12 +34870,23 @@ resizeTerm(y=25,x=80)
  w $c(27),"[8;"_y_";"_x_";t"
  quit
 
-
- // for  do $$r^%ZAPM.ed.BSC(999) if R1=13 quit
-r(R) O 0:(:"IS")
- R *R1:R,*R2:0,*R3:0,*R4:0,*R5:0 
- w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!
+ //  d keys2^%ZAPM.ed.a
+keys2 write ##class(%Device).GetMnemonicRoutine()
+ do FOR^%ZAPM.ed.BSCp
+ O 0:(:) 
+ quit
+ 
+ // d keys1^%ZAPM.ed.a
+keys1 write ##class(%Device).GetMnemonicRoutine()
+ for  R *R1:999,*R2:0,*R3:0,*R4:0,*R5:0  w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,! if R1=13 quit
+  quit
+read(R=999) ;O 0:(:"IS")
+ R *R1:R,*R2:0,*R3:0,*R4:0,*R5:0  w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!
+ ;O 0:(:) 
  q 1
+ // colors template
+CLR f i=1:1:15 w !,i," ",$$clr^%ZAPM.ed.BS3(i)," Тест ",$$clr^%ZAPM.ed.BS3(0)
+  quit 
  ///z 
  /*
  Вход в таблицу по ^NEW  S IYI="^PART(TAB" D NE^%ZAPM.ed.BSN         см 1.  
@@ -34997,6 +35035,7 @@ DrawText(gn)
   }
  write !,"</pre>"
  quit
+
 ]]></Routine>
 
 
@@ -72314,42 +72353,42 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>HELPGL</Sub>
-<Data><![CDATA[РЕЖИМЫ ПРОСМОТРА МАССИВА@@@@@@@3@5@19@70@@@@1@@5@@@1@@@@@@@@14@@@2;6;30;42///2;6;34;42/2;6;30;42@@@@@@@1]]></Data>
+<Data><![CDATA[ Array views or edit @@@@@@@3@5@19@70@@@@1@@5@@@1@@@@@@@@14@@@2;6;30;42///2;6;34;42/2;6;30;42@@@@@@@1]]></Data>
 <Node><Sub>1</Sub>
 <Data></Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>  DOWN - СКРОЛИНГ МАССИВА ВНИЗ ПО ДЕРЕВУ</Data>
+<Data>  Down - Scrolling the array down in the tree</Data>
 </Node>
 <Node><Sub>3</Sub>
-<Data>  UP   - СКРОЛИНГ МАССИВА ВВЕРХ ПО ДЕРЕВУ</Data>
+<Data>  UP   - - Scrolling the array up in the tree</Data>
 </Node>
 <Node><Sub>4</Sub>
-<Data>  PgDn - ЛИСТАНИЕ МАССИВА ВНИЗ НА СТРАНИЦУ</Data>
+<Data>  PgDn - Leafing the arry down on the page</Data>
 </Node>
 <Node><Sub>5</Sub>
-<Data>  PgUp - ЛИСТАНИЕ МАССИВА ВВЕРХ НА СТРАНИЦУ</Data>
+<Data>  PgUp -  Leafing the arry up on the page</Data>
 </Node>
 <Node><Sub>6</Sub>
-<Data>  +    - УВЕЛИЧЕНИЕ СКОРОСТИ СКРОЛИНГА</Data>
+<Data>  +  Increase of scroling speed </Data>
 </Node>
 <Node><Sub>7</Sub>
-<Data>  -    - УМЕНЬШЕНИЕ СКОРОСТИ СКРОЛИНГА</Data>
+<Data>  -    Reducing scroling speed</Data>
 </Node>
 <Node><Sub>8</Sub>
-<Data>  F4   - ВХОД В РЕДАКТОР МАССИВА</Data>
+<Data>  F4   - Array editor enter</Data>
 </Node>
 <Node><Sub>9</Sub>
-<Data>  F5   - ВКЛЮЧЕНИЕ РЕЖИМА ПРОСМОТРА/РЕДАКТИРОВАНИЯ</Data>
+<Data>  F5   - Enable view or edit mode tree</Data>
 </Node>
 <Node><Sub>10</Sub>
-<Data>         МАССИВА ПО ДЕРЕВУ</Data>
+<Data></Data>
 </Node>
 <Node><Sub>11</Sub>
-<Data>  F6   - ФИЛЬТР ПРОСМОТРА</Data>
+<Data>  F6   - View filter</Data>
 </Node>
 <Node><Sub>12</Sub>
-<Data>  F7   - УСТАНОВКА НА ОПРЕДЕЛЕННУЮ ССЫЛКУ</Data>
+<Data>  F7   - Installation to a specific link</Data>
 </Node>
 <Node><Sub>13</Sub>
 <Data></Data>
@@ -95009,57 +95048,57 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>%BS-PC</Sub>
-<Data>Работа с текстами@@@@@@@2@5@21@75@@1110110@0@0@@5@@@1@@@010@@1@@@75@@@2;6;33;40//2;6;33;40@@@@@@@1</Data>
+<Data>Working with texts@@@@@@@2@5@21@75@@1110110@0@0@@5@@@1@@@010@@1@@@75@@@2;6;33;40//2;6;33;40@@@@@@@1</Data>
 <Node><Sub>1</Sub>
-<Data>                             Пpосмотp :</Data>
+<Data>                             View:</Data>
 </Node>
 <Node><Sub>2</Sub>
 <Data></Data>
 </Node>
 <Node><Sub>3</Sub>
-<Data> F1-F10      - Вход в меню pаботы с текстом</Data>
+<Data> F1-F10      - Entering the menu for working with text</Data>
 </Node>
 <Node><Sub>4</Sub>
-<Data> стpелки     - движение куpсоpа по тексту</Data>
+<Data>arrows - cursor movement along the text</Data>
 </Node>
 <Node><Sub>5</Sub>
-<Data> ESC         - Выход из pежима пpосмотpа / pедактиpования текста</Data>
+<Data> ESC         - Exit the text viewing / editing mode</Data>
 </Node>
 <Node><Sub>6</Sub>
-<Data> Enter       - на начало стpоки</Data>
+<Data> Enter       - at the beginning of the line</Data>
 </Node>
 <Node><Sub>7</Sub>
-<Data> Home        - Пеpемещение куpсоpа на начало стpоки / экpана / текста</Data>
+<Data> Home        - Move the cursor to the beginning of the line / screen / text</Data>
 </Node>
 <Node><Sub>8</Sub>
-<Data> End         - Пеpемещение куpсоpа на конец стpоки / экpана / текста</Data>
+<Data> End         - Move the cursor to the end of the line / screen / text</Data>
 </Node>
 <Node><Sub>9</Sub>
-<Data> Tab         - Пеpемещение куpсоpа на 10 позиций впpаво</Data>
+<Data> Tab         - Move the cursor 10 positions to the right</Data>
 </Node>
 <Node><Sub>10</Sub>
-<Data> Shift-Tab   - Пеpемещение куpсоpа на 10 позиций влево</Data>
+<Data> Shift-Tab   - Move the cursor 10 positions to the left</Data>
 </Node>
 <Node><Sub>11</Sub>
-<Data> Ctrl-влево  - Пеpемещение куpсоpа на начало пpедыдущего слова</Data>
+<Data> Ctrl-left - Move the cursor to the beginning of the previous word</Data>
 </Node>
 <Node><Sub>12</Sub>
-<Data> Ctrl-впpаво - Пеpемещение куpсоpа на начало следующего слова</Data>
+<Data> Ctrl-right - Move the cursor to the beginning of the next word</Data>
 </Node>
 <Node><Sub>13</Sub>
-<Data> Ctrl-PgUp &lt;ALT-U&gt; - Пеpемещение куpсоpа на пеpвую стpоку текста</Data>
+<Data> Ctrl-PgUp &lt;ALT-U&gt; - Move the cursor to the first line of text</Data>
 </Node>
 <Node><Sub>14</Sub>
-<Data> Ctrl-PgDown &lt;ALT-N&gt; - Пеpемещение куpсоpа на последнюю стpоку текста</Data>
+<Data> Ctrl-PgDown &lt;ALT-N&gt; - Move the cursor to the last line of text</Data>
 </Node>
 <Node><Sub>15</Sub>
-<Data> PgUp или                     &lt;Alt-I&gt; - листание экрана вверх</Data>
+<Data> PgUp or                     &lt;Alt-I&gt; - scrolling up the screen</Data>
 </Node>
 <Node><Sub>16</Sub>
-<Data> листание экpана влево -&lt;ALT-J&gt;  !  &lt;ALT-K&gt; - листание экpана впpаво</Data>
+<Data> scrolling the screen to the left - &lt;ALT-J&gt;! &lt;ALT-K&gt; - scrolling the screen to the right</Data>
 </Node>
 <Node><Sub>17</Sub>
-<Data> PgDn или                     &lt;Alt-M&gt; - листание экрана вниз</Data>
+<Data> PgDn or                     &lt;Alt-M&gt; - scroll down the screen</Data>
 </Node>
 <Node><Sub>18</Sub>
 <Data></Data>

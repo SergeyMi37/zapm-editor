@@ -72,7 +72,7 @@ NewStr i Mode="LINE" q
  s Bstr1="@Head@(Str-1)",Msg="pазбита"
  d GetS^%ZAPM.ed.BSXedit
  s Qu=$E(LocS,Col,MaxLen)
- i Qu="" s Msg="добавлена"
+ i Qu="" s Msg="added"
  i Mode="PROG" d
  . n Pos1
  . s Pos=$F(LocS," ") i 'Pos s LocS=LocS_" ;",Pos=$L(LocS),Col=Pos+1
@@ -96,7 +96,7 @@ NewStr i Mode="LINE" q
  i Mode="PROG" i Col'=1 s Col=$$SkipLab(@Bstr,$F(@Bstr," "))
  i Mode="TEXT" s Col=Pos
  s cLen=$L(@Bstr)+1,Str=St+1,Qu=3
- d Say^%ZAPM.ed.BSXfun("Стpока "_$S(Col=1:"вставлена",1:Msg))
+ d Say^%ZAPM.ed.BSXfun("row "_$S(Col=1:"inserted",1:Msg))
  q
  
 DelStr i Mode="LINE" q                 ; удалить до начала следующей стpоки

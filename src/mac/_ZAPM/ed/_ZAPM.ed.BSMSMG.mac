@@ -69,7 +69,8 @@ FILT S li=FIL,%hlp="^%ZAPM.ed.BSHLP(HELP_F",ls=" Enter View Filter (g = link, @g
  S %zT=$ZT,$ZT="ERRF^%ZAPM.ed.BSMSMG" S:li="" li="I 1" X li
  S $ZT=%zT,FIL=li I $ZV["Cach"||($ZV["IRIS") D HOME
  Q
-INDX S li=$S($G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))[$P(g,"("):$G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8)),1:g),li=$$LineEdit^%ZAPM.ed.BSXfun(li,"Введите ссылку массива ","","","","^%ZAPM.ed.BSbufB(""HISARREYINDX"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")") Q:'YES!(li="")
+INDX S li=$S($G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))[$P(g,"("):$G(^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8)),1:g),
+	li=$$LineEdit^%ZAPM.ed.BSXfun(li,"Enter array reference ","","","","^%ZAPM.ed.BSbufB(""HISARREYINDX"_$S('$E(%BS(1),12):$G(%BS(3),$P)_$G(%BS(12)),$E(%BS(1),12)=1:"1"_$G(%BS(12)),1:"1")_""")") Q:'YES!(li="")
  S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMG" I $D(@li)'["0" S li=$$ZO(li,-1)
  S $ZT=%zT,Ha=1,(g,^%ZAPM.ed.BSbufB(0,$G(%BS(3),$P),8))=li Q
 END S g=$$ZO((glo_"("""")"),-1),Ha=-1,Pg=1,HHH=1 D HI Q

@@ -47,7 +47,7 @@ KE ;ОПРЕДЕЛЕНИЕ КЛЮЧА
  I key=0 D NAMEKEY Q
  D INDKEY Q
 NAMEKEY ;ИМЕННОЙ КЛЮЧ
- N ucI S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-ВЫБОР <F4>-РЕДАКТ <F5>-КОПИР <F6>-СЕРВИС <F7>-ТАБ  <F8>-УДАЛ."""
+ N ucI S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Enter <F4>-Edot <F5>-Copy <F8>-Del."""
  S BSR="^%ZAPM.ed.BSbufB",BST="0k"_$G(%BS(3),$P)_$J_"u"_%BS(15)
  I $D(^%ZAPM.ed.BSbufB("0k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"STA")) D STA^%ZAPM.ed.BST G NAMKE
  D SW(key,IMQ)  K %BS("Tmp","Find0Key") //ДЛЯ ПОИСКА
@@ -88,7 +88,7 @@ Key S v=""  F  S v=$O(%KEYS(v)) Q:v=""  S @("Key"_v)=%KEYS(v)
  Q
 K3(k) K ^%ZAPM.ed.BSbufB(k_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),3),^%ZAPM.ed.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"FTR",3) Q
 INDKEY ;ИНДЕКСНЫЙ
- S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Select "_$S('$$Tree():"<F3>-Password",1:"")_" <F4>-Edit"_$S('$$Tree():"",1:"АКТИР.УЗЕЛ")_" <F5>-Copy <F6>-Service "_$S('$$Tree():"<F7>-Tab",1:"")_" <F8>-Del."""
+ S MRMR="W /CUP(23,1),/EL(0),$$clr^%ZAPM.ed.BS3(4),"" <Enter>-Select <F4>-Edit <F5>-Copy <F8>-Del."""
  S kd1=k6["TIME" D K5^%ZAPM.ed.BST4
  S BSR="^%ZAPM.ed.BSbufB",BST=key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15)
  I $D(^%ZAPM.ed.BSbufB(key_"k"_$G(%BS(3),$P)_$J_"u"_%BS(15),"STA")) D STA^%ZAPM.ed.BST G INDKE

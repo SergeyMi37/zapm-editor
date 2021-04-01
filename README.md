@@ -11,7 +11,7 @@
 [![license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-Namespace navigator and editor of routines, globals, texts and tables in terminal mode.
+Namespace navigator ZPM and editor of routines, globals, texts and tables in terminal mode.
 
 ## Installation with ZPM
 

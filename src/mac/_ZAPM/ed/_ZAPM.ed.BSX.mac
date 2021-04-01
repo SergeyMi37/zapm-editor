@@ -28,7 +28,7 @@ CheckMod s Mode=$$ToUp^%ZAPM.ed.BSXfun(Mode),Edit=0
  i Mode="EDIT" s Edit=1,Mode="TEXT"
  i Mode="TEXT" s BST0=BST
  i Mode="PROG" s Win=$G(BST),Edit=1 d ChckName^%ZAPM.ed.BSXprog
- i '$$PassWord^%ZAPM.ed.BSXfun(2,"на вход в текст") s Edit=-1
+ ;i '$$PassWord^%ZAPM.ed.BSXfun(2,"на вход в текст") s Edit=-1
  q
  
 Locs0 s (Up,Str,Col)=1 s Ed=+$G(Ed) ; локали
@@ -141,7 +141,7 @@ DoRegis() n Txt,Node s Node="^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),5,""Reg"")"
  s Txt=$$BSR^%ZAPM.ed.BSA($NA(@Head))
  i vhod<0 k @Node@(Txt) q 0
  i $D(@Node@(Txt))'[0 d  q 1
- .d ErrMsg^%ZAPM.ed.BSXfun(" Втоpой pаз в текст '"_$NA(@Head)_"' войти нельзя. ") q
+ .d ErrMsg^%ZAPM.ed.BSXfun(" The second time in the text '"_$NA(@Head)_"' cannot be entered. ") q
  s @Node@(Txt)=$$UserNAME^%ZAPM.ed.BSXfun() q 0
  
 NoHead() i Mode="TEXT",$D(@Head)[0 d  q 1 ; есть ли текст

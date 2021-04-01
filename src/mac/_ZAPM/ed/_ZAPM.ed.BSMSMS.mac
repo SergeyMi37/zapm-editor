@@ -34,6 +34,9 @@ L S I=""
 1 S I=""
  F  {	 S I=$O(^ROUTINE(I)) Q:I=""  
  	if $namespace'="%SYS",$e(I,1)="%" continue
+ 	if ( ##class(%Library.RoutineMgr).IsGenerated(I) ) continue
+	;if ( ("%" = $e(I)) ) continue
+	if ( ##class(%Library.RoutineMgr).IsMapped(I) ) continue
  	D ADD(I)
  }
  Q

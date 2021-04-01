@@ -173,7 +173,7 @@ WAIT D WAIT^%ZAPM.ed.BSF2 Q
 EN ;
  S i=$P(S(YY),"/",3) F ii=YY:1 Q:$P($G(S(ii)),"/",3)'=i  S iii=ii
  S YY=iii,XX=78 G RT
-F1 ;
+F1 goto %C ;
  S IYI="^%ZAPM.ed.BSHLP(HELPGE" D F0 D  G %C
  .I $ZV["Cach"||($ZV["IRIS") D SCREEN
 F0 D N^%ZAPM.ed.BSN("IYI"),ENTER^%ZAPM.ed.BSN,Q^%ZAPM.ed.BSN("IYI"),%LOCK^%ZAPM.ed.BSMSMGI Q
@@ -204,6 +204,6 @@ EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0) Q
 CL D CL^%ZAPM.ed.BSF4 Q
 SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1) S:GG="" GG=$P(G,"(") S:GG'="" G=GG K M,S D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2) D PUT,REM Q
 OP D OP^%ZAPM.ed.BSF4 Q
-REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," <F1>-Help <Ctrl-K>-Delete node <Ctrl-P>-Indexes <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
- .W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
+REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," Press Any key to edit node. <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
+ .;W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
 e Q
