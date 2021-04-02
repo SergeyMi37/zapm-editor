@@ -1,4 +1,4 @@
-![](https://raw.githubusercontent.com/SergeyMi37/zapm-edit/master/doc/zed.png)
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-edit/master/doc/zed-b.png)
 
 ## zapm-editor
 [![Gitter](https://img.shields.io/badge/Available%20on-Intersystems%20Open%20Exchange-00b2a9.svg)](https://openexchange.intersystems.com/package/zapm-editor)
