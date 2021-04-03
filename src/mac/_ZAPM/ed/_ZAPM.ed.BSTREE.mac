@@ -8,14 +8,17 @@ T() ;ТРАНСФОРМАЦИЯ
  S G=$$SS(ny=1!(ny=2)) Q:G="" ""
  S ii=$D(@G)
  s a=G i $l(a)>n s a="..."_$e(a,$l(a)-n,$l(a))
- Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.ed.BSChT(@G))
+ set value=@G if $lv(value) set value=##class(%Global).Quote(value)
+ ;Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.ed.BSChT(@G))
+ Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.ed.BSChT(value))
 EDIT ;РЕДАКТИРОВАТЬ УЗЕЛ
  N G,S,i
  S G=$$SS(ny=1!(ny=2))
  S i=$D(@G),ii=$G(@G)
- i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
- S S=$$LineEdit^%ZAPM.ed.BSXfun(ii,G_"="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")) Q:YES<1
- i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ //i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ set S=$$LineEdit^%ZAPM.ed.a(ii,"Edit node "_G) Q:YES<1
+ ;S S=$$LineEdit^%ZAPM.ed.BSXfun(ii,G_"="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")) Q:YES<1
+ //i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
  I i["0",S="" D Yes^%ZAPM.ed.BSXfun("ВЫ ХОТИТЕ ВВЕСТИ ПУСТОЕ ЗНАЧЕНИЕ ?") Q:YES<1
  S @G=S
  Q

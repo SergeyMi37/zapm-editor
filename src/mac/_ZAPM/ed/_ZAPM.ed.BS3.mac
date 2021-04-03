@@ -34,7 +34,7 @@ ZU(K,T) ;АНАЛОГ $ZU
 x(x) S %BS("Tmp","NameS")=x D x^%ZAPM.ed.BS7238(%BS("Tmp","NameS")) Q
 l() D WRITE^%ZAPM.ed.BS7238 Q ""
 pr() Q:$ZN=""  S %zN=$ZN D PRINT^%ZAPM.ed.BS7238 ;ZL @%zN X %z0 K %zN,%z0,%z1,%z2,%z3,%z4,%z5,%z6,%z7,%z8,%z9,%z10,%z11,%z12,%z13 Q
-atr(A) Q $C(27)_"["_A_"m"
+atr(A) Q $C(27)_"["_A_"m" ;    w atr^%ZAPM.ed.BS3("2;6;34;42")
 bel() Q "" /// $C(7)
 clear() Q $C(27)_"[0;0;25;80w"
 clr(C) if C=0 quit $c(27)_"[0m" //z clear

@@ -80,11 +80,12 @@ ref(m) D
  .N S,M,YY,XX,oldata
  .S oldata=$G(@G)
  .I m=1 S i=$D(@G),ii=$G(@G),txt=G_"==="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")
- .E  S i="",ii=G,txt="Редактируем индекс="_G
+ .E  S i="",ii=G,txt="Edit node "_G
  .// //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
- .i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
- .S S=$$LineEdit^%ZAPM.ed.BSXfun(ii,txt) Q:YES<1
- .i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ .//zi $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ .//zS S=$$LineEdit^%ZAPM.ed.BSXfun(ii,txt) Q:YES<1
+ .S S=$$LineEdit^%ZAPM.ed.a(ii,txt) Q:YES<1
+ .//zi $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
  .I m,i["0",S="" D Yes^%ZAPM.ed.BSXfun("ВЫ ХОТИТЕ ВВЕСТИ ПУСТОЕ ЗНАЧЕНИЕ ?") Q:YES<1
  .i 'm S @S=oldata Q  //ИНДЕКС
  .S @G=S
@@ -168,8 +169,10 @@ PU ;
  D PUU G I
 PUU S Y=0,GG=$O(M("")) I GG="" S G=GLO G PUU1
  S (GG,G)=M($O(M("")),1) F i=1:1:20 S GG=$$ZO(GG,-1) Q:GG=""  S G=GG
-PUU1 S:GG'="" G=GG K M,S D LOO S Y=0,YY=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2),/CUP(1,1) D PUT,REM Q
-WAIT D WAIT^%ZAPM.ed.BSF2 Q
+PUU1 S:GG'="" G=GG K M,S D LOO S Y=0,YY=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2),/CUP(1,1) D PUT,REM
+ Q
+WAIT D WAIT^%ZAPM.ed.BSF2
+ Q
 EN ;
  S i=$P(S(YY),"/",3) F ii=YY:1 Q:$P($G(S(ii)),"/",3)'=i  S iii=ii
  S YY=iii,XX=78 G RT
@@ -180,16 +183,25 @@ F0 D N^%ZAPM.ed.BSN("IYI"),ENTER^%ZAPM.ed.BSN,Q^%ZAPM.ed.BSN("IYI"),%LOCK^%ZAPM.
 YES Q:'$D(YES)  S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMGI"
 YE S I="" F  S I=$O(M(I)) Q:I=""  I M(I)="KILL" X $S(%YES:"K @M(I,1),M(I)",1:"S EDI=EDI+1,EDI(EDI)=0,EDI(EDI,1)=M(I,1)")
  S I="" F  S I=$O(M(I)) Q:I=""  I $D(M(I,3)) X $S(%YES:"S @M(I,1)=S(I,1)",1:"S EDI=EDI+1,EDI(EDI)=1,EDI(EDI,1)=M(I,1),EDI(EDI,2)=S(I,1)")
- K YES S $ZT=$G(%zT) Q
+ K YES S $ZT=$G(%zT) 
+ Q
 FOR ;ФОРМИРОВАНИЕ СТРОКИ G-ГЛ.ССЫЛКА,Y-ИНДЕКСЫ   M(...,S(...
- S M(Y,1)=G,M(Y)=($L($P(G,"("))+1),S(Y)=($L(G)+1)_"/"_(79-$L(G))_"/"_Y_"/1/"_(79-$L(G)),II1=(79-$L(G)),S(Y,1)=@G,II=0
+ S M(Y,1)=G,M(Y)=($L($P(G,"("))+1),
+ 	S(Y)=($L(G)+1)_"/"_(79-$L(G))_"/"_Y_"/1/"_(79-$L(G)),II1=(79-$L(G))
+ set value=@G
+ if $lv(value) set value=##class(%Global).Quote(value)
+ set S(Y,1)=value,
+ 	II=0
  S K1=($L($P(M(Y,1),"(",2))+$L(S(Y,1)))\(79-$L($P(M(Y,1),"(")))+1
  I K1>1 S I1=80-$L(G) F II=1:1:K1-1 S II1=II1+(79-M(Y)+1),S(Y+II)=M(Y)_"/"_II1_"/"_Y_"/"_I1_"/"_(I1+(79-M(Y))),I1=I1+(79-M(Y)+1)
- S Y=Y+II Q
+ S Y=Y+II 
+ Q
 PUT ;ПЕЧАТЬ СТРОКИ
  S I=$O(M(Y)) Q:I=""  D:I'["."  F  S I=$O(M(I)) Q:I=""  I I'["." D  ;
  .W /CUP(I,1) //,$$esc^%ZAPM.ed.BS3("[J")
- .W $$clr^%ZAPM.ed.BS3(11),M(I,1),$$atr^%ZAPM.ed.BS3(0),$E(S(I,1),1,$P(S(I),"/",5)) S III=I F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=I  W /CUP(III,$P(S(III),"/")),$E(S(I,1),$P(S(III),"/",4),$P(S(III),"/",5))
+ .W $$clr^%ZAPM.ed.BS3(11),M(I,1),$$atr^%ZAPM.ed.BS3(0) //reference
+ .write $E(S(I,1),1,$P(S(I),"/",5)) //value
+ .S III=I F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=I  W /CUP(III,$P(S(III),"/")),$E(S(I,1),$P(S(III),"/",4),$P(S(III),"/",5))
  .Q
  Q
 LOO ;ЦИКЛ ПО ГЛОБАЛИ G=^NAM(...)
@@ -200,10 +212,19 @@ ZO(g,Ha) ;
 Z1 S g=$ZO(@g,Ha) I g="" Q ""
  X FIL I  Q g
  G Z1
-EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0) Q
-CL D CL^%ZAPM.ed.BSF4 Q
-SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1) S:GG="" GG=$P(G,"(") S:GG'="" G=GG K M,S D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2) D PUT,REM Q
-OP D OP^%ZAPM.ed.BSF4 Q
+EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0)
+ Q
+CL D CL^%ZAPM.ed.BSF4
+ Q
+SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1)
+ S:GG="" GG=$P(G,"(")
+ S:GG'="" G=GG
+ K M,S
+ D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2)
+ D PUT,REM
+ Q
+OP D OP^%ZAPM.ed.BSF4 
+ Q
 REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," Press Any key to edit node. <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
  .;W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
 e Q

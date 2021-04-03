@@ -115,10 +115,15 @@ MSMHELP(S) ;СПРАВОЧНАЯ СИСТЕМА ПО MSM
  I '$$View(FN,"^%ZAPM.ed.BSbufB","MsmHelp%BS*.*"_$G(%BS(3),$P),1,OT,DO) Q
  S IYI="^%ZAPM.ed.BSbufB,MsmHelp%BS*.*"_$P D NE^%ZAPM.ed.BSN Q
  Q
-DOSTXT(FN) I '$$View(FN,"^%ZAPM.ed.BSbufB","View%BS*.*"_$G(%BS(3),$P),1) Q
- S IYI="^%ZAPM.ed.BSbufB,View%BS*.*"_$P D NE^%ZAPM.ed.BSN Q
+DOSTXT(FN) set bsr="^%ZAPM.ed.BSbufB"
+ set bst="View%BS*.*"_$G(%BS(3),$P)
+ I '$$View(FN,bsr,bst,1) Q
+ set $p(@bsr@(bst),"@",15)=0
+ S IYI=bsr_","_bst D NE^%ZAPM.ed.BSN 
+ Q
 DOCBS(BS,ST) I '$$View($P($G(^%ZAPM.ed.BSETUP("PATH",ST,4),$G(^%ZAPM.ed.BSS("PATH",ST,4))),"@",15)_BS,"^%ZAPM.ed.BSbufB","Help%BS*.*"_$G(%BS(3),$P)_$J_"u1",1) Q
  S IYI="^%ZAPM.ed.BSbufB,Help%BS*.*"_$G(%BS(3),$P)_$J_"u1" D NE^%ZAPM.ed.BSN Q
 HELPP(N) D DOCBS("BSP"_N,8) Q  ;ПОМОЩЬ ПО ОПИСАНИЮ %BS ПРИЛОЖЕНИЯ
 HELP(N) D DOCBS("BS"_$S(N?.N:"C",1:"")_N,8) Q  ;ПОМОЩЬ ПО ОПИСАНИЮ %BS
 NEW(N) D DOCBS("BS_Release_notes.txt",2) Q  ;ЧТО НОВОГО ?
+

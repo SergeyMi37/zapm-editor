@@ -3,7 +3,7 @@
 <Document name="zapm-editor.ZPM">
 <Module>
  <Name>zapm-editor</Name>
-  <Version>1.0.2</Version>
+  <Version>1.0.3</Version>
   <Description>Namespace navigator ZPM and editor of routines, globals, texts and tables in terminal mode.</Description>
   <Keywords>navigator, editor, routines, globals, texts, tables</Keywords>
   <Author>

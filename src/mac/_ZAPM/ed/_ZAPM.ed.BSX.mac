@@ -58,21 +58,22 @@ Locs n H,i                                      ; локали Общие
  s Tmp=$P(H,"@",31) ;окно/блок/стpока/инфо/текст/метка/меткаВстpоке////заполнение
  f i=1:1:10 s Win(9+i)=$P(Tmp,"/",i)
  s Win=$P(Tmp,"/",11),Tmp=$P(YES,"@",31)
- i Win="" s Win=$P(Tmp,"/",11)
- s Win=+Win i Win<32!(Win>255) s Win=32
+ ;i Win="" s Win=$P(Tmp,"/",11)
+ ;s Win=+Win i Win<32!(Win>255) s Win=32
+ s Win=32 //z
  s Win=$TR($J("",80)," ",$C(Win))
  i Win(10)="" f i=1:1:10 s Win(9+i)=$P(Tmp,"/",i)
  i Win(10)="" d  s Win(10)="1;6;36;44"
  . f i=10:1:19 s Win(i)=""
- i Win(11)="" s Win(11)=$P(%BS,"!",3)
+ i Win(11)="" s Win(11)=$$clr^%ZAPM.ed.BS3(3) //z $P(%BS,"!",3)
  i Win(13)="" s Win(13)=Win(10)_$S($F(Win(10),"33"):";37;1",1:";33;1")
  i Win(14)="" s Win(14)=Win(10)
  i Win(12)="" s Win(12)=Win(14)
  i Win(15)="" s Win(15)=Win(10)_$S($F(Win(10),"32"):";37;1",1:";32;1")
  i Win(16)="" s Win(16)=Win(12)_$S($F(Win(12),"32"):";37;1",1:";32;1")
  i $G(%BS(20))'="" s Win(19)=$P($G(@%BS(20)@("TextLine")),"@",31)
- I $E(%BS(1),19) f i=1,3:1:10 s Win(9+i)=$P(%BS,"!",$E(%BS(1),19))
- i $G(Win(19))="" s Win(19)="1;6;37;42//////////176"
+ I $E(%BS(1),19) f i=1,3:1:10 s Win(9+i)=$$clr^%ZAPM.ed.BS3($E(%BS(1),19))  //z$P(%BS,"!",$E(%BS(1),19))
+ i $G(Win(19))="" s Win(19)="1;6;37;42//////////32"
  s Win(19)="@@@@@"_Win(19)
  s Tmp=$P(H,"@",38) i Tmp="" s Tmp=$P(YES,"@",38) i Tmp="" s Tmp=1
  i Tmp'=1,Tmp'=2 s Tmp=" "
@@ -98,7 +99,7 @@ Locs n H,i                                      ; локали Общие
  . s i=0,Tmp="" f  s Tmp=$O(@BSR@(Tmp)) q:Tmp=""  i $D(@BSR@(Tmp))>9 s i=i+1
  . i $D(@Head)>9 s i=i-1
  . s Win(0,0)=Win(0,0)+i,Win(0,1)=Win(0,1)+i
- 
+
  s UpDn=0,Win(3,0)=Win(0,0)+1,Win(3,1)=Win(0,1)+1,Win(2,0)=Win(1,0)
  s Hi=Win(1,0)-Win(3,0)-1,Len=Win(1,1)-Win(3,1)-1
  s Info="00000000",(More(0),More(1),More(2),More(3))=""
@@ -210,3 +211,4 @@ RegView(H) n zt s zt=$ZT,$ZT="Prot^%ZAPM.ed.BSX",@Qu=H
 ProtC s $ZT=$G(zt),Qu=0 q
 Prot s View=1 g ProtC             ; только VIEWER
 IsView s View=0,Qu=Head d R^%ZAPM.ed.BS3($NA(@Head)),RegView($G(@Head)),D^%ZAPM.ed.BS3($NA(@Head)) q
+

@@ -11,7 +11,7 @@ a ;agregation
 	 write ##class(%Device).GetMnemonicRoutine()
  */
  // d ns^%ZAPM.ed.a
-nszpm  ;Navigator for namespace and zpm modules --------------------------------- edn
+nszpm  ;Navigator for namespace and zpm modules --------------------------------- edz
  do resizeTerm
  new
  set $ztrap="error"
@@ -153,11 +153,12 @@ mode(cell) ;List zpm modules
  ;S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
  D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
 remode2 I R1=27,R2=-1 Q  //exit - esc
- I ny=2 d rou("")  d STA^%ZAPM.ed.BST  G remode2
- I ny=3 d glo("")  d STA^%ZAPM.ed.BST  G remode2
- I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G remode2
+ if ny=2 d rou("")  d STA^%ZAPM.ed.BST  G remode2
+ if ny=3 d glo("")  d STA^%ZAPM.ed.BST  G remode2
+ ;I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G remode2
+ if ny=4 do NavFiles($lg($p(@BSR@(BST,ny,2),"@",42),1)) d STA^%ZAPM.ed.BST  G remode2
  set filename=$lg($p(@BSR@(BST,ny,2),"@",42),1)
- if filename'="" do viewfile(filename) d STA^%ZAPM.ed.BST  G remode2
+ if filename'="" do fileView(filename) d STA^%ZAPM.ed.BST  G remode2
   g remode2
 CloneRow(ny,from)
  set @BSR@(BST,ny,1)=@BSR@(BST,from,1)
@@ -175,14 +176,23 @@ RemoveRow(ny)
  for i=ny:1 quit:'$d(@BSR@(BST,i))  KILL @BSR@(BST,i)
  quit
 error D ErrMsg^%ZAPM.ed.BSXfun("Error: "_$ze) 
- O 0:(:) 
+ do clear
  quit
-exit O 0:(:) write # 
+exit d clear write #
  quit
-viewfile(file) new (file)
+ // --------------------------------------- edfv
+fileView(file) new (file)
  D DOSTXT^%ZAPM.ed.BSDOS2(file)
  quit
+ // --------------------------------------- edfc
+fileCat(file) new (file)
+ write !,file
+ ;todo
+ quit
+ // --------------------------------------- edf
+NavFiles(file) 
  
+ quit
 rou(name="") //--------------------------------------------------------- edr
  new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
  new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
@@ -214,6 +224,20 @@ GetList(directory, ext = "*.*", list)
 		set st = ex.AsStatus()
 	}
  quit st
+ // set ls=$$LineEdit^%ZAPM.ed.a("input","edit string") write !,"result: ",ls,!,"YES: ",YES
+ // ---------------------------------------------------------------- edit llne
+LineEdit(str,msg)
+ new (str,msg,YES)
+ set value=str
+ if $lv(str) set value=##class(%Global).Quote(str),ListValid=1
+ set li=$$LineEdit^%ZAPM.ed.BSXfun(value,msg)
+ if YES<1 do clear quit str
+ set %1=li
+ if $GET(ListValid) xecute "set %1="_li
+ do clear
+ quit %1
+clear O 0:(:) write $$$escClear
+ quit
 
 getYXterminal()
  ;stty -a

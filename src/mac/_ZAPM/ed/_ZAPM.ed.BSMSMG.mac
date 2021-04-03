@@ -11,6 +11,7 @@ ROUTINE %ZAPM.ed.BSMSMG
 000 S glo=GL I '$D(@GL) D Yes^%ZAPM.ed.BSXfun(" Global "_GL_" does not exist!, we will create?",2) G:'YES ESHE F i=1,2,3 S @(GL_"(i)")=i
  S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7)=GL
  N Sp,FIL,L,Pg,Ha
+ set ctrls=$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127)
  S Sp=8000,FIL=$G(^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7,1)) D CL^%ZAPM.ed.BSF4 S L=0,LL=20 I FIL="" S FIL="I 1"
 H D HOME S L=0,g1=g
  ;ОБЩИЙ ЦИКЛ
@@ -33,7 +34,7 @@ PA W $$rt^%ZAPM.ed.BS3(+$G(%BS(2),9999)) S HHH=0,L=0,LL=20 I R1=-1,%BS(13)="%BS-
  I R1=0,R2=79 D END G L
  I R1=0,R2=81 S Pg=1,Ha=1,L=0 D P G L
  I R1=0,R2=73 S Pg=1,Ha=-1,L=0 D P G L
- I R1=27,R2=79,R3=84 D ^%ZAPM.ed.BSTREE(glo),HOME G L
+ I R1=27,R2=79,R3=84 D ^%ZAPM.ed.BSTREE(glo),HOME G L //z-------- F5
  I R1=27,R2=79,R3=83 D  G L
  .I '$$AccesMSM^%ZAPM.ed.BSDOS2(2) D PROT^%ZAPM.ed.BSMSM Q
  .D:Ha>0  D EDIT,CL^%ZAPM.ed.BSF4 S Pg=1,Ha=1,L=0 S:G'="" g=G W /CUP(1,1),/ED(2)
@@ -55,8 +56,9 @@ Z1 I g[")("""")" S g=$$TR^%ZAPM.ed.BSsFUNM(g,")("""")",")")
  X FIL I  Q g
  G Z1
 W(g) //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
- I $TR(g,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127),"")'=g W $$clr^%ZAPM.ed.BS3(10)
- Q $TR(g,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127),$c(174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174))
+ if $lv(g) set g=##class(%Global).Quote(g)
+ I $TR(g,ctrls,"")'=g W $$clr^%ZAPM.ed.BS3(10)
+ Q $TR(g,ctrls,$c(174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174))
 P W /ED(2),/CUP(1,1) Q
 LO S L=L+(($L(g)+$L($G(@g)))\79)+1 Q
 HI W /ED(2),/CUP(1,1),$$clr^%ZAPM.ed.BS3(12),g,$$atr^%ZAPM.ed.BS3(0) I $D(@g)'["0" W $$W(@g),$$atr^%ZAPM.ed.BS3(0)

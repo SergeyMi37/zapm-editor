@@ -430,7 +430,7 @@ ZU(K,T) ;АНАЛОГ $ZU
 x(x) S %BS("Tmp","NameS")=x D x^%ZAPM.ed.BS7238(%BS("Tmp","NameS")) Q
 l() D WRITE^%ZAPM.ed.BS7238 Q ""
 pr() Q:$ZN=""  S %zN=$ZN D PRINT^%ZAPM.ed.BS7238 ;ZL @%zN X %z0 K %zN,%z0,%z1,%z2,%z3,%z4,%z5,%z6,%z7,%z8,%z9,%z10,%z11,%z12,%z13 Q
-atr(A) Q $C(27)_"["_A_"m"
+atr(A) Q $C(27)_"["_A_"m" ;    w atr^%ZAPM.ed.BS3("2;6;34;42")
 bel() Q "" /// $C(7)
 clear() Q $C(27)_"[0;0;25;80w"
 clr(C) if C=0 quit $c(27)_"[0m" //z clear
@@ -19384,13 +19384,18 @@ MSMHELP(S) ;СПРАВОЧНАЯ СИСТЕМА ПО MSM
  I '$$View(FN,"^%ZAPM.ed.BSbufB","MsmHelp%BS*.*"_$G(%BS(3),$P),1,OT,DO) Q
  S IYI="^%ZAPM.ed.BSbufB,MsmHelp%BS*.*"_$P D NE^%ZAPM.ed.BSN Q
  Q
-DOSTXT(FN) I '$$View(FN,"^%ZAPM.ed.BSbufB","View%BS*.*"_$G(%BS(3),$P),1) Q
- S IYI="^%ZAPM.ed.BSbufB,View%BS*.*"_$P D NE^%ZAPM.ed.BSN Q
+DOSTXT(FN) set bsr="^%ZAPM.ed.BSbufB"
+ set bst="View%BS*.*"_$G(%BS(3),$P)
+ I '$$View(FN,bsr,bst,1) Q
+ set $p(@bsr@(bst),"@",15)=0
+ S IYI=bsr_","_bst D NE^%ZAPM.ed.BSN 
+ Q
 DOCBS(BS,ST) I '$$View($P($G(^%ZAPM.ed.BSETUP("PATH",ST,4),$G(^%ZAPM.ed.BSS("PATH",ST,4))),"@",15)_BS,"^%ZAPM.ed.BSbufB","Help%BS*.*"_$G(%BS(3),$P)_$J_"u1",1) Q
  S IYI="^%ZAPM.ed.BSbufB,Help%BS*.*"_$G(%BS(3),$P)_$J_"u1" D NE^%ZAPM.ed.BSN Q
 HELPP(N) D DOCBS("BSP"_N,8) Q  ;ПОМОЩЬ ПО ОПИСАНИЮ %BS ПРИЛОЖЕНИЯ
 HELP(N) D DOCBS("BS"_$S(N?.N:"C",1:"")_N,8) Q  ;ПОМОЩЬ ПО ОПИСАНИЮ %BS
 NEW(N) D DOCBS("BS_Release_notes.txt",2) Q  ;ЧТО НОВОГО ?
+
 ]]></Routine>
 
 
@@ -23774,6 +23779,7 @@ DIR() N A S A=$P($G(^%ZAPM.ed.BSETUP("PATH",2,4)),"@",15) I A="" Q A
 000 S glo=GL I '$D(@GL) D Yes^%ZAPM.ed.BSXfun(" Global "_GL_" does not exist!, we will create?",2) G:'YES ESHE F i=1,2,3 S @(GL_"(i)")=i
  S ^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7)=GL
  N Sp,FIL,L,Pg,Ha
+ set ctrls=$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127)
  S Sp=8000,FIL=$G(^%ZAPM.ed.BSbufB(2,$G(%BS(3),$P),7,1)) D CL^%ZAPM.ed.BSF4 S L=0,LL=20 I FIL="" S FIL="I 1"
 H D HOME S L=0,g1=g
  ;ОБЩИЙ ЦИКЛ
@@ -23796,7 +23802,7 @@ PA W $$rt^%ZAPM.ed.BS3(+$G(%BS(2),9999)) S HHH=0,L=0,LL=20 I R1=-1,%BS(13)="%BS-
  I R1=0,R2=79 D END G L
  I R1=0,R2=81 S Pg=1,Ha=1,L=0 D P G L
  I R1=0,R2=73 S Pg=1,Ha=-1,L=0 D P G L
- I R1=27,R2=79,R3=84 D ^%ZAPM.ed.BSTREE(glo),HOME G L
+ I R1=27,R2=79,R3=84 D ^%ZAPM.ed.BSTREE(glo),HOME G L //z-------- F5
  I R1=27,R2=79,R3=83 D  G L
  .I '$$AccesMSM^%ZAPM.ed.BSDOS2(2) D PROT^%ZAPM.ed.BSMSM Q
  .D:Ha>0  D EDIT,CL^%ZAPM.ed.BSF4 S Pg=1,Ha=1,L=0 S:G'="" g=G W /CUP(1,1),/ED(2)
@@ -23818,8 +23824,9 @@ Z1 I g[")("""")" S g=$$TR^%ZAPM.ed.BSsFUNM(g,")("""")",")")
  X FIL I  Q g
  G Z1
 W(g) //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
- I $TR(g,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127),"")'=g W $$clr^%ZAPM.ed.BS3(10)
- Q $TR(g,$C(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,127),$c(174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174))
+ if $lv(g) set g=##class(%Global).Quote(g)
+ I $TR(g,ctrls,"")'=g W $$clr^%ZAPM.ed.BS3(10)
+ Q $TR(g,ctrls,$c(174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174,174))
 P W /ED(2),/CUP(1,1) Q
 LO S L=L+(($L(g)+$L($G(@g)))\79)+1 Q
 HI W /ED(2),/CUP(1,1),$$clr^%ZAPM.ed.BS3(12),g,$$atr^%ZAPM.ed.BS3(0) I $D(@g)'["0" W $$W(@g),$$atr^%ZAPM.ed.BS3(0)
@@ -23927,11 +23934,12 @@ ref(m) D
  .N S,M,YY,XX,oldata
  .S oldata=$G(@G)
  .I m=1 S i=$D(@G),ii=$G(@G),txt=G_"==="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")
- .E  S i="",ii=G,txt="Редактируем индекс="_G
+ .E  S i="",ii=G,txt="Edit node "_G
  .// //i $tr(%S,$c(127,5))'=%S s %S=$tr(%S,$c(127,5),$c(174,169))
- .i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
- .S S=$$LineEdit^%ZAPM.ed.BSXfun(ii,txt) Q:YES<1
- .i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ .//zi $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ .//zS S=$$LineEdit^%ZAPM.ed.BSXfun(ii,txt) Q:YES<1
+ .S S=$$LineEdit^%ZAPM.ed.a(ii,txt) Q:YES<1
+ .//zi $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
  .I m,i["0",S="" D Yes^%ZAPM.ed.BSXfun("ВЫ ХОТИТЕ ВВЕСТИ ПУСТОЕ ЗНАЧЕНИЕ ?") Q:YES<1
  .i 'm S @S=oldata Q  //ИНДЕКС
  .S @G=S
@@ -24015,8 +24023,10 @@ PU ;
  D PUU G I
 PUU S Y=0,GG=$O(M("")) I GG="" S G=GLO G PUU1
  S (GG,G)=M($O(M("")),1) F i=1:1:20 S GG=$$ZO(GG,-1) Q:GG=""  S G=GG
-PUU1 S:GG'="" G=GG K M,S D LOO S Y=0,YY=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2),/CUP(1,1) D PUT,REM Q
-WAIT D WAIT^%ZAPM.ed.BSF2 Q
+PUU1 S:GG'="" G=GG K M,S D LOO S Y=0,YY=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2),/CUP(1,1) D PUT,REM
+ Q
+WAIT D WAIT^%ZAPM.ed.BSF2
+ Q
 EN ;
  S i=$P(S(YY),"/",3) F ii=YY:1 Q:$P($G(S(ii)),"/",3)'=i  S iii=ii
  S YY=iii,XX=78 G RT
@@ -24027,16 +24037,25 @@ F0 D N^%ZAPM.ed.BSN("IYI"),ENTER^%ZAPM.ed.BSN,Q^%ZAPM.ed.BSN("IYI"),%LOCK^%ZAPM.
 YES Q:'$D(YES)  S %zT=$ZT,$ZT="ERR^%ZAPM.ed.BSMSMGI"
 YE S I="" F  S I=$O(M(I)) Q:I=""  I M(I)="KILL" X $S(%YES:"K @M(I,1),M(I)",1:"S EDI=EDI+1,EDI(EDI)=0,EDI(EDI,1)=M(I,1)")
  S I="" F  S I=$O(M(I)) Q:I=""  I $D(M(I,3)) X $S(%YES:"S @M(I,1)=S(I,1)",1:"S EDI=EDI+1,EDI(EDI)=1,EDI(EDI,1)=M(I,1),EDI(EDI,2)=S(I,1)")
- K YES S $ZT=$G(%zT) Q
+ K YES S $ZT=$G(%zT) 
+ Q
 FOR ;ФОРМИРОВАНИЕ СТРОКИ G-ГЛ.ССЫЛКА,Y-ИНДЕКСЫ   M(...,S(...
- S M(Y,1)=G,M(Y)=($L($P(G,"("))+1),S(Y)=($L(G)+1)_"/"_(79-$L(G))_"/"_Y_"/1/"_(79-$L(G)),II1=(79-$L(G)),S(Y,1)=@G,II=0
+ S M(Y,1)=G,M(Y)=($L($P(G,"("))+1),
+ 	S(Y)=($L(G)+1)_"/"_(79-$L(G))_"/"_Y_"/1/"_(79-$L(G)),II1=(79-$L(G))
+ set value=@G
+ if $lv(value) set value=##class(%Global).Quote(value)
+ set S(Y,1)=value,
+ 	II=0
  S K1=($L($P(M(Y,1),"(",2))+$L(S(Y,1)))\(79-$L($P(M(Y,1),"(")))+1
  I K1>1 S I1=80-$L(G) F II=1:1:K1-1 S II1=II1+(79-M(Y)+1),S(Y+II)=M(Y)_"/"_II1_"/"_Y_"/"_I1_"/"_(I1+(79-M(Y))),I1=I1+(79-M(Y)+1)
- S Y=Y+II Q
+ S Y=Y+II 
+ Q
 PUT ;ПЕЧАТЬ СТРОКИ
  S I=$O(M(Y)) Q:I=""  D:I'["."  F  S I=$O(M(I)) Q:I=""  I I'["." D  ;
  .W /CUP(I,1) //,$$esc^%ZAPM.ed.BS3("[J")
- .W $$clr^%ZAPM.ed.BS3(11),M(I,1),$$atr^%ZAPM.ed.BS3(0),$E(S(I,1),1,$P(S(I),"/",5)) S III=I F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=I  W /CUP(III,$P(S(III),"/")),$E(S(I,1),$P(S(III),"/",4),$P(S(III),"/",5))
+ .W $$clr^%ZAPM.ed.BS3(11),M(I,1),$$atr^%ZAPM.ed.BS3(0) //reference
+ .write $E(S(I,1),1,$P(S(I),"/",5)) //value
+ .S III=I F  S III=$O(S(III)) Q:III=""  Q:$P(S(III),"/",3)'=I  W /CUP(III,$P(S(III),"/")),$E(S(I,1),$P(S(III),"/",4),$P(S(III),"/",5))
  .Q
  Q
 LOO ;ЦИКЛ ПО ГЛОБАЛИ G=^NAM(...)
@@ -24047,10 +24066,19 @@ ZO(g,Ha) ;
 Z1 S g=$ZO(@g,Ha) I g="" Q ""
  X FIL I  Q g
  G Z1
-EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0) Q
-CL D CL^%ZAPM.ed.BSF4 Q
-SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1) S:GG="" GG=$P(G,"(") S:GG'="" G=GG K M,S D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2) D PUT,REM Q
-OP D OP^%ZAPM.ed.BSF4 Q
+EXIT D U^%ZAPM.ed.BS3(GLO) D OP^%ZAPM.ed.BSF4 W $$atr^%ZAPM.ed.BS3(0)
+ Q
+CL D CL^%ZAPM.ed.BSF4
+ Q
+SCREEN S Y=0,G=M($O(M("")),1),GG=$$ZO(G,-1)
+ S:GG="" GG=$P(G,"(")
+ S:GG'="" G=GG
+ K M,S
+ D LOO S Y=0 W $$atr^%ZAPM.ed.BS3(0),/ED(2)
+ D PUT,REM
+ Q
+OP D OP^%ZAPM.ed.BSF4 
+ Q
 REM W $$clr^%ZAPM.ed.BS3(4),/CUP(24,1),/EL(0)," Press Any key to edit node. <Esc>-Exit " D  W $$atr^%ZAPM.ed.BS3(0) Q
  .;W $S(W:"Insert",1:"Replace")  ;"Insert",1:"Replace") 
 e Q
@@ -27056,14 +27084,17 @@ T() ;ТРАНСФОРМАЦИЯ
  S G=$$SS(ny=1!(ny=2)) Q:G="" ""
  S ii=$D(@G)
  s a=G i $l(a)>n s a="..."_$e(a,$l(a)-n,$l(a))
- Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.ed.BSChT(@G))
+ set value=@G if $lv(value) set value=##class(%Global).Quote(value)
+ ;Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.ed.BSChT(@G))
+ Q $J(ii,2)_" "_a_$S(ii["0":"",1:"="_$$CTRL^%ZAPM.ed.BSChT(value))
 EDIT ;РЕДАКТИРОВАТЬ УЗЕЛ
  N G,S,i
  S G=$$SS(ny=1!(ny=2))
  S i=$D(@G),ii=$G(@G)
- i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
- S S=$$LineEdit^%ZAPM.ed.BSXfun(ii,G_"="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")) Q:YES<1
- i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
+ //i $TR(ii,$C(127,5),"")'=ii s ii=$TR(ii,$C(127,5),$c(174,169))
+ set S=$$LineEdit^%ZAPM.ed.a(ii,"Edit node "_G) Q:YES<1
+ ;S S=$$LineEdit^%ZAPM.ed.BSXfun(ii,G_"="_$S(i["0":"НЕОПРЕДЕЛЕНО",ii="":"ПУСТО",1:"")) Q:YES<1
+ //i $tr(S,$c(174,169))'=S  s S=$tr(S,$c(174,169),$c(127,5))
  I i["0",S="" D Yes^%ZAPM.ed.BSXfun("ВЫ ХОТИТЕ ВВЕСТИ ПУСТОЕ ЗНАЧЕНИЕ ?") Q:YES<1
  S @G=S
  Q
@@ -27328,21 +27359,22 @@ Locs n H,i                                      ; локали Общие
  s Tmp=$P(H,"@",31) ;окно/блок/стpока/инфо/текст/метка/меткаВстpоке////заполнение
  f i=1:1:10 s Win(9+i)=$P(Tmp,"/",i)
  s Win=$P(Tmp,"/",11),Tmp=$P(YES,"@",31)
- i Win="" s Win=$P(Tmp,"/",11)
- s Win=+Win i Win<32!(Win>255) s Win=32
+ ;i Win="" s Win=$P(Tmp,"/",11)
+ ;s Win=+Win i Win<32!(Win>255) s Win=32
+ s Win=32 //z
  s Win=$TR($J("",80)," ",$C(Win))
  i Win(10)="" f i=1:1:10 s Win(9+i)=$P(Tmp,"/",i)
  i Win(10)="" d  s Win(10)="1;6;36;44"
  . f i=10:1:19 s Win(i)=""
- i Win(11)="" s Win(11)=$P(%BS,"!",3)
+ i Win(11)="" s Win(11)=$$clr^%ZAPM.ed.BS3(3) //z $P(%BS,"!",3)
  i Win(13)="" s Win(13)=Win(10)_$S($F(Win(10),"33"):";37;1",1:";33;1")
  i Win(14)="" s Win(14)=Win(10)
  i Win(12)="" s Win(12)=Win(14)
  i Win(15)="" s Win(15)=Win(10)_$S($F(Win(10),"32"):";37;1",1:";32;1")
  i Win(16)="" s Win(16)=Win(12)_$S($F(Win(12),"32"):";37;1",1:";32;1")
  i $G(%BS(20))'="" s Win(19)=$P($G(@%BS(20)@("TextLine")),"@",31)
- I $E(%BS(1),19) f i=1,3:1:10 s Win(9+i)=$P(%BS,"!",$E(%BS(1),19))
- i $G(Win(19))="" s Win(19)="1;6;37;42//////////176"
+ I $E(%BS(1),19) f i=1,3:1:10 s Win(9+i)=$$clr^%ZAPM.ed.BS3($E(%BS(1),19))  //z$P(%BS,"!",$E(%BS(1),19))
+ i $G(Win(19))="" s Win(19)="1;6;37;42//////////32"
  s Win(19)="@@@@@"_Win(19)
  s Tmp=$P(H,"@",38) i Tmp="" s Tmp=$P(YES,"@",38) i Tmp="" s Tmp=1
  i Tmp'=1,Tmp'=2 s Tmp=" "
@@ -27368,7 +27400,7 @@ Locs n H,i                                      ; локали Общие
  . s i=0,Tmp="" f  s Tmp=$O(@BSR@(Tmp)) q:Tmp=""  i $D(@BSR@(Tmp))>9 s i=i+1
  . i $D(@Head)>9 s i=i-1
  . s Win(0,0)=Win(0,0)+i,Win(0,1)=Win(0,1)+i
- 
+
  s UpDn=0,Win(3,0)=Win(0,0)+1,Win(3,1)=Win(0,1)+1,Win(2,0)=Win(1,0)
  s Hi=Win(1,0)-Win(3,0)-1,Len=Win(1,1)-Win(3,1)-1
  s Info="00000000",(More(0),More(1),More(2),More(3))=""
@@ -27480,6 +27512,7 @@ RegView(H) n zt s zt=$ZT,$ZT="Prot^%ZAPM.ed.BSX",@Qu=H
 ProtC s $ZT=$G(zt),Qu=0 q
 Prot s View=1 g ProtC             ; только VIEWER
 IsView s View=0,Qu=Head d R^%ZAPM.ed.BS3($NA(@Head)),RegView($G(@Head)),D^%ZAPM.ed.BS3($NA(@Head)) q
+
 ]]></Routine>
 
 
@@ -33544,7 +33577,7 @@ a ;agregation
 	 write ##class(%Device).GetMnemonicRoutine()
  */
  // d ns^%ZAPM.ed.a
-nszpm  ;Navigator for namespace and zpm modules --------------------------------- edn
+nszpm  ;Navigator for namespace and zpm modules --------------------------------- edz
  do resizeTerm
  new
  set $ztrap="error"
@@ -33686,11 +33719,12 @@ mode(cell) ;List zpm modules
  ;S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
  D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
 remode2 I R1=27,R2=-1 Q  //exit - esc
- I ny=2 d rou("")  d STA^%ZAPM.ed.BST  G remode2
- I ny=3 d glo("")  d STA^%ZAPM.ed.BST  G remode2
- I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G remode2
+ if ny=2 d rou("")  d STA^%ZAPM.ed.BST  G remode2
+ if ny=3 d glo("")  d STA^%ZAPM.ed.BST  G remode2
+ ;I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G remode2
+ if ny=4 do NavFiles($lg($p(@BSR@(BST,ny,2),"@",42),1)) d STA^%ZAPM.ed.BST  G remode2
  set filename=$lg($p(@BSR@(BST,ny,2),"@",42),1)
- if filename'="" do viewfile(filename) d STA^%ZAPM.ed.BST  G remode2
+ if filename'="" do fileView(filename) d STA^%ZAPM.ed.BST  G remode2
   g remode2
 CloneRow(ny,from)
  set @BSR@(BST,ny,1)=@BSR@(BST,from,1)
@@ -33708,14 +33742,23 @@ RemoveRow(ny)
  for i=ny:1 quit:'$d(@BSR@(BST,i))  KILL @BSR@(BST,i)
  quit
 error D ErrMsg^%ZAPM.ed.BSXfun("Error: "_$ze) 
- O 0:(:) 
+ do clear
  quit
-exit O 0:(:) write # 
+exit d clear write #
  quit
-viewfile(file) new (file)
+ // --------------------------------------- edfv
+fileView(file) new (file)
  D DOSTXT^%ZAPM.ed.BSDOS2(file)
  quit
+ // --------------------------------------- edfc
+fileCat(file) new (file)
+ write !,file
+ ;todo
+ quit
+ // --------------------------------------- edf
+NavFiles(file) 
  
+ quit
 rou(name="") //--------------------------------------------------------- edr
  new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
  new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
@@ -33747,6 +33790,20 @@ GetList(directory, ext = "*.*", list)
 		set st = ex.AsStatus()
 	}
  quit st
+ // set ls=$$LineEdit^%ZAPM.ed.a("input","edit string") write !,"result: ",ls,!,"YES: ",YES
+ // ---------------------------------------------------------------- edit llne
+LineEdit(str,msg)
+ new (str,msg,YES)
+ set value=str
+ if $lv(str) set value=##class(%Global).Quote(str),ListValid=1
+ set li=$$LineEdit^%ZAPM.ed.BSXfun(value,msg)
+ if YES<1 do clear quit str
+ set %1=li
+ if $GET(ListValid) xecute "set %1="_li
+ do clear
+ quit %1
+clear O 0:(:) write $$$escClear
+ quit
 
 getYXterminal()
  ;stty -a
