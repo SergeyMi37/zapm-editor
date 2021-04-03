@@ -49,3 +49,10 @@ $ docker-compose up -d
 
 ## How to Test it
 Open IRIS terminal:
+```
+$ docker-compose exec iris iris session iris
+
+USER>
+USER>zapm "edit-file cpf"
+```
+
