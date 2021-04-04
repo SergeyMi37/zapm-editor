@@ -172,7 +172,7 @@ ChckHead() n H,i,col,atr,y,x,y1,x1,Err      ; пpовеpка/pемонт заг�
  s col=$P(H,"@",41) i col'="",col'["^" d ErrHead("Пpедобpаботка")
  s YES=0 i @Head'=H d
  . i View d ErrMsg^%ZAPM.ed.BSXfun("Ошибка заголовка в '"_$NA(@Head)_"'. ( а текст недоступен ! )") s YES=1 q
- . i (Mode'="PROG")&(Mode'="LINE") d Yes^%ZAPM.ed.BSXfun(" Устpанять ошибку заголовка '"_$NA(@Head)_"' в"_Err_" ") i YES<1 s YES=1 q
+ . //zi (Mode'="PROG")&(Mode'="LINE") d Yes^%ZAPM.ed.BSXfun(" Устpанять ошибку заголовка '"_$NA(@Head)_"' в"_Err_" ") i YES<1 s YES=1 q
  . d R^%ZAPM.ed.BS3($NA(@Head)) s @Head=H d D^%ZAPM.ed.BS3($NA(@Head)) s YES=-1,Ed=1 q
  q YES
 ErrHead(Pole) s Err=Err_" "_Pole q

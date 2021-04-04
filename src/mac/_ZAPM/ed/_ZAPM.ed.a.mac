@@ -33,10 +33,10 @@ nszpm  ;Navigator for namespace and zpm modules --------------------------------
    $P(@BSR@(BST),"@",16)=1  // blocked F-keys
  ;S $P(@BSR@(BST),"@",41)="FKEY^%ZAPM.ed.BSC"  
  ;S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP1" //help text
- 
+ kill tab
  Set currentns=$Namespace
  Do ##class(%ZPM.PackageManager).GetListNamespace(.namespace)
- Set ns="",num=0
+  Set ns="",num=0
 	For { set ns=$Order(namespace(ns)) Quit:ns=""
 		Set $Namespace=ns
 		Kill list
@@ -122,23 +122,19 @@ mode(cell) ;List zpm modules
 	 set root=$lg($g(Moduls(NAMESP,module,"L")),3)
 	 d CloneRow(4,2)
 	 d AddDataCell(4," Module Root",root)
+	 d AddDataCellInfo42(4,2,$lb(root))
 	 if root'="" {
 		 set num=4
 		 kill DirList
 		 d GetList^%ZAPM.ed.a(root,"*.*",.DirList)
 		 set dir=""
 		 for { set dir=$o(DirList(dir)) quit:dir=""
-		 	if $g(DirList(dir,"Type"))'="D" {
 			 set file=$g(DirList(dir,"ItemName"))
 			 set filename=$g(DirList(dir,"Name"))
-			 ;set ext=""
-			 ;if file[".",$e(file,1)'="." set ext=$p(file,".",*)
-			 ;if $lf($lb("xml","","md","sh"),ext) continue
 			 set num=num+1
 			 d CloneRow(num,2)
 			 d AddDataCell(num,"",file)
 			 d AddDataCellInfo42(num,2,$lb(filename))
-		 	}
 		 }
 	 }
  }
@@ -155,8 +151,7 @@ mode(cell) ;List zpm modules
 remode2 I R1=27,R2=-1 Q  //exit - esc
  if ny=2 d rou("")  d STA^%ZAPM.ed.BST  G remode2
  if ny=3 d glo("")  d STA^%ZAPM.ed.BST  G remode2
- ;I ny=4 D OkMsg^%ZAPM.ed.BSXfun("Not release yet")  d STA^%ZAPM.ed.BST  G remode2
- if ny=4 do NavFiles($lg($p(@BSR@(BST,ny,2),"@",42),1)) d STA^%ZAPM.ed.BST  G remode2
+ if ny=4 do FileNavigator($lg($p(@BSR@(BST,ny,2),"@",42),1)) d STA^%ZAPM.ed.BST  G remode2
  set filename=$lg($p(@BSR@(BST,ny,2),"@",42),1)
  if filename'="" do fileView(filename) d STA^%ZAPM.ed.BST  G remode2
   g remode2
@@ -190,9 +185,97 @@ fileCat(file) new (file)
  ;todo
  quit
  // --------------------------------------- edf
-NavFiles(file) 
- 
+FileSys(filedir) 
+ if filedir="mess" {
+	 set filedir=##class(%File).NormalizeFilename(##class(%File).GetDirectory($p($zu(86),"*"))_"mgr\messages.log")
+ }
+ elseif filedir="cpf" {
+	 set filedir=$p($zu(86),"*")
+ }
+ if $zu(140,13,filedir)>0 {  //dir
+	do FileNavigator(filedir)
+ }
+ elseif $zu(140,13,filedir)=-267 { //file
+	do fileView(filedir)
+ }
+ else {  //default dir
+ 	do FileNavigator(##class(%File).GetDirectory())
+ }
  quit
+ // // --------------------------------------- edf
+FileNavigatorErr
+ if $ze["<zexit" 
+ g exit
+ quit
+FileNavigator(filedir)
+ set $zt="FileNavigatorErr"
+ do FileSysDir(filedir)
+ quit
+FileSysDir(filedir)
+ new BSR,BST,DirList,sort
+ S BSR="^%ZAPM.ed.BSbufB",
+ 	BST="FileSys"_$J_"u"_filedir
+ D CCC^%ZAPM.ed.BSC
+ kill @BSR@(BST)
+ merge @BSR@(BST)=^%ZAPM.ed.BSVOL("FileSys")
+ d AddDataCell(1,"   ",filedir)
+ set msgexit=""
+ if filedir'["\",filedir'["/" set msgexit=" - Exit"
+ d AddDataCell(2,"   ","/.."_msgexit)
+ d AddDataCellInfo42(2,2,$lb(filedir))
+  set num=2
+  kill DirList,sort
+  d GetList^%ZAPM.ed.a(filedir,"*.*",.DirList)
+  set dir=""
+   for { set dir=$o(DirList(dir)) quit:dir=""
+	 if $g(DirList(dir,"Type"))="D" set sort(1,dir)=""
+	 else  set sort(2,dir)=""
+   }
+   set n=""
+   for { set n=$o(sort(n)) quit:n=""
+	 set dir=""
+	 for { set dir=$o(sort(n,dir)) quit:dir=""
+		 set num=num+1
+		 set file=$g(DirList(dir,"ItemName"))
+		 set filename=$g(DirList(dir,"Name"))
+		 if $g(DirList(dir,"Type"))="D" set file="/"_file
+		 else  set file=" "_file
+		 d CloneRow(num,2)
+		 d AddDataCell(num,"",file)
+		 d AddDataCellInfo42(num,2,$lb(filedir,filename,$g(DirList(dir,"Type"))))
+	 }
+   }
+ set $P(@BSR@(BST),"@",19)="2,2",  
+   	$P(@BSR@(BST),"@",16)=1
+ set $P(@BSR@(BST),"@",15)=0
+ D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
+FileSysDir2 
+	I R1=27,R2=-1 goto exit
+	set cell=$p(@BSR@(BST,ny,2),"@",42)
+	try {
+		set dir=$lg(cell,1)
+		set filename=$lg(cell,2)
+		set type=$lg(cell,3)
+		set ext=$p(filename,".",*)
+	}
+	catch {
+		do error goto exit
+	}
+	if ny=2 {
+		if dir'["\",dir'["/" zt "exit"
+		set dir=##class(%File).GetDirectory($e(dir,1,*-1))
+		do FileSysDir(dir) d STA^%ZAPM.ed.BST  G FileSysDir2
+	}
+    if type="D" {
+	    do FileSysDir(filename) d STA^%ZAPM.ed.BST  G FileSysDir2
+    }
+ 	if filename'="" {
+	 	s size=$zu(140,1,filename)	if size>100000 	D ErrMsg^%ZAPM.ed.BSXfun(filename_" file is big "_size) g FileSysDir2
+	 	do fileView(filename) d STA^%ZAPM.ed.BST  G FileSysDir2
+ 	}
+  g FileSysDir2
+ quit
+  //zapm "edf d:\!\"
 rou(name="") //--------------------------------------------------------- edr
  new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
  new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
@@ -258,7 +341,7 @@ keys2 write ##class(%Device).GetMnemonicRoutine()
 keys1 write ##class(%Device).GetMnemonicRoutine()
  for  R *R1:999,*R2:0,*R3:0,*R4:0,*R5:0  w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,! if R1=13 quit
   quit
-read(R=999) ;O 0:(:"IS")
+r(R=999) ;O 0:(:"IS")
  R *R1:R,*R2:0,*R3:0,*R4:0,*R5:0  w !,"==="_R1_" "_R2_" "_R3_" "_R4_" "_R5,!
  ;O 0:(:) 
  q 1
@@ -267,6 +350,36 @@ CLR f i=1:1:15 w !,i," ",$$clr^%ZAPM.ed.BS3(i)," Тест ",$$clr^%ZAPM.ed.BS3(0
   quit 
  ///z 
  /*
+   ;The following table shows the $ZU(140) flags recognized by Cache:
+ ;Flag Operation
+ ;  1 Returns file size in bytes.
+ ;  2 Returns modification date/time in $H format
+ ;  3 Returns creation date/time in $H format
+ ;  4 Tests whether the named file exists (returns 0 if yes)
+ ;  5 Deletes the named file
+ ;  6 Renames the file specified in name with the name specified in newname. May move the file
+ ;      to a different location, if the host operating system supports it.
+ ;  7 Returns file attributes as a bit map.
+ ;  8 [unused]
+ ;  9 Creates the directory specified in name.
+ ;  10 Deletes the directory specified in name
+ ;  11 - ???
+ 	12 - Доступность файла
+  #; %mode=2 (write) or 4 (read)
+#define SHDWEROPENFILE(%f,%mode) $s($zu(140,12,%f)<0:"no file",$zu(140,12,%f,%mode)<0:"no access",1:"misc error")
+
+/// Return the free space available for journal files
+ClassMethod GetFreeSpace() As %Integer
+{
+	s altdir=..GetAlternateDirectory()
+	s info=$zu(140,13,altdir),free=$p(info,",")*$p(info,",",4)
+	s curdir=..GetPrimaryDirectory() i curdir=altdir q free
+	s info=$zu(140,13,curdir)
+	q $p(info,",")*$p(info,",",4)+free
+}
+ $zu(140,13,curdir)= -3 не существует
+ 
+ 
  Вход в таблицу по ^NEW  S IYI="^PART(TAB" D NE^%ZAPM.ed.BSN         см 1.  
    c сохранением видео -    или                                             
     картинки               D Table^%ZAPM.ed.BSN(BSR,BST)   возвращает  YES, гд
@@ -319,6 +432,64 @@ CLR f i=1:1:15 w !,i," ",$$clr^%ZAPM.ed.BS3(i)," Тест ",$$clr^%ZAPM.ed.BS3(0
  ///
  /// d Exp2016^%ZAPM.ed.BSC("d:\_proj\_zapm\ENS2016\")
  /// 
+ ;--------------------------------------------------------------------------------------------
+getProcess(i,ff) ;@;sys-proj;получить свойства процесса для Cache' и вернуть их в массиве ff
+ ;@@;^
+ ;i - pid
+ n pr s $zt="getProcessErr^bssys" 
+ s pr=##class(%SYS.ProcessQuery).%OpenId(i)
+ s ff(i,"Routine")=pr.Routine,ff(i,"NameSpace")=pr.NameSpace,ff(i,"GetCPUTime")=pr.GetCPUTime(),ff(i,"State")=pr.State
+ s ff(i,"MemoryUsed")=pr.MemoryUsed,ff(i,"CurrentDevice")=pr.CurrentDevice,ff(i,"CanBeTerminated")=pr.CanBeTerminated
+ s ff(i,"CanBeExamined")=pr.CanBeExamined,ff(i,"CanBeSuspended")=pr.CanBeSuspended,ff(i,"CanReceiveBroadcast")=pr.CanReceiveBroadcast
+ s ff(i,"ClientExecutableName")=pr.ClientExecutableName,ff(i,"ClientIPAddress")=pr.ClientIPAddress,ff(i,"ClientNodeName")=pr.ClientNodeName
+ s ff(i,"CSPSessionID")=pr.CSPSessionID,ff(i,"CurrentLineAndRoutine")=pr.CurrentLineAndRoutine,ff(i,"CurrentSrcLine")=pr.CurrentSrcLine
+ s ff(i,"GlobalReferences")=pr.GlobalReferences,ff(i,"InTransaction")=pr.InTransaction,ff(i,"IsGhost")=pr.IsGhost,ff(i,"JobNumber")=pr.JobNumber
+ s ff(i,"JobType")=pr.JobType,ff(i,"LastGlobalReference")=pr.LastGlobalReference,ff(i,"LicenseUserId")=pr.LicenseUserId,ff(i,"LinesExecuted")=pr.LinesExecuted
+ s ff(i,"Location")=pr.Location,ff(i,"MemoryAllocated")=pr.MemoryAllocated,ff(i,"OpenDevices")=pr.OpenDevices,ff(i,"OSUserName")=pr.OSUserName
+ s ff(i,"PidExternal")=pr.PidExternal,ff(i,"Priority")=pr.Priority,ff(i,"PrivateGlobalBlockCount")=pr.PrivateGlobalBlockCount,ff(i,"StartupClientIPAddress")=pr.StartupClientIPAddress
+ s ff(i,"StartupClientNodeName")=pr.StartupClientNodeName,ff(i,"Switch10")=pr.Switch10,ff(i,"UserInfo")=pr.UserInfo,ff(i,"UserName")=pr.UserName
+ k pr 
+ q
+getVarJob(pid,ff,VariableName,Format) ;@;sys-proj;получить переменные процесса
+ ;@@;^
+ ;pid - идентификатор процесса
+ ; VariableName - Variable to return, or ""=All
+ ;Format - Bit string of how to format the variable data, default = 0 (no formattimg)
+ ;Bit 0 - Format the data with $c() and $lb() notation
+ ;Bit 1 - Embed bolded cursor sequences around $c() and $lb() notation
+ ;ff - массив по ссылке
+ i $zv["GT.M" w "пока не знаю как" q
+ i $zv["Cach" d  q
+ .n %ROWCOUNT,pr,i,J,Rset
+ .Set Rset=##class(%ResultSet).%New("%SYS.ProcessQuery:VariableByPid")
+ .d Rset.Execute(pid,$g(VariableName),$g(Format,0))
+ .;S COL=Rset.GetColumnCount() F J=1:1:COL w " "_Rset.GetColumnName(J) ;Name Value
+ .f i=1:1 q:'Rset.Next()  i Rset.Data("Name")'="" s ff(Rset.Data("Name"))=Rset.Data("Value") ;w !,Rset.Data("Name")_"="_Rset.Data("Value")
+ .d Rset.Close() k Rset
+ q  
+
+
+LockTab(ff) ;собрать Lock ссылки в массив ff со всеми их свойствами
+ i $zv["GT.M" w "пока не знаю как" q
+ i $zv["Cach" d  q
+ .n %ROWCOUNT,pid,pr,i
+ .Set Rset=##class(%ResultSet).%New("%SYS.LockQuery:Detail")
+ .d Rset.Execute("")
+ .;f  q:'Rset.Next()  s i=Rset.Data("LockString") i i'="" s ff(i,"DelKey")=Rset.Data("DelKey"),ff(i,"Owner")=Rset.Data("Owner"),ff(i,"Mode")=Rset.Data("Mode"),ff(i,"Flags")=Rset.Data("Flags"),ff(i,"Counts")=Rset.Data("Counts"),ff(i,"Sfn")=Rset.Data("Sfn"),ff(i,"LockString")=Rset.Data("LockString"),ff(i,"FullReference")=Rset.Data("FullReference"),ff(i,"WaiterPID")=Rset.Data("WaiterPID"),ff(i,"WaiterMode")=Rset.Data("WaiterMode"),ff(i,"WaiterType")=Rset.Data("WaiterType"),ff(i,"RemoteOwner")=Rset.Data("RemoteOwner")
+ .f  q:'Rset.Next()  s i=Rset.Data("DelKey") i i'="" s ff(i,"DelKey")=Rset.Data("DelKey"),ff(i,"Owner")=Rset.Data("Owner"),ff(i,"Mode")=Rset.Data("Mode"),ff(i,"Flags")=Rset.Data("Flags"),ff(i,"Counts")=Rset.Data("Counts"),ff(i,"Sfn")=Rset.Data("Sfn"),ff(i,"LockString")=Rset.Data("LockString"),ff(i,"FullReference")=Rset.Data("FullReference"),ff(i,"WaiterPID")=Rset.Data("WaiterPID"),ff(i,"WaiterMode")=Rset.Data("WaiterMode"),ff(i,"WaiterType")=Rset.Data("WaiterType"),ff(i,"RemoteOwner")=Rset.Data("RemoteOwner")
+ .d Rset.Close() k Rset,pid
+ q  
+LockTabDelKey(fr) ;удалить блокировку
+ n ons,rc s ons=$zu(5) zn "%sys"
+ set rc=##Class(SYS.Lock).DeleteOneLock(fr)
+ zn ons
+ q 
+getProcessErr d be^bsg s $zt=$g(%zt)
+ i $ze["INVALID OREF" w "<br>Процесс уже прекращен!" q  ;ZINVALID OREF
+ w !,"ExecuteRoutineError: ",$$GetZE^bsfun(),!,$c(13,10) 
+ q
+ ;---------------------------------------------------------------------------
+ 
 Exp2016(dir) // 
 	set slash=$select($zversion(1)=3:"/",1:"\")
 	s ed="editor"

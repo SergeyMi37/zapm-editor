@@ -9856,7 +9856,7 @@
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>1,4@1@1@27@-1@-1@6@64@4434,4344,4444</Data>
+<Data>1,4@1@1@27@-1@-1@7@64@4434,4344,4444</Data>
 </Node>
 </Node>
 <Node><Sub>CharHelp</Sub>
@@ -10070,7 +10070,7 @@
 <Data>1,2,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>1,2@1@1@13@-1@-1@1@41@ ЗНАЧЕНИЯ</Data>
+<Data>1,1@1@1@13@-1@-1@1@1@     НАИМЕНОВАНИЯ ПАРАМЕТРОВ</Data>
 </Node>
 </Node>
 <Node><Sub>History</Sub>
@@ -10242,7 +10242,7 @@
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>2,2@2@1@27@-1@-1@2@16@СПИСКИ</Data>
+<Data>2,1@2@1@27@-1@-1@2@1@БАЗЫ ДАННЫХ</Data>
 </Node>
 </Node>
 <Node><Sub>N11</Sub>
@@ -10566,11 +10566,11 @@
 <Data>2,4,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>3,1@1@1@27@-1@-1@5@15@</Data>
+<Data>3,2@1@1@27@-1@-1@5@16@</Data>
 </Node>
 </Node>
 <Node><Sub>N13</Sub>
-<Data>заготовка ...,генерирующая МикроЗапросы@@@@@1@1@1@1@22@80@1@@1@1@@1@@@1@@@@@@@@17@2@@1;6;35;44@@@@@@</Data>
+<Data><![CDATA[заготовка ...,генерирующая МикроЗапросы@@1@@@1@1@1@1@22@80@1@@1@1@@1@@@1@@@@@@@@17@2@@1;6;35;44@@@@@@]]></Data>
 <Node><Sub>1</Sub>
 <Node><Sub>1</Sub>
 <Data>1@1@2@15@@@@@1@2;6;30;45@@@@@Текст в бокови-не сводки</Data>
@@ -10584,7 +10584,7 @@
 <Data>3@1@1@15@@@@@1@2;6;30;46@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>3@16@1@65@@@@@1@2;6;37;41@@@@@@</Data>
+<Data>3@16@1@65@@@@@1@2;6;37;41@@1@@@@</Data>
 </Node>
 </Node>
 <Node><Sub>3</Sub>
@@ -10592,7 +10592,7 @@
 <Data>4@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>4@16@1@65@@@@@1@2;6;37;41@@@@@      Порядок создания МикроЗапросов@</Data>
+<Data>4@16@1@65@@@@@1@2;6;37;41@@1@@@      Порядок создания МикроЗапросов@</Data>
 </Node>
 </Node>
 <Node><Sub>4</Sub>
@@ -10600,7 +10600,7 @@
 <Data>5@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>5@16@1@65@@@@@1@2;6;37;41@@@@@@</Data>
+<Data>5@16@1@65@@@@@1@2;6;37;41@@1@@@@</Data>
 </Node>
 </Node>
 <Node><Sub>5</Sub>
@@ -10608,7 +10608,7 @@
 <Data>6@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>6@16@1@65@@@@@1@2;6;37;41@@@@@ - введите в 1 колонку  Тект в боковине сводки@</Data>
+<Data>6@16@1@65@@@@@1@2;6;37;41@@1@@@ - введите в 1 колонку  Тект в боковине сводки@</Data>
 </Node>
 </Node>
 <Node><Sub>6</Sub>
@@ -10616,7 +10616,7 @@
 <Data>7@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>7@16@1@65@@@@@1@2;6;37;41@@@@@ - введите во 2 колонку Формулы для сводки@</Data>
+<Data>7@16@1@65@@@@@1@2;6;37;41@@1@@@ - введите во 2 колонку Формулы для сводки@</Data>
 </Node>
 </Node>
 <Node><Sub>7</Sub>
@@ -10624,7 +10624,7 @@
 <Data>8@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>8@16@1@65@@@@@1@2;6;37;41@@@@@ - пометьте клавишей &lt;Ins&gt; или + данные и ссылки@</Data>
+<Data>8@16@1@65@@@@@1@2;6;37;41@@1@@@ - пометьте клавишей &lt;Ins&gt; или + данные и ссылки@</Data>
 </Node>
 </Node>
 <Node><Sub>8</Sub>
@@ -10632,7 +10632,7 @@
 <Data>9@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>9@16@1@65@@@@@1@2;6;37;41@@@@@ - установите указатель в колонку данных и F6-СОЗДАТЬ-МикроЗапрос@</Data>
+<Data>9@16@1@65@@@@@1@2;6;37;41@@1@@@ - установите указатель в колонку данных и F6-СОЗДАТЬ-МикроЗапрос@</Data>
 </Node>
 </Node>
 <Node><Sub>9</Sub>
@@ -10640,7 +10640,7 @@
 <Data>10@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>10@16@1@65@@@@@1@2;6;37;41@@@@@ - ответьте на вопросы@</Data>
+<Data>10@16@1@65@@@@@1@2;6;37;41@@1@@@ - ответьте на вопросы@</Data>
 </Node>
 </Node>
 <Node><Sub>10</Sub>
@@ -10648,7 +10648,7 @@
 <Data>11@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>11@16@1@65@@@@@1@2;6;37;41@@@@@ - установите указатель в колонку ссылок и F6-СОЗДАТЬ-МикроЗапрос@</Data>
+<Data>11@16@1@65@@@@@1@2;6;37;41@@1@@@ - установите указатель в колонку ссылок и F6-СОЗДАТЬ-МикроЗапрос@</Data>
 </Node>
 </Node>
 <Node><Sub>11</Sub>
@@ -10656,7 +10656,7 @@
 <Data>12@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>12@16@1@65@@@@@1@2;6;37;41@@@@@ - ответьте на вопросы и ваши М\Запросы готовы@</Data>
+<Data>12@16@1@65@@@@@1@2;6;37;41@@1@@@ - ответьте на вопросы и ваши М\Запросы готовы@</Data>
 </Node>
 </Node>
 <Node><Sub>12</Sub>
@@ -10664,7 +10664,7 @@
 <Data>13@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>13@16@1@65@@@@@1@2;6;37;41@@@@@@</Data>
+<Data>13@16@1@65@@@@@1@2;6;37;41@@1@@@@</Data>
 </Node>
 </Node>
 <Node><Sub>13</Sub>
@@ -10672,7 +10672,7 @@
 <Data>14@1@1@15@@@@@1@2;6;30;46@@@@@@</Data>
 </Node>
 <Node><Sub>2</Sub>
-<Data>14@16@1@65@@@@@1@2;6;37;41@@@@@@</Data>
+<Data>14@16@1@65@@@@@1@2;6;37;41@@1@@@@</Data>
 </Node>
 </Node>
 <Node><Sub>14</Sub>
@@ -10711,7 +10711,7 @@
 <Data>59242,53698,MSW</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>4,2@1@1@13@-1@-1@5@16@</Data>
+<Data><![CDATA[1,2@1@1@13@-1@-1@1@16@  Формулы $$TSVV для сводки в формате:$$TSVV("k2=1234")                                           или :k2=1234]]></Data>
 </Node>
 </Node>
 <Node><Sub>N14</Sub>
@@ -10778,7 +10778,7 @@
 <Data>59242,53728,MSW</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>3,1@1@1@13@-1@-1@3@1@</Data>
+<Data>1,1@1@1@13@-1@-1@1@1@ .. вернуться назад</Data>
 </Node>
 </Node>
 <Node><Sub>N16</Sub>
@@ -10864,7 +10864,7 @@
 <Data>59242,53770,MSW</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>2,2@1@1@13@-1@-1@3@21@</Data>
+<Data>2,2@1@1@27@-1@-1@3@21@</Data>
 </Node>
 </Node>
 <Node><Sub>N17</Sub>
@@ -25672,7 +25672,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>26,1@6@1@13@-1@-1@22@1@</Data>
+<Data>2,2@2@1@13@-1@-1@2@14@</Data>
 </Node>
 </Node>
 <Node><Sub>COLOR</Sub>
@@ -27181,7 +27181,7 @@ IAcgBw==
 <Data>2,4,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>10,4@2@4@27@-1@-1@15@42@\!\</Data>
+<Data>12,4@2@4@27@-1@-1@18@42@n:\infoportal\snx\</Data>
 </Node>
 </Node>
 <Node><Sub>PRNDFLT</Sub>
@@ -27355,7 +27355,7 @@ IAcgBw==
 <Data>59467,71331,MSW</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>14,2@3@2@27@-1@-1@15@37@27,68</Data>
+<Data>15,2@3@2@27@-1@-1@16@37@27,80,27,51,39</Data>
 <Node><Sub>0</Sub>
 <Data>20</Data>
 </Node>
@@ -27768,7 +27768,7 @@ IAcgBw==
 <Data>2,4,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>8,4@2@4@27@-1@-1@12@42@^[&quot;GLAVK&quot;]GlobAll ^[&quot;GLAVK&quot;]GlobMOL ^[&quot;GLAVK&quot;]GlobTAB ^%ZAPM.ed.BSbufS</Data>
+<Data>10,4@2@4@27@-1@-1@14@42@N:\InfoPortal\WebNodes\VV\u\ddr\</Data>
 </Node>
 </Node>
 <Node><Sub>SETUP</Sub>
@@ -43982,7 +43982,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>5,4@1@1@27@-1@-1@9@64@ Ошибка: &lt;FUNCTION&gt;CAL+2^%ZAPM.ed.BSF3</Data>
+<Data>7,4@1@1@27@-1@-1@11@64@</Data>
 </Node>
 </Node>
 <Node><Sub>ARM</Sub>
@@ -44365,7 +44365,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>10,3@1@1@27@-1@-1@10@10@0,INSP,KID,VOI-0-</Data>
+<Data>10,3@1@1@27@-1@-1@14@22@0,INSP,KID,VOI-0-</Data>
 </Node>
 </Node>
 <Node><Sub>CLR</Sub>
@@ -45303,7 +45303,7 @@ IAcgBw==
 <Data>2,4,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>12,4@2@4@27@-1@-1@17@42@^[&quot;GLAVK&quot;]SRV(&quot;Variables&quot;)</Data>
+<Data>16,4@2@4@27@-1@-1@21@42@CacheServer</Data>
 </Node>
 </Node>
 <Node><Sub>DDPYES</Sub>
@@ -45500,7 +45500,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>2,5@2@1@27@-1@-1@2@37@</Data>
+<Data>2,8@2@1@27@-1@-1@2@64@</Data>
 </Node>
 </Node>
 <Node><Sub>DIR2</Sub>
@@ -46807,7 +46807,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>20,3@20@2@27@-1@-1@20@42@D 75^CONVERT</Data>
+<Data>20,4@20@2@27@-1@-1@20@71@СВОДНАЯ ИНФОРМАЦИЯ ПО ВСЕЙ ТАБЛИЦЕ</Data>
 </Node>
 </Node>
 <Node><Sub>INFO_ALL</Sub>
@@ -48475,7 +48475,7 @@ IAcgBw==
 <Data>6@60@1@3@1@@@@1@1;6;37;44@@@@@@</Data>
 </Node>
 <Node><Sub>4</Sub>
-<Data>6@63@1@13@@@1@0@1@2;6;30;46@@@@@MGR,MSW@0</Data>
+<Data>6@63@1@13@@@1@0@1@2;6;30;46@@@@@ Ошибка: &lt;FUNCTION&gt;CAL+2^%ZAPM.ed.BSF3@0</Data>
 </Node>
 <Node><Sub>5</Sub>
 <Data>6@76@1@3@1@@@@1@1;6;37;44@@@@@@</Data>
@@ -48854,7 +48854,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>5,4@1@1@27@-1@-1@11@5@MGR,MSW</Data>
+<Data>5,4@1@1@27@-1@-1@11@64@ Ошибка: &lt;FUNCTION&gt;CAL+2^%ZAPM.ed.BSF3</Data>
 </Node>
 </Node>
 <Node><Sub>KCH0</Sub>
@@ -52992,7 +52992,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>4,2@2@2@27@-1@-1@7@55@0</Data>
+<Data>6,2@2@2@27@-1@-1@9@55@0</Data>
 </Node>
 </Node>
 <Node><Sub>OPout0</Sub>
@@ -53708,7 +53708,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>10,4@2@4@27@-1@-1@18@43@</Data>
+<Data>2,4@2@4@27@-1@-1@4@43@QQQ</Data>
 </Node>
 </Node>
 <Node><Sub>OPout6</Sub>
@@ -54007,7 +54007,7 @@ IAcgBw==
 <Data>2,4,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>10,4@2@4@27@-1@-1@15@42@\!\</Data>
+<Data>12,4@2@4@27@-1@-1@18@42@D:\MSM414</Data>
 </Node>
 </Node>
 <Node><Sub>POutH</Sub>
@@ -54679,7 +54679,7 @@ IAcgBw==
 <Data>2,4,2</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>12,4@2@4@27@-1@-1@17@42@^[&quot;GLAVK&quot;]SRV(&quot;Variables&quot;)</Data>
+<Data>14,4@2@4@27@-1@-1@19@42@33</Data>
 </Node>
 </Node>
 <Node><Sub>SETUP</Sub>
@@ -55908,7 +55908,7 @@ IAcgBw==
 <Data>57828,38179,MS</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>7,4@2@4@27@-1@-1@9@42@D:\MSM\TEST\TESTPASS.OK</Data>
+<Data>9,4@2@4@27@-1@-1@12@42@D:\MSM\TEST\TESTPASS.BAD</Data>
 </Node>
 </Node>
 <Node><Sub>TRIGGER</Sub>
@@ -56308,7 +56308,7 @@ IAcgBw==
 <Data>57511,64074,MS</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>5,4@3@4@13@-1@-1@3@48@</Data>
+<Data>5,4@3@4@13@-1@-1@7@48@</Data>
 </Node>
 </Node>
 <Node><Sub>USERt</Sub>
@@ -57526,6 +57526,34 @@ IAcgBw==
 <Data>1,1@1@1@27@-1@-1@12@11@НЕ ДЕЛАТЬ ПОДМЕНУ СИСТЕМНОЙ ДАТЫ</Data>
 </Node>
 </Node>
+<Node><Sub>FileSys</Sub>
+<Data>ШАБЛОН ДЛЯ МЕНЮ@@@@@1@1@1@1@22@80@@1@@@1@1@@@1@@@@@@@@2@2@@2;6;30;45@@@@@@</Data>
+<Node><Sub>1</Sub>
+<Node><Sub>1</Sub>
+<Data>1@1@1@2@@@@0@1@2;6;30;43@@@@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>1@3@1@77@@@@@1@2;6;30;43@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>2</Sub>
+<Node><Sub>1</Sub>
+<Data>2@1@1@2@@@@0@1@2;6;34;46@@</Data>
+</Node>
+<Node><Sub>2</Sub>
+<Data>2@3@1@77@@@@@1@2;6;34;46@@@@@@</Data>
+</Node>
+</Node>
+<Node><Sub>LST</Sub>
+<Data>65837,77499,m</Data>
+</Node>
+<Node><Sub>PRN</Sub>
+<Data>1#0#0#0#1#1#0</Data>
+</Node>
+<Node><Sub>STA</Sub>
+<Data>2,1@-16@1@27@-1@-1@2@1@ .. назад &lt;Esc&gt;, выбрать пункт меню &lt;Enter&gt;, спецрежимы &lt;Alt-F2&gt;</Data>
+</Node>
+</Node>
 <Node><Sub>INDEX</Sub>
 <Data><![CDATA[ПУНКТЫ МЕНЮ ПОИСКОВОЙ БАЗЫ@@@@@1@1@1@1@22@80@1@@1@@@2@@2,2@1@@@@@1@@@4@2@@@@@@@@@@@@STRUKT^%ZAPM.ed.BSF10]]></Data>
 <Node><Sub>1</Sub>
@@ -57665,7 +57693,7 @@ IAcgBw==
 <Data>58127,37133,MS</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>1,1@1@1@13@-1@-1@1@1@ .. Вернуться назад</Data>
+<Data>2,1@1@1@13@-1@-1@2@1@ ВВЕДИТЕ &lt;F10&gt; ДЛЯ ВЫХОДА С ВЫБОРОМ, - &lt;ESC&gt; - НАЗАД &lt;ENTER&gt; - ВПЕРЕД</Data>
 </Node>
 </Node>
 <Node><Sub>INDEXP</Sub>
@@ -57810,7 +57838,7 @@ IAcgBw==
 <Data>58134,33649,MS</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>2,1@1@1@27@-1@-1@2@1@             ИМЯ ИНДЕКСНОЙ БД</Data>
+<Data>3,2@1@1@27@-1@-1@3@31@</Data>
 </Node>
 </Node>
 <Node><Sub>LISTBUF</Sub>
@@ -57987,7 +58015,7 @@ IAcgBw==
 <Data>58024,51879,MS</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>6,4@4@4@27@-1@-1@8@42@</Data>
+<Data>10,4@4@4@27@-1@-1@14@42@</Data>
 </Node>
 </Node>
 <Node><Sub>MARK</Sub>
@@ -58039,7 +58067,7 @@ IAcgBw==
 <Data>59479,82874,MSW</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>2,2@2@2@27@-1@-1@3@2@</Data>
+<Data>2,2@2@2@13@-1@-1@3@2@</Data>
 </Node>
 </Node>
 <Node><Sub>MARKHELP</Sub>
@@ -58243,7 +58271,7 @@ IAcgBw==
 <Data>58093,49278,MS</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>2,2@2@2@27@-1@-1@7@61@</Data>
+<Data>3,2@2@2@13@-1@-1@9@61@</Data>
 </Node>
 </Node>
 <Node><Sub>MenuPatt</Sub>
@@ -58301,7 +58329,7 @@ IAcgBw==
 <Data>1#0#0#0#1#1#0</Data>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>3,1@3@1@27@-1@-1@3@1@ .. назад &lt;Esc&gt;, выбрать пункт меню &lt;Enter&gt;, спецрежимы &lt;Alt-F2&gt;</Data>
+<Data>4,1@3@1@27@-1@-1@4@1@</Data>
 </Node>
 </Node>
 <Node><Sub>OUTCARD</Sub>
@@ -60022,7 +60050,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>6,2@2@2@13@-1@-1@9@26@</Data>
+<Data>2,2@2@2@13@-1@-1@3@26@</Data>
 </Node>
 </Node>
 <Node><Sub>ZPR3</Sub>
@@ -60182,7 +60210,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>4,2@2@2@13@-1@-1@6@26@</Data>
+<Data>6,2@2@2@13@-1@-1@9@26@</Data>
 </Node>
 </Node>
 <Node><Sub>b</Sub>
@@ -65285,7 +65313,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>11,3@1@3@27@-1@-1@16@40@12</Data>
+<Data>3,3@1@3@27@-1@-1@8@40@10,13</Data>
 </Node>
 </Node>
 <Node><Sub>PrinterSet</Sub>
@@ -65675,7 +65703,7 @@ IAcgBw==
 </Node>
 </Node>
 <Node><Sub>STA</Sub>
-<Data>14,3@2@3@27@-1@-1@16@48@10</Data>
+<Data>12,3@2@3@27@-1@-1@16@48@- ~n -</Data>
 </Node>
 </Node>
 <Node><Sub>PrinterWid</Sub>
