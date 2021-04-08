@@ -116,7 +116,7 @@ MSMHELP(S) ;СПРАВОЧНАЯ СИСТЕМА ПО MSM
  S IYI="^%ZAPM.ed.BSbufB,MsmHelp%BS*.*"_$P D NE^%ZAPM.ed.BSN Q
  Q
 DOSTXT(FN) set bsr="^%ZAPM.ed.BSbufB"
- set bst="View%BS*.*"_$G(%BS(3),$P)
+ set bst="ViewFileJob"_$j_"u"_$G(%BS(3),$P)
  I '$$View(FN,bsr,bst,1) Q
  set $p(@bsr@(bst),"@",15)=0
  S IYI=bsr_","_bst D NE^%ZAPM.ed.BSN 

@@ -1508,12 +1508,14 @@ Z N N,I,II,III,BSR,BST,NSP,APP
  I $D(%BS(39))[0 W !,"   ошибка доступа при регистрации" H 2 Q
  S APP=@%BS(18) ;I $O(@APP@("-0",""))'="" S %BS(1)=$O(@APP@("-0",""))
  ;S %BS(1)="00000100001101001100" //DFLT
+ ;---------------------------------------------------------
 NSP ;СПИСОК ИМЕННОВАННЫХ ОБЛАСТЕЙ
  ;S NSPL=$$NS^%ZAPM.ed.BSCi("NAV",$G(%BS(39))) 
  S NSPL=$$NS^%ZAPM.ed.BSCp()  ///z
  I NSPL=""  D ErrMsg^%ZAPM.ed.BSXfun("Нет доступных областей !") G EXIT
- S BSR="^%ZAPM.ed.BSbufB",BST="NameSpace"_$G(%BS(3),$P)_$J_"u"_%BS(15)
- D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST)))
+ S BSR="^%ZAPM.ed.BSbufB",BST="NameSpace"_$G(%BS(3),$P)_"Job"_$J_"u"_%BS(15)
+ ;D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST)))
+ merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
  S $P(@BSR@(BST,1,1),"@",15)="  NameSpaces in   '"_$ZU(110)_"'",$P(@BSR@(BST,1,2),"@",15)=$ZV_" "_$$ver()_") № "_$$n()
  S $P(@BSR@(BST,2,1),"@",15)=" ..",$P(@BSR@(BST,2,2),"@",15)=" ...Exit"
  F I=1:1:$L(NSPL,$C(1)) i $P(NSPL,$C(1),I)'=""  D
@@ -1523,8 +1525,9 @@ NSP ;СПИСОК ИМЕННОВАННЫХ ОБЛАСТЕЙ
  S $P(@BSR@(BST),"@",41)="FKEY^%ZAPM.ed.BSC"
  S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP1"
  D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST I R1=27,R2=-1 G EXIT
+NSP2
  I ny=2 G EXIT
- I $G(R1)=13,$G(R2)=-1 D GLO($P(@BSR@(BST,ny,1),"@",15)),MGR^%ZAPM.ed.BS G NSP
+ I $G(R1)=13,$G(R2)=-1 D GLO($P(@BSR@(BST,ny,1),"@",15)),MGR^%ZAPM.ed.BS d STA^%ZAPM.ed.BST G NSP2
  Q
 REC S YY=15 W /CUP(YY,1),$ZV,/CUP(YY+1,1),"%BS ",$$ver,/CUP(YY+2,1),$$WEEKEND^%ZAPM.ed.BSsFUNR(1,$$h^%ZAPM.ed.BS3()),"  ",$$ESDAY^%ZAPM.ed.BSsFUNR(6,$$h^%ZAPM.ed.BS3()),/CUP(YY+3,1),"Server : ",$ZU(110)
  Q       
@@ -1563,6 +1566,7 @@ GTKc(U,BSR,BST,EDIT,MODE,BSLOGIN,BSSES) //проверка на соответс
  Q
 EMUL I $G(%BS(12))'="" s %BS(18)="%BS(39)",%BS(37)=%BS(12),%BS(39,%BS(12),"*")="" ;ЭМУЛЯЦИЯ БД MSM
  Q
+ ;-------------------------------------------------------------------------
 GLO(NAMESP) ;СПИСОК ГЛОБАЛЕЙ
  I '$$CNS^%ZAPM.ed.BSCp(NAMESP) D ErrMsg^%ZAPM.ed.BSXfun(NAMESP_" НЕДОСТУПЕН !") Q
  N TIPPA,I,II,BSR,BST,COM,%NAM,IntFKR ;,GLOBALIST
@@ -1573,8 +1577,10 @@ GLOBALS
  //все раздлы
  S TIPPA="BKMP ;"
  I '$D(GLOBALIST(NAMESP)) S GLOBALIST(NAMESP)=$$BSR^%ZAPM.ed.BSCi(NAMESP,,%BS(39),TIPPA) I GLOBALIST(NAMESP)="~" W !,"В доступе отказано" H 3 Q
- S BSR="^%ZAPM.ed.BSbufB",BST="GlobaList"_$G(%BS(3),$P)_$J_"u"_%BS(15) D CCC
- D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST))) S $P(@BSR@(BST,1,1),"@",15)="List of Globals in "_NAMESP,$P(@BSR@(BST,1,2),"@",15)=">>> Comments: № "_$$n()
+ S BSR="^%ZAPM.ed.BSbufB",BST="GlobaList"_$G(%BS(3),$P)_"Job"_$J_"u"_%BS(15) D CCC
+ ;D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST)))
+  merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
+ S $P(@BSR@(BST,1,1),"@",15)="List of Globals in "_NAMESP,$P(@BSR@(BST,1,2),"@",15)=">>> Comments: № "_$$n()
  S $P(@BSR@(BST,2,1),"@",15)=" ^new",$P(@BSR@(BST,2,2),"@",15)=" ...create new partition" ///z
  F I=1:1 Q:$P(GLOBALIST(NAMESP),$C(1),I)=""  D
  .S @BSR@(BST,I+2,1)=@BSR@(BST,2,1),@BSR@(BST,I+2,2)=@BSR@(BST,2,2)
@@ -1586,9 +1592,11 @@ GLOBALS
  	$P(@BSR@(BST),"@",16)=1
  S $P(@BSR@(BST),"@",41)="FKEYPART^%ZAPM.ed.BSC"
  S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
- D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST I R1=27,R2=-1 Q
+ D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
+GLO2
+ I R1=27,R2=-1 Q
  I ny=2 S li="" D NEWRAZD^%ZAPM.ed.BS1 K GLOBALIST(NAMESP) G GLOBALS ;НОВЫЙ РАЗДЕЛ
- D PART($P(@BSR@(BST,ny,1),"@",15),$E(d,1,4)) G GLOBALS
+ D PART($P(@BSR@(BST,ny,1),"@",15),$E(d,1,4)) d STA^%ZAPM.ed.BST G GLO2
  Q
 INTGLO S %NAM=$P(@BSR@(BST,ny,1),"@",15),IntFKR=1 G IntFKR^%ZAPM.ed.BS2 ;ФУНКЦИОНАЛЬНЫЕ КЛАВИШИ
 FKEY ;ПРЕДОБРАБОТКА NAMESPACE
@@ -1613,6 +1621,7 @@ ALLERR I $ZE["<ZINRP" S ls="ПРЕРВАНО" D ER^%ZAPM.ed.BSF(ls) S R1=27,R2=-
 ALLE D ER^%ZAPM.ed.BSF(ls) W $$atr^%ZAPM.ed.BS3(0) D EXIT G KL
 ZE() Q $ZE_". "_$$ErrSay^%ZAPM.ed.BSF8($ZE)
 PART(PARTITION,TIPP) ;СПИСОК ГЛОБАЛЕЙ
+ new BSR,BST
  I TIPP="PART" D PARTIT^%ZAPM.ed.BSF12(PARTITION) Q
  D ^%ZAPM.ed.BSMSMG(PARTITION)
  Q
@@ -19385,7 +19394,7 @@ MSMHELP(S) ;СПРАВОЧНАЯ СИСТЕМА ПО MSM
  S IYI="^%ZAPM.ed.BSbufB,MsmHelp%BS*.*"_$P D NE^%ZAPM.ed.BSN Q
  Q
 DOSTXT(FN) set bsr="^%ZAPM.ed.BSbufB"
- set bst="View%BS*.*"_$G(%BS(3),$P)
+ set bst="ViewFileJob"_$j_"u"_$G(%BS(3),$P)
  I '$$View(FN,bsr,bst,1) Q
  set $p(@bsr@(bst),"@",15)=0
  S IYI=bsr_","_bst D NE^%ZAPM.ed.BSN 
@@ -33581,14 +33590,12 @@ nszpm  ;Navigator for namespace and zpm modules --------------------------------
  do resizeTerm
  new
  set $ztrap="error"
+ do ClearCurrJobs
  D CLr^%ZAPM.ed.BSF4,CCC^%ZAPM.ed.BSC
  S %BS(12)="m",%BS(39)="NAV"
  S NSPL=$$NS^%ZAPM.ed.BSCp()  //get list namespace
  I NSPL=""  D ErrMsg^%ZAPM.ed.BSXfun("No namespaces available !") G exit
- Set BSR="^%ZAPM.ed.BSbufB",
- 	BST="NameSpace"_$G(%BS(3),$P)_$J_"u"_%BS(15)
- Kill @BSR@(BST)
- merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
+ do TabNew("NameSpace",$na(^%ZAPM.ed.BSS("ALINS")),$zts)
  S $P(@BSR@(BST,1,1),"@",15)=" ZPM modules in "_$ZU(110),
    $P(@BSR@(BST,1,2),"@",15)=$ZV,
    $P(@BSR@(BST,2,1),"@",15)=" ..",
@@ -33641,6 +33648,13 @@ ns1 ;set R1=$P(YES,"@",4),R2=$P(YES,"@",5),R3=$P(YES,"@",6)
  I ny=2 G exit
  I $G(R1)=13,$G(R2)=-1 D mode(@BSR@(BST,ny,nx)) d STA^%ZAPM.ed.BST  G ns1
  Q
+TabNew(name="",from,suff="")
+  Set BSR="^%ZAPM.ed.BSbufB",
+ 	BST=name_"Job"_$J_"u"_$g(%BS(15))_$tr(suff,".,")
+ Kill @BSR@(BST)
+ merge @BSR@(BST)=@from
+ D CCC^%ZAPM.ed.BSC
+ quit
 InsertTab(p,t,tab,fromY,fromX=0,template="2,2") 
   new ny,nx,y,x,xx,yy,temp
   ;zw tab r r
@@ -33664,10 +33678,7 @@ mode(cell) ;List zpm modules
  	set NAMESP=$lg(list,1)
  	zn NAMESP
  new BSR,BST
- S BSR="^%ZAPM.ed.BSbufB",
- 	BST="GlobaList"_$G(%BS(3),$P)_$J_"u"_%BS(15) 
- D CCC^%ZAPM.ed.BSC
- merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
+  do TabNew("GlobaList",$na(^%ZAPM.ed.BSS("ALINS")),NAMESP_$zts)
  if '$d(Moduls(NAMESP)) do ##class(%ZAPM.ext.zpm).GetListModule(,.Mod,0) merge Moduls(NAMESP)=Mod
  if $lg(list,3)'="" {
 	 set module=$lg(list,2)
@@ -33697,6 +33708,8 @@ mode(cell) ;List zpm modules
 		 for { set dir=$o(DirList(dir)) quit:dir=""
 			 set file=$g(DirList(dir,"ItemName"))
 			 set filename=$g(DirList(dir,"Name"))
+			 if $g(DirList(dir,"Type"))="D" continue
+			 if '$$isExtEnable(filename) continue
 			 set num=num+1
 			 d CloneRow(num,2)
 			 d AddDataCell(num,"",file)
@@ -33741,8 +33754,17 @@ error D ErrMsg^%ZAPM.ed.BSXfun("Error: "_$ze)
  quit
 exit d clear write #
  quit
+ClearCurrJobs
+ new i
+ set i=""
+ for {set i=$o(^%ZAPM.ed.BSbufB(i)) quit:i=""
+ 	set job=$p($p(i,"Job",2),"u",1)
+ 	if job=$j Kill ^%ZAPM.ed.BSbufB(i)
+ }
+ quit
  // --------------------------------------- edfv
 fileView(file) new (file)
+ if '$$isExtEnable(file,.msg) D ErrMsg^%ZAPM.ed.BSXfun("Error load: "_$GET(msg)) quit
  D DOSTXT^%ZAPM.ed.BSDOS2(file)
  quit
  // --------------------------------------- edfc
@@ -33753,38 +33775,53 @@ fileCat(file) new (file)
  // --------------------------------------- edf
 FileSys(filedir) 
  if filedir="mess" {
-	 set filedir=##class(%File).NormalizeFilename(##class(%File).GetDirectory($p($zu(86),"*"))_"mgr\messages.log")
+	 set filedir=##class(%File).NormalizeFilename("messages.log",##class(%File).GetDirectory($p($zu(86),"*"))_"mgr")
  }
  elseif filedir="cpf" {
 	 set filedir=$p($zu(86),"*")
  }
- if $zu(140,13,filedir)>0 {  //dir
+ elseif filedir="" {
+	 set parent=##class(%File).GetDirectory()
+	 do FileNavigator(parent)
+	 quit
+ }
+ 
+ set flag=$zu(140,1,filedir)
+ if flag=-2 D ErrMsg^%ZAPM.ed.BSXfun("file is not exist "_filedir) quit  //not exist
+ set slash=$s($zversion(1)=3:"/",1:"\")
+ if flag>0,$e(filedir,*)=slash {  //dir
 	do FileNavigator(filedir)
  }
- elseif $zu(140,13,filedir)=-267 { //file
+ elseif flag>0 { //file
 	do fileView(filedir)
  }
- else {  //default dir
- 	do FileNavigator(##class(%File).GetDirectory())
- }
+ 
  quit
+ // write $$isExtEnable^%ZAPM.ed.a("/opt2/isc/iris/mgr/messages.log",.msg)
+isExtEnable(file,msg) new ext,size
+ set slash=$s($zversion(1)=3:"/",1:"\")
+ set ext=$p(file,slash,*)
+ if ext'["." set ext=""
+ else  set ext=$p(file,".",*)   
+ if ext'="",'$lf($lb("dockerignore","gitattributes","gitignore","script","txt","md","json","yml","xml","sh","cls","mac","inc","csv","ini","html","cpf","log","key"),ext) set msg="forbidden extension format '"_ext_"'" quit 0
+ set size=$zu(140,1,file)
+ if size>2500000 set msg="the file is too big" quit 0
+ quit 1
  // // --------------------------------------- edf
 FileNavigatorErr
  if $ze["<zexit" 
+ else  D ErrMsg^%ZAPM.ed.BSXfun($ze)
  g exit
  quit
 FileNavigator(filedir)
+ do ClearCurrJobs
  set $zt="FileNavigatorErr"
- do FileSysDir(filedir)
+ ;do FileSysDir(filedir)
  quit
 FileSysDir(filedir)
  new BSR,BST,DirList,sort
- S BSR="^%ZAPM.ed.BSbufB",
- 	BST="FileSys"_$J_"u"_filedir
- D CCC^%ZAPM.ed.BSC
- kill @BSR@(BST)
- merge @BSR@(BST)=^%ZAPM.ed.BSVOL("FileSys")
- d AddDataCell(1,"   ",filedir)
+ do TabNew("FileSys",$na(^%ZAPM.ed.BSVOL("FileSys")),$zts)
+  do AddDataCell(1,"   ",filedir)
  set msgexit=""
  if filedir'["\",filedir'["/" set msgexit=" - Exit"
  d AddDataCell(2,"   ","/.."_msgexit)
@@ -33836,7 +33873,7 @@ FileSysDir2
 	    do FileSysDir(filename) d STA^%ZAPM.ed.BST  G FileSysDir2
     }
  	if filename'="" {
-	 	s size=$zu(140,1,filename)	if size>100000 	D ErrMsg^%ZAPM.ed.BSXfun(filename_" file is big "_size) g FileSysDir2
+	 	if '$$isExtEnable(filename,.msg) D ErrMsg^%ZAPM.ed.BSXfun("Error load: "_$GET(msg)) g FileSysDir2
 	 	do fileView(filename) d STA^%ZAPM.ed.BST  G FileSysDir2
  	}
   g FileSysDir2
@@ -34150,6 +34187,11 @@ DrawText(gn)
   }
  write !,"</pre>"
  quit
-
+ 
+ ;d ^PERFMON 
+ ;Fot INI
+setversion
+ do ##class(%ZAPM.ext.zpm).SetModuleVersion("zapm-editor","^%ZAPM.settings","1.0.0")
+ quit
 ]]></Routine>
 </Export>

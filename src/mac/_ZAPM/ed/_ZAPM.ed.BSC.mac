@@ -27,12 +27,14 @@ Z N N,I,II,III,BSR,BST,NSP,APP
  I $D(%BS(39))[0 W !,"   ошибка доступа при регистрации" H 2 Q
  S APP=@%BS(18) ;I $O(@APP@("-0",""))'="" S %BS(1)=$O(@APP@("-0",""))
  ;S %BS(1)="00000100001101001100" //DFLT
+ ;---------------------------------------------------------
 NSP ;СПИСОК ИМЕННОВАННЫХ ОБЛАСТЕЙ
  ;S NSPL=$$NS^%ZAPM.ed.BSCi("NAV",$G(%BS(39))) 
  S NSPL=$$NS^%ZAPM.ed.BSCp()  ///z
  I NSPL=""  D ErrMsg^%ZAPM.ed.BSXfun("Нет доступных областей !") G EXIT
- S BSR="^%ZAPM.ed.BSbufB",BST="NameSpace"_$G(%BS(3),$P)_$J_"u"_%BS(15)
- D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST)))
+ S BSR="^%ZAPM.ed.BSbufB",BST="NameSpace"_$G(%BS(3),$P)_"Job"_$J_"u"_%BS(15)
+ ;D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST)))
+ merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
  S $P(@BSR@(BST,1,1),"@",15)="  NameSpaces in   '"_$ZU(110)_"'",$P(@BSR@(BST,1,2),"@",15)=$ZV_" "_$$ver()_") № "_$$n()
  S $P(@BSR@(BST,2,1),"@",15)=" ..",$P(@BSR@(BST,2,2),"@",15)=" ...Exit"
  F I=1:1:$L(NSPL,$C(1)) i $P(NSPL,$C(1),I)'=""  D
@@ -42,8 +44,9 @@ NSP ;СПИСОК ИМЕННОВАННЫХ ОБЛАСТЕЙ
  S $P(@BSR@(BST),"@",41)="FKEY^%ZAPM.ed.BSC"
  S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP1"
  D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST I R1=27,R2=-1 G EXIT
+NSP2
  I ny=2 G EXIT
- I $G(R1)=13,$G(R2)=-1 D GLO($P(@BSR@(BST,ny,1),"@",15)),MGR^%ZAPM.ed.BS G NSP
+ I $G(R1)=13,$G(R2)=-1 D GLO($P(@BSR@(BST,ny,1),"@",15)),MGR^%ZAPM.ed.BS d STA^%ZAPM.ed.BST G NSP2
  Q
 REC S YY=15 W /CUP(YY,1),$ZV,/CUP(YY+1,1),"%BS ",$$ver,/CUP(YY+2,1),$$WEEKEND^%ZAPM.ed.BSsFUNR(1,$$h^%ZAPM.ed.BS3()),"  ",$$ESDAY^%ZAPM.ed.BSsFUNR(6,$$h^%ZAPM.ed.BS3()),/CUP(YY+3,1),"Server : ",$ZU(110)
  Q       
@@ -82,6 +85,7 @@ GTKc(U,BSR,BST,EDIT,MODE,BSLOGIN,BSSES) //проверка на соответс
  Q
 EMUL I $G(%BS(12))'="" s %BS(18)="%BS(39)",%BS(37)=%BS(12),%BS(39,%BS(12),"*")="" ;ЭМУЛЯЦИЯ БД MSM
  Q
+ ;-------------------------------------------------------------------------
 GLO(NAMESP) ;СПИСОК ГЛОБАЛЕЙ
  I '$$CNS^%ZAPM.ed.BSCp(NAMESP) D ErrMsg^%ZAPM.ed.BSXfun(NAMESP_" НЕДОСТУПЕН !") Q
  N TIPPA,I,II,BSR,BST,COM,%NAM,IntFKR ;,GLOBALIST
@@ -92,8 +96,10 @@ GLOBALS
  //все раздлы
  S TIPPA="BKMP ;"
  I '$D(GLOBALIST(NAMESP)) S GLOBALIST(NAMESP)=$$BSR^%ZAPM.ed.BSCi(NAMESP,,%BS(39),TIPPA) I GLOBALIST(NAMESP)="~" W !,"В доступе отказано" H 3 Q
- S BSR="^%ZAPM.ed.BSbufB",BST="GlobaList"_$G(%BS(3),$P)_$J_"u"_%BS(15) D CCC
- D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST))) S $P(@BSR@(BST,1,1),"@",15)="List of Globals in "_NAMESP,$P(@BSR@(BST,1,2),"@",15)=">>> Comments: № "_$$n()
+ S BSR="^%ZAPM.ed.BSbufB",BST="GlobaList"_$G(%BS(3),$P)_"Job"_$J_"u"_%BS(15) D CCC
+ ;D Copy^%ZAPM.ed.BSF8("^%ZAPM.ed.BSS(""ALINS"")",$NA(@BSR@(BST)))
+  merge @BSR@(BST)=^%ZAPM.ed.BSS("ALINS")
+ S $P(@BSR@(BST,1,1),"@",15)="List of Globals in "_NAMESP,$P(@BSR@(BST,1,2),"@",15)=">>> Comments: № "_$$n()
  S $P(@BSR@(BST,2,1),"@",15)=" ^new",$P(@BSR@(BST,2,2),"@",15)=" ...create new partition" ///z
  F I=1:1 Q:$P(GLOBALIST(NAMESP),$C(1),I)=""  D
  .S @BSR@(BST,I+2,1)=@BSR@(BST,2,1),@BSR@(BST,I+2,2)=@BSR@(BST,2,2)
@@ -105,9 +111,11 @@ GLOBALS
  	$P(@BSR@(BST),"@",16)=1
  S $P(@BSR@(BST),"@",41)="FKEYPART^%ZAPM.ed.BSC"
  S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP2"
- D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST I R1=27,R2=-1 Q
+ D TAB^%ZAPM.ed.BSF1,^%ZAPM.ed.BST 
+GLO2
+ I R1=27,R2=-1 Q
  I ny=2 S li="" D NEWRAZD^%ZAPM.ed.BS1 K GLOBALIST(NAMESP) G GLOBALS ;НОВЫЙ РАЗДЕЛ
- D PART($P(@BSR@(BST,ny,1),"@",15),$E(d,1,4)) G GLOBALS
+ D PART($P(@BSR@(BST,ny,1),"@",15),$E(d,1,4)) d STA^%ZAPM.ed.BST G GLO2
  Q
 INTGLO S %NAM=$P(@BSR@(BST,ny,1),"@",15),IntFKR=1 G IntFKR^%ZAPM.ed.BS2 ;ФУНКЦИОНАЛЬНЫЕ КЛАВИШИ
 FKEY ;ПРЕДОБРАБОТКА NAMESPACE
@@ -132,6 +140,7 @@ ALLERR I $ZE["<ZINRP" S ls="ПРЕРВАНО" D ER^%ZAPM.ed.BSF(ls) S R1=27,R2=-
 ALLE D ER^%ZAPM.ed.BSF(ls) W $$atr^%ZAPM.ed.BS3(0) D EXIT G KL
 ZE() Q $ZE_". "_$$ErrSay^%ZAPM.ed.BSF8($ZE)
 PART(PARTITION,TIPP) ;СПИСОК ГЛОБАЛЕЙ
+ new BSR,BST
  I TIPP="PART" D PARTIT^%ZAPM.ed.BSF12(PARTITION) Q
  D ^%ZAPM.ed.BSMSMG(PARTITION)
  Q
