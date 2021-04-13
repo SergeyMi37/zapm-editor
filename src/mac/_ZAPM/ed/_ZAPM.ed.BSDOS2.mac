@@ -61,8 +61,8 @@ FILE Q:'$D(%IN)  D SI^%ZAPM.ed.BSN N (%BS,vl,%FN,%IN) S %SDEV="HISTORY" D  S:'$D
  .I %IN=1 D DOSREAD^%ZAPM.ed.BSS1 Q
 View(%File,BSr,BSt,P,OT,DO) N %DEV,%FN,i,UP,t1,ii ;ФАЙЛ В МАССИВ
  ;S %File=$$AddFile(%File)
- I '$G(P),BSt["View*",($P(d,"-",2)>$$SizeFile(1)) D ErrMsg^%ZAPM.ed.BSXfun("ФАЙЛ "_%File_" ДЛЯ ПРОСМОТРА СЛИШКОМ ВЕЛИК !") Q 0
- I '$G(P),BSt["Edit*",($P(d,"-",2)>$$SizeFile(2)) D ErrMsg^%ZAPM.ed.BSXfun("ФАЙЛ "_%File_" ДЛЯ РЕДАКТИРОВАНИЯ СЛИШКОМ ВЕЛИК !") Q 0
+ ;I '$G(P),BSt["View*",($P(d,"-",2)>$$SizeFile(1)) D ErrMsg^%ZAPM.ed.BSXfun("ФАЙЛ "_%File_" ДЛЯ ПРОСМОТРА СЛИШКОМ ВЕЛИК !") Q 0
+ ;I '$G(P),BSt["Edit*",($P(d,"-",2)>$$SizeFile(2)) D ErrMsg^%ZAPM.ed.BSXfun("ФАЙЛ "_%File_" ДЛЯ РЕДАКТИРОВАНИЯ СЛИШКОМ ВЕЛИК !") Q 0
  S %FN=%File 
  ;I $ZV["Cach"||($ZV["IRIS") Q:$$Open^%ZAPM.ed.BSCF1(%FN,"R")<0 0 S %DEV=DOS G Vi
  ;F %DEV=51:1:54 O %DEV::0 Q:$T
@@ -71,7 +71,10 @@ View(%File,BSr,BSt,P,OT,DO) N %DEV,%FN,i,UP,t1,ii ;ФАЙЛ В МАССИВ
  ;O %DEV:(%FN:"R") U %DEV I $ZA<0 U 0 S ls=" Ошибка откpытия файла "_%FN D ON Q 0
 Vi S %zT=$ZT,$ZT="ERFILE^%ZAPM.ed.BSDOS2"
  U 0 S UP="" F i=0:1:8,10:1:31 S UP=UP_$C(i)
- K @(BSr_"(BSt)") S $P(@$ZR,"@")=%File,$P(@$ZR,"@",17)=5
+ K @(BSr_"(BSt)") 
+ S $P(@$ZR,"@")=$tr(%File,"@"),
+ 	$P(@$ZR,"@",17)=5 //text
+ set $P(@$ZR,"@",47)=$lb(%File) //filename save
  set file=%FN
  set f=##class(%File).%New(file)
  set ok=f.Open("RSK")     if 'ok do f.%Close() Q ok
@@ -118,7 +121,7 @@ MSMHELP(S) ;СПРАВОЧНАЯ СИСТЕМА ПО MSM
 DOSTXT(FN) set bsr="^%ZAPM.ed.BSbufB"
  set bst="ViewFileJob"_$j_"u"_$G(%BS(3),$P)
  I '$$View(FN,bsr,bst,1) Q
- set $p(@bsr@(bst),"@",15)=0
+ set $p(@bsr@(bst),"@",15)=1 ;f-keys
  S IYI=bsr_","_bst D NE^%ZAPM.ed.BSN 
  Q
 DOCBS(BS,ST) I '$$View($P($G(^%ZAPM.ed.BSETUP("PATH",ST,4),$G(^%ZAPM.ed.BSS("PATH",ST,4))),"@",15)_BS,"^%ZAPM.ed.BSbufB","Help%BS*.*"_$G(%BS(3),$P)_$J_"u1",1) Q

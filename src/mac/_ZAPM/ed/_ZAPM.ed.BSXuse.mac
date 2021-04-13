@@ -8,17 +8,17 @@ Search(Next,Repl) i $D(Repl),'Edit d NoJob^%ZAPM.ed.BSXFkey q  ; поиск в �
  n Method,SubS,Base i Edit x PutS
  s Base=$$FindBase(),Method=$G(@Base),SubS=$G(@Base@(0))
  i 'Next d  i YES<1 q
- . s Tmp="Введите стpоку для поиска "_$S($D(Repl):"и замены :",1:":")
+ . s Tmp="Enter string to search "_$S($D(Repl):"and replace :",1:":")
  . s SubS=$$LineEdit^%ZAPM.ed.BSXfun(SubS,Tmp,"",Win(19),"",$$FindHist())
  . s:SubS="" YES=0 q:'YES  i $G(@Base@(0))'=SubS s @Base@(0)=SubS
  . i $D(Repl) d  i 'YES q
- .. s Tmp="Заменяем '"_SubS_"' на :"
+ .. s Tmp="Replace '"_SubS_"' into :"
  .. s Repl=$$LineEdit^%ZAPM.ed.BSXfun($G(@Base@(1)),Tmp,"",Win(19),"",$$FindHist())
  .. i YES i $G(@Base@(1))'=Repl s @Base@(1)=Repl
  . i $L(Method)'=5 s Method=$P(^%ZAPM.ed.BSX("Search"),"@")
  . s $E(Method,5)="1"
- . i '$D(Repl) s YES=" Ищем контекст '"_SubS_"' "
- . e  s YES=" Заменяем контекст '"_SubS_"' на '"_Repl_"' "
+ . i '$D(Repl) s YES=" Find the context '"_SubS_"' "
+ . e  s YES=" Replace the context '"_SubS_"' with '"_Repl_"' "
  . d SetMetod,Yes^%ZAPM.ed.BSXfun($$PoiskStr(Method),1,YES) i YES<0 q
  . i 'YES d  i 'YES q
  .. s %GO=1 f  d  q:YES'<0  x "s $E(Method,"_%GO

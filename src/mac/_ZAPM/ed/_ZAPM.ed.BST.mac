@@ -29,7 +29,7 @@ WRITE I $G(@BSR@(BST,"RSM"))'="" D XM^%ZAPM.ed.BSre(@$ZR) ;ВЫПОЛНИТЬ К
 Wr I $P(B,"@",41)'="" S R1=333 D Pred^%ZAPM.ed.BSF12($P(B,"@",41)) ;ПРЕДОБР.ПОСЛЕ ВЫЧИСЛЕНИЯ
  D TIT
 WRI I $ZV'["Cach"&&($ZV'["IRIS") ;U 0:(0::::#10080)
- S ls="ЗАГРУЗКА" D WAITS^%ZAPM.ed.BSF2 D W,MR K %VDB S $ZT=$G(%zT) G ^%ZAPM.ed.BSTM
+ S ls="Load" D WAITS^%ZAPM.ed.BSF2 D W,MR K %VDB S $ZT=$G(%zT) G ^%ZAPM.ed.BSTM
 VW D VT,W Q
 GW D GT,W Q
 TW D VT,GT,W Q

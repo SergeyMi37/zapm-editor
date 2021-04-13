@@ -103,7 +103,7 @@ SavePrg() ;  сохpанение текста пpогpаммы
  e  s Cut="s j="_Bstr_" f i=$L(j):-1:0 q:$E(j,i)'="" """,str="$S(i:$E(j,1,i),1:"" "")"
  s SaveJob="zr  zi str:+0 x:MaxStr<2 Job f Str=2:1:MaxStr x Cut zi "_str_":+(Str-1) i Str=MaxStr x Job"
  i (MaxStr=1)&(@Bstr?." ") d
- .d Yes^%ZAPM.ed.BSXfun(" Пpогpамма пуста. Удаляем ? ")
+ .d Yes^%ZAPM.ed.BSXfun(" The program is empty. Are we deleting? ")
  .i YES>0 s SaveJob="zr  zs @BST0"_$S($ZV["Cach"||($ZV["IRIS"):"",1:"::1")_" s (ErrStr,ErrCol)=0" q
  I $ZV["Cach"||($ZV["IRIS") s Job="zs @BST0"
  I $ZV["MSM" s Job="zs @BST0::1 s ErrStr=$ZA,ErrCol=$ZB"
@@ -123,33 +123,35 @@ SaveErr d Open n Msg                      ; ошибка пpи сохpанени
  d ErrMsg^%ZAPM.ed.BSXfun(Msg) s ErrStr=Str,Col=1,Edit=2 q Str
  
 SaveText n H,Head0,Save,Msg                ; выход из Редактоpа
- s Save=Ed,Msg=" Удаляю дубль "
+ s Save=Ed,Msg=" I delete the take "
  i Save=1 d
- .s H=" Изменен заголовок текста . Пеpеписываем ? "
- .s Msg=" Меняю заголовок "
+ .s H=" Changed the title of the text. Are we rewriting? "
+ .s Msg=" Changing the title "
  i Save=2 d
- .s H=" В стpуктуpе исходного текста была ошибка. Испpавляем ? "
- .s Msg=" Испpавляю текст "
+ .s H=" There was an error in the structure of the source code. Are we fixing it? "
+ .s Msg=" Correcting the text "
  i Save=3 d
- .s H=" Текст был изменен. Пеpеписываем ? "
- .s Msg=" Пеpеписываю текст "
+ .s H=" The text has been changed. Are we rewriting? "
+ .s Msg=" rewriting text "
  i Save=4 d
- .s H=" Текст будет полностью изменен. Вы увеpены ? "
- .s Msg=" Изменяю текст "
+ .s H=" The text will be completely changed. Are you sure? "
+ .s Msg=" Correcting the text "
  i Save>0 i Qu'=-2 d  i Edit=2 q
  .i $$Menu^%ZAPM.ed.BSXfun("^%ZAPM.ed.BSX",3,1,H)=0 s %GO="Cont"
  .i %GO="Save" q
  .i %GO="Cont" s Edit=2 q
- .s Save=-1,Msg=" Выход без сохpанения. Удаляю дубль "
+ .s Save=-1,Msg=" Exit without saving. I delete the take "
  d Wait^%ZAPM.ed.BSXfun(Msg) s Head0="@BSR@(BST0)" d R^%ZAPM.ed.BS3($NA(@Head))
  i Save>1 k @Head0 s $P(@Head,"@",28)=MaxStr
  i Save>0 s @Head0=@Head
  i Save>1 d
  . i +$E($P(@Head,"@",23),3) d
  .. f Msg=1:1:MaxStr s @Head@(Msg)=$$Cut(@Head@(Msg)) x WA
- . d CopyTree^%ZAPM.ed.BSXfun1($NA(@Head),Head0)
+ .d CopyTree^%ZAPM.ed.BSXfun1($NA(@Head),Head0)
+ .do SaveFileFromText^%ZAPM.ed.a($NA(@Head0)) ;w  d r^%ZAPM.ed.a   //z save file
  i Edit'=3 k @Head s BST=BST0
- d D^%ZAPM.ed.BS3($NA(@Head)) q
+ d D^%ZAPM.ed.BS3($NA(@Head)) 
+ q
  
 Cut(s) f i=$L(s):-1:0 q:$E(s,i)'=" "
  q $E(s,i>0,i)

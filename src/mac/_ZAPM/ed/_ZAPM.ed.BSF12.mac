@@ -188,7 +188,9 @@ zr(N) I N=1 S zr=$ZR Q  ;СОХРАНИТЬ
  Q
 Erzr Q 
 Pred(R) S %zT=$ZT,$ZT="ERPred^%ZAPM.ed.BSF12" ;ПРЕДОБРАБОТКА
- D @R S $ZT=$G(%zT) Q
+ D @R 
+ S $ZT=$G(%zT)
+ Q
 ERPred W $$bel^%ZAPM.ed.BS3 D Wait^%ZAPM.ed.BSXfun($ZE_" "_$$ErrSay^%ZAPM.ed.BSF8($ZE))
  S $ZT=$G(%zT) Q
 Data(G) S %zT=$ZT,$ZT="ERGETGLB^%ZAPM.ed.BSF12" ;СУЩЕСТВОВАНИЕ УЗЛА
