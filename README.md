@@ -55,4 +55,34 @@ $ docker-compose exec iris iris session iris
 USER>
 USER>zapm "edit-file cpf"
 ```
+```
+USER>zapm "edit-file D:\InterSystems\IRIS\iris.cpf"
+```
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_8.png)
 
+## Namespace navigator ZPM 
+
+```
+USER>zapm "edit-file zpm"
+```
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_1.png)
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_2.png)
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_3.png)
+
+## Routines editor 
+```
+USER>zapm "edit-rou"
+```
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_4.png)
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_5.png)
+
+## Globals editor 
+```
+USER>zapm "edit-glo"
+```
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_6.png)
+
+```
+USER>zapm "edit-file mess"
+```
+![](https://raw.githubusercontent.com/SergeyMi37/zapm-editor/master/doc/Screenshot_7.png)
