@@ -4,7 +4,8 @@
 <Module>
  <Name>zapm-editor</Name>
   <Version>1.0.6</Version>
-  <Description>Navigator file system, namespace navigator ZPM-modules, editor of routines, editor globals and editor text files.</Keywords>
+  <Description>Navigator file system, namespace navigator ZPM-modules, editor of routines, editor globals and editor text files.</Description>
+  </Keywords>
   <Author>
    <Person>Mikhaylenko Sergey</Person>
    <CopyrightDate>2021</CopyrightDate>
