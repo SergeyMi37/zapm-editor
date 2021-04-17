@@ -15,7 +15,7 @@ nszpm  ;Navigator for namespace and zpm modules --------------------------------
  do resizeTerm
  new
  set $ztrap="error"
- do ClearCurrJobs
+ ;do ClearCurrJobs
  D CLr^%ZAPM.ed.BSF4,CCC^%ZAPM.ed.BSC
  S %BS(12)="m",%BS(39)="NAV"
  S NSPL=$$NS^%ZAPM.ed.BSCp()  //get list namespace
@@ -199,6 +199,7 @@ fileCat(file) new (file)
  quit
  // --------------------------------------- edf
 FileSys(filedir) 
+  do resizeTerm
  if filedir="mess" {
 	 set filedir=##class(%File).NormalizeFilename("messages.log",##class(%File).GetDirectory($p($zu(86),"*"))_"mgr")
  }
@@ -239,7 +240,8 @@ FileNavigatorErr
  g exit
  quit
 FileNavigator(filedir)
- do ClearCurrJobs
+ ;do ClearCurrJobs
+  do resizeTerm
  set $zt="FileNavigatorErr"
  do FileSysDir(filedir)
  quit
@@ -326,6 +328,7 @@ SaveFileFromText(GN) //save
  quit 
   //zapm "edf d:\!\"
 rou(name="") //--------------------------------------------------------- edr
+ do resizeTerm
  new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
  new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
  d resizeTerm
@@ -333,6 +336,7 @@ rou(name="") //--------------------------------------------------------- edr
  do exit
  quit
 glo(name="") //--------------------------------------------------------- edg
+ do resizeTerm
  new %cmd,IYI,%BS,%W,%cmd,%zT,AF,AQUA,BBK,BK,BLUE,BR,CRLF,EF,Err,GG,GOLD,GREEN,HHH,I,II1,K1,LL,LOC,MAROON,P,Qu,R,R1,R2,R3,R4,R5,RED,Refresh,YES,g,g1,glo,i,r1,r2,r3,txt,zBS4cfg,zr,li,r,rr
  new BS,BSR,BST,BSr,BSt,e,MRMR,rou,%GO,%JB,Ask,Mouse,Ox,Oy,WA,WAI
  d resizeTerm
