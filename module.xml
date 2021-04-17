@@ -3,9 +3,8 @@
 <Document name="zapm-editor.ZPM">
 <Module>
  <Name>zapm-editor</Name>
-  <Version>1.0.5</Version>
-  <Description>Namespace navigator ZPM and editor of routines, globals, texts and tables in terminal mode.</Description>
-  <Keywords>navigator, editor, routines, globals, texts, tables</Keywords>
+  <Version>1.0.6</Version>
+  <Description>Navigator file system, namespace navigator ZPM-modules, editor of routines, editor globals and editor text files.</Keywords>
   <Author>
    <Person>Mikhaylenko Sergey</Person>
    <CopyrightDate>2021</CopyrightDate>
