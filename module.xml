@@ -3,8 +3,8 @@
 <Document name="zapm-editor.ZPM">
 <Module>
  <Name>zapm-editor</Name>
-  <Version>1.0.9</Version>
-  <Description>Navigator file system, namespace navigator ZPM-modules, editor of routines, editor globals and editor text files.</Description>
+  <Version>1.0.10</Version>
+  <Description>File system explorer, ZPM module navigator, program editor, array editor and text file editor in terminal mode.</Description>
   <Keywords>Extension Package Manager</Keywords>
   <Author>
    <Person>Mikhaylenko Sergey</Person>

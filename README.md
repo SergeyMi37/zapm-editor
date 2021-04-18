@@ -11,7 +11,7 @@
 [![license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-Navigator file system, namespace navigator ZPM-modules, editor of routines, editor globals and editor text files..
+File system explorer, ZPM module navigator, program editor, array editor and text file editor in terminal mode.
 
 ## Installation with ZPM
 
