@@ -33,13 +33,21 @@ nszpm  ;Navigator for namespace and zpm modules --------------------------------
  ;S $P(@BSR@(BST),"@",39)="^%ZAPM.ed.BSC,ZHELP1" //help text
  kill tab
  Set currentns=$Namespace
- Do ##class(%ZPM.PackageManager).GetListNamespace(.namespace)
+ If $System.CLS.IsMthd("%IPM.Main", "GetListNamespace") {
+ 	Do ##class(%IPM.Main).GetListNamespace(.namespace)
+ } Else {
+ 	Do ##class(%ZPM.PackageManager).GetListNamespace(.namespace)
+ }
   Set ns="",num=0
 	For { set ns=$Order(namespace(ns)) Quit:ns=""
 		Set $Namespace=ns
 		Kill list
 		set name=""
-		Do ##class(%ZPM.PackageManager).GetListModules("",.list)
+		If $System.CLS.IsMthd("%IPM.Main", "GetListModules") {
+			Do ##class(%IPM.Main).GetListModules("",.list)
+		} Else {
+			Do ##class(%ZPM.PackageManager).GetListModules("",.list)
+		}
 		If $D(list) {
 			Set module="",write=0
 			For { set module=$Order(list(module)) Quit:module=""
